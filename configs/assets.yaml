@@ -1,0 +1,51 @@
+# Canonical asset manifest. Paths are resolved relative to the verified Isaac Sim 5.0 asset root.
+asset_root: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac
+robot:
+  id: franka_panda
+  config: isaaclab_assets.FRANKA_PANDA_HIGH_PD_CFG
+  usd: IsaacLab/Robots/FrankaEmika/panda_instanceable.usd
+table:
+  id: phenolic_worktable_c2
+  geometry: parametric_cuboids
+  finish: dark_gray_phenolic_resin_uv_surface
+  texture: assets/textures/phenolic_bench_dark_1k.jpg
+  collision: convex_box_top_and_legs
+target:
+  id: shallow_storage_bin
+  outer_size_m: [0.18, 0.16, 0.047]
+  color: light_blue_white
+  collision: box_bottom_and_four_box_walls
+textures:
+  floor:
+    asset: procedural_epoxy_floor
+    file: assets/textures/epoxy_floor_cool_gray_1k.jpg
+    source: tools/generate_lab_textures.py
+    treatment: deterministic cool-gray broad-scale resin variation without repeating plank seams
+    sha256: 7da2141fb9b7a38966114d5876d9616899f749222c9299360f341fa4b4c2a474
+  wallpaper:
+    asset: procedural_industrial_wall
+    file: assets/textures/industrial_wall_light_gray_1k.jpg
+    source: tools/generate_lab_textures.py
+    treatment: deterministic light-gray paint grain with broad sandwich-panel seams
+    sha256: 9910939ec5a98cfb3863ba33b752266126756103422b1a54c384a39d68f564f4
+  tabletop:
+    asset: procedural_phenolic_bench
+    file: assets/textures/phenolic_bench_dark_1k.jpg
+    source: tools/generate_lab_textures.py
+    treatment: deterministic dark neutral phenolic-resin finish with subtle non-repeating grain
+    sha256: 6fb5d97aa0169d7e1f6897d61687148d00566cf7bcd9ec8fe0315c23ad9d3bdb
+  platen:
+    asset: procedural_threaded_hole_array
+    file: assets/textures/platen_threaded_holes_1k.jpg
+    source: tools/generate_platen_texture.py
+    treatment: deterministic neutral anodized-aluminum albedo with aligned 7x11 chamfered threaded holes and no seam-like zone lines
+    sha256: f686cdc8166275e3ea54a763b70a6aa65adee0ea1a22c4caa7a8cbf9a763f3a0
+workpieces:
+  cracker_box: Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd
+  sugar_box: Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd
+  soup_can: Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd
+  mustard_bottle: Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd
+license_notes:
+  isaac_assets: NVIDIA Isaac Sim asset terms
+  ycb_dataset: CC-BY-4.0; cite Calli et al., 2015
+  poly_haven_textures: CC0; downloaded 2026-08-11 and vendored for offline deterministic runs

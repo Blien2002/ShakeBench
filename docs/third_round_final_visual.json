@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/benchmark_v2_third_round_final.mp4",
+  "source_kind": "video",
+  "time_s": 6.0,
+  "frame_index": 180,
+  "fps": 30.0,
+  "frame_size": [
+    1280,
+    720
+  ],
+  "roi_y0_y1_x0_x1": [
+    200,
+    520,
+    300,
+    900
+  ],
+  "metrics": {
+    "min": 0.0,
+    "max": 229.0,
+    "mean": 118.42649841308594,
+    "std": 59.811336517333984,
+    "percentiles": {
+      "p1": 26.0,
+      "p5": 44.0,
+      "p25": 59.0,
+      "p50": 95.0,
+      "p75": 186.0,
+      "p95": 186.0,
+      "p99": 188.0
+    },
+    "iqr": 127.0,
+    "narrow_band_120_215_ratio": 0.438953125,
+    "saturation_mean": 0.07480482012033463,
+    "low_saturation_lt_0_08_ratio": 0.6755572916666667
+  },
+  "gates": {
+    "iqr_gte_60": true,
+    "std_gte_55": true,
+    "narrow_band_lt_0_50": true
+  },
+  "region_audit": {
+    "regions": {
+      "wall": {
+        "roi_y0_y1_x0_x1": [
+          55,
+          105,
+          890,
+          1040
+        ],
+        "mean_rgb": [
+          148.3939971923828,
+          147.42652893066406,
+          143.93479919433594
+        ],
+        "mean_luminance": 147.38011169433594,
+        "mean_red_minus_blue": 4.459197998046875,
+        "excluded_from_warmth_span": false
+      },
+      "robot": {
+        "roi_y0_y1_x0_x1": [
+          105,
+          190,
+          700,
+          765
+        ],
+        "mean_rgb": [
+          152.74371337890625,
+          153.03257751464844,
+          152.9308624267578
+        ],
+        "mean_luminance": 152.9638214111328,
+        "mean_red_minus_blue": -0.1871490478515625,
+        "excluded_from_warmth_span": false
+      },
+      "worktable_top": {
+        "roi_y0_y1_x0_x1": [
+          190,
+          225,
+          405,
+          555
+        ],
+        "mean_rgb": [
+          82.28590393066406,
+          83.3297119140625,
+          87.70532989501953
+        ],
+        "mean_luminance": 83.42372131347656,
+        "mean_red_minus_blue": -5.419425964355469,
+        "excluded_from_warmth_span": false
+      },
+      "guardrail": {
+        "roi_y0_y1_x0_x1": [
+          148,
+          174,
+          300,
+          350
+        ],
+        "mean_rgb": [
+          93.45076751708984,
+          89.31230926513672,
+          73.62461853027344
+        ],
+        "mean_luminance": 89.05949401855469,
+        "mean_red_minus_blue": 19.826148986816406,
+        "excluded_from_warmth_span": true
+      },
+      "floor": {
+        "roi_y0_y1_x0_x1": [
+          305,
+          365,
+          1060,
+          1215
+        ],
+        "mean_rgb": [
+          122.74225616455078,
+          121.96183013916016,
+          88.49343872070312
+        ],
+        "mean_luminance": 119.71133422851562,
+        "mean_red_minus_blue": 34.248817443847656,
+        "excluded_from_warmth_span": false
+      },
+      "platen_top": {
+        "roi_y0_y1_x0_x1": [
+          350,
+          455,
+          310,
+          865
+        ],
+        "mean_rgb": [
+          144.19473266601562,
+          147.9927520751953,
+          150.49392700195312
+        ],
+        "mean_luminance": 147.36587524414062,
+        "mean_red_minus_blue": -6.2991943359375,
+        "excluded_from_warmth_span": false
+      },
+      "platen_holes": {
+        "roi_y0_y1_x0_x1": [
+          382,
+          430,
+          485,
+          700
+        ],
+        "mean_rgb": [
+          170.05882263183594,
+          174.13323974609375,
+          176.65455627441406
+        ],
+        "mean_luminance": 173.4490509033203,
+        "mean_red_minus_blue": -6.595733642578125,
+        "excluded_from_warmth_span": false
+      },
+      "pit_border": {
+        "roi_y0_y1_x0_x1": [
+          382,
+          414,
+          35,
+          175
+        ],
+        "mean_rgb": [
+          62.73482131958008,
+          66.48482513427734,
+          68.03571319580078
+        ],
+        "mean_luminance": 65.79954528808594,
+        "mean_red_minus_blue": -5.300891876220703,
+        "excluded_from_warmth_span": false
+      },
+      "pit_interior": {
+        "roi_y0_y1_x0_x1": [
+          525,
+          590,
+          340,
+          450
+        ],
+        "mean_rgb": [
+          48.4079704284668,
+          54.19482421875,
+          59.358463287353516
+        ],
+        "mean_luminance": 53.33735656738281,
+        "mean_red_minus_blue": -10.950492858886719,
+        "excluded_from_warmth_span": false
+      },
+      "worktable_frame": {
+        "roi_y0_y1_x0_x1": [
+          300,
+          360,
+          570,
+          600
+        ],
+        "mean_rgb": [
+          53.3033332824707,
+          57.9566650390625,
+          63.46333312988281
+        ],
+        "mean_luminance": 57.364952087402344,
+        "mean_red_minus_blue": -10.15999984741211,
+        "excluded_from_warmth_span": false
+      }
+    },
+    "warmth_span_red_minus_blue": 45.199310302734375,
+    "adjacent_large_surfaces": {
+      "platen_top__floor": {
+        "luminance_delta": 27.654541015625,
+        "gte_25": true
+      },
+      "platen_top__worktable_top": {
+        "luminance_delta": 63.94215393066406,
+        "gte_25": true
+      }
+    },
+    "gates": {
+      "warmth_span_lte_50": true,
+      "adjacent_luminance_delta_gte_25": true
+    }
+  },
+  "histogram": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/third_round_final_histogram.png",
+  "frame_output": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/third_round_final_frame.png"
+}

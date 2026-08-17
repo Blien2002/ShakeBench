@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "purpose": "V0 pre-tuning penetration baseline",
+  "backend": "Isaac Lab + Newton/MJWarp, use_mujoco_contacts=true",
+  "workpiece": "sugar_box",
+  "workpiece_scale": 0.75,
+  "vibration_mode": "spectral",
+  "seed": 17,
+  "physics_hz": 240,
+  "solver_substeps": 4,
+  "effective_substep_hz": 960,
+  "episode_s": 1.0,
+  "wall_elapsed_s": 8.250066221000452,
+  "physics_steps_per_wall_s": 29.211886734501256,
+  "max_penetration_mm": 21.632829681038857,
+  "max_penetration_pair": "workpiece<->worktable",
+  "max_penetration_t": 0.1625000000000001,
+  "penetration_frames_over_0p5mm": 0.871900826446281,
+  "max_wrist_force_n": 69.47676086425781,
+  "contact_diagnostics": {
+    "episode_start": {
+      "newton_shape_count": 386,
+      "mjwarp_collision_geometry_count": 29,
+      "mjwarp_candidate_pair_count": 348,
+      "active_contact_count": 0
+    },
+    "episode_end": {
+      "newton_shape_count": 386,
+      "mjwarp_collision_geometry_count": 29,
+      "mjwarp_candidate_pair_count": 348,
+      "active_contact_count": 2
+    }
+  },
+  "diagnosis": "Far above the expected 1 mm scale. The old 0.47 m start height dropped the workpiece about 0.10 m onto a soft default contact; catalog and live collider heights also differed. Both causes are explicitly corrected before contact-response tuning."
+}

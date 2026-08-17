@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "purpose": "V1 final official-profile penetration validation",
+  "backend": "Isaac Lab + Newton/MJWarp, use_mujoco_contacts=true",
+  "workpiece": "sugar_box",
+  "workpiece_scale": 0.75,
+  "vibration_mode": "spectral",
+  "seed": 17,
+  "physics_profile": "official",
+  "physics_hz": 1000,
+  "solver_substeps": 4,
+  "effective_substep_hz": 4000,
+  "estimated_peak_substep_displacement_mm": 0.2638937448897419,
+  "contact_response": {
+    "requested_margin_m": 0.001,
+    "nativeccd_margin_honored": false,
+    "solref_timeconst_s": 0.0006,
+    "solref_dampratio": 1.0,
+    "previous_unique_solref": [[0.019999999552965164, 1.0]]
+  },
+  "episode_s": 1.0,
+  "wall_elapsed_s": 62.474496399998316,
+  "physics_steps_per_wall_s": 16.006531586864092,
+  "max_penetration_mm": 0.22201384126674384,
+  "max_penetration_pair": "workpiece<->worktable",
+  "max_penetration_t": 0.9240000000000007,
+  "penetration_frames_over_0p5mm": 0.0,
+  "max_wrist_force_n": 36.78053283691406,
+  "max_wrist_torque_nm": 3.2939202785491943,
+  "contact_diagnostics": {
+    "episode_start": {
+      "newton_shape_count": 386,
+      "mjwarp_collision_geometry_count": 29,
+      "mjwarp_candidate_pair_count": 348,
+      "active_contact_count": 0
+    },
+    "episode_end": {
+      "newton_shape_count": 386,
+      "mjwarp_collision_geometry_count": 29,
+      "mjwarp_candidate_pair_count": 348,
+      "active_contact_count": 0
+    }
+  },
+  "acceptance": {
+    "max_penetration_limit_mm": 0.3,
+    "passed": true
+  }
+}

@@ -1,0 +1,95 @@
+# Benchmark-v2 环境重建报告
+
+日期：2026-08-11；第三轮更新：2026-08-13  
+项目：`/home/miracle04/Desktop/vibration_benchmark_v2`
+
+## 1. 重建结果
+
+本次没有继续修改原 RM75 项目，而是在桌面创建了完全独立的工程。当前版本采用旧版 C2 布置：Franka Panda 与深色酚醛工业工作台彼此独立，二者的底座直接固定在同一块可见振动地板上；机械臂不在工作台上，也没有“振动台叠在工作台上”的层级。工程保留六轴复杂随机振动、末端六维力感知、物理腕部相机、pick-and-place 与视频振动曲线，并使用冷灰环氧地坪、浅灰工业墙板、深色踢脚线和浅色收纳盒。
+
+已在实际 CUDA/Newton 后端完成一次完整验证：
+
+| 项目 | 结果 |
+|---|---:|
+| 物理后端 | Isaac Lab + Newton/MJWarp |
+| 仿真频率 | 240 Hz，4 子步 |
+| 激励 | tx/ty/tz/rx/ry/rz 随机谱，seed=17 |
+| 任务 | YCB sugar box pick-and-place |
+| lifted / placed / success | true / true / true |
+| 双指真实接触后抓取 | 已确认（零接触时不会保持） |
+| 最终水平误差 | 0.05092 m |
+| 腕部峰值力 | 746.97 N（未作实机标定，不作为物理结论） |
+| 腕部峰值力矩 | 124.06 N·m（未作实机标定，不作为物理结论） |
+| 最终 C2 视频 | 1280×720，30 fps，14.334 s，430 帧 |
+
+## 2. 资产替换
+
+### Franka Panda 与原生夹爪
+
+机器人沿用 Isaac Lab 官方 Franka 配置和 NVIDIA USD，保留完整关节命名、限制、碰撞网格和 Panda 双指夹爪。官方资产默认固定基座；本项目将根改为浮动根，并在每个仿真步写入公共振动框架的位姿与速度，因此机器人不是视觉上跟随，而是真正具有同一运动学基座状态。
+
+### C2 工业工作台、房间与目标盒
+
+工作台由深色酚醛树脂纹理桌面和四条方形桌腿组成，各部件使用解析 box 几何和独立凸碰撞体。房间使用项目内确定性生成的冷灰环氧地坪与浅灰工业墙板；目标区是带底板及四面真实碰撞壁的浅蓝白收纳盒。纹理使用 `UsdPreviewSurface + UsdUVTexture + st`，并显式指定白色基底，避免 Newton 对无基色纹理网格应用调试调色板。UV 面为明确关闭碰撞的薄实体，只参与 NewtonGL 渲染。工作台和目标盒随 C2 工作台支撑运动，Panda 仍独立安装在同一振动地板上。
+
+录制打光参考 ManiSkill 默认的中性 `0.3` 环境光、斜上与正上白色方向光结构，并参考 robosuite TableArena 关闭硬投影阴影。Newton ViewerGL 中对应为中性半球环境光、白色主光和白色相机补光；默认彩色环境贴图被关闭。主视角与腕部 RGB 使用相同标定，避免相机间色偏。
+
+### YCB 工件
+
+可选工件均为 `Axis_Aligned_Physics` 版本：cracker box、sugar box、tomato soup can、mustard bottle。默认工件按 0.75 等比缩放，以提高主视角可读性。其 USD 自带物理形状，且项目统一覆盖摩擦、恢复系数、接触间隙与求解迭代设置。
+
+## 3. 六轴振动
+
+随机谱生成器为本项目独立实现，不运行时导入旧项目。每轴由若干窄带谱线叠加，频率在带宽内抖动、相位由 episode seed 决定；位移、速度和加速度均解析计算，并使用五次启动包络避免零时刻冲击。
+
+默认频带为：
+
+| 轴 | 中心频率 | RMS |
+|---|---:|---:|
+| tx | 18 Hz | 0.50 mm |
+| ty | 13 Hz | 0.25 mm |
+| tz | 32 Hz | 1.50 mm |
+| rx | 8 Hz | 4.00 mrad |
+| ry | 11 Hz | 2.00 mrad |
+| rz | 6 Hz | 1.20 mrad |
+
+可见地板使用中心六轴运动。C2 的机械臂测点 `(0.75, -0.45)` 和工作台测点 `(-0.75, 0.45)` 分别通过完整 SE(3) 关系 `t + R @ r - r` 计算局部位移，速度使用 `v + omega × (R @ r)`；原一阶小角度公式只保留在回归测试中用于 4/50 mrad 误差边界对照。机械臂根和工作台分别写入各自的位姿与速度，工件则由重力与桌面接触响应决定。
+
+## 4. 控制、传感与指标
+
+- 控制器：Isaac Lab `DifferentialIKController`，DLS 逆解，命令在振动机器人根坐标系中定义。
+- 手臂：7 个关节位置目标；夹爪：两个 Panda finger 位置目标。
+- 腕部传感：`JointWrenchSensor` 的 `panda_link7` 通道，输出三维力与三维力矩。
+- 腕部视觉：参考 ManiSkill Panda wrist camera 的 D415 外壳尺寸和 robosuite 的固定 eye-in-hand 方式，在 `panda_hand` 下建立带碰撞外壳、前面板、双镜头和刚性支架的物理模型，并输出 384×240、75° 视场 RGB。相机光心位于手坐标 `(0.09777, 0, -0.04529) m`，镜头从夹爪上侧法兰包络外向内固定倾斜 27.8°，对准手坐标中 `(0, 0, 0.14) m` 的工作区；这一点是常量安装标定，不是工件追踪。位置、光轴及画面上方向三者都由 `panda_hand` 四元数变换，完整保留固定手眼外参，不使用世界坐标防抖或后处理平滑。旧侧置方案抓取阶段约 42° 的视差误差已降低到完整演示中的约 8–10°，腕部法兰也不再遮挡工作区。
+- 接触传感：工件接触通道，以及左右 Panda 指尖分别过滤 `/Workpiece` 的接触通道。
+- 机器可读结果：每次运行写入 JSON，包含资产、激励、seed、辅助标志和任务指标。
+
+默认视频演示使用接触门控的相对位姿保持，以避免 Newton/MJWarp 与 Panda 双指在高频基座运动下偶发脱落。门控必须同时满足：执行闭合命令、左右指尖接触力均大于 0.05 N、手—物几何距离合理，并连续保持 4 个物理帧。固定 30 mm 关节开度门槛已移除，因为它会错误拒绝较宽 YCB 物体的有效双侧接触。首次双侧接触后，夹爪位置目标冻结在当前开度，不再向任意深闭合目标推进；相对位姿也取自真实接触瞬间，不执行吸附或对中。零接触时保持状态严格为 false，因此旧版的“隔空夹物”路径已被移除。该行为会明确记入 `bilateral_contact_confirmed` 和 `grasp_assist_used`；正式纯物理评分使用 `--no-grasp-assist`。
+
+## 5. 验证与已知限制
+
+已通过 16 个测试，覆盖谱确定性、完整 SE(3)、Stewart 解析几何与行程、活动纹理 SHA-256、腕部相机外参，以及第三轮新增的台面净空、作动器避障、设备接地与阴影布局约束。GPU 验证确认：
+
+- Panda 以 floating base 初始化；
+- YCB 刚体、C2 纹理工作台、浅色收纳盒与三墙房间加载成功；
+- 腕部传感器暴露并输出力/力矩；
+- 零指尖接触时不会抓住工件；真实双侧接触后才能抬升；
+- 随机谱下完整 pick-and-place 成功；
+- 腕部相机在 approach、grasp、transfer、release 全阶段连续可见工件，夹爪仅出现在画面下缘；
+- NewtonGL 原本缺失的相机滚转自由度已由刚性 image-up 基向量补齐；
+- 最终视频 H.264 文件可解码，尺寸和帧率正确；
+- 4.0 s、4.5 s、5.0 s、5.5 s 等抓取关键帧经视觉检查，未见指爪贯穿或工件从夹爪外跳入的现象。
+
+当前 NewtonGL 会跳过 Isaac Lab 基础几何的 Kit PreviewSurface，但本项目自建 UV 网格的便携 USD 纹理图可正常导入；基础几何使用 Newton shape color replacement。Isaac 5.0 Franka USD 对 Newton 还会产生自动质量/惯量提示，但经过完整任务运行未出现数值失稳。若用于动力学参数辨识，应另行导入经校核的显式惯量版本，而不是把当前视觉 benchmark 的力峰值当作实机标定值。
+
+## 6. 复现实验
+
+```bash
+cd /home/miracle04/Desktop/vibration_benchmark_v2
+./run.sh --record --episode-s 16 --vibration spectral --seed 17 \
+  --workpiece sugar_box --workpiece-scale 0.75 \
+  --output out/benchmark_v2_wrist_camera_fixed.mp4 \
+  --metrics-output out/benchmark_v2_wrist_camera_fixed.json
+```
+
+正式无辅助评估需追加 `--no-grasp-assist`。

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/benchmark_v2_wrist_camera_fixed.mp4",
+  "source_kind": "video",
+  "time_s": 5.5,
+  "frame_index": 165,
+  "fps": 30.0,
+  "frame_size": [
+    1280,
+    720
+  ],
+  "roi_y0_y1_x0_x1": [
+    200,
+    520,
+    300,
+    900
+  ],
+  "metrics": {
+    "min": 0.0,
+    "max": 226.0,
+    "mean": 110.31880950927734,
+    "std": 60.81193542480469,
+    "percentiles": {
+      "p1": 15.0,
+      "p5": 18.0,
+      "p25": 46.0,
+      "p50": 119.0,
+      "p75": 168.0,
+      "p95": 173.0,
+      "p99": 181.0
+    },
+    "iqr": 122.0,
+    "narrow_band_120_215_ratio": 0.49266145833333336,
+    "saturation_mean": 0.25799593329429626,
+    "low_saturation_lt_0_08_ratio": 0.010572916666666666
+  },
+  "gates": {
+    "iqr_gte_60": true,
+    "std_gte_55": true,
+    "narrow_band_lt_0_50": true
+  },
+  "histogram": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_final_histogram.png",
+  "frame_output": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_final_frame.png"
+}
