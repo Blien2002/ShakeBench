@@ -1,0 +1,18 @@
+schema_version: 1
+# Pixel coordinates are y0,y1,x0,x1 for the fixed 1280x720 main camera.
+# Safety-yellow elements are measured but excluded from the neutral-material
+# warm/cool span by design.
+regions:
+  - {name: wall, roi: [55, 105, 890, 1040]}
+  - {name: robot, roi: [105, 190, 700, 765]}
+  - {name: worktable_top, roi: [190, 225, 405, 555]}
+  - {name: guardrail, roi: [148, 174, 300, 350], exclude_from_warmth_span: true}
+  - {name: floor, roi: [305, 365, 1060, 1215]}
+  - {name: platen_top, roi: [350, 455, 310, 865]}
+  - {name: platen_holes, roi: [382, 430, 485, 700]}
+  - {name: pit_border, roi: [382, 414, 35, 175]}
+  - {name: pit_interior, roi: [525, 590, 340, 450]}
+  - {name: worktable_frame, roi: [300, 360, 570, 600]}
+adjacent_large_surfaces:
+  - [platen_top, floor]
+  - [platen_top, worktable_top]

@@ -1,0 +1,130 @@
+schema_version: 3
+common:
+  substeps: 4
+  robot: franka_panda
+  table: phenolic_worktable_c2
+  support_layout: C2
+  arm_mount_xy_m: [0.75, -0.45]
+  table_mount_xy_m: [-0.75, 0.45]
+  workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
+  default_workpiece_scale: 0.75
+physics_profiles:
+  official:
+    physics_hz: 1000
+    contact_solref: [0.00060, 1.0]
+    scoreable: true
+    max_penetration_mm: 0.3
+    note: Evaluation and recording profile; use this profile for reported scores.
+  training:
+    physics_hz: 240
+    contact_solref: [0.0025, 1.0]
+    scoreable: false
+    note: Throughput profile; larger single-step travel can increase penetration.
+contact_policy:
+  requested_pair_margin_m: 0.001
+  backend_limit: MuJoCo NativeCCD zeroes authored margins with use_mujoco_contacts=true.
+  mitigation: Official scoring relies on 1000 Hz x 4 substeps and records signed contact distance.
+controller_policy:
+  approach_clearance_m: 0.080
+  nominal_descend_clearance_m: 0.004
+  finger_table_clearance_m: 0.012
+  runtime_descend_rule: Raise the finger-body target using the live finger collider reach and workpiece height.
+  arm_linear_speed_m_s: 0.15
+  lift_takeoff_speed_m_s: 0.020
+  lift_takeoff_duration_s: 0.75
+  descend_linear_speed_m_s: 0.060
+  place_linear_speed_m_s: 0.080
+  gripper_closing_speed_m_s: 0.003
+  gripper_contact_recovery_speed_m_s: 0.001
+  gripper_opening_speed_m_s: 0.040
+  gripper_contact_preload_m: 0.0003
+  grasp_timeout_s: 2.5
+  grasp_contact_loss_timeout_s: 0.20
+  grasp_slip_tolerance_m: 0.008
+  table_contact_during_descend: fail
+  contact_loss_during_transport: fail
+scenarios:
+  clean_baseline:
+    vibration: off
+    seeds: [0]
+  z_sine_control:
+    vibration: sine
+    axis: tz
+    frequency_hz: 5.0
+    amplitude_m: 0.0015
+    seeds: [0]
+  legacy_random_6dof:
+    vibration: spectral
+    spectral_scale: 1.0
+    axes: [tx, ty, tz, rx, ry, rz]
+    seeds: [17, 31, 47, 73, 101]
+  safe_full_6dof_demo:
+    vibration: spectral
+    spectral_scale: 0.15
+    axes: [tx, ty, tz, rx, ry, rz]
+    seeds: [17]
+    note: Safe 240 Hz visualization profile; not an official score profile.
+  vehicle_longitudinal_2dof_demo:
+    vibration: spectral
+    spectral_scale: 1.0
+    axes: [tx, tz]
+    bands:
+      tx:
+        - {center_hz: 5.0, rms_m: 0.0012, bandwidth_ratio: 0.12, tones: 8}
+      tz:
+        - {center_hz: 8.0, rms_m: 0.0015, bandwidth_ratio: 0.10, tones: 10}
+    workpiece: sugar_box
+    workpiece_scale: 0.55
+    gripper_closing_speed_m_s: 0.006
+    grasp_timeout_s: 4.5
+    episode_s: 20.0
+    seeds: [17]
+    note: Low-frequency longitudinal vehicle-plane demo with visibly large X/Z displacement; not an official score profile.
+  vehicle_longitudinal_3dof_demo:
+    vibration: spectral
+    spectral_scale: 1.0
+    axes: [tx, tz, ry]
+    bands:
+      tx:
+        - {center_hz: 5.0, rms: 0.0012, bandwidth_ratio: 0.12, tones: 8}
+      tz:
+        - {center_hz: 8.0, rms: 0.0015, bandwidth_ratio: 0.10, tones: 10}
+      ry:
+        - {center_hz: 2.5, rms: 0.0015, bandwidth_ratio: 0.12, tones: 8}
+    workpiece: sugar_box
+    workpiece_scale: 0.55
+    gripper_closing_speed_m_s: 0.006
+    grasp_timeout_s: 4.5
+    episode_s: 20.0
+    seeds: [17]
+    note: Longitudinal vehicle demo with X/Z translation plus Y pitch, producing arm-table differential motion; not an official score profile.
+  panel_operation:
+    task: panel_operation
+    vibration: off
+    episode_s: 24.0
+    seeds: [0, 17, 31, 47, 73]
+    note: Fixed control panel on the existing C2 worktable; each seed samples a random ordered subset of knob/lever/button as the rollout instruction.
+  panel_operation_spectral_demo:
+    task: panel_operation
+    vibration: spectral
+    spectral_scale: 0.15
+    axes: [tx, ty, tz, rx, ry, rz]
+    episode_s: 24.0
+    seeds: [17]
+    note: Panel operation under the safe reduced-amplitude 6-DOF spectral vibration; not an official score profile.
+  panel_sequence_knob_button:
+    task: panel_operation
+    vibration: off
+    panel_sequence: [knob, button]
+    episode_s: 16.0
+    seeds: [0]
+    note: Explicit two-control instruction (knob then button) for deterministic validation.
+evaluation:
+  success_xy_m: 0.07
+  require_lift: true
+  require_bilateral_finger_contact: true
+  bilateral_contact_frames: 4
+  report_wrist_6dof_peak: true
+  official_score_requires_grasp_assist: false
+  max_penetration_mm: 0.3
+  report_penetration_pair_and_time: true

@@ -1,0 +1,52 @@
+schema_version: 1
+
+# Inspired by the Arena / style separation used by robosuite, LIBERO and
+# RoboCasa. Textures use portable USD Preview Surface graphs so NewtonGL can
+# consume them directly without MuJoCo / MDL material stacks.
+layout:
+  size_m: [6.00, 5.00, 3.00]
+  center_x_m: 0.40
+  floor_z_m: -0.022
+  back_wall_x_m: -2.58
+  side_wall_y_m: 2.48
+  wall_thickness_m: 0.035
+  pit_size_m: [2.05, 1.55]
+  pit_depth_m: 0.78
+  pit_border_width_m: 0.16
+  safety_line_width_m: 0.055
+  guardrail_height_m: 0.72
+  guardrail_thickness_m: 0.035
+
+style:
+  name: cool_gray_industrial_lab
+  wall_base_rgb: [0.67, 0.66, 0.64]
+  wallpaper_rgb:
+    - [0.70, 0.69, 0.67]
+    - [0.66, 0.65, 0.63]
+    - [0.68, 0.67, 0.65]
+  baseboard_rgb: [0.12, 0.12, 0.12]
+  pit_rgb: [0.040, 0.043, 0.045]
+  pit_border_rgb: [0.13, 0.14, 0.145]
+  safety_rgb: [0.90, 0.67, 0.05]
+  guardrail_rgb: [0.90, 0.55, 0.02]
+  wood_rgb:
+    - [0.38, 0.39, 0.40]
+    - [0.40, 0.41, 0.42]
+    - [0.36, 0.37, 0.38]
+    - [0.39, 0.40, 0.41]
+    - [0.37, 0.38, 0.39]
+  plank_rows: 15
+  plank_columns: 5
+  plank_gap_m: 0.012
+  floor_texture: assets/textures/epoxy_floor_cool_gray_1k.jpg
+  wallpaper_texture: assets/textures/industrial_wall_light_gray_1k.jpg
+  floor_uv_repeat: [1.15, 1.05]
+  wallpaper_uv_repeat: [1.0, 1.0]
+
+equipment:
+  cabinet_position: [-1.85, -1.55, 0.878]
+  chair_position: [-1.10, 1.45, 0.0]
+  tool_cart_position: [-1.75, 0.75, 0.0]
+  emergency_stop_position: [-1.35, -0.35, 0.0]
+  dark_rgb: [0.075, 0.085, 0.095]
+  light_rgb: [0.26, 0.28, 0.29]

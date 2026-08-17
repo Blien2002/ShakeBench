@@ -1,0 +1,32 @@
+# Local runtime outputs and recordings
+out/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and package builds
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Local editor and agent settings
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# OS and transient logs
+.DS_Store
+*.log
+*.tmp
+
+# Local environment overrides
+.env
+.env.*
