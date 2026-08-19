@@ -25,6 +25,9 @@ export ISAACLAB_ROOT=/path/to/IsaacLab-3.0
 # 快速安全演示（240 Hz 训练档、0.15x 谱幅值，录像）
 ./scripts/demo.sh
 
+# 完整任务演示（0.5x 六轴谱 + 已公开的 grasp assist，录像，不计分）
+./scripts/demo_full_05x.sh
+
 # 运行默认 16 s official 档基准回合（不录像，输出 metrics）
 ./run.sh
 
