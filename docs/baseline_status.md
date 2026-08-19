@@ -29,6 +29,6 @@
 
 普通 C2 1000 Hz × 5：seed 17/31/47/73/101 的最大穿透分别为 0.259 / 0.248 / 0.158 / 0.202 / 0.209 mm，**最大 0.259 mm**，未达到 D2 计分资格（≤ 0.336/3 ≈ 0.112 mm）。
 
-C2_CLITE 1000 Hz × 5（支撑按子步驱动）：seed 17/31/47/73/101 分别为 0.078 / 0.088 / 0.123 / 0.069 / 0.064 mm；seed 47 仍高于 0.112 mm。后续将 mocap 更新改为直接写 solver 数组 + `clite_mocap_update_decimation=2`，seed17 为 0.062 mm，1 s 墙钟约 70 s（原 100 s），但 16 s 仍约 19 分钟。加 `solver_iterations=120` 对 seed47 不稳定（0.114–0.175 mm 波动），尚未形成全 seed 通过的稳定 solver 配置。
+C2_CLITE 1000 Hz × 4 + `solver_iterations=50`（当前 official 默认）：seed 17/31/47/73/101 分别为 0.102 / 0.082 / 0.082 / 0.067 / 0.100 mm，**全部低于 0.112 mm 计分资格线**。该配置 1 s 墙钟约 50 s，16 s 约 13 分钟。C2_CLITE 1000 Hz × 5 早期数据（0.064–0.123 mm）与普通 C2（最大 0.259 mm）见上表。
 
 硬装接触拓扑：386 Newton shapes / 29 MJWarp geometries / 339 candidate pairs。

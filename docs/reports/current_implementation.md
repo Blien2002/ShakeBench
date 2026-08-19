@@ -11,6 +11,7 @@
 当前模型状态：
 
 - 支撑模型为**单坐标系硬装甲板**：Panda、工作台、桌腿、目标盒同属一个 deck `SupportGroup`，虚拟测点 `arm_mount_xy_m / table_mount_xy_m` 和两个 7 mm `dynamic_clearance` 已删除。
+- **official CLI 默认 `C2_CLITE`：1000 Hz × 4 子步、solver iterations=50**，平台/工作台由 mocap-weld 按子步驱动；`--support-config C2` 保留为 1000 Hz × 5 子步的 kinematic 外层写入模式。
 - 重力已开启，Panda 为 `fix_root_link=False` 的浮动根，根位姿由 deck 组写入。
 - 安全门为**离线全回合重放**，几何门限固定 `0.40 mm`；穿透评分门槛固定为工件最小尺寸的 1%。
 - 旧模型产物已作废，状态见 [docs/baseline_status.md](../baseline_status.md)。
@@ -58,7 +59,7 @@ VibrationConfig ──> SpectralVibration ──> deck 六轴 q / qd / qdd
 
 | 参数 | 值 |
 |---|---|
-| 官方档 | 1000 Hz × 5 子步，`solref=(0.00060 s, 1.0)` |
+| 官方档 | 1000 Hz × 4 子步 + C2_CLITE（iterations=50），`solref=(0.00060 s, 1.0)` |
 | 训练档 | 240 Hz × 4 子步，`solref=(0.0025 s, 1.0)`，不可评分 |
 | 积分器 | `implicitfast` |
 | 主迭代 / 线搜索迭代 | 80 / 24（可 `--solver-iterations` 覆盖做实验） |
@@ -138,11 +139,11 @@ p = q[:3] + c + R(l - c)，  c = platform_center = (0, 0, 0.04)
 
 实现位于 [src/vibench/supports.py](../../src/vibench/supports.py)。`task.py` 与 `panel_task.py` 都调用同一个 `write_support_groups()`；Stewart 平台视觉件继续由 deck 组 platform 成员的位姿驱动。
 
-### 5.2 C2_CLITE（实验，不计分）
+### 5.2 C2_CLITE（official 默认）
 
-`--support-config C2_CLITE` 把振动地板和工作台改为动态刚体，由 fixed-root mocap driver + WELD equality constraint 驱动；mocap 轨迹在 solver 子步网格上直接写 `mjw_data.mocap_*`，默认 `clite_mocap_update_decimation=2`（每两个子步更新一次）。桌腿、目标盒与 Panda 根仍为 kinematic 轨迹写入。
+`--support-config C2_CLITE` 把振动地板和工作台改为动态刚体，由 fixed-root mocap driver + WELD equality constraint 驱动；mocap 轨迹在 solver 子步网格上直接写 `mjw_data.mocap_*`，默认 `clite_mocap_update_decimation=2`。桌腿、目标盒与 Panda 根仍为 kinematic 轨迹写入。
 
-优化后该路径能把 settle 数值地板降到约 0.062–0.123 mm，1 s 官方回合墙钟约 70 s；但 16 s 完整回合仍需要约 19 分钟，因此当前仍标记为实验/诊断模式，不计入 official。
+五 seed 数值地板标定（1000 Hz × 4 子步、iterations=50）为 0.067–0.102 mm，全部低于 0.112 mm 计分资格线。1 s 官方回合墙钟约 50 s，16 s 约 13 分钟，仍偏慢但作为 official 候选配置使用。
 
 ### 5.3 legacy 测点模型
 
@@ -314,7 +315,7 @@ sugar_box@0.75 时约 `0.336 mm`。official 只有在“只振动不操作”的
 | official 1 s 谱探针 | 最大穿透 0.242 mm，`workpiece<->worktable`，`robot_link<->platen` 消失 |
 | official 16 s 回合 | `support_geometry_valid=true`；`lifted=true` 后 `grasp_z_guard_triggered` / `grasp_contact_timeout` |
 | 数值地板（普通 C2，5 seed） | 最大 0.259 mm，未达计分资格 |
-| 数值地板（C2_CLITE，5 seed） | 0.064–0.123 mm，seed47 不稳定且 16 s 吞吐不足 |
+| 数值地板（C2_CLITE 官方默认 4sub/50it，5 seed） | 0.067–0.102 mm，全部 ≤ 0.112 mm 资格线 |
 
 详见 [docs/baseline_status.md](../baseline_status.md)。
 
@@ -356,7 +357,7 @@ cd ViBench
 ## 15. 已知边界与尚未实现内容
 
 - official 当前**不可计分**：普通 C2 数值地板未满足 D2 资格，完整抓取回合在重力开启后失败。
-- C2_CLITE 支撑子步注入有效（种子 17/31/73/101 地板 <0.09 mm），但 seed47 不稳定。计时显示 0.2 s 回合 solver 占 9.0 s / 总约 12 s（~75% 在 `_step_solver`）；1 s 墙钟约 70 s，16 s 约 19 分钟，尚未达到官方可用吞吐。
+- C2_CLITE 官方默认配置五 seed 地板全部达标，但 16 s 墙钟约 13 分钟；计时显示约 75% 时间在 `NewtonManager._step_solver`，后续需要上游/底层优化。
 - 控制器是状态型参考策略，不是视觉端到端策略。
 - 没有 RL/模仿学习训练代码、Gym 注册或数据集导出器。
 - 腕部相机只有 RGB，没有深度/分割/噪声模型。

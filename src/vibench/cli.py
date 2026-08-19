@@ -97,8 +97,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--support-config",
         choices=("C2", "C2_CLITE"),
-        default="C2",
-        help="C2 keeps the original kinematic teleport supports; C2_CLITE drives dynamic supports through mocap + weld constraints",
+        default=None,
+        help="C2 keeps kinematic teleport supports; C2_CLITE drives dynamic supports through mocap + weld constraints. Official defaults to C2_CLITE",
     )
     parser.add_argument(
         "--gripper-closing-speed",
@@ -153,9 +153,6 @@ def main() -> int:
     task_kind = scenario.get("task", args.task)
     if task_kind not in ("pick_place", "panel_operation"):
         raise ValueError(f"unknown task {task_kind!r}; expected pick_place or panel_operation")
-    support_config = str(scenario.get("support_config", args.support_config))
-    if support_config not in ("C2", "C2_CLITE"):
-        raise ValueError(f"unknown support_config {support_config!r}")
     vibration_mode = scenario.get("vibration", args.vibration)
     spectral_scale = float(scenario.get("spectral_scale", args.spectral_scale))
     configured_axes = scenario.get("axes", args.vibration_axes)
@@ -171,10 +168,22 @@ def main() -> int:
     physics_hz = args.physics_hz or (1000 if physics_profile == "official" else 240)
     if physics_hz <= 0:
         raise ValueError("physics_hz must be positive")
-    # Official keeps the corrected vector-combined audit below the 0.3 mm
-    # gate by using five solver substeps; the throughput profile stays at
-    # four substeps and remains explicitly non-scoreable.
-    solver_substeps = args.solver_substeps or (5 if physics_profile == "official" else 4)
+    support_config = str(
+        scenario.get(
+            "support_config",
+            args.support_config or ("C2_CLITE" if physics_profile == "official" else "C2"),
+        )
+    )
+    if support_config not in ("C2", "C2_CLITE"):
+        raise ValueError(f"unknown support_config {support_config!r}")
+    # C2_CLITE at 4 substeps / 50 iterations passes the five-seed numerical
+    # floor; ordinary C2 keeps the original 5-substep official gate.
+    solver_substeps = args.solver_substeps or (
+        5 if physics_profile == "official" and support_config == "C2" else 4
+    )
+    solver_iterations = args.solver_iterations or (
+        50 if physics_profile == "official" and support_config == "C2_CLITE" else None
+    )
     panel_sequence_value = (
         args.panel_sequence if args.panel_sequence is not None else scenario.get("panel_sequence")
     )
@@ -257,7 +266,7 @@ def main() -> int:
         raise ValueError("official profile requires physics_hz >= 1000")
     install_structural_collision_exclusions()
     with sim_utils.build_simulation_context(
-        sim_cfg=make_sim_cfg(cfg, args.device, args.solver_iterations),
+        sim_cfg=make_sim_cfg(cfg, args.device, solver_iterations),
         auto_add_lighting=True,
     ) as sim:
         sim._app_control_on_stop_handle = None
