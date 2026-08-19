@@ -5,12 +5,21 @@ import math
 from pathlib import Path
 
 import torch
+from isaaclab.utils.math import matrix_from_quat, quat_from_euler_xyz
 
 from vibench.arena import load_room_arena_cfg
 from vibench.config import BenchmarkConfig, VibrationConfig
-from vibench.mounting import analytic_delta_z, c2_support_motions, motion_at_mount
 from vibench.shaker import ShakerGeometryCfg, joint_points, solve_leg_transforms
-from vibench.vibration import SpectralVibration
+from vibench.supports import (
+    angular_velocity_from_euler_rates,
+    support_group_geometries,
+    support_pose_velocity,
+)
+from vibench.vibration import (
+    SpectralVibration,
+    _euler_rotation_matrices,
+    _synthesize_episode,
+)
 from vibench.wrist_camera import (
     WRIST_CAMERA_AIM_H,
     WRIST_CAMERA_EYE_H,
@@ -28,6 +37,105 @@ def test_seed_is_reproducible() -> None:
     for time_s in (0.0, 0.4, 1.0, 2.3):
         for lhs, rhs in zip(a.sample(time_s), b.sample(time_s)):
             torch.testing.assert_close(lhs, rhs)
+
+
+def test_support_group_members_form_one_rigid_body() -> None:
+    cfg = BenchmarkConfig()
+    groups = support_group_geometries(cfg)
+    q = torch.tensor([[0.003, -0.002, 0.004, 0.011, 0.0077, 0.0072]], dtype=torch.float64)
+    qd = torch.tensor([[0.020, 0.030, 0.040, 0.200, 0.130, 0.045]], dtype=torch.float64)
+    env_origins = torch.zeros((1, 3), dtype=torch.float64)
+    quat = quat_from_euler_xyz(q[:, 3], q[:, 4], q[:, 5])
+    rotation = matrix_from_quat(quat)
+
+    for group in groups:
+        anchor = torch.tensor(group.rotation_anchor, dtype=torch.float64)
+        positions = []
+        quats = []
+        velocities = []
+        locals_ = []
+        for member in group.members:
+            local = torch.tensor(member.local, dtype=torch.float64).unsqueeze(0)
+            position, member_quat, velocity = support_pose_velocity(
+                local,
+                q,
+                qd,
+                group.rotation_anchor,
+                env_origins,
+            )
+            positions.append(position)
+            quats.append(member_quat)
+            velocities.append(velocity)
+            locals_.append(local)
+            offset = local - anchor
+            expected = env_origins + q[:, :3] + anchor + (rotation @ offset.unsqueeze(-1)).squeeze(-1)
+            torch.testing.assert_close(position, expected, atol=1e-12, rtol=0.0)
+            torch.testing.assert_close(member_quat, quat, atol=1e-12, rtol=0.0)
+        for lhs in range(len(positions)):
+            for rhs in range(lhs + 1, len(positions)):
+                distance = float((positions[lhs] - positions[rhs]).norm())
+                local_distance = float((locals_[lhs] - locals_[rhs]).norm())
+                assert math.isclose(distance, local_distance, abs_tol=1.0e-9)
+
+    # The replay rotation helper must be the same Rz·Ry·Rx matrix the writer
+    # derives from quat_from_euler_xyz.  A second matrix convention here is
+    # precisely the P0 double-truth bug.
+    torch.testing.assert_close(
+        torch.as_tensor(_euler_rotation_matrices(q.numpy()), dtype=torch.float64),
+        rotation,
+        atol=1.0e-15,
+        rtol=0.0,
+    )
+
+    # Angular velocity must be the exact derivative of quat_from_euler_xyz's
+    # Rz·Ry·Rx rotation; finite-difference Rdot and recover omega_hat.
+    h = 1.0e-6
+    rdot = torch.zeros((1, 3, 3), dtype=torch.float64)
+    for axis in (3, 4, 5):
+        plus = q.clone()
+        minus = q.clone()
+        plus[:, axis] += h
+        minus[:, axis] -= h
+        rplus = matrix_from_quat(quat_from_euler_xyz(plus[:, 3], plus[:, 4], plus[:, 5]))
+        rminus = matrix_from_quat(quat_from_euler_xyz(minus[:, 3], minus[:, 4], minus[:, 5]))
+        rdot += qd[:, axis] * (rplus - rminus) / (2.0 * h)
+    omega_hat = rdot @ rotation.transpose(1, 2)
+    omega_true = torch.stack(
+        (omega_hat[:, 2, 1], omega_hat[:, 0, 2], omega_hat[:, 1, 0]),
+        dim=1,
+    )
+    torch.testing.assert_close(
+        angular_velocity_from_euler_rates(q, qd),
+        omega_true,
+        atol=1.0e-9,
+        rtol=0.0,
+    )
+
+
+def test_replay_waveform_matches_simulation_sample() -> None:
+    cfg = VibrationConfig(mode="spectral", seed=17)
+    source = SpectralVibration(cfg, 1, "cpu")
+    time_s, q, qd, qdd = _synthesize_episode(cfg, 1000, 2.0, 0)
+    for step in (0, 1, 137, 500, 999):
+        simulated = source.sample(float(time_s[step]))
+        torch.testing.assert_close(
+            simulated[0][0],
+            torch.as_tensor(q[step], dtype=torch.float32),
+            atol=1.0e-5,
+            rtol=1.0e-5,
+        )
+        torch.testing.assert_close(
+            simulated[1][0],
+            torch.as_tensor(qd[step], dtype=torch.float32),
+            atol=1.0e-4,
+            rtol=1.0e-4,
+        )
+        torch.testing.assert_close(
+            simulated[2][0],
+            torch.as_tensor(qdd[step], dtype=torch.float32),
+            atol=1.0e-3,
+            rtol=1.0e-3,
+        )
 
 
 def test_active_axes_use_independent_random_streams() -> None:
@@ -98,32 +206,6 @@ def test_off_mode_is_zero() -> None:
     source = SpectralVibration(VibrationConfig(mode="off"), 3, "cpu")
     for value in source.sample(2.0):
         assert torch.count_nonzero(value) == 0
-
-
-def test_c2_mount_delta_matches_analytic_expression() -> None:
-    centre = torch.tensor([[0.0, 0.0, 0.003, 0.004, -0.002, 0.001]])
-    arm_xy = (0.75, -0.45)
-    table_xy = (-0.75, 0.45)
-    arm, table = c2_support_motions(centre, arm_xy, table_xy)
-    torch.testing.assert_close(arm[:, 2] - table[:, 2], analytic_delta_z(centre, arm_xy, table_xy))
-    assert not torch.equal(arm, table)
-
-
-def test_c2_complete_se3_replaces_small_angle_approximation() -> None:
-    mount = (0.75, 0.0)
-    for angle in (0.004, 0.050):
-        centre = torch.tensor([[0.0, 0.0, 0.0, 0.0, angle, 0.0]], dtype=torch.float64)
-        exact = motion_at_mount(centre, mount)
-        analytic = torch.tensor(
-            [[0.75 * (math.cos(angle) - 1.0), 0.0, 0.75 * math.sin(angle)]],
-            dtype=torch.float64,
-        )
-        torch.testing.assert_close(exact[:, :3], analytic, atol=1.0e-10, rtol=0.0)
-        old = torch.tensor([[0.0, 0.0, 0.75 * angle]], dtype=torch.float64)
-        if angle == 0.004:
-            assert abs(float(exact[0, 2] - old[0, 2])) < 1.0e-6
-        else:
-            assert float(torch.linalg.norm(exact[:, :3] - old)) > 900.0e-6
 
 
 def test_stewart_leg_lengths_match_direct_analytic_geometry() -> None:

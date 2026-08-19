@@ -14,6 +14,7 @@ optional isolated-table model will add a second ``table`` group later.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Any, Literal
 
 import torch
@@ -25,11 +26,18 @@ from .config import BenchmarkConfig
 
 @dataclass(frozen=True)
 class SupportMember:
-    """One driven asset or asset collection inside a support group."""
+    """One driven asset or asset collection inside a support group.
+
+    ``bound_radius_m`` is the largest in-plane extent of the member's
+    collision surface around its local origin; the travel gate evaluates
+    ``r_eff = |local - anchor| + bound_radius_m`` so large plates are not
+    evaluated as point masses at their centres.
+    """
 
     name: str
     local: tuple[float, float, float]
     write_strategy: Literal["root", "collection"] = "root"
+    bound_radius_m: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -42,19 +50,22 @@ class SupportGroup:
     members: tuple[SupportMember, ...]
 
 
-def angular_velocity_from_euler_rates(rates: torch.Tensor) -> torch.Tensor:
-    """Return exact world angular velocity for intrinsic-XYZ Euler rates.
+def angular_velocity_from_euler_rates(q: torch.Tensor, rates: torch.Tensor) -> torch.Tensor:
+    """Exact world angular velocity for the writer's Euler convention.
 
-    ``rates`` is a (..., 6) tensor whose last three components are Euler
-    angle rates for the convention used by ``quat_from_euler_xyz``.
+    ``quat_from_euler_xyz(q3, q4, q5)`` is Rz(q5)·Ry(q4)·Rx(q3), so the
+    exact spatial angular velocity for rates ``(rx_dot, ry_dot, rz_dot)`` is:
+
+    ``ω = Rz·Ry·e_x·rx_dot + Rz·e_y·ry_dot + e_z·rz_dot``.
     """
 
-    rx, ry, rz = rates[..., 3], rates[..., 4], rates[..., 5]
+    rx, ry, rz = q[..., 3], q[..., 4], q[..., 5]
+    rx_dot, ry_dot, rz_dot = rates[..., 3], rates[..., 4], rates[..., 5]
     return torch.stack(
         (
-            rx + rz * torch.sin(ry),
-            ry * torch.cos(rx) - rz * torch.sin(rx) * torch.cos(ry),
-            ry * torch.sin(rx) + rz * torch.cos(rx) * torch.cos(ry),
+            rx_dot * torch.cos(rz) * torch.cos(ry) - ry_dot * torch.sin(rz),
+            rx_dot * torch.sin(rz) * torch.cos(ry) + ry_dot * torch.cos(rz),
+            -rx_dot * torch.sin(ry) + rz_dot,
         ),
         dim=-1,
     )
@@ -73,7 +84,7 @@ def support_pose_velocity(
     anchor = local.new_tensor(rotation_anchor)
     offset = quat_apply(quat, local - anchor)
     position = env_origins + q[:, :3] + anchor + offset
-    omega = angular_velocity_from_euler_rates(qd)
+    omega = angular_velocity_from_euler_rates(q, qd)
     linear = qd[:, :3] + torch.linalg.cross(omega, offset)
     velocity = torch.cat((linear, omega), dim=1)
     return position, quat, velocity
@@ -106,15 +117,33 @@ def support_group_geometries(cfg: BenchmarkConfig) -> tuple[SupportGroup, ...]:
     and the runtime writer consume exactly the same member table.
     """
 
+    platform_radius = 0.5 * math.hypot(*cfg.platform_size[:2])
+    worktable_radius = 0.5 * math.hypot(*cfg.worktable_size[:2])
+    leg_radius = 0.5 * math.hypot(0.055, 0.055)
     deck_members = [
-        SupportMember("platform", cfg.platform_center),
-        SupportMember("robot", cfg.resolved_robot_base),
-        SupportMember("worktable", cfg.resolved_worktable_center),
+        SupportMember("platform", cfg.platform_center, bound_radius_m=platform_radius),
+        SupportMember("robot", cfg.resolved_robot_base, bound_radius_m=0.120),
+        SupportMember("worktable", cfg.resolved_worktable_center, bound_radius_m=worktable_radius),
     ]
-    if cfg.task != "panel_operation":
-        deck_members.append(SupportMember("target", cfg.resolved_target_center))
+    if cfg.task == "panel_operation":
+        from .panel import control_panel_layout
+
+        layout = control_panel_layout(cfg)
+        panel_radius = 0.5 * math.hypot(cfg.panel.console_width_m, cfg.panel.console_depth_m)
+        deck_members.extend(
+            (
+                SupportMember("panel", layout.board_center, bound_radius_m=panel_radius),
+                SupportMember("knob", layout.knob_pivot, bound_radius_m=0.030),
+                SupportMember("lever", layout.lever_pivot, bound_radius_m=0.030),
+                SupportMember("button", layout.button_pivot, bound_radius_m=0.030),
+            )
+        )
+    else:
+        deck_members.append(
+            SupportMember("target", cfg.resolved_target_center, bound_radius_m=0.120)
+        )
     deck_members.extend(
-        SupportMember(f"table_leg_{index}", position)
+        SupportMember(f"table_leg_{index}", position, bound_radius_m=leg_radius)
         for index, position in enumerate(table_leg_local_positions(cfg))
     )
     deck = SupportGroup(
@@ -134,6 +163,10 @@ _SUPPORT_ASSET_KEYS = {
     "robot": "robot",
     "worktable": "worktable",
     "target": "target",
+    "panel": "panel",
+    "knob": "knob",
+    "lever": "lever",
+    "button": "button",
     "table_leg_0": "table_leg_fl",
     "table_leg_1": "table_leg_fr",
     "table_leg_2": "table_leg_rl",

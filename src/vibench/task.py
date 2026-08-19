@@ -17,10 +17,21 @@ from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, quat_inv, quat_
 from isaaclab_newton.physics import NewtonManager
 
 from .config import BenchmarkConfig, workpiece_dimensions_m
-from .diagnostics import PenetrationSample, collision_shape_geometry, penetration_probe
+from .diagnostics import (
+    PenetrationSample,
+    collision_shape_geometry,
+    forbidden_contact_violation,
+    penetration_probe,
+)
 from .scene import CLITE_DRIVER_LABELS
 from .shaker import solve_leg_transforms
-from .supports import SupportGroup, support_group_geometries, support_pose_velocity, write_support_groups
+from .supports import (
+    HARD_STRUCTURAL_EXCLUSIONS,
+    SupportGroup,
+    support_group_geometries,
+    support_pose_velocity,
+    write_support_groups,
+)
 from .vibration import SpectralVibration
 from .wrist_camera import NewtonGlWristCameraSensor, wrist_camera_frame_from_hand
 
@@ -589,6 +600,9 @@ class VibrationBenchmarkTask:
             self.scene.update(self.cfg.dt)
         self.time_s += self.cfg.dt
         self._update_penetration_metrics()
+        violation = forbidden_contact_violation(HARD_STRUCTURAL_EXCLUSIONS)
+        if violation is not None:
+            self.metrics.support_geometry_valid = False
 
         self._history_t[self._history_index] = self.time_s
         self._history_q[self._history_index] = self._vibration_q[0]

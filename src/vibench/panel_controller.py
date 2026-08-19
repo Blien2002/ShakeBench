@@ -32,7 +32,6 @@ PANEL_JOINT_SPEED_RAD_S = 1.20
 REACH_STANDOFF_M = 0.025
 KNOB_SWEEP_M = 0.060
 LEVER_SWEEP_M = 0.055
-BUTTON_PRESS_M = 0.040
 LEVER_HAND_RADIUS_M = 0.110
 
 
@@ -168,7 +167,17 @@ class ScriptedPanelController:
                         math.cos(angle) * normal_b + math.sin(angle) * tangent_b
                     )
                 elif kind == "button":
-                    point = point - phase * BUTTON_PRESS_M * normal_b
+                    # Follow the live button face instead of driving a fixed
+                    # 40 mm Cartesian waypoint past it.  The prismatic joint
+                    # only has 4.6 mm of travel; a waypoint 15 mm beyond the
+                    # face keeps loading the stopped link and produces deep
+                    # finger<->button penetration and kN-class contact peaks.
+                    face = obs["button_face_b"][:, :3]
+                    press_depth = phase * (
+                        float(self.task.cfg.panel.button_travel_m) + 0.0008
+                    )
+                    # ``normal_b`` points outward; pressing travels against it.
+                    point = face - press_depth * normal_b - OPEN_FINGER_M * lateral_b
             return point
         return obs["finger_center_b"]
 

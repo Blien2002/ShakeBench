@@ -425,10 +425,6 @@ def main() -> int:
         contact_end = print_contact_snapshot("episode_end")
         metrics_dict = asdict(task.metrics)
         metrics_dict.pop("_control_contact_streak", None)
-        metrics_dict["support_geometry_valid"] = task.metrics.max_penetration_pair not in (
-            "robot_link<->platen",
-            "worktable_leg<->platen",
-        )
         args.metrics_output.parent.mkdir(parents=True, exist_ok=True)
         args.metrics_output.write_text(
             json.dumps(

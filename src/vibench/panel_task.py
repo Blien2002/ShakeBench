@@ -224,13 +224,6 @@ class PanelBenchmarkTask:
             q_deck=self._vibration_q,
             qd_deck=self._vibration_qd,
         )
-        panel_position, panel_quat, panel_velocity = self._support_state(
-            self._panel_local, self._vibration_q, self._vibration_qd
-        )
-        self.panel.write_root_pose_to_sim_index(
-            root_pose=torch.cat((panel_position, panel_quat), dim=1)
-        )
-        self.panel.write_root_velocity_to_sim_index(root_velocity=panel_velocity)
 
         deck_top = self.cfg.platform_center[2] + 0.5 * self.cfg.platform_size[2]
         robot_surface_local = self._repeat3((*self.cfg.robot_base[:2], deck_top))
@@ -251,10 +244,6 @@ class PanelBenchmarkTask:
         )
         self._arm_table_delta_z = (robot_position[:, 2] - table_position[:, 2]).unsqueeze(1)
 
-        self._write_control_pose("knob")
-        self._write_control_pose("lever")
-        self._write_control_pose("button")
-
         platen_position, platen_quat, platen_velocity = self._support_state(
             self._platform_local, self._vibration_q, self._vibration_qd
         )
@@ -271,28 +260,6 @@ class PanelBenchmarkTask:
         self.shaker_legs.write_body_velocity_to_sim_index(
             body_velocities=torch.cat((leg_velocity, shadow_velocity.unsqueeze(1)), dim=1)
         )
-
-    def _control_layout(self, kind: str):
-        return self.layout.control(kind)
-
-    def _write_control_pose(self, kind: str) -> None:
-        local_by_kind = {
-            "knob": self._knob_pivot_local,
-            "lever": self._lever_pivot_local,
-            "button": self._button_pivot_local,
-        }
-        asset_by_kind = {"knob": self.knob, "lever": self.lever, "button": self.button}
-        if kind not in local_by_kind:
-            raise ValueError(f"unknown panel control: {kind}")
-        position, quat, velocity = self._support_state(
-            local_by_kind[kind],
-            self._vibration_q,
-            self._vibration_qd,
-            self._worktable_local,
-        )
-        asset = asset_by_kind[kind]
-        asset.write_root_pose_to_sim_index(root_pose=torch.cat((position, quat), dim=1))
-        asset.write_root_velocity_to_sim_index(root_velocity=velocity)
 
     def _panel_shadow_state(self) -> tuple[torch.Tensor, torch.Tensor]:
         """Project a contact shadow onto the moving tabletop below the panel."""

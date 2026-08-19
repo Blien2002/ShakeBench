@@ -70,7 +70,7 @@ ViBench/
 ├── src/vibench/                            # benchmark 库与 CLI
 │   ├── cli.py                              # 命令行入口
 │   ├── scene.py / task.py / controller.py  # 仿真场景、任务循环、脚本控制器
-│   ├── vibration.py / mounting.py / shaker.py
+│   ├── vibration.py / supports.py / shaker.py
 │   └── arena.py / visual_assets.py / wrist_camera.py / recording.py ...
 ├── scripts/                                # run_demo 兼容入口与 NewtonGL 探针
 ├── tools/                                  # 视觉审计、纹理生成器

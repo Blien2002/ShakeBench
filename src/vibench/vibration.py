@@ -12,78 +12,6 @@ import torch
 from .config import AXES, VibrationConfig
 
 
-def estimated_peak_velocity_m_s(cfg: VibrationConfig, mount_radius_m: float = 0.93) -> float:
-    """Estimate the 3.5-sigma peak support speed used for timestep audits.
-
-    Spectral axes are combined as a vector rather than taking the largest
-    axis: translational speed variance and rotational speed variance (scaled
-    by ``mount_radius_m``) are summed and square-rooted.  Each band is
-    evaluated at its upper jitter edge ``center_hz * (1 + bandwidth_ratio)``
-    so the audit errs on the high side of the RMS speed.
-    """
-
-    if cfg.mode == "off":
-        return 0.0
-    if cfg.mode == "sine":
-        speed = abs(cfg.sine_amplitude * 2.0 * math.pi * cfg.sine_frequency_hz)
-        return speed if cfg.sine_axis in ("tx", "ty", "tz") else speed * mount_radius_m
-    translational_variance = 0.0
-    rotational_variance = 0.0
-    for axis in cfg.active_axes:
-        for band in cfg.bands.get(axis, ()):
-            upper_edge_hz = band.center_hz * (1.0 + band.bandwidth_ratio)
-            variance = (2.0 * math.pi * upper_edge_hz * band.rms) ** 2
-            if axis.startswith("t"):
-                translational_variance += variance
-            else:
-                rotational_variance += variance
-    speed_sigma = math.sqrt(
-        translational_variance + (mount_radius_m * mount_radius_m) * rotational_variance
-    )
-    return cfg.spectral_scale * 3.5 * speed_sigma
-
-
-def estimated_substep_displacement_m(
-    cfg: VibrationConfig,
-    physics_hz: int,
-    substeps: int,
-    mount_radius_m: float = 0.93,
-) -> float:
-    """Peak speed estimate multiplied by the effective solver timestep."""
-
-    if physics_hz <= 0 or substeps <= 0:
-        raise ValueError("physics_hz and substeps must be positive")
-    return estimated_peak_velocity_m_s(cfg, mount_radius_m) / (physics_hz * substeps)
-
-
-def validate_impulsive_timestep(
-    cfg: VibrationConfig,
-    physics_hz: int,
-    substeps: int,
-    limit_m: float = 0.0002,
-    mount_radius_m: float = 0.93,
-) -> float:
-    """Reject waveforms whose estimated per-substep travel is unsafe.
-
-    The spectral estimate is a 3.5-sigma vector-combined audit, not a
-    deterministic maximum.  It combines every active axis instead of the
-    previously used largest single axis and evaluates each band at its upper
-    jitter edge, so profiles no longer pass because of cancellations between
-    the two approximations.  All modes share the configured startup gate.
-    """
-
-    displacement = estimated_substep_displacement_m(
-        cfg, physics_hz, substeps, mount_radius_m
-    )
-    if cfg.mode != "off" and displacement > limit_m:
-        raise ValueError(
-            f"unsafe {cfg.mode} excitation: estimated substep displacement "
-            f"{1000.0 * displacement:.3f} mm exceeds {1000.0 * limit_m:.3f} mm; "
-            "raise physics_hz/substeps or reduce amplitude/frequency"
-        )
-    return displacement
-
-
 @dataclass(frozen=True)
 class SupportTravelReport:
     """Deterministic full-episode support travel replay.
@@ -115,11 +43,44 @@ def _ramp_values(time_s: np.ndarray, ramp_s: float) -> tuple[np.ndarray, np.ndar
     return r, rd, rdd
 
 
-def _synthesize_episode(cfg: VibrationConfig, physics_hz: int, episode_s: float):
+def _euler_rotation_matrices(q: np.ndarray) -> np.ndarray:
+    """Batched Rz(q5)·Ry(q4)·Rx(q3), matching ``quat_from_euler_xyz``."""
+
+    rx, ry, rz = q[:, 3], q[:, 4], q[:, 5]
+    cx, sx = np.cos(rx), np.sin(rx)
+    cy, sy = np.cos(ry), np.sin(ry)
+    cz, sz = np.cos(rz), np.sin(rz)
+    rx_m = np.zeros((q.shape[0], 3, 3))
+    rx_m[:, 0, 0] = 1.0
+    rx_m[:, 1, 1] = cx
+    rx_m[:, 1, 2] = -sx
+    rx_m[:, 2, 1] = sx
+    rx_m[:, 2, 2] = cx
+    ry_m = np.zeros_like(rx_m)
+    ry_m[:, 0, 0] = cy
+    ry_m[:, 0, 2] = sy
+    ry_m[:, 1, 1] = 1.0
+    ry_m[:, 2, 0] = -sy
+    ry_m[:, 2, 2] = cy
+    rz_m = np.zeros_like(rx_m)
+    rz_m[:, 0, 0] = cz
+    rz_m[:, 0, 1] = -sz
+    rz_m[:, 1, 0] = sz
+    rz_m[:, 1, 1] = cz
+    rz_m[:, 2, 2] = 1.0
+    return rz_m @ ry_m @ rx_m
+
+
+def _synthesize_episode(
+    cfg: VibrationConfig,
+    physics_hz: int,
+    episode_s: float,
+    env_id: int = 0,
+):
     """Return analytic deck (q, qd, qdd) arrays on the outer-step grid."""
 
     num_steps = max(1, int(round(physics_hz * episode_s)))
-    time_s = np.arange(1, num_steps + 1, dtype=np.float64) / physics_hz
+    time_s = np.arange(0, num_steps, dtype=np.float64) / physics_hz
     q = np.zeros((num_steps, 6), dtype=np.float64)
     qd = np.zeros_like(q)
     qdd = np.zeros_like(q)
@@ -133,7 +94,7 @@ def _synthesize_episode(cfg: VibrationConfig, physics_hz: int, episode_s: float)
         qdd[:, index] = -cfg.sine_amplitude * omega**2 * np.sin(omega * time_s)
     else:
         for axis_index, axis in enumerate(cfg.active_axes):
-            rng = np.random.default_rng([int(cfg.seed), 0, axis_index])
+            rng = np.random.default_rng([int(cfg.seed), env_id, axis_index])
             for band in cfg.bands.get(axis, ()):
                 lo = band.center_hz * (1.0 - band.bandwidth_ratio)
                 hi = band.center_hz * (1.0 + band.bandwidth_ratio)
@@ -174,78 +135,82 @@ def offline_support_travel_report(
 
     from .supports import SupportGroup
 
+    if physics_hz <= 0 or substeps <= 0:
+        raise ValueError("physics_hz and substeps must be positive")
+    for group in groups:
+        if not isinstance(group, SupportGroup):
+            raise TypeError("offline replay expects SupportGroup instances")
+        if group.motion_source != "deck":
+            raise NotImplementedError(
+                f"replay gate does not yet cover motion_source={group.motion_source!r}"
+            )
+
     dt = 1.0 / physics_hz
-    time_s, q, qd, qdd = _synthesize_episode(cfg.vibration, physics_hz, cfg.episode_s)
-    if time_s.size == 0:
-        return SupportTravelReport(0.0, 0.0, 0.0, 0.0, "none", 0.0)
-
-    rates = qd[:, 3:6]
-    rx, ry, rz = q[:, 3], q[:, 4], q[:, 5]
-    sin_rx, cos_rx = np.sin(rx), np.cos(rx)
-    sin_ry, cos_ry = np.sin(ry), np.cos(ry)
-    omega = np.stack(
-        (
-            rates[:, 0] + rates[:, 2] * sin_ry,
-            rates[:, 1] * cos_rx - rates[:, 2] * sin_rx * cos_ry,
-            rates[:, 1] * sin_rx + rates[:, 2] * cos_rx * cos_ry,
-        ),
-        axis=1,
-    )
-    alpha = np.zeros_like(omega)
-    alpha[1:-1] = (omega[2:] - omega[:-2]) / (2.0 * dt)
-    alpha[0] = (omega[1] - omega[0]) / dt
-    alpha[-1] = (omega[-1] - omega[-2]) / dt
-
-    cx, sx = np.cos(rx), np.sin(rx)
-    cy, sy = np.cos(ry), np.sin(ry)
-    cz, sz = np.cos(q[:, 5]), np.sin(q[:, 5])
-    rx_m = np.zeros((time_s.size, 3, 3))
-    rx_m[:, 0, 0] = 1.0
-    rx_m[:, 1, 1] = cx
-    rx_m[:, 1, 2] = -sx
-    rx_m[:, 2, 1] = sx
-    rx_m[:, 2, 2] = cx
-    ry_m = np.zeros_like(rx_m)
-    ry_m[:, 0, 0] = cy
-    ry_m[:, 0, 2] = sy
-    ry_m[:, 1, 1] = 1.0
-    ry_m[:, 2, 0] = -sy
-    ry_m[:, 2, 2] = cy
-    rz_m = np.zeros_like(rx_m)
-    rz_m[:, 0, 0] = cz
-    rz_m[:, 0, 1] = -sz
-    rz_m[:, 1, 0] = sz
-    rz_m[:, 1, 1] = cz
-    rz_m[:, 2, 2] = 1.0
-    rotation = rx_m @ ry_m @ rz_m
-
     worst_speed = 0.0
     worst_accel = 0.0
     worst_member = "none"
     worst_time = 0.0
-    for group in groups:
-        if not isinstance(group, SupportGroup) or group.motion_source != "deck":
+
+    for env_id in range(max(1, cfg.num_envs)):
+        time_s, q, qd, qdd = _synthesize_episode(
+            cfg.vibration, physics_hz, cfg.episode_s, env_id
+        )
+        if time_s.size == 0:
             continue
-        anchor = np.asarray(group.rotation_anchor, dtype=np.float64)
-        for member in group.members:
-            local = np.asarray(member.local, dtype=np.float64)
-            offset0 = local - anchor
-            r_vec = np.einsum("nij,j->ni", rotation, offset0)
-            velocity = qd[:, :3] + np.cross(omega, r_vec)
-            acceleration = (
-                qdd[:, :3]
-                + np.cross(alpha, r_vec)
-                + np.cross(omega, np.cross(omega, r_vec))
-            )
-            speeds = np.linalg.norm(velocity, axis=1)
-            step = int(np.argmax(speeds))
-            speed = float(speeds[step])
-            accel = float(np.max(np.linalg.norm(acceleration, axis=1)))
-            if speed > worst_speed:
-                worst_speed = speed
-                worst_accel = max(worst_accel, accel)
-                worst_member = member.name
-                worst_time = float(time_s[step])
+
+        rates = qd[:, 3:6]
+        rx, ry, rz = q[:, 3], q[:, 4], q[:, 5]
+        rx_dot, ry_dot, rz_dot = rates[:, 0], rates[:, 1], rates[:, 2]
+        sin_rz, cos_rz = np.sin(rz), np.cos(rz)
+        sin_ry, cos_ry = np.sin(ry), np.cos(ry)
+        omega = np.stack(
+            (
+                rx_dot * cos_rz * cos_ry - ry_dot * sin_rz,
+                rx_dot * sin_rz * cos_ry + ry_dot * cos_rz,
+                -rx_dot * sin_ry + rz_dot,
+            ),
+            axis=1,
+        )
+        alpha = np.zeros_like(omega)
+        alpha[1:-1] = (omega[2:] - omega[:-2]) / (2.0 * dt)
+        alpha[0] = (omega[1] - omega[0]) / dt
+        alpha[-1] = (omega[-1] - omega[-2]) / dt
+
+        rotation = _euler_rotation_matrices(q)
+
+        omega_norm = np.linalg.norm(omega, axis=1)
+        alpha_norm = np.linalg.norm(alpha, axis=1)
+        for group in groups:
+            anchor = np.asarray(group.rotation_anchor, dtype=np.float64)
+            for member in group.members:
+                local = np.asarray(member.local, dtype=np.float64)
+                bound = float(member.bound_radius_m)
+                offset0 = local - anchor
+                r_center = np.einsum("nij,j->ni", rotation, offset0)
+                v_center = qd[:, :3] + np.cross(omega, r_center)
+                a_center = (
+                    qdd[:, :3]
+                    + np.cross(alpha, r_center)
+                    + np.cross(omega, np.cross(omega, r_center))
+                )
+                speed_bound = (
+                    np.linalg.norm(v_center, axis=1) + omega_norm * bound
+                )
+                accel_bound = (
+                    np.linalg.norm(a_center, axis=1)
+                    + alpha_norm * bound
+                    + omega_norm * omega_norm * bound
+                )
+                step = int(np.argmax(speed_bound))
+                speed = float(speed_bound[step])
+                accel = float(np.max(accel_bound))
+                if speed > worst_speed:
+                    worst_speed = speed
+                    worst_member = member.name
+                    worst_time = float(time_s[step])
+                if accel > worst_accel:
+                    worst_accel = accel
+
     substep_dt = dt / substeps
     return SupportTravelReport(
         max_v_dt_m=worst_speed * dt,

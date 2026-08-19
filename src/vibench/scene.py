@@ -19,7 +19,12 @@ from isaaclab_assets import FRANKA_PANDA_HIGH_PD_CFG
 from .arena import load_room_arena_cfg
 from .config import BenchmarkConfig, YCB_ASSETS
 from .panel import control_panel_layout, panel_table_top_z_m
-from .panel_controls import PanelControlArticulationCfg, spawn_panel_control_articulation
+from .panel_controls import (
+    PanelConsoleCollisionCfg,
+    PanelControlArticulationCfg,
+    spawn_panel_console_collision,
+    spawn_panel_control_articulation,
+)
 from .shaker import (
     ShakerBaseVisualCfg,
     ShakerGeometryCfg,
@@ -321,21 +326,6 @@ def _control_contact_sensor(prim_path: str, finger_paths: list[str]) -> ContactS
     )
 
 
-def _panel_rigid_props() -> sim_utils.RigidBodyPropertiesCfg:
-    return sim_utils.RigidBodyPropertiesCfg(
-        kinematic_enabled=True,
-        disable_gravity=True,
-        max_depenetration_velocity=2.0,
-    )
-
-
-def _panel_collision_props(contact_margin_m: float) -> sim_utils.CollisionPropertiesCfg:
-    return sim_utils.CollisionPropertiesCfg(
-        contact_offset=contact_margin_m,
-        rest_offset=contact_margin_m,
-    )
-
-
 def _configure_panel_task(
     scene: BenchmarkSceneCfg,
     cfg: BenchmarkConfig,
@@ -345,10 +335,8 @@ def _configure_panel_task(
 ) -> None:
     """Mount the fixed control panel and its three controls on the current table."""
 
-    del table_top_z  # Reserved for the shadow anchor already authored above.
+    del table_top_z, mu  # The console hull is authored by the custom spawner.
     panel_cfg = cfg.panel
-    collision_props = _panel_collision_props(cfg.contact_margin_m)
-    rigid_props = _panel_rigid_props()
 
     # The close panel-front reach would otherwise be blocked by the physical
     # wrist-camera housing.  Keep it rendered, but disable its collision for
@@ -365,16 +353,13 @@ def _configure_panel_task(
 
     scene.panel = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/ControlPanel",
-        spawn=sim_utils.CuboidCfg(
-            size=panel_cfg.board_size,
-            rigid_props=rigid_props,
-            collision_props=collision_props,
-            mass_props=sim_utils.MassPropertiesCfg(mass=2.5),
-            physics_material=mu,
-            visual_material=sim_utils.PreviewSurfaceCfg(
-                diffuse_color=(0.155, 0.170, 0.190), metallic=0.35, roughness=0.42,
-                opacity=0.0,
-            ),
+        spawn=PanelConsoleCollisionCfg(
+            func=spawn_panel_console_collision,
+            console_depth_m=panel_cfg.console_depth_m,
+            console_width_m=panel_cfg.console_width_m,
+            console_height_m=panel_cfg.console_height_m,
+            front_height_m=panel_cfg.console_front_height_m,
+            rear_flat_depth_m=panel_cfg.console_rear_flat_depth_m,
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=layout.board_center),
     )

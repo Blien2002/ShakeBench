@@ -36,6 +36,25 @@ class PanelControlArticulationCfg(SpawnerCfg):
     mass_kg: float = 0.06
 
 
+@configclass
+class PanelConsoleCollisionCfg(SpawnerCfg):
+    """Kinematic collision hull for the fixed five-sided console housing.
+
+    The hull shares the exact X-Z outline authored for the visual console, so
+    the operator face ends at the articulation pivots instead of cutting
+    through the protruding knob/button colliders.  A separate box collider
+    behind the sloped face used to overlap those colliders by tens of
+    millimetres and freeze the button's prismatic joint at episode start.
+    """
+
+    func = None
+    console_depth_m: float = 0.190
+    console_width_m: float = 0.320
+    console_height_m: float = 0.180
+    front_height_m: float = 0.055
+    rear_flat_depth_m: float = 0.025
+
+
 def _add(a, b):
     return tuple(float(a[index]) + float(b[index]) for index in range(3))
 
@@ -94,6 +113,92 @@ def _collision_sphere(stage: Any, path: str, radius: float, center) -> None:
     UsdGeom.Xformable(sphere).AddTranslateOp().Set(Gf.Vec3d(*center))
     UsdPhysics.CollisionAPI.Apply(sphere.GetPrim())
     UsdGeom.Imageable(sphere.GetPrim()).CreateVisibilityAttr().Set(UsdGeom.Tokens.invisible)
+
+
+def _collision_extruded_prism(stage: Any, path: str, outline_xz, width_m: float) -> None:
+    """Author an invisible closed prism collider extruded along local Y.
+
+    The five-sided console outline is convex, so MJWarp's convex-hull import
+    preserves it exactly.  The prism is invisible: the richer visual console
+    lives in ``ControlPanel/Appearance`` and must stay collision-free.
+    """
+
+    from pxr import Gf, UsdGeom, UsdPhysics
+
+    half_width = 0.5 * float(width_m)
+    points = [
+        (float(x), -half_width, float(z)) for x, z in outline_xz
+    ] + [
+        (float(x), half_width, float(z)) for x, z in outline_xz
+    ]
+    count = len(outline_xz)
+    faces = [tuple(reversed(range(count))), tuple(range(count, 2 * count))]
+    faces.extend(
+        (index, (index + 1) % count, (index + 1) % count + count, index + count)
+        for index in range(count)
+    )
+    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh.CreatePointsAttr([Gf.Vec3f(*point) for point in points])
+    mesh.CreateFaceVertexCountsAttr([len(face) for face in faces])
+    mesh.CreateFaceVertexIndicesAttr([index for face in faces for index in face])
+    mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+    mesh.CreateDoubleSidedAttr(True)
+    collision = UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
+    collision.CreateCollisionEnabledAttr(True)
+    UsdPhysics.MeshCollisionAPI.Apply(mesh.GetPrim()).CreateApproximationAttr(
+        UsdPhysics.Tokens.convexHull
+    )
+    UsdGeom.Imageable(mesh.GetPrim()).CreateVisibilityAttr().Set(UsdGeom.Tokens.invisible)
+
+
+@clone
+def spawn_panel_console_collision(
+    prim_path: str,
+    cfg: PanelConsoleCollisionCfg,
+    translation=None,
+    orientation=None,
+    **_: Any,
+):
+    """Spawn the kinematic console hull as one convex collision body."""
+
+    from pxr import Gf, UsdPhysics
+
+    stage = get_current_stage()
+    root = create_prim(
+        prim_path,
+        "Xform",
+        translation=translation,
+        orientation=orientation,
+        stage=stage,
+    )
+    rigid = UsdPhysics.RigidBodyAPI.Apply(root)
+    rigid.CreateKinematicEnabledAttr(True)
+    rigid.CreateRigidBodyEnabledAttr(True)
+    mass = UsdPhysics.MassAPI.Apply(root)
+    mass.CreateMassAttr(2.5)
+    mass.CreateDiagonalInertiaAttr(Gf.Vec3f(0.018, 0.026, 0.018))
+    mass.CreatePrincipalAxesAttr(Gf.Quatf(1.0, Gf.Vec3f(0.0, 0.0, 0.0)))
+
+    depth = float(cfg.console_depth_m)
+    height = float(cfg.console_height_m)
+    half_depth = 0.5 * depth
+    half_height = 0.5 * height
+    front_top_z = -half_height + float(cfg.front_height_m)
+    shoulder_x = half_depth - float(cfg.rear_flat_depth_m)
+    outline = (
+        (-half_depth, -half_height),
+        (half_depth, -half_height),
+        (half_depth, half_height),
+        (shoulder_x, half_height),
+        (-half_depth, front_top_z),
+    )
+    _collision_extruded_prism(
+        stage,
+        f"{prim_path}/geometry/mesh",
+        outline,
+        float(cfg.console_width_m),
+    )
+    return root
 
 
 def _define_joint(
@@ -236,12 +341,15 @@ def spawn_panel_control_articulation(
             (0.94, 0.88, 0.66),
         )
     elif cfg.kind == "lever":
+        # The shaft proxy starts 2 mm outward of the pivot instead of flush on
+        # the operator face.  A flush end cap generates a small but permanent
+        # lever<->panel contact at rest under the zeroed NativeCCD margin.
         _collision_cylinder(
             stage,
             f"{link_path}/collision",
             0.011,
             cfg.length_m,
-            _scale(normal, 0.5 * cfg.length_m),
+            _scale(normal, 0.5 * cfg.length_m + 0.002),
             frame_quat,
         )
         shaft_start = _scale(normal, 0.020)

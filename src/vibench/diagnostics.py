@@ -169,6 +169,15 @@ def classify_penetration_pair(shape0: str, shape1: str) -> str | None:
         return "finger<->button"
     if paired("/robot/", "controlpanel"):
         return "finger<->control_panel"
+    # Control-articulation links against the fixed console hull.  These pairs
+    # must stay clear at episode start; an invisible overlap here can freeze a
+    # prismatic or revolute joint without appearing in the finger-contact log.
+    if paired("controlknob", "controlpanel"):
+        return "knob<->panel"
+    if paired("controllever", "controlpanel"):
+        return "lever<->panel"
+    if paired("controlbutton", "controlpanel"):
+        return "button<->panel"
     if paired("control", "worktabletop"):
         return "control<->worktable"
     return None
@@ -207,6 +216,53 @@ def penetration_probe() -> PenetrationSample:
         if pair is not None and depth_m > worst.depth_m:
             worst = PenetrationSample(depth_m, pair, shape0, shape1)
     return worst
+
+
+def forbidden_contact_violation(
+    forbidden_patterns: tuple[tuple[str, str], ...],
+) -> PenetrationSample | None:
+    """Scan every active contact and return the first forbidden penetration.
+
+    Unlike :func:`penetration_probe`, this does not collapse the frame to a
+    single worst pair: a small forbidden penetration must invalidate the
+    episode even when an unrelated task contact is deeper.
+    """
+
+    from isaaclab_newton.physics import NewtonManager
+
+    model = NewtonManager.get_model()
+    solver = NewtonManager._solver
+    contacts = NewtonManager._contacts
+    if model is None or solver is None or contacts is None:
+        raise RuntimeError("Newton/MJWarp must be initialized before scanning contacts")
+    count = int(contacts.rigid_contact_count.numpy()[0])
+    if count <= 0:
+        return None
+    distances = solver.mjw_data.contact.dist.numpy()[:count]
+    shape0_ids = contacts.rigid_contact_shape0.numpy()[:count]
+    shape1_ids = contacts.rigid_contact_shape1.numpy()[:count]
+    labels = [str(label or "") for label in model.shape_label]
+
+    def matches(label: str, pattern: str) -> bool:
+        return pattern.lower() in label.lower()
+
+    for distance, shape0_id, shape1_id in zip(distances, shape0_ids, shape1_ids):
+        if int(shape0_id) < 0 or int(shape1_id) < 0:
+            continue
+        if float(distance) >= 0.0:
+            continue
+        shape0 = labels[int(shape0_id)]
+        shape1 = labels[int(shape1_id)]
+        for lhs_pattern, rhs_pattern in forbidden_patterns:
+            if matches(shape0, lhs_pattern) and matches(shape1, rhs_pattern):
+                pair = classify_penetration_pair(shape0, shape1) or "forbidden"
+                return PenetrationSample(
+                    max(0.0, -float(distance)),
+                    pair,
+                    shape0,
+                    shape1,
+                )
+    return None
 
 
 def contact_snapshot() -> ContactSnapshot:

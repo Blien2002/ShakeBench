@@ -44,7 +44,7 @@ CLI 完整实现位于 `src/vibench/cli.py`；当 `success=true` 时以状态码
 整个系统就是一个循环；理解以下顺序即可弄清大部分代码：
 
 1. `SpectralVibration.sample()` (`vibration.py`)——生成*地板中心*处的六轴位移/速度/加速度。各谱线的导数均通过解析法计算，绝不使用有限差分。
-2. `c2_support_motions()` (`mounting.py`)——通过完整 SE(3)（`p = t + Rr - r`）将中心运动映射到两个独立安装点，而非采用小角度近似。
+2. `write_support_groups()` (`supports.py`)——把 deck 六轴运动经单一刚体变换 `p = q[:3] + c + R(l-c)` 写入所有支撑成员，而非采用小角度近似。
 3. `VibrationBenchmarkTask._write_supports()` (`task.py`)——将运动学状态写入振动地板、Panda 的**浮动**根节点、工作台及桌腿、目标箱，以及 12 个通过解析法求解的 Stewart 杆件。
 4. `ScriptedPickPlaceController.command()` (`controller.py`)——DLS 微分 IK + 阶段状态机。
 5. Newton/MJWarp 推进动力学与接触计算。
@@ -86,6 +86,6 @@ Newton/Isaac 在模型构建过程中可能因 `malloc(): unaligned tcache chunk
 
 ## 目录结构
 
-- `src/vibench/`——库与 CLI。`cli.py`（命令行入口）、`paths.py`（项目根解析）、`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`mounting.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
+- `src/vibench/`——库与 CLI。`cli.py`（命令行入口）、`paths.py`（项目根解析）、`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`supports.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`panel_task.py`/`panel*.py`、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
 - `configs/`——`scenarios.yaml`（场景矩阵 + 评估/接触/控制器策略）、`assets.yaml`（资产来源、许可证、纹理 SHA-256）、`room.yaml`、`visual_manifest.yaml`、`visual_regions.yaml`。
 - `docs/`——验证日志、视觉基线、锚点审计；`docs/reports/` 为权威实现说明与报告，`docs/prompts/` 为历史重构提示词。`out/`——生成的 MP4/PNG/JSON 产物。
