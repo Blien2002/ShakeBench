@@ -421,6 +421,13 @@ def main() -> int:
             observation_window_s = 0.0
         if task_kind == "pick_place":
             task.finalize_episode_metrics()
+        if task_kind == "pick_place" and cfg.use_clite_support:
+            timing = task._support_step_timing
+            print(
+                "[TIMING] support_substeps "
+                + " ".join(f"{key}={timing[key]:.3f}s" for key in timing)
+                + f" steps={task._support_step_count}"
+            )
         print(f"[RESULT] {task.metrics}")
         contact_end = print_contact_snapshot("episode_end")
         metrics_dict = asdict(task.metrics)

@@ -313,11 +313,11 @@ class BenchmarkConfig:
     lift_takeoff_duration_s: float = 0.75
     descend_linear_speed_m_s: float = 0.060
     place_linear_speed_m_s: float = 0.080
-    gripper_closing_speed_m_s: float = 0.003
+    gripper_closing_speed_m_s: float = 0.006
     gripper_contact_recovery_speed_m_s: float = 0.001
     gripper_opening_speed_m_s: float = 0.040
     gripper_contact_preload_m: float = 0.0003
-    grasp_timeout_s: float = 2.5
+    grasp_timeout_s: float = 4.0
     grasp_contact_loss_timeout_s: float = 0.20
     grasp_slip_tolerance_m: float = 0.008
     grasp_assist: bool = False

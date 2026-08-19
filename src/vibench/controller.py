@@ -339,18 +339,32 @@ class ScriptedPickPlaceController:
             if self.commanded_position_b is None:
                 self.commanded_position_b = obs["ee_pose_b"][:, :3].clone()
             if phase.name in ("descend", "grasp"):
-                linear_speed = self.task.cfg.descend_linear_speed_m_s
-            elif phase.name == "lift" and self.phase_time < self.task.cfg.lift_takeoff_duration_s:
-                linear_speed = self.task.cfg.lift_takeoff_speed_m_s
-            elif phase.name in ("place", "release"):
-                linear_speed = self.task.cfg.place_linear_speed_m_s
+                # Horizontal tracking follows the sliding/rebounding object
+                # at the normal arm speed; only the vertical channel stays
+                # deliberately slow to keep descent contact gentle.
+                xy = rate_limit_translation(
+                    self.commanded_position_b[:, :2],
+                    position[:, :2],
+                    self.task.cfg.arm_linear_speed_m_s * self.task.cfg.dt,
+                )
+                z = rate_limit_translation(
+                    self.commanded_position_b[:, 2:3],
+                    position[:, 2:3],
+                    self.task.cfg.descend_linear_speed_m_s * self.task.cfg.dt,
+                )
+                self.commanded_position_b = torch.cat((xy, z), dim=1)
             else:
-                linear_speed = self.task.cfg.arm_linear_speed_m_s
-            self.commanded_position_b = rate_limit_translation(
-                self.commanded_position_b,
-                position,
-                linear_speed * self.task.cfg.dt,
-            )
+                if phase.name == "lift" and self.phase_time < self.task.cfg.lift_takeoff_duration_s:
+                    linear_speed = self.task.cfg.lift_takeoff_speed_m_s
+                elif phase.name in ("place", "release"):
+                    linear_speed = self.task.cfg.place_linear_speed_m_s
+                else:
+                    linear_speed = self.task.cfg.arm_linear_speed_m_s
+                self.commanded_position_b = rate_limit_translation(
+                    self.commanded_position_b,
+                    position,
+                    linear_speed * self.task.cfg.dt,
+                )
             position = self.commanded_position_b
         self.descend_target_reached = bool(
             phase.name == "descend"

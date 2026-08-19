@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import time
 from typing import Any
 
 import numpy as np
@@ -181,6 +182,15 @@ class VibrationBenchmarkTask:
         self._history_index = 0
         self._ee_tracking_error_sq = 0.0
         self._ee_tracking_error_count = 0
+        self._support_step_timing = {
+            "sample": 0.0,
+            "mocap_write": 0.0,
+            "adapter": 0.0,
+            "solver": 0.0,
+            "clear_forces": 0.0,
+            "sensors_scene": 0.0,
+        }
+        self._support_step_count = 0
 
     def record_ee_tracking_error(self, commanded_b: torch.Tensor, actual_b: torch.Tensor) -> None:
         """Accumulate deck-frame EE tracking error from controller targets."""
@@ -568,23 +578,28 @@ class VibrationBenchmarkTask:
         control = NewtonManager._control
         adapter = NewtonManager._adapter
 
+        step_t0 = time.perf_counter()
         self._vibration_q, self._vibration_qd, self._vibration_qdd = self.vibration.sample(self.time_s)
         self._write_supports()
         self._update_grasp_assist()
         self.robot.set_joint_position_target_index(target=arm_target, joint_ids=self.arm_joint_ids)
         self.robot.set_joint_position_target_index(target=finger_target, joint_ids=self.finger_joint_ids)
         self.scene.write_data_to_sim()
+        self._support_step_timing["sample"] += time.perf_counter() - step_t0
 
+        adapter_t0 = time.perf_counter()
         if adapter is not None:
             adapter.step(state0, control, self.cfg.dt)
         for callback in NewtonManager._post_actuator_callbacks:
             callback()
+        self._support_step_timing["adapter"] += time.perf_counter() - adapter_t0
 
         for substep in range(self.cfg.solver_substeps):
             if (
                 substep > 0
                 and substep % self.cfg.clite_mocap_update_decimation == 0
             ):
+                mocap_t0 = time.perf_counter()
                 sample_t = self.time_s + substep * substep_dt
                 q, qd, qdd = self.vibration.sample(sample_t)
                 self._vibration_q, self._vibration_qd, self._vibration_qdd = q, qd, qdd
@@ -595,13 +610,21 @@ class VibrationBenchmarkTask:
                 # through the full Isaac-Lab asset path every substep is what
                 # made C2_CLITE 100x realtime.
                 self._write_clite_mocap(q)
+                self._support_step_timing["mocap_write"] += time.perf_counter() - mocap_t0
+            solver_t0 = time.perf_counter()
             NewtonManager._step_solver(state0, state0, control, None, substep_dt)
+            self._support_step_timing["solver"] += time.perf_counter() - solver_t0
+            clear_t0 = time.perf_counter()
             state0.clear_forces()
+            self._support_step_timing["clear_forces"] += time.perf_counter() - clear_t0
 
+        sensor_t0 = time.perf_counter()
         NewtonManager._update_sensors(None)
         NewtonManager._sim_time += self.cfg.dt
         NewtonManager._log_solver_debug()
         self.scene.update(self.cfg.dt)
+        self._support_step_timing["sensors_scene"] += time.perf_counter() - sensor_t0
+        self._support_step_count += 1
 
     def step(self, arm_target: torch.Tensor, finger_target: torch.Tensor) -> dict[str, torch.Tensor]:
         if self.cfg.use_clite_support:

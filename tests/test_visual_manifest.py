@@ -145,7 +145,8 @@ def test_controller_motion_limits_are_validated_in_config() -> None:
     )
     assert cfg.gripper_contact_preload_m == pytest.approx(0.0003)
     assert cfg.lift_takeoff_speed_m_s < cfg.arm_linear_speed_m_s
-    assert cfg.gripper_closing_speed_m_s == pytest.approx(0.003)
+    assert cfg.gripper_closing_speed_m_s == pytest.approx(0.006)
+    assert cfg.grasp_timeout_s == pytest.approx(4.0)
     assert cfg.gripper_contact_recovery_speed_m_s == pytest.approx(0.001)
     assert cfg.grasp_contact_loss_timeout_s < cfg.grasp_timeout_s
     assert cfg.grasp_slip_tolerance_m == pytest.approx(0.008)
