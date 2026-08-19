@@ -272,6 +272,10 @@ class BenchmarkConfig:
     shaker: ShakerGeometryCfg = field(default_factory=ShakerGeometryCfg)
     material_mu: float = 1.5
     support_config: Literal["C2", "C2_CLITE"] = "C2"
+    # C2_CLITE only: update the welded mocap drivers every N solver substeps.
+    # N=2 keeps the workpiece-table numerical floor at the same level while
+    # avoiding the full Isaac-Lab asset write on every substep.
+    clite_mocap_update_decimation: int = 2
     # Single-coordinate hard-mounted deck.  Robot and worktable are placed at
     # their visible positions and both belong to the same deck support group.
     platform_size: tuple[float, float, float] = (1.60, 1.10, 0.08)
@@ -294,7 +298,12 @@ class BenchmarkConfig:
     alpha_geometry: float = 0.05
     descend_contact_threshold_n: float = 0.05
     descend_timeout_s: float = 2.0
-    grasp_z_guard_margin_m: float = 0.0
+    # Safety band between the lowest finger and the workpiece centre.  With
+    # gravity enabled the floating root sags a few millimetres under the
+    # current PD gains; a 2 mm band prevents that tracking sag from being
+    # misclassified as table contact while still failing far before the
+    # finger can reach the tabletop.
+    grasp_z_guard_margin_m: float = 0.002
     approach_clearance_m: float = 0.080
     descend_clearance_m: float = 0.004
     finger_table_clearance_m: float = 0.012
@@ -322,6 +331,8 @@ class BenchmarkConfig:
             raise ValueError("contact margin and displacement limit must be non-negative/positive")
         if not 0.0 <= self.assembly_clearance_m <= 0.002:
             raise ValueError("assembly clearance must be in [0, 2] mm")
+        if self.clite_mocap_update_decimation < 1:
+            raise ValueError("clite mocap update decimation must be positive")
         if self.min_task_feature_thickness_m <= 0.0 or self.alpha_geometry <= 0.0:
             raise ValueError("task feature thickness and alpha_geometry must be positive")
         if self.contact_solref[0] <= 0.0 or self.contact_solref[1] <= 0.0:
@@ -350,6 +361,8 @@ class BenchmarkConfig:
             raise ValueError("gripper contact preload must be in [0, 2.0] mm")
         if self.grasp_timeout_s <= 0.0 or self.grasp_contact_loss_timeout_s <= 0.0:
             raise ValueError("grasp timeout and contact-loss timeout must be positive")
+        if self.grasp_z_guard_margin_m < 0.0:
+            raise ValueError("grasp z-guard margin must be non-negative")
         if self.grasp_slip_tolerance_m <= 0.0:
             raise ValueError("grasp slip tolerance must be positive")
         if self.workpiece_initial_clearance_m < 0.0:

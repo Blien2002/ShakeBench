@@ -140,9 +140,9 @@ p = q[:3] + c + R(l - c)，  c = platform_center = (0, 0, 0.04)
 
 ### 5.2 C2_CLITE（实验，不计分）
 
-`--support-config C2_CLITE` 把振动地板和工作台改为动态刚体，由 fixed-root mocap driver + WELD equality constraint 驱动，mocap 按 solver 子步更新；桌腿、目标盒与 Panda 根仍为 kinematic 轨迹写入。
+`--support-config C2_CLITE` 把振动地板和工作台改为动态刚体，由 fixed-root mocap driver + WELD equality constraint 驱动；mocap 轨迹在 solver 子步网格上直接写 `mjw_data.mocap_*`，默认 `clite_mocap_update_decimation=2`（每两个子步更新一次）。桌腿、目标盒与 Panda 根仍为 kinematic 轨迹写入。
 
-该路径能把 settle 数值地板降到约 0.064–0.123 mm，但使用 NewtonManager 私有子步接口，且 16 s 完整回合吞吐不足，当前仅用于诊断，不计入 official。
+优化后该路径能把 settle 数值地板降到约 0.062–0.123 mm，1 s 官方回合墙钟约 70 s；但 16 s 完整回合仍需要约 19 分钟，因此当前仍标记为实验/诊断模式，不计入 official。
 
 ### 5.3 legacy 测点模型
 
@@ -195,8 +195,10 @@ p = q[:3] + c + R(l - c)，  c = platform_center = (0, 0, 0.04)
 - 所有笛卡尔/夹爪目标逐步限速；
 - 下降碰桌、抓取超时、双侧接触丢失、z-guard 触发均返回明确失败原因；
 - `grasp_assist` 默认关闭；显式开启时要求双侧指尖接触 >0.05 N、持续 ≥4 物理帧、手物距离 <0.15 m、穿透 <0.5 mm，保持中穿透 >1.0 mm 立即释放。
+- 重力开启后的整定：`grasp_z_guard_margin_m=0.002`（允许 PD 下垂 2 mm 而不误报碰桌）；双侧接触计数在单帧丢失时衰减而不是清零，仍要求累计 ≥4 帧。
+- 当前完整回合仍未建立可靠双侧接触；实验参数 `--solver-iterations 120` 与 `--grasp-timeout-s 4` 尚未通过完整回合，`grasp_contact_timeout` 仍会出现。
 
-控制器当前是**状态型参考策略**，直接读取工件/目标真值位姿，不是视觉策略。重力开启后，官方完整回合当前会出现 `grasp_z_guard_triggered` 或 `grasp_contact_timeout` 的诚实失败。
+控制器当前是**状态型参考策略**，直接读取工件/目标真值位姿，不是视觉策略。
 
 ## 8. 传感器与观测
 
@@ -353,8 +355,8 @@ cd ViBench
 
 ## 15. 已知边界与尚未实现内容
 
-- official 当前**不可计分**：数值地板未满足 D2 资格，完整抓取回合在重力开启后失败。
-- C2_CLITE 支撑子步注入有效但吞吐不足，需要工程化为常规 C2 路径。
+- official 当前**不可计分**：普通 C2 数值地板未满足 D2 资格，完整抓取回合在重力开启后失败。
+- C2_CLITE 支撑子步注入有效（种子 17/31/73/101 地板 <0.09 mm），但 seed47 不稳定且 16 s 墙钟约 19 分钟，尚未达到官方可用吞吐。
 - 控制器是状态型参考策略，不是视觉端到端策略。
 - 没有 RL/模仿学习训练代码、Gym 注册或数据集导出器。
 - 腕部相机只有 RGB，没有深度/分割/噪声模型。
