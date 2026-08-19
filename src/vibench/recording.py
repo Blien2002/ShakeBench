@@ -25,6 +25,11 @@ class BenchmarkRecorder:
             "lookat": (0.0, 0.0, -0.27),
             "horiz_fov_deg": 58.0,
         },
+        "panel_review": {
+            "eye": (-0.42, 0.62, 0.78),
+            "lookat": (0.10, 0.0, 0.47),
+            "horiz_fov_deg": 38.0,
+        },
     }
 
     def __init__(self, output: Path, fps: int = 30, camera_preset: str = "main", overlays: bool = True):
@@ -69,8 +74,18 @@ class BenchmarkRecorder:
             motion_label = " ".join(motion_values)
         else:
             motion_label = f"Delta-z={delta_z_mm:+.2f}mm"
-        left_n = float(obs["left_finger_contact_n"][0, 0].item())
-        right_n = float(obs["right_finger_contact_n"][0, 0].item())
+        is_panel_task = hasattr(task, "panel_sequence")
+        if is_panel_task:
+            active_kind = task._active_control or "none"
+            left_n = 0.0
+            right_n = 0.0
+            if active_kind != "none":
+                left_t, right_t = task.contact_force_n(active_kind)
+                left_n = float(left_t[0].item())
+                right_n = float(right_t[0].item())
+        else:
+            left_n = float(obs["left_finger_contact_n"][0, 0].item())
+            right_n = float(obs["right_finger_contact_n"][0, 0].item())
         acceleration_rms_g = self._nominal_acceleration_rms_g(task)
         penetration_mm = float(obs["penetration_mm"][0, 0].item())
         penetration_color = (255, 92, 92, 255) if penetration_mm > 0.5 else (165, 235, 205, 255)
@@ -81,9 +96,25 @@ class BenchmarkRecorder:
             dof_label = f"1-DOF {task.cfg.vibration.sine_axis}"
         else:
             dof_label = "0-DOF"
+        if is_panel_task:
+            state = obs["panel_state"][0]
+            instruction = "->".join(task.panel_sequence) or "none"
+            state_label = " ".join(
+                f"{kind}={float(state[index].item()):.2f}"
+                for kind, index in (("K", 0), ("L", 1), ("B", 2))
+            )
+            detail = (
+                f"{controller.name} | t={task.time_s:5.2f}s | {motion_label} | "
+                f"contact={left_n:.1f}/{right_n:.1f}N | seq={instruction} | {state_label}"
+            )
+        else:
+            detail = (
+                f"{controller.name} | t={task.time_s:5.2f}s | {motion_label} | "
+                f"contact={left_n:.1f}/{right_n:.1f}N | hold={bool(obs['grasped'][0])}"
+            )
         lines = (
-            ("Vibration Benchmark v2 | Isaac Lab + Newton", font, (230, 248, 255, 255)),
-            (f"{controller.name} | t={task.time_s:5.2f}s | {motion_label} | contact={left_n:.1f}/{right_n:.1f}N | hold={bool(obs['grasped'][0])}", small, (255, 220, 100, 255)),
+            ("ViBench | Isaac Lab + Newton", font, (230, 248, 255, 255)),
+            (detail, small, (255, 220, 100, 255)),
             (f"{task.cfg.vibration.mode} | seed={task.cfg.vibration.seed} | {dof_label} | a_rms={acceleration_rms_g:.2f} g", small, (190, 255, 195, 255)),
             (
                 f"penetration={penetration_mm:.3f} mm | pair={task._current_penetration.pair} | max={task.metrics.max_penetration_mm:.3f} mm",

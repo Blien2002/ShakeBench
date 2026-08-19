@@ -4,15 +4,15 @@ import math
 
 import torch
 
-from vibration_benchmark_v2.arena import load_room_arena_cfg, static_equipment_geometry_report
-from vibration_benchmark_v2.config import BenchmarkConfig
-from vibration_benchmark_v2.shaker import (
+from vibench.arena import load_room_arena_cfg, static_equipment_geometry_report
+from vibench.config import BenchmarkConfig
+from vibench.shaker import (
     ShakerGeometryCfg,
     actuator_platen_overlap_violations,
     platen_joint_clearance_report,
 )
-from vibration_benchmark_v2.visual_assets import platform_shadow_layout
-from vibration_benchmark_v2.vibration import SpectralVibration
+from vibench.visual_assets import platform_shadow_layout
+from vibench.vibration import SpectralVibration
 
 
 def _platform_pose(benchmark: BenchmarkConfig, displacement: torch.Tensor) -> torch.Tensor:

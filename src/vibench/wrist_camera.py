@@ -38,6 +38,7 @@ class WristCameraAssemblyCfg(SpawnerCfg):
     body_rgb: tuple[float, float, float] = (0.035, 0.045, 0.055)
     accent_rgb: tuple[float, float, float] = (0.04, 0.38, 0.68)
     lens_rgb: tuple[float, float, float] = (0.01, 0.015, 0.02)
+    collision_enabled: bool = True
 
 
 def _set_color(geom: Any, color: tuple[float, float, float]) -> None:
@@ -48,7 +49,7 @@ def _set_color(geom: Any, color: tuple[float, float, float]) -> None:
     gprim.CreateDisplayOpacityAttr([1.0])
 
 
-def _camera_cube(stage: Any, path: str, size, position, color) -> None:
+def _camera_cube(stage: Any, path: str, size, position, color, collision_enabled: bool = True) -> None:
     from pxr import Gf, UsdGeom, UsdPhysics
 
     cube = UsdGeom.Cube.Define(stage, path)
@@ -57,10 +58,20 @@ def _camera_cube(stage: Any, path: str, size, position, color) -> None:
     xform.AddTranslateOp().Set(Gf.Vec3d(*position))
     xform.AddScaleOp().Set(Gf.Vec3d(*size))
     _set_color(cube, color)
-    UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+    collision = UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+    collision.CreateCollisionEnabledAttr(bool(collision_enabled))
 
 
-def _camera_cylinder(stage: Any, path: str, radius, height, position, color, orientation=None) -> None:
+def _camera_cylinder(
+    stage: Any,
+    path: str,
+    radius,
+    height,
+    position,
+    color,
+    orientation=None,
+    collision_enabled: bool = True,
+) -> None:
     from pxr import Gf, UsdGeom, UsdPhysics
 
     cylinder = UsdGeom.Cylinder.Define(stage, path)
@@ -73,7 +84,8 @@ def _camera_cylinder(stage: Any, path: str, radius, height, position, color, ori
         x, y, z, w = orientation
         xform.AddOrientOp().Set(Gf.Quatf(w, Gf.Vec3f(x, y, z)))
     _set_color(cylinder, color)
-    UsdPhysics.CollisionAPI.Apply(cylinder.GetPrim())
+    collision = UsdPhysics.CollisionAPI.Apply(cylinder.GetPrim())
+    collision.CreateCollisionEnabledAttr(bool(collision_enabled))
 
 
 @clone
@@ -91,7 +103,14 @@ def spawn_wrist_camera_assembly(
     # D415-style dimensions follow ManiSkill's camera_link collision model
     # (20.05 x 99 x 23 mm). The rigid bracket bridges the hand to an offset
     # housing; every housing child inherits the same fixed inward pitch.
-    _camera_cube(stage, f"{prim_path}/MountBracket", (0.110, 0.026, 0.030), (0.0525, 0.0, -0.040), cfg.accent_rgb)
+    _camera_cube(
+        stage,
+        f"{prim_path}/MountBracket",
+        (0.110, 0.026, 0.030),
+        (0.0525, 0.0, -0.040),
+        cfg.accent_rgb,
+        collision_enabled=cfg.collision_enabled,
+    )
     housing_path = f"{prim_path}/CameraHousingFrame"
     create_prim(
         housing_path,
@@ -100,8 +119,22 @@ def spawn_wrist_camera_assembly(
         orientation=WRIST_CAMERA_ORIENTATION_H,
         stage=stage,
     )
-    _camera_cube(stage, f"{housing_path}/CameraBody", (0.023, 0.099, 0.02005), (0.0, 0.0, 0.0), cfg.body_rgb)
-    _camera_cube(stage, f"{housing_path}/FrontBezel", (0.021, 0.097, 0.003), (0.0, 0.0, 0.0115), cfg.accent_rgb)
+    _camera_cube(
+        stage,
+        f"{housing_path}/CameraBody",
+        (0.023, 0.099, 0.02005),
+        (0.0, 0.0, 0.0),
+        cfg.body_rgb,
+        collision_enabled=cfg.collision_enabled,
+    )
+    _camera_cube(
+        stage,
+        f"{housing_path}/FrontBezel",
+        (0.021, 0.097, 0.003),
+        (0.0, 0.0, 0.0115),
+        cfg.accent_rgb,
+        collision_enabled=cfg.collision_enabled,
+    )
     _camera_cylinder(
         stage,
         f"{housing_path}/Lens",
@@ -109,6 +142,7 @@ def spawn_wrist_camera_assembly(
         0.003,
         (0.0, 0.0, 0.0140),
         cfg.lens_rgb,
+        collision_enabled=cfg.collision_enabled,
     )
     _camera_cylinder(
         stage,
@@ -117,6 +151,7 @@ def spawn_wrist_camera_assembly(
         0.003,
         (0.0, 0.0260, 0.0140),
         cfg.lens_rgb,
+        collision_enabled=cfg.collision_enabled,
     )
     create_prim(
         f"{housing_path}/OpticalFrame",

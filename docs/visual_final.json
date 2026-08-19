@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/benchmark_v2_wrist_camera_fixed.mp4",
+  "source": "out/benchmark_v2_wrist_camera_fixed.mp4",
   "source_kind": "video",
   "time_s": 5.5,
   "frame_index": 165,
@@ -39,6 +39,6 @@
     "std_gte_55": true,
     "narrow_band_lt_0_50": true
   },
-  "histogram": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_final_histogram.png",
-  "frame_output": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_final_frame.png"
+  "histogram": "docs/visual_final_histogram.png",
+  "frame_output": "docs/visual_final_frame.png"
 }

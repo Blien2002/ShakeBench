@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/r1_visual_gate_final.mp4",
+  "source": "out/r1_visual_gate_final.mp4",
   "source_kind": "video",
   "time_s": 5.5,
   "frame_index": 165,
@@ -39,6 +39,6 @@
     "std_gte_55": true,
     "narrow_band_lt_0_50": true
   },
-  "histogram": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_r1_histogram.png",
-  "frame_output": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/visual_r1_frame.png"
+  "histogram": "docs/visual_r1_histogram.png",
+  "frame_output": "docs/visual_r1_frame.png"
 }

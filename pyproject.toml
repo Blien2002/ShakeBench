@@ -3,14 +3,30 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vibration-benchmark-v2"
-version = "0.1.0"
-description = "Asset-backed Isaac Lab + Newton vibrating manipulation benchmark"
+name = "vibench"
+version = "0.2.0"
+description = "ViBench: an embodied-intelligence manipulation benchmark under multi-axis vibration on Isaac Lab + Newton/MJWarp"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "Proprietary" }
+keywords = ["embodied-ai", "manipulation", "benchmark", "isaac-lab", "newton", "vibration", "robotics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = ["numpy", "torch", "imageio", "imageio-ffmpeg", "pillow", "pyyaml"]
+
+[project.scripts]
+vibench = "vibench.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.data-files]
+"share/vibench/configs" = ["configs/*.yaml"]
+"share/vibench/assets/textures" = ["assets/textures/*.jpg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Any
 
+import numpy as np
 import torch
 
 from isaaclab.assets import Articulation, RigidObject, RigidObjectCollection
@@ -12,10 +14,13 @@ from isaaclab.scene import InteractiveScene
 from isaaclab.sensors import ContactSensor, JointWrenchSensor
 from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, quat_inv, quat_mul, subtract_frame_transforms
 
+from isaaclab_newton.physics import NewtonManager
+
 from .config import BenchmarkConfig, workpiece_dimensions_m
 from .diagnostics import PenetrationSample, collision_shape_geometry, penetration_probe
-from .mounting import c2_support_motions, c2_support_velocities
+from .scene import CLITE_DRIVER_LABELS
 from .shaker import solve_leg_transforms
+from .supports import SupportGroup, support_group_geometries, support_pose_velocity, write_support_groups
 from .vibration import SpectralVibration
 from .wrist_camera import NewtonGlWristCameraSensor, wrist_camera_frame_from_hand
 
@@ -51,6 +56,9 @@ class EpisodeMetrics:
     grasp_contact_lost: bool = False
     grasp_slip_exceeded: bool = False
     max_grasp_slip_m: float = 0.0
+    ee_tracking_error_rms_m: float = 0.0
+    max_ee_tracking_error_m: float = 0.0
+    support_geometry_valid: bool = True
 
 
 class VibrationBenchmarkTask:
@@ -129,13 +137,15 @@ class VibrationBenchmarkTask:
         self._worktable_local = self._repeat3(cfg.resolved_worktable_center)
         self._table_leg_local = [leg.data.default_root_pose.torch[:, :3].clone() for leg in self.table_legs]
         self._target_local = self._repeat3(cfg.resolved_target_center)
+        self._clite_mocap_ids: dict[str, int] = {}
+        self._clite_mocap_origin: np.ndarray | None = None
+        if cfg.use_clite_support:
+            self._resolve_clite_mocap_ids()
+        self._support_groups = support_group_geometries(cfg)
         self._vibration_q = torch.zeros((self.num_envs, 6), device=self.device)
         self._vibration_qd = torch.zeros_like(self._vibration_q)
         self._vibration_qdd = torch.zeros_like(self._vibration_q)
-        self._arm_q = torch.zeros_like(self._vibration_q)
-        self._arm_qd = torch.zeros_like(self._vibration_q)
-        self._table_q = torch.zeros_like(self._vibration_q)
-        self._table_qd = torch.zeros_like(self._vibration_q)
+        self._arm_table_delta_z = torch.zeros((self.num_envs, 1), device=self.device)
         self._platform_quat = torch.zeros((self.num_envs, 4), device=self.device)
         self._platform_quat[:, 0] = 1.0
         self._shaker_leg_lengths = torch.zeros((self.num_envs, 6), device=self.device)
@@ -158,9 +168,106 @@ class VibrationBenchmarkTask:
         self._history_q = torch.zeros((history_n, 6), device=self.device)
         self._history_count = 0
         self._history_index = 0
+        self._ee_tracking_error_sq = 0.0
+        self._ee_tracking_error_count = 0
+
+    def record_ee_tracking_error(self, commanded_b: torch.Tensor, actual_b: torch.Tensor) -> None:
+        """Accumulate deck-frame EE tracking error from controller targets."""
+
+        if commanded_b is None or actual_b is None:
+            return
+        error = float(torch.norm(commanded_b[:, :3] - actual_b[:, :3]).item())
+        self.metrics.max_ee_tracking_error_m = max(self.metrics.max_ee_tracking_error_m, error)
+        self._ee_tracking_error_sq += error * error
+        self._ee_tracking_error_count += 1
+
+    def finalize_episode_metrics(self) -> None:
+        """Fold accumulated per-step metrics into the public metrics dataclass."""
+
+        if self._ee_tracking_error_count:
+            self.metrics.ee_tracking_error_rms_m = math.sqrt(
+                self._ee_tracking_error_sq / self._ee_tracking_error_count
+            )
 
     def _repeat3(self, xyz: tuple[float, float, float]) -> torch.Tensor:
         return torch.tensor(xyz, dtype=torch.float32, device=self.device).repeat(self.num_envs, 1)
+
+    def _resolve_clite_mocap_ids(self) -> None:
+        """Map C-lite driver labels to MuJoCo mocap ids after solver build."""
+
+        model = NewtonManager.get_model()
+        solver = NewtonManager._solver
+        if model is None or solver is None:
+            raise RuntimeError("C-lite support requires an initialized Newton solver")
+        labels = [str(label) for label in model.body_label]
+        mjc_to_newton = solver.mjc_body_to_newton.numpy()
+        body_mocapid = solver.mjw_model.body_mocapid.numpy().reshape(-1)
+        mocap_pos = solver.mjw_data.mocap_pos.numpy()
+        ids: dict[str, int] = {}
+        origins: list[np.ndarray] = []
+        mocap_world_axis = 1 if mocap_pos.ndim >= 3 else 0
+        for driver_label in CLITE_DRIVER_LABELS:
+            if driver_label not in labels:
+                raise RuntimeError(
+                    f"C-lite driver {driver_label!r} missing from model bodies: {labels}"
+                )
+            newton_id = labels.index(driver_label)
+            found = False
+            for mjc_id, mapped in enumerate(mjc_to_newton[0]):
+                if int(mapped) == newton_id:
+                    mocap_id = int(body_mocapid[mjc_id])
+                    if mocap_id < 0:
+                        raise RuntimeError(f"C-lite driver {driver_label!r} was not exported as mocap")
+                    ids[driver_label] = mocap_id
+                    origin = (
+                        mocap_pos[0, mocap_id]
+                        if mocap_world_axis == 1
+                        else mocap_pos[mocap_id]
+                    )
+                    origins.append(np.asarray(origin, dtype=np.float32))
+                    found = True
+                    break
+            if not found:
+                raise RuntimeError(f"C-lite driver {driver_label!r} has no MuJoCo body mapping")
+        self._clite_mocap_ids = ids
+        self._clite_mocap_origin = np.stack(origins, axis=0)  # (3, 3)
+        # Equality solref intentionally stays at MuJoCo's default (0.02 s, 1.0).
+        # Tightening it destabilizes the coupled contact/weld solve in the full
+        # scene (45 kN finger forces, 4.86 mm penetration at 0.001 s).
+
+    def _write_clite_drivers(self) -> None:
+        """Write the three mocap trajectories; welded dynamic supports follow."""
+
+        if self._clite_mocap_origin is None:
+            raise RuntimeError("C-lite mocap origins were not resolved")
+        motions = (
+            (CLITE_DRIVER_LABELS[0], self._vibration_q),
+            (CLITE_DRIVER_LABELS[1], self._vibration_q),
+        )
+        mocap_pos = NewtonManager._solver.mjw_data.mocap_pos.numpy()
+        mocap_quat = NewtonManager._solver.mjw_data.mocap_quat.numpy()
+        mocap_world_axis = 1 if mocap_pos.ndim >= 3 else 0
+        for index, (driver_label, motion) in enumerate(motions):
+            mocap_id = self._clite_mocap_ids[driver_label]
+            origin = self._clite_mocap_origin[index]
+            motion_np = np.asarray(motion[0].detach().cpu().numpy(), dtype=np.float32)
+            pos = origin + motion_np[:3]
+            # isaaclab quat_from_euler_xyz returns xyzw; MuJoCo mocap_quat is wxyz.
+            quat_xyzw = quat_from_euler_xyz(motion[0, 3], motion[0, 4], motion[0, 5])
+            quat_wxyz = (
+                float(quat_xyzw[3].item()),
+                float(quat_xyzw[0].item()),
+                float(quat_xyzw[1].item()),
+                float(quat_xyzw[2].item()),
+            )
+            if mocap_world_axis == 1:
+                mocap_pos[0, mocap_id] = pos
+                mocap_quat[0, mocap_id] = quat_wxyz
+            else:
+                mocap_pos[mocap_id] = pos
+                mocap_quat[mocap_id] = quat_wxyz
+        NewtonManager._solver.mjw_data.mocap_pos.assign(mocap_pos)
+        NewtonManager._solver.mjw_data.mocap_quat.assign(mocap_quat)
 
     def _joints(self, expressions: list[str]) -> list[int]:
         ids, _ = self.robot.find_joints(expressions)
@@ -181,50 +288,69 @@ class VibrationBenchmarkTask:
         velocity_motion: torch.Tensor,
         rotation_anchor: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        # C2 uses the historical right-handed -ry convention.  ``motion`` is
-        # already evaluated at its measurement point, so only offsets from
-        # the compact-layout support anchor are rotated; rotating ``local``
-        # about the world origin would apply the mount rotation twice.
-        quat = quat_from_euler_xyz(motion[:, 3], -motion[:, 4], motion[:, 5])
-        anchor = local if rotation_anchor is None else rotation_anchor
-        rotated_offset = quat_apply(quat, local - anchor)
-        position = self.scene.env_origins + motion[:, :3] + anchor + rotated_offset
-        omega = torch.stack(
-            (velocity_motion[:, 3], -velocity_motion[:, 4], velocity_motion[:, 5]),
-            dim=1,
+        # All hard-mounted supports share the deck-centre rotation anchor.
+        del rotation_anchor
+        return support_pose_velocity(
+            local,
+            motion,
+            velocity_motion,
+            self.cfg.platform_center,
+            self.scene.env_origins,
         )
-        linear = velocity_motion[:, :3] + torch.linalg.cross(omega, rotated_offset)
-        velocity = torch.cat((linear, omega), dim=1)
-        return position, quat, velocity
 
     def _write_supports(self) -> None:
-        self._arm_q, self._table_q = c2_support_motions(
-            self._vibration_q, self.cfg.arm_mount_xy_m, self.cfg.table_mount_xy_m
-        )
-        self._arm_qd, self._table_qd = c2_support_velocities(
-            self._vibration_q,
-            self._vibration_qd,
-            self.cfg.arm_mount_xy_m,
-            self.cfg.table_mount_xy_m,
-        )
         self._platform_quat = quat_from_euler_xyz(
             self._vibration_q[:, 3], self._vibration_q[:, 4], self._vibration_q[:, 5]
         )
-        supported_assets = [
-            (self.platform, self._platform_local, self._vibration_q, self._vibration_qd, None),
-            (self.robot, self._robot_local, self._arm_q, self._arm_qd, None),
-            (self.worktable, self._worktable_local, self._table_q, self._table_qd, None),
-            (self.target, self._target_local, self._table_q, self._table_qd, self._worktable_local),
-        ]
-        supported_assets.extend(
-            (leg, local, self._table_q, self._table_qd, self._worktable_local)
-            for leg, local in zip(self.table_legs, self._table_leg_local)
+        if self.cfg.use_clite_support:
+            self._write_clite_drivers()
+            # Platform and worktable are dynamic bodies welded to mocap
+            # drivers; the remaining kinematic deck members stay teleported.
+            clite_groups = tuple(
+                SupportGroup(
+                    name=group.name,
+                    motion_source=group.motion_source,
+                    rotation_anchor=group.rotation_anchor,
+                    members=tuple(
+                        member
+                        for member in group.members
+                        if member.name not in ("platform", "worktable")
+                    ),
+                )
+                for group in self._support_groups
+            )
+            write_support_groups(
+                groups=clite_groups,
+                scene=self.scene,
+                q_deck=self._vibration_q,
+                qd_deck=self._vibration_qd,
+            )
+        else:
+            write_support_groups(
+                groups=self._support_groups,
+                scene=self.scene,
+                q_deck=self._vibration_q,
+                qd_deck=self._vibration_qd,
+            )
+
+        deck_top = self.cfg.platform_center[2] + 0.5 * self.cfg.platform_size[2]
+        robot_surface_local = self._repeat3((*self.cfg.robot_base[:2], deck_top))
+        table_surface_local = self._repeat3((*self.cfg.worktable_center[:2], deck_top))
+        robot_position, _, _ = support_pose_velocity(
+            robot_surface_local,
+            self._vibration_q,
+            self._vibration_qd,
+            self.cfg.platform_center,
+            self.scene.env_origins,
         )
-        for asset, local, motion, velocity_motion, anchor in supported_assets:
-            position, quat, velocity = self._support_state(local, motion, velocity_motion, anchor)
-            pose = torch.cat((position, quat), dim=1)
-            asset.write_root_pose_to_sim_index(root_pose=pose)
-            asset.write_root_velocity_to_sim_index(root_velocity=velocity)
+        table_position, _, _ = support_pose_velocity(
+            table_surface_local,
+            self._vibration_q,
+            self._vibration_qd,
+            self.cfg.platform_center,
+            self.scene.env_origins,
+        )
+        self._arm_table_delta_z = (robot_position[:, 2] - table_position[:, 2]).unsqueeze(1)
 
         platen_position, platen_quat, platen_velocity = self._support_state(
             self._platform_local, self._vibration_q, self._vibration_qd
@@ -255,8 +381,8 @@ class VibrationBenchmarkTask:
         table_top_local[:, 2] += 0.5 * self.cfg.worktable_size[2] + 0.001
         surface_position, surface_quat, surface_velocity = self._support_state(
             table_top_local,
-            self._table_q,
-            self._table_qd,
+            self._vibration_q,
+            self._vibration_qd,
             self._worktable_local,
         )
         shadow_pose = torch.cat((surface_position - self.scene.env_origins, surface_quat), dim=1)
@@ -412,15 +538,55 @@ class VibrationBenchmarkTask:
             velocity[:, :3] += torch.linalg.cross(velocity[:, 3:], offset_w)
             self.workpiece.write_root_velocity_to_sim_index(root_velocity=velocity)
 
-    def step(self, arm_target: torch.Tensor, finger_target: torch.Tensor) -> dict[str, torch.Tensor]:
+    def _step_clite_physics(
+        self, arm_target: torch.Tensor, finger_target: torch.Tensor
+    ) -> None:
+        """Advance physics with mocap trajectories updated every solver substep."""
+
+        substep_dt = NewtonManager._solver_dt
+        state0 = NewtonManager._state_0
+        control = NewtonManager._control
+        adapter = NewtonManager._adapter
+
         self._vibration_q, self._vibration_qd, self._vibration_qdd = self.vibration.sample(self.time_s)
         self._write_supports()
         self._update_grasp_assist()
         self.robot.set_joint_position_target_index(target=arm_target, joint_ids=self.arm_joint_ids)
         self.robot.set_joint_position_target_index(target=finger_target, joint_ids=self.finger_joint_ids)
         self.scene.write_data_to_sim()
-        self.sim.step()
+
+        if adapter is not None:
+            adapter.step(state0, control, self.cfg.dt)
+        for callback in NewtonManager._post_actuator_callbacks:
+            callback()
+
+        for substep in range(self.cfg.solver_substeps):
+            if substep > 0:
+                sample_t = self.time_s + substep * substep_dt
+                q, qd, qdd = self.vibration.sample(sample_t)
+                self._vibration_q, self._vibration_qd, self._vibration_qdd = q, qd, qdd
+                self._write_supports()
+                self.scene.write_data_to_sim()
+            NewtonManager._step_solver(state0, state0, control, None, substep_dt)
+            state0.clear_forces()
+
+        NewtonManager._update_sensors(None)
+        NewtonManager._sim_time += self.cfg.dt
+        NewtonManager._log_solver_debug()
         self.scene.update(self.cfg.dt)
+
+    def step(self, arm_target: torch.Tensor, finger_target: torch.Tensor) -> dict[str, torch.Tensor]:
+        if self.cfg.use_clite_support:
+            self._step_clite_physics(arm_target, finger_target)
+        else:
+            self._vibration_q, self._vibration_qd, self._vibration_qdd = self.vibration.sample(self.time_s)
+            self._write_supports()
+            self._update_grasp_assist()
+            self.robot.set_joint_position_target_index(target=arm_target, joint_ids=self.arm_joint_ids)
+            self.robot.set_joint_position_target_index(target=finger_target, joint_ids=self.finger_joint_ids)
+            self.scene.write_data_to_sim()
+            self.sim.step()
+            self.scene.update(self.cfg.dt)
         self.time_s += self.cfg.dt
         self._update_penetration_metrics()
 
@@ -478,7 +644,7 @@ class VibrationBenchmarkTask:
             "vibration_q": self._vibration_q,
             "vibration_qd": self._vibration_qd,
             "vibration_qdd": self._vibration_qdd,
-            "mount_delta_z": (self._arm_q[:, 2] - self._table_q[:, 2]).unsqueeze(1),
+            "mount_delta_z": self._arm_table_delta_z,
             "shaker_leg_lengths_m": self._shaker_leg_lengths,
             "wrist_force_b": force,
             "wrist_torque_b": torque,

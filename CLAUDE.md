@@ -4,9 +4,9 @@
 
 ## 项目简介
 
-这是一个独立的 Isaac Lab + Newton/MJWarp 基准测试：Franka Panda 在其基座和工作台受到六轴振动激励时执行拾取与放置任务。本项目特意**不**导入旧版 RM75/MuJoCo 项目——而是在这里重新实现了旧项目中的六轴随机谱理念。
+这是 **ViBench**：一个面向具身智能操作的独立 Isaac Lab + Newton/MJWarp benchmark。Franka Panda 在其基座和工作台受到六轴振动激励时执行拾取与放置任务。本项目特意**不**导入旧版 RM75/MuJoCo 项目，也**不**依赖桌面上的任何其他项目目录——所有配置、资产、工具和测试都位于本仓库内；唯一外部运行时是 `ISAACLAB_ROOT` 指定的 Isaac Lab 环境。
 
-`CURRENT_IMPLEMENTATION.md` 是权威且最新的实现参考文档（中文）。进行非简单更改前请先阅读；行为发生变化时请同步更新。`docs/fourth_round_validation.md` 记录了当前的验证边界以及尚未得到证实的内容。
+`docs/reports/current_implementation.md` 是权威且最新的实现参考文档（中文）。进行非简单更改前请先阅读；行为发生变化时请同步更新。`docs/fourth_round_validation.md` 记录了当前的验证边界以及尚未得到证实的内容。
 
 ## 解释器与环境
 
@@ -14,27 +14,18 @@
 
 ```bash
 # Demo / any simulation entry point (sets PYTHONPATH + interpreter):
-./run.sh [args]                       # honors ISAACLAB_ROOT, defaults to /home/miracle04/IsaacLab-3.0
+./run.sh [args]                       # honors ISAACLAB_ROOT; default is $HOME/IsaacLab-3.0
 
-# Tests:
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
-  PYTHONPATH=src:/home/miracle04/IsaacLab-3.0/source/isaaclab_assets \
-  /home/miracle04/IsaacLab-3.0/.venv/bin/python -m pytest -q tests
+# Tests (always disables the pytest plugin autoload that breaks the Isaac venv):
+./run_tests.sh
+./run_tests.sh tests/test_vibration.py::test_seed_is_reproducible
 
-# Single test:
-... -m pytest -q tests/test_vibration.py::test_seed_is_reproducible
-```
-
-必须设置 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`——自动加载的插件会导致 Isaac venv 出错。
-
-其他入口点（均需使用同一解释器）：
-
-```bash
-/home/miracle04/IsaacLab-3.0/.venv/bin/python tools/visual_audit.py <mp4|png> \
+# Generic runner for tools/probes that need the same Isaac venv:
+./run_python.sh tools/visual_audit.py <mp4|png> \
   --time-s 6.0 --regions-config configs/visual_regions.yaml \
   --compare docs/visual_baseline.json --json-output out/audit.json
-/home/miracle04/IsaacLab-3.0/.venv/bin/python tools/generate_lab_textures.py   # regenerates assets/textures (SHA-256 pinned by tests)
-/home/miracle04/IsaacLab-3.0/.venv/bin/python scripts/probe_newtongl_capabilities.py
+./run_python.sh tools/generate_lab_textures.py   # regenerates assets/textures (SHA-256 pinned by tests)
+./run_python.sh scripts/probe_newtongl_capabilities.py
 ```
 
 复现标准 Demo：
@@ -46,7 +37,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   --metrics-output out/benchmark_v2_wrist_camera_fixed.json
 ```
 
-当 `success=true` 时，`run_demo.py` 以状态码 0 退出，否则以状态码 2 退出——非零退出是合理的结果，不一定表示存在错误。
+CLI 完整实现位于 `src/vibench/cli.py`；当 `success=true` 时以状态码 0 退出，否则以状态码 2 退出——非零退出是合理的结果，不一定表示存在错误。
 
 ## 每步调用链
 
@@ -64,11 +55,11 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 
 ## 无法从文件名推断的架构事实
 
-**C2 支撑布局。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*。这里不存在“机械臂位于振动台上，而振动台又位于工作台上”的层级结构。它们共享同一个中心激励，但在不同安装点采样（`arm_mount_xy_m` 为 `(0.75,-0.45)`，`table_mount_xy_m` 为 `(-0.75,0.45)`），因此旋转激励会在两侧产生真正不同的局部平移。Panda 使用 `fix_root_link=False`，从而可以驱动其根节点。
+**C2 支撑布局（单坐标系硬装）。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*，所有被驱动资产属于同一个 deck `SupportGroup`，位姿统一由 `q + c + R(l-c)` 生成。`arm_mount_xy_m / table_mount_xy_m` 与两个 7 mm dynamic clearance 已删除；机器人根/桌腿底只用显式 `assembly_clearance_m=0.5 mm` 装配公差。`src/vibench/supports.py` 是支撑位姿的**唯一写入点**；Stewart 平台、房间、桌面饰边等视觉件不在此列。Panda 使用 `fix_root_link=False`，重力已开启。
 
-**仅用于视觉呈现的 Newton 形状。** Stewart 平台、房间、桌面饰边、阴影和腕部相机外壳会被渲染，但都带有 `UsdPhysics.CollisionAPI`，且 `collisionEnabled=false`。这样可将它们保留为 Newton 渲染形状，同时排除在 MJWarp 几何体/配对表之外。**代码审查和 `diagnostics.print_contact_snapshot()` 共同强制执行此不变量：纯视觉更改不得增加 MJWarp 碰撞几何体数量或候选配对数量。** 当前拓扑为 386 个 Newton 形状 / 29 个 MJWarp 几何体 / 348 个候选配对。
+**仅用于视觉呈现的 Newton 形状与结构 pair filter。** Stewart 平台、房间、桌面饰边、阴影和腕部相机外壳会被渲染，但都带有 `UsdPhysics.CollisionAPI`，且 `collisionEnabled=false`。同一刚性支撑组内的结构连接（`panda_link0↔VibrationFloor`、`WorkTableLeg↔VibrationFloor`、`WorkTableLeg↔WorkTableTop`）通过 Newton Builder 的 `add_shape_collision_filter_pair` 在模型构建时排除。当前拓扑为 386 个 Newton 形状 / 29 个 MJWarp 几何体 / **339 个候选配对**。
 
-**两种物理配置。** `official` = 1000 Hz × 4 个子步，`solref=(0.00060, 1.0)`，可计分。`training` = 240 Hz × 4 个子步，`solref=(0.0025, 1.0)`，明确**不可**计分（穿透量约差 5–8 倍）。`official` 在低于 1000 Hz 时会拒绝启动。`BenchmarkConfig.__post_init__` 还会拒绝短于两个求解器子步的 `solref` 时间常数。
+**两种物理配置。** `official` = 1000 Hz × 5 个子步，`solref=(0.00060, 1.0)`，可计分。`training` = 240 Hz × 4 个子步，`solref=(0.0025, 1.0)`，明确**不可**计分。`official` 在低于 1000 Hz 时会拒绝启动。启动门是**离线全回合重放** `offline_support_travel_report()`：同一份 SupportGroup 几何表、真实 seed 波形，取真实最大子步行程；几何门限固定为 `0.05 × 8 mm = 0.40 mm`，穿透评分门槛固定为工件最小尺寸的 1%（sugar_box@0.75 约 0.336 mm）。`BenchmarkConfig.__post_init__` 还会拒绝短于两个求解器子步的 `solref` 时间常数。`SpectralVibration.reseed()` 为每个环境**和每个轴**派生独立随机流。
 
 **碰撞体的真实信息来自运行时，而非表格。** `config.py` 中的 `YCB_DIMENSIONS_M` 仅用于仿真前的可行性检查。运行时，任务会读取实际转换后的 Newton 碰撞体 AABB，以放置工件并计算抓取几何信息。此前一个 21.6 mm 的穿透错误正是由于信任标称尺寸所致（物体自由下落了约 0.10 m）。同样，下降目标根据*实时*手指碰撞体的伸展范围计算——`panda_leftfinger` 碰撞体在指节原点下方延伸 53.85 mm，远高于缩放后的 sugar box，因此简单采用“物体顶面上方 4 mm”的目标会先撞到桌面。
 
@@ -95,7 +86,6 @@ Newton/Isaac 在模型构建过程中可能因 `malloc(): unaligned tcache chunk
 
 ## 目录结构
 
-- `src/vibration_benchmark_v2/`——库。`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`mounting.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
+- `src/vibench/`——库与 CLI。`cli.py`（命令行入口）、`paths.py`（项目根解析）、`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`mounting.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
 - `configs/`——`scenarios.yaml`（场景矩阵 + 评估/接触/控制器策略）、`assets.yaml`（资产来源、许可证、纹理 SHA-256）、`room.yaml`、`visual_manifest.yaml`、`visual_regions.yaml`。
-- `docs/`——验证日志、视觉基线、锚点审计。`out/`——生成的 MP4/PNG/JSON 产物。
-- `vibration_benchmark_v2_*提示词.md`——推动每轮重构的各轮原始需求提示词。
+- `docs/`——验证日志、视觉基线、锚点审计；`docs/reports/` 为权威实现说明与报告，`docs/prompts/` 为历史重构提示词。`out/`——生成的 MP4/PNG/JSON 产物。

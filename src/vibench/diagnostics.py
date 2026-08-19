@@ -161,6 +161,16 @@ def classify_penetration_pair(shape0: str, shape1: str) -> str | None:
         return "robot_link<->platen"
     if paired("/robot/", "worktabletop"):
         return "robot_link<->worktable"
+    if paired("/robot/", "controlknob"):
+        return "finger<->knob"
+    if paired("/robot/", "controllever"):
+        return "finger<->lever"
+    if paired("/robot/", "controlbutton"):
+        return "finger<->button"
+    if paired("/robot/", "controlpanel"):
+        return "finger<->control_panel"
+    if paired("control", "worktabletop"):
+        return "control<->worktable"
     return None
 
 

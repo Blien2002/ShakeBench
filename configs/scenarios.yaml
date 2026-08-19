@@ -1,29 +1,34 @@
 schema_version: 3
 common:
-  substeps: 4
   robot: franka_panda
   table: phenolic_worktable_c2
-  support_layout: C2
-  arm_mount_xy_m: [0.75, -0.45]
-  table_mount_xy_m: [-0.75, 0.45]
+  support_layout: C2_hard_mount
   workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
   default_workpiece_scale: 0.75
 physics_profiles:
   official:
     physics_hz: 1000
+    substeps: 5
     contact_solref: [0.00060, 1.0]
     scoreable: true
-    max_penetration_mm: 0.3
-    note: Evaluation and recording profile; use this profile for reported scores.
+    penetration_threshold_ratio: 0.01
+    note: Evaluation and recording profile; threshold is 1% of the selected workpiece's thinnest collider dimension.
   training:
     physics_hz: 240
+    substeps: 4
+    contact_solref: [0.0025, 1.0]
+    scoreable: false
+    note: Throughput profile; larger single-step travel can increase penetration.
+  training:
+    physics_hz: 240
+    substeps: 4
     contact_solref: [0.0025, 1.0]
     scoreable: false
     note: Throughput profile; larger single-step travel can increase penetration.
 contact_policy:
   requested_pair_margin_m: 0.001
   backend_limit: MuJoCo NativeCCD zeroes authored margins with use_mujoco_contacts=true.
-  mitigation: Official scoring relies on 1000 Hz x 4 substeps and records signed contact distance.
+  mitigation: Official scoring relies on 1000 Hz x 5 substeps and records signed contact distance.
 controller_policy:
   approach_clearance_m: 0.080
   nominal_descend_clearance_m: 0.004
@@ -98,6 +103,27 @@ scenarios:
     episode_s: 20.0
     seeds: [17]
     note: Longitudinal vehicle demo with X/Z translation plus Y pitch, producing arm-table differential motion; not an official score profile.
+  panel_operation:
+    task: panel_operation
+    vibration: off
+    episode_s: 24.0
+    seeds: [0, 17, 31, 47, 73]
+    note: Fixed control panel on the existing C2 worktable; each seed samples a random ordered subset of knob/lever/button as the rollout instruction.
+  panel_operation_spectral_demo:
+    task: panel_operation
+    vibration: spectral
+    spectral_scale: 0.15
+    axes: [tx, ty, tz, rx, ry, rz]
+    episode_s: 24.0
+    seeds: [17]
+    note: Panel operation under the safe reduced-amplitude 6-DOF spectral vibration; not an official score profile.
+  panel_sequence_knob_button:
+    task: panel_operation
+    vibration: off
+    panel_sequence: [knob, button]
+    episode_s: 16.0
+    seeds: [0]
+    note: Explicit two-control instruction (knob then button) for deterministic validation.
 evaluation:
   success_xy_m: 0.07
   require_lift: true
@@ -105,5 +131,5 @@ evaluation:
   bilateral_contact_frames: 4
   report_wrist_6dof_peak: true
   official_score_requires_grasp_assist: false
-  max_penetration_mm: 0.3
+  penetration_threshold_ratio: 0.01
   report_penetration_pair_and_time: true

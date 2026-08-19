@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/benchmark_v2_third_round_final.mp4",
+  "source": "out/benchmark_v2_third_round_final.mp4",
   "source_kind": "video",
   "time_s": 6.0,
   "frame_index": 180,
@@ -218,6 +218,6 @@
       "adjacent_luminance_delta_gte_25": true
     }
   },
-  "histogram": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/third_round_final_histogram.png",
-  "frame_output": "/home/miracle04/Desktop/vibration_benchmark_v2/docs/third_round_final_frame.png"
+  "histogram": "docs/third_round_final_histogram.png",
+  "frame_output": "docs/third_round_final_frame.png"
 }

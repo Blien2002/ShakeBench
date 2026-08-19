@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/third_round_smoke_v2.mp4",
+  "source": "out/third_round_smoke_v2.mp4",
   "source_kind": "video",
   "time_s": 2.5,
   "frame_index": 75,

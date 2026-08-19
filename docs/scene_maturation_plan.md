@@ -1,7 +1,7 @@
 # Scene maturation plan and validation log
 
 This plan records the implementation sequence from
-`vibration_benchmark_v2_场景改造提示词.md`. Every phase keeps the original seven
+`docs/prompts/round1_scene_refactor_prompt.md`. Every phase keeps the original seven
 tests and the spectral pick-and-place reproduction command as release gates.
 
 | Phase | Scope | Expected render/FPS effect | MJWarp contact effect | Tests |
@@ -82,7 +82,7 @@ future pure-visual changes fail visibly if they enter MJWarp contacts.
 ## Second-round implementation and validation
 
 The second-round work follows
-`vibration_benchmark_v2_第二轮改造提示词.md` and starts from the completed
+`docs/prompts/round2_visual_refactor_prompt.md` and starts from the completed
 P0/P7.4/P1/P2 implementation above.
 
 ### R0 objective visual baseline
@@ -160,7 +160,7 @@ P0/P7.4/P1/P2 implementation above.
 
 ## Third-round implementation and validation
 
-The third-round work follows `vibration_benchmark_v2_第三轮改造提示词.md`.
+The third-round work follows `docs/prompts/round3_polish_prompt.md`.
 Measurements below come from the repository state and the successful formal
 run, not from the target values in the prompt. The preceding second-round
 section is retained as historical evidence and is superseded by this section

@@ -1,11 +1,11 @@
 # Benchmark-v2 环境重建报告
 
 日期：2026-08-11；第三轮更新：2026-08-13  
-项目：`/home/miracle04/Desktop/vibration_benchmark_v2`
+项目：`ViBench`
 
 ## 1. 重建结果
 
-本次没有继续修改原 RM75 项目，而是在桌面创建了完全独立的工程。当前版本采用旧版 C2 布置：Franka Panda 与深色酚醛工业工作台彼此独立，二者的底座直接固定在同一块可见振动地板上；机械臂不在工作台上，也没有“振动台叠在工作台上”的层级。工程保留六轴复杂随机振动、末端六维力感知、物理腕部相机、pick-and-place 与视频振动曲线，并使用冷灰环氧地坪、浅灰工业墙板、深色踢脚线和浅色收纳盒。
+本次没有继续修改原 RM75 项目，而是创建了完全独立的工程。当前版本采用旧版 C2 布置：Franka Panda 与深色酚醛工业工作台彼此独立，二者的底座直接固定在同一块可见振动地板上；机械臂不在工作台上，也没有“振动台叠在工作台上”的层级。工程保留六轴复杂随机振动、末端六维力感知、物理腕部相机、pick-and-place 与视频振动曲线，并使用冷灰环氧地坪、浅灰工业墙板、深色踢脚线和浅色收纳盒。
 
 已在实际 CUDA/Newton 后端完成一次完整验证：
 
@@ -68,7 +68,7 @@
 
 ## 5. 验证与已知限制
 
-已通过 16 个测试，覆盖谱确定性、完整 SE(3)、Stewart 解析几何与行程、活动纹理 SHA-256、腕部相机外参，以及第三轮新增的台面净空、作动器避障、设备接地与阴影布局约束。GPU 验证确认：
+当前回归测试已通过 36 项，覆盖谱确定性、完整 SE(3)、Stewart 解析几何与行程、活动纹理 SHA-256、腕部相机外参，以及第三轮新增的台面净空、作动器避障、设备接地与阴影布局约束。GPU 验证确认：
 
 - Panda 以 floating base 初始化；
 - YCB 刚体、C2 纹理工作台、浅色收纳盒与三墙房间加载成功；
@@ -85,7 +85,7 @@
 ## 6. 复现实验
 
 ```bash
-cd /home/miracle04/Desktop/vibration_benchmark_v2
+cd ViBench
 ./run.sh --record --episode-s 16 --vibration spectral --seed 17 \
   --workpiece sugar_box --workpiece-scale 0.75 \
   --output out/benchmark_v2_wrist_camera_fixed.mp4 \

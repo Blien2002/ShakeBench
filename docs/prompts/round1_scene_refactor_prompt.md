@@ -1,8 +1,8 @@
-# Vibration Benchmark v2 — 场景成熟化改造提示词
+# ViBench — 场景成熟化改造提示词
 
-面向项目：`/home/miracle04/Desktop/vibration_benchmark_v2`
+面向项目：`ViBench`
 技术栈：Isaac Lab 3.0 + Newton / MJWarp（`use_mujoco_contacts=True`），渲染为 NewtonGL ViewerGL
-对齐版本：`CURRENT_IMPLEMENTATION.md`（2026-08-13）
+对齐版本：`docs/reports/current_implementation.md`（2026-08-13）
 
 ---
 
@@ -80,9 +80,9 @@
 ## P0 — 建立上下文与改造计划
 
 ```
-我在 /home/miracle04/Desktop/vibration_benchmark_v2 做一个振动场景下的具身操作 benchmark，
+我在 ViBench 做一个振动场景下的具身操作 benchmark，
 技术栈是 Isaac Lab 3.0 + Newton/MJWarp（use_mujoco_contacts=True），渲染用 NewtonGL ViewerGL。
-项目根目录有 CURRENT_IMPLEMENTATION.md 描述了已实现内容，先完整读一遍。
+项目根目录的 `docs/reports/current_implementation.md` 描述了已实现内容，先完整读一遍。
 
 当前状态：六轴谱激励、C2 多测点映射、Panda 浮动根驱动、pick-and-place 参考控制器、
 腕部相机、力/接触传感器、指标、录制都已经跑通。缺的是场景的"硬件真实感"——
@@ -116,7 +116,7 @@
 - 不要建真实闭链机构。Stewart 平台是闭链，在 MJWarp 里需要 loop closure 约束，
   数值不稳且严重拖慢仿真，收益为负。
 
-新建 src/vibration_benchmark_v2/shaker.py，实现：
+新建 src/vibench/shaker.py，实现：
 
 1. ShakerGeometryCfg（configclass）：
    - base_joint_radius（基座球铰分布圆半径，默认 0.75 m）
@@ -357,7 +357,7 @@ platen / 工作台 / 目标盒的观察。
 ## P8 — 纯物理基线与批量评测协议
 
 ```
-CURRENT_IMPLEMENTATION.md 第 16 节已经诚实地列出 grasp_assist 是演示用辅助逻辑，
+`docs/reports/current_implementation.md` 第 16 节已经诚实地列出 grasp_assist 是演示用辅助逻辑，
 configs/scenarios.yaml 也规定官方评分不应依赖它。现在把这条规定落实到代码默认行为。
 
 1. grasp_assist 默认值改为 False。
@@ -387,7 +387,7 @@ configs/scenarios.yaml 也规定官方评分不应依赖它。现在把这条规
 ## P9 — Gym 注册与学习接口（可选，后续工作）
 
 ```
-CURRENT_IMPLEMENTATION.md 第 16 节列出尚无 RL/IL 训练代码和 Gym 注册。
+`docs/reports/current_implementation.md` 第 16 节列出尚无 RL/IL 训练代码和 Gym 注册。
 如果要让外部研究者能用这个 benchmark，这是必要的一步。
 
 1. 用 ManagerBasedRLEnv 或 DirectRLEnv 封装，注册为：

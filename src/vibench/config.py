@@ -3,12 +3,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import math
+import random
 from typing import Literal
 
 from .shaker import ShakerGeometryCfg
 
 
 AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
+CONTROL_KINDS = ("knob", "lever", "button")
+
+
+def sample_panel_sequence(seed: int, controls: tuple[str, ...] = CONTROL_KINDS) -> tuple[str, ...]:
+    """Deterministically sample a random non-empty ordered subset of controls.
+
+    Each rollout receives a fresh sampled instruction: one, two, or all three
+    controls may have to be operated, and their required order is shuffled.
+    """
+
+    if seed < 0 or len(set(controls)) != len(controls) or not controls:
+        raise ValueError("panel sequence seed must be non-negative and controls must be unique/non-empty")
+    rng = random.Random(seed)
+    count = rng.randint(1, len(controls))
+    return tuple(rng.sample(list(controls), count))
 
 
 @dataclass(frozen=True)
@@ -121,41 +138,160 @@ class AssetConfig:
 
 
 @dataclass(frozen=True)
+class PanelConfig:
+    """The fixed sloped control console mounted on the C2 worktable.
+
+    The panel hosts exactly three controls in a triangle on its operator face:
+    knob (upper-left), lever (lower-center), and button (upper-right).
+    ``sequence`` is the rollout instruction; when empty, a random ordered
+    subset is sampled deterministically from ``seed``.
+    """
+
+    seed: int = 17
+    sequence: tuple[str, ...] = ()
+    board_size: tuple[float, float, float] = (0.050, 0.300, 0.180)
+    board_center_xy: tuple[float, float] = (0.100, 0.0)
+    board_base_clearance_m: float = 0.002
+    console_depth_m: float = 0.190
+    console_width_m: float = 0.320
+    console_height_m: float = 0.180
+    console_front_height_m: float = 0.055
+    console_rear_flat_depth_m: float = 0.025
+    knob_uv: tuple[float, float] = (-0.085, 0.055)
+    knob_radius_m: float = 0.022
+    knob_length_m: float = 0.036
+    knob_center_standoff_m: float = 0.020
+    knob_goal_rad: float = math.radians(72.0)
+    lever_uv: tuple[float, float] = (0.0, -0.055)
+    lever_width_m: float = 0.018
+    lever_length_m: float = 0.085
+    lever_pivot_standoff_m: float = 0.010
+    lever_goal_rad: float = math.radians(30.0)
+    button_uv: tuple[float, float] = (0.085, 0.055)
+    button_radius_m: float = 0.018
+    button_length_m: float = 0.020
+    button_center_standoff_m: float = 0.014
+    button_travel_m: float = 0.004
+    knob_operation_speed_1_s: float = 0.65
+    lever_operation_speed_1_s: float = 0.85
+    button_operation_speed_1_s: float = 1.20
+    operation_hold_s: float = 0.30
+    # Physical contact starts near the end of the Cartesian sweep.  Seven
+    # seconds leaves enough time for the rate-limited arm to finish the sweep
+    # without weakening the collision/contact checks.
+    move_timeout_s: float = 7.0
+    operation_timeout_s: float = 4.0
+    contact_threshold_n: float = 0.03
+    contact_loss_timeout_s: float = 0.30
+    bilateral_contact_frames: int = 4
+
+    def __post_init__(self) -> None:
+        if self.seed < 0:
+            raise ValueError("panel seed must be non-negative")
+        if any(value <= 0.0 for value in self.board_size):
+            raise ValueError("panel board dimensions must be positive")
+        if min(
+            self.console_depth_m,
+            self.console_width_m,
+            self.console_height_m,
+            self.console_front_height_m,
+            self.console_rear_flat_depth_m,
+        ) <= 0.0:
+            raise ValueError("panel console dimensions must be positive")
+        if self.console_front_height_m >= self.console_height_m:
+            raise ValueError("panel console front height must be below its rear height")
+        if self.console_rear_flat_depth_m >= self.console_depth_m:
+            raise ValueError("panel console rear deck must be shorter than its depth")
+        if self.board_base_clearance_m < 0.0:
+            raise ValueError("panel board clearance must be non-negative")
+        for name, kind in (("knob", "knob"), ("lever", "lever"), ("button", "button")):
+            uv = getattr(self, f"{kind}_uv")
+            if abs(uv[0]) > 0.5 * self.console_width_m or abs(uv[1]) > 0.5 * self.console_depth_m:
+                raise ValueError(f"{name} UV position lies outside the panel board")
+        if min(
+            self.knob_radius_m,
+            self.knob_length_m,
+            self.knob_center_standoff_m,
+            self.knob_goal_rad,
+            self.lever_width_m,
+            self.lever_length_m,
+            self.lever_pivot_standoff_m,
+            self.lever_goal_rad,
+            self.button_radius_m,
+            self.button_length_m,
+            self.button_center_standoff_m,
+            self.button_travel_m,
+        ) <= 0.0:
+            raise ValueError("panel control dimensions and goals must be positive")
+        if min(
+            self.knob_operation_speed_1_s,
+            self.lever_operation_speed_1_s,
+            self.button_operation_speed_1_s,
+            self.operation_hold_s,
+            self.move_timeout_s,
+            self.operation_timeout_s,
+            self.contact_threshold_n,
+            self.contact_loss_timeout_s,
+        ) <= 0.0:
+            raise ValueError("panel control speeds, timeouts, and thresholds must be positive")
+        if self.bilateral_contact_frames < 1:
+            raise ValueError("bilateral_contact_frames must be positive")
+        self._validate_sequence(self.sequence)
+
+    @staticmethod
+    def _validate_sequence(sequence: tuple[str, ...]) -> None:
+        unknown = set(sequence) - set(CONTROL_KINDS)
+        if unknown:
+            raise ValueError(f"unknown panel controls: {sorted(unknown)}")
+        if len(set(sequence)) != len(sequence):
+            raise ValueError("panel sequence must not repeat a control")
+
+    def resolved_sequence(self) -> tuple[str, ...]:
+        """Return the per-rollout instruction, sampling it when unspecified."""
+
+        if self.sequence:
+            self._validate_sequence(self.sequence)
+            return self.sequence
+        return sample_panel_sequence(self.seed)
+
+
+@dataclass(frozen=True)
 class BenchmarkConfig:
     """Complete standalone benchmark configuration."""
 
     # Official evaluation/recording profile.  The former 240 Hz profile is
     # retained by the CLI for training throughput, but is not scoreable.
     dt: float = 1.0 / 1000.0
-    solver_substeps: int = 4
+    solver_substeps: int = 5
     episode_s: float = 16.0
     num_envs: int = 1
+    task: Literal["pick_place", "panel_operation"] = "pick_place"
     assets: AssetConfig = field(default_factory=AssetConfig)
+    panel: PanelConfig = field(default_factory=PanelConfig)
     vibration: VibrationConfig = field(default_factory=VibrationConfig)
     shaker: ShakerGeometryCfg = field(default_factory=ShakerGeometryCfg)
     material_mu: float = 1.5
-    support_config: Literal["C2"] = "C2"
-    # One visible vehicle/shaker floor; arm and table are separate C2 mount
-    # points on it.  The vehicle measurement coordinates are intentionally
-    # separate from the compact task-layout coordinates below.
-    arm_mount_xy_m: tuple[float, float] = (0.75, -0.45)
-    table_mount_xy_m: tuple[float, float] = (-0.75, 0.45)
+    support_config: Literal["C2", "C2_CLITE"] = "C2"
+    # Single-coordinate hard-mounted deck.  Robot and worktable are placed at
+    # their visible positions and both belong to the same deck support group.
     platform_size: tuple[float, float, float] = (1.60, 1.10, 0.08)
     platform_center: tuple[float, float, float] = (0.0, 0.0, 0.04)
     robot_base: tuple[float, float, float] = (-0.47, 0.0, 0.08)
-    robot_mount_dynamic_clearance_m: float = 0.007
     worktable_size: tuple[float, float, float] = (0.65, 0.60, 0.06)
     worktable_center: tuple[float, float, float] = (0.18, 0.0, 0.34)
-    table_mount_dynamic_clearance_m: float = 0.007
     workpiece_start: tuple[float, float, float] = (0.08, -0.13, 0.47)
     workpiece_initial_clearance_m: float = 0.001
     target_center: tuple[float, float, float] = (0.08, 0.17, 0.376)
+    # Positive assembly tolerance (shim) for mechanically-joined members.  It
+    # only keeps same-group surfaces away from dist==0 jitter; it is not a
+    # dynamic clearance and must never be used to absorb relative motion.
+    assembly_clearance_m: float = 0.0005
     contact_margin_m: float = 0.001
     contact_solref: tuple[float, float] = (0.00060, 1.0)
-    # Official 1000 Hz spectral profile is 0.264 mm at the conservative
-    # 3.5-sigma velocity estimate; 0.3 mm admits it while rejecting the
-    # 1.10 mm training profile that produced multi-millimetre tunnelling.
-    max_substep_displacement_m: float = 0.0003
+    # Fixed geometric travel gate: a solver property, not an excitation knob.
+    # 0.05 x thinnest task collision feature (8 mm target-bin wall).
+    min_task_feature_thickness_m: float = 0.008
+    alpha_geometry: float = 0.05
     descend_contact_threshold_n: float = 0.05
     descend_timeout_s: float = 2.0
     grasp_z_guard_margin_m: float = 0.0
@@ -184,6 +320,10 @@ class BenchmarkConfig:
             raise ValueError("solver_substeps must be positive")
         if self.contact_margin_m < 0.0 or self.max_substep_displacement_m <= 0.0:
             raise ValueError("contact margin and displacement limit must be non-negative/positive")
+        if not 0.0 <= self.assembly_clearance_m <= 0.002:
+            raise ValueError("assembly clearance must be in [0, 2] mm")
+        if self.min_task_feature_thickness_m <= 0.0 or self.alpha_geometry <= 0.0:
+            raise ValueError("task feature thickness and alpha_geometry must be positive")
         if self.contact_solref[0] <= 0.0 or self.contact_solref[1] <= 0.0:
             raise ValueError("contact solref time constant and damping ratio must be positive")
         if self.contact_solref[0] < 2.0 * self.dt / self.solver_substeps:
@@ -214,12 +354,22 @@ class BenchmarkConfig:
             raise ValueError("grasp slip tolerance must be positive")
         if self.workpiece_initial_clearance_m < 0.0:
             raise ValueError("workpiece_initial_clearance_m must be non-negative")
-        if self.robot_mount_dynamic_clearance_m < 0.0 or self.table_mount_dynamic_clearance_m < 0.0:
-            raise ValueError("mount dynamic clearances must be non-negative")
         if not 0.05 <= self.material_mu <= 2.0:
             raise ValueError("material_mu must be in [0.05, 2.0]")
-        if self.support_config != "C2":
-            raise ValueError("benchmark-v2 currently requires the requested C2 support layout")
+        if self.support_config not in ("C2", "C2_CLITE"):
+            raise ValueError("support_config must be C2 or C2_CLITE")
+        if self.task not in ("pick_place", "panel_operation"):
+            raise ValueError("task must be pick_place or panel_operation")
+        if self.task == "panel_operation" and self.support_config == "C2_CLITE":
+            raise ValueError("C2_CLITE support is currently only implemented for pick_place")
+        if self.task == "panel_operation":
+            self.panel.resolved_sequence()
+
+    @property
+    def use_clite_support(self) -> bool:
+        """Whether supports are driven through mocap + weld equality constraints."""
+
+        return self.support_config == "C2_CLITE"
 
     @property
     def physics_hz(self) -> int:
@@ -230,6 +380,23 @@ class BenchmarkConfig:
     @property
     def effective_substep_hz(self) -> int:
         return self.physics_hz * self.solver_substeps
+
+    @property
+    def max_substep_displacement_m(self) -> float:
+        """Fixed solver/geometry travel gate, independent of the excitation.
+
+        The gate is ``alpha_geometry`` times the thinnest task collision
+        feature (currently the 8 mm target-bin wall).  It changes only when
+        solver behaviour or task geometry changes, never per seed/spectrum.
+        """
+
+        return self.alpha_geometry * self.min_task_feature_thickness_m
+
+    @property
+    def score_penetration_threshold_mm(self) -> float:
+        """Fixed physical scoring threshold: 1% of the workpiece's thinnest collider dimension."""
+
+        return 0.01 * 1000.0 * min(workpiece_dimensions_m(self.assets.workpiece, self.assets.workpiece_scale))
 
     @property
     def resolved_workpiece_start(self) -> tuple[float, float, float]:
@@ -245,26 +412,18 @@ class BenchmarkConfig:
 
     @property
     def resolved_robot_base(self) -> tuple[float, float, float]:
-        """Physical root above the flange, including C2 differential travel."""
+        """Robot root at the deck surface plus the explicit assembly shim."""
 
         return (
             self.robot_base[0],
             self.robot_base[1],
-            self.robot_base[2] + self.robot_mount_dynamic_clearance_m,
+            self.robot_base[2] + self.assembly_clearance_m,
         )
 
     @property
     def resolved_worktable_center(self) -> tuple[float, float, float]:
-        return (
-            self.worktable_center[0],
-            self.worktable_center[1],
-            self.worktable_center[2] + self.table_mount_dynamic_clearance_m,
-        )
+        return self.worktable_center
 
     @property
     def resolved_target_center(self) -> tuple[float, float, float]:
-        return (
-            self.target_center[0],
-            self.target_center[1],
-            self.target_center[2] + self.table_mount_dynamic_clearance_m,
-        )
+        return self.target_center

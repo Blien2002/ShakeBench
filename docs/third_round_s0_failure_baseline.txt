@@ -76,7 +76,7 @@ tests/test_third_round_geometry.py:75: AssertionError
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
-  /home/miracle04/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'RigidBodyMaterialCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.spawners.materials.PhysxRigidBodyMaterialCfg' for PhysX properties, or 'isaaclab.sim.spawners.materials.RigidBodyMaterialBaseCfg' for solver-common properties only.
+  /path/to/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'RigidBodyMaterialCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.spawners.materials.PhysxRigidBodyMaterialCfg' for PhysX properties, or 'isaaclab.sim.spawners.materials.RigidBodyMaterialBaseCfg' for solver-common properties only.
     f1(*args, **kwargs)
 
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
@@ -85,15 +85,15 @@ tests/test_third_round_geometry.py:75: AssertionError
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
-  /home/miracle04/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'RigidBodyPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxRigidBodyPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.RigidBodyBaseCfg' for solver-common properties only.
+  /path/to/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'RigidBodyPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxRigidBodyPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.RigidBodyBaseCfg' for solver-common properties only.
     f1(*args, **kwargs)
 
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
-  /home/miracle04/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'ArticulationRootPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxArticulationRootPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.ArticulationRootBaseCfg' for solver-common properties only.
+  /path/to/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'ArticulationRootPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxArticulationRootPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.ArticulationRootBaseCfg' for solver-common properties only.
     f1(*args, **kwargs)
 
 ../../IsaacLab-3.0/.venv/lib/python3.12/site-packages/torch/jit/_script.py:1480: 35 warnings
-  /home/miracle04/IsaacLab-3.0/.venv/lib/python3.12/site-packages/torch/jit/_script.py:1480: DeprecationWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  /path/to/IsaacLab-3.0/.venv/lib/python3.12/site-packages/torch/jit/_script.py:1480: DeprecationWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
     warnings.warn(
 
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
@@ -101,7 +101,7 @@ tests/test_third_round_geometry.py:75: AssertionError
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
 ../../IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513
-  /home/miracle04/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'CollisionPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxCollisionPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.CollisionBaseCfg' for solver-common properties only.
+  /path/to/IsaacLab-3.0/source/isaaclab/isaaclab/utils/configclass.py:513: DeprecationWarning: 'CollisionPropertiesCfg' is deprecated and will be removed in 5.0. Use 'isaaclab_physx.sim.schemas.PhysxCollisionPropertiesCfg' for PhysX properties, or 'isaaclab.sim.schemas.CollisionBaseCfg' for solver-common properties only.
     f1(*args, **kwargs)
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

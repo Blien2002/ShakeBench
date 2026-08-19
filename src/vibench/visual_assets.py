@@ -10,8 +10,7 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from .paths import PROJECT_ROOT
 TABLE_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "phenolic_bench_dark_1k.jpg"
 PLATEN_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "platen_threaded_holes_1k.jpg"
 
@@ -208,6 +207,91 @@ def _visual_cylinder_between(stage: Any, path: str, start, end, radius: float, c
     gprim.CreateDisplayOpacityAttr([1.0])
     collision = UsdPhysics.CollisionAPI.Apply(cylinder.GetPrim())
     collision.CreateCollisionEnabledAttr(False)
+
+
+def _visual_sphere(stage: Any, path: str, radius: float, position, color) -> None:
+    """Author a collision-free sphere for rounded control grips and caps."""
+
+    from pxr import Gf, UsdGeom, UsdPhysics
+
+    sphere = UsdGeom.Sphere.Define(stage, path)
+    sphere.CreateRadiusAttr(float(radius))
+    UsdGeom.Xformable(sphere).AddTranslateOp().Set(Gf.Vec3d(*position))
+    gprim = UsdGeom.Gprim(sphere)
+    gprim.CreateDisplayColorAttr([Gf.Vec3f(*color)])
+    gprim.CreateDisplayOpacityAttr([1.0])
+    collision = UsdPhysics.CollisionAPI.Apply(sphere.GetPrim())
+    collision.CreateCollisionEnabledAttr(False)
+
+
+def _visual_mesh(stage: Any, path: str, points, faces, color) -> None:
+    """Author a small closed, flat-shaded display mesh."""
+
+    from pxr import Gf, UsdGeom, UsdPhysics
+
+    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh.CreatePointsAttr([Gf.Vec3f(*point) for point in points])
+    mesh.CreateFaceVertexCountsAttr([len(face) for face in faces])
+    mesh.CreateFaceVertexIndicesAttr([index for face in faces for index in face])
+    mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+    mesh.CreateDoubleSidedAttr(True)
+    gprim = UsdGeom.Gprim(mesh)
+    gprim.CreateDisplayColorAttr([Gf.Vec3f(*color)])
+    gprim.CreateDisplayOpacityAttr([1.0])
+    collision = UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
+    collision.CreateCollisionEnabledAttr(False)
+
+
+def _visual_wedge_prism(stage: Any, path: str, outline_xz, width: float, color) -> None:
+    """Extrude a five-sided console outline along Y."""
+
+    half_width = 0.5 * float(width)
+    points = [
+        (float(x), -half_width, float(z)) for x, z in outline_xz
+    ] + [
+        (float(x), half_width, float(z)) for x, z in outline_xz
+    ]
+    count = len(outline_xz)
+    faces = [tuple(reversed(range(count))), tuple(range(count, 2 * count))]
+    faces.extend(
+        (index, (index + 1) % count, (index + 1) % count + count, index + count)
+        for index in range(count)
+    )
+    _visual_mesh(stage, path, points, faces, color)
+
+
+def _visual_extruded_polygon(
+    stage: Any,
+    path: str,
+    center,
+    tangent,
+    lateral,
+    normal,
+    outline,
+    lower_m: float,
+    upper_m: float,
+    color,
+) -> None:
+    """Extrude a 2-D control silhouette away from the operator surface."""
+
+    def point(a: float, b: float, height: float):
+        return tuple(
+            float(center[axis])
+            + float(a) * float(tangent[axis])
+            + float(b) * float(lateral[axis])
+            + float(height) * float(normal[axis])
+            for axis in range(3)
+        )
+
+    points = [point(a, b, lower_m) for a, b in outline]
+    points.extend(point(a, b, upper_m) for a, b in outline)
+    count = len(outline)
+    faces = [tuple(reversed(range(count))), tuple(range(count, 2 * count))]
+    faces.extend(
+        (index, (index + 1) % count, (index + 1) % count + count, index + count)
+        for index in range(count)
+    )
+    _visual_mesh(stage, path, points, faces, color)
 
 
 def _shadow_disc(stage: Any, path: str, center, radii, z: float, surface_rgb) -> None:
@@ -510,6 +594,196 @@ def spawn_textured_table_surface(
     return stage.GetPrimAtPath(prim_path)
 
 
+
+
+@configclass
+class ControlPanelAppearanceCfg(SpawnerCfg):
+    """Display-only sloped console and compound controls for the panel task.
+
+    The silhouette is an original five-sided industrial console inspired by
+    laboratory control desks.  The selector uses the broad-rear/tapered-tip
+    visual language of an Apollo-era pointer knob, but no third-party mesh is
+    copied or bundled.  Every shape in this review layer is collision-disabled.
+    """
+
+    func = None
+    board_size: tuple[float, float, float] = (0.050, 0.300, 0.180)
+    knob_uv: tuple[float, float] = (-0.085, 0.055)
+    lever_uv: tuple[float, float] = (0.0, -0.055)
+    button_uv: tuple[float, float] = (0.085, 0.055)
+    console_depth_m: float = 0.190
+    console_width_m: float = 0.320
+    console_height_m: float = 0.180
+    front_height_m: float = 0.055
+    rear_flat_depth_m: float = 0.025
+    housing_rgb: tuple[float, float, float] = (0.24, 0.27, 0.30)
+    face_rgb: tuple[float, float, float] = (0.075, 0.085, 0.095)
+    edge_rgb: tuple[float, float, float] = (0.36, 0.39, 0.42)
+    knob_rgb: tuple[float, float, float] = (0.68, 0.69, 0.67)
+    lever_rgb: tuple[float, float, float] = (0.055, 0.060, 0.065)
+    button_rgb: tuple[float, float, float] = (0.82, 0.075, 0.050)
+
+
+@clone
+def spawn_control_panel_appearance(
+    prim_path: str,
+    cfg: ControlPanelAppearanceCfg,
+    translation=None,
+    orientation=None,
+    **_: Any,
+):
+    """Author a sloped five-prism console with three readable controls."""
+
+    stage = get_current_stage()
+    create_prim(prim_path, "Xform", translation=translation, orientation=orientation, stage=stage)
+    depth = float(cfg.console_depth_m)
+    width = float(cfg.console_width_m)
+    height = float(cfg.console_height_m)
+    half_depth = 0.5 * depth
+    half_height = 0.5 * height
+    front_top_z = -half_height + float(cfg.front_height_m)
+    shoulder_x = half_depth - float(cfg.rear_flat_depth_m)
+    outline = (
+        (-half_depth, -half_height),
+        (half_depth, -half_height),
+        (half_depth, half_height),
+        (shoulder_x, half_height),
+        (-half_depth, front_top_z),
+    )
+    _visual_wedge_prism(stage, f"{prim_path}/ConsoleHousing", outline, width, cfg.housing_rgb)
+
+    # The operator face runs from the low front edge to the short high rear deck.
+    slope_dx = shoulder_x + half_depth
+    slope_dz = half_height - front_top_z
+    slope_length = math.hypot(slope_dx, slope_dz)
+    tangent = (slope_dx / slope_length, 0.0, slope_dz / slope_length)
+    lateral = (0.0, 1.0, 0.0)
+    normal = (-tangent[2], 0.0, tangent[0])
+    surface_center = (
+        0.5 * (shoulder_x - half_depth),
+        0.0,
+        0.5 * (half_height + front_top_z),
+    )
+
+    def add(a, b):
+        return tuple(float(a[i]) + float(b[i]) for i in range(3))
+
+    def scale(vector, factor):
+        return tuple(float(factor) * float(value) for value in vector)
+
+    def surface_point(uy: float, vz: float, lift: float = 0.0):
+        return tuple(
+            surface_center[axis]
+            + float(uy) * lateral[axis]
+            + float(vz) * tangent[axis]
+            + float(lift) * normal[axis]
+            for axis in range(3)
+        )
+
+    face_angle_deg = math.degrees(math.atan2(-tangent[0], -tangent[2]))
+    face_center = surface_point(0.0, 0.0, 0.003)
+    _visual_cube(
+        stage,
+        f"{prim_path}/OperatorFace",
+        (0.006, width - 0.018, slope_length - 0.016),
+        face_center,
+        cfg.face_rgb,
+        rotate_y_deg=face_angle_deg,
+    )
+    # Bright metal edge cheeks and a short rear cap make the five-prism
+    # silhouette legible from the main three-quarter camera.
+    for side, uy in (("Left", -0.5 * width + 0.006), ("Right", 0.5 * width - 0.006)):
+        _visual_cube(
+            stage,
+            f"{prim_path}/FaceEdge{side}",
+            (0.008, 0.010, slope_length),
+            surface_point(uy, 0.0, 0.006),
+            cfg.edge_rgb,
+            rotate_y_deg=face_angle_deg,
+        )
+    _visual_cube(
+        stage,
+        f"{prim_path}/RearCap",
+        (cfg.rear_flat_depth_m, width - 0.018, 0.010),
+        (half_depth - 0.5 * cfg.rear_flat_depth_m, 0.0, half_height + 0.004),
+        cfg.edge_rgb,
+    )
+
+    # Four recessed fasteners, plus a slim central annunciator inspired by
+    # the dense industrial reference panel without reproducing its mesh.
+    for index, (uy, vz) in enumerate(((-0.142, -0.080), (0.142, -0.080), (-0.142, 0.080), (0.142, 0.080))):
+        base = surface_point(uy, vz, 0.006)
+        _visual_cylinder_between(
+            stage,
+            f"{prim_path}/Fastener{index}",
+            base,
+            add(base, scale(normal, 0.004)),
+            0.0045,
+            (0.52, 0.55, 0.57),
+        )
+    _visual_cube(
+        stage,
+        f"{prim_path}/Annunciator",
+        (0.008, 0.060, 0.026),
+        surface_point(0.0, 0.067, 0.008),
+        (0.015, 0.022, 0.028),
+        rotate_y_deg=face_angle_deg,
+    )
+    for index, (uy, color) in enumerate(((-0.018, (0.18, 0.86, 0.34)), (0.0, (0.96, 0.67, 0.08)), (0.018, (0.82, 0.10, 0.06)))):
+        base = surface_point(uy, 0.067, 0.014)
+        _visual_cylinder_between(
+            stage,
+            f"{prim_path}/AnnunciatorLamp{index}",
+            base,
+            add(base, scale(normal, 0.004)),
+            0.0042,
+            color,
+        )
+
+    # Fixed bezels live on the console.  Moving handles/caps are authored by
+    # the corresponding articulation link in panel_controls.py.
+    knob = surface_point(*cfg.knob_uv)
+    for name, radius, start_m, end_m, color in (
+        ("KnobOuterBezel", 0.034, 0.005, 0.011, (0.44, 0.46, 0.47)),
+        ("KnobInnerBezel", 0.028, 0.010, 0.016, (0.11, 0.12, 0.13)),
+    ):
+        _visual_cylinder_between(
+            stage, f"{prim_path}/{name}", add(knob, scale(normal, start_m)),
+            add(knob, scale(normal, end_m)), radius, color
+        )
+    # Industrial toggle fixed boot.
+    lever = surface_point(*cfg.lever_uv)
+    _visual_cylinder_between(
+        stage, f"{prim_path}/LeverBezel", add(lever, scale(normal, 0.005)),
+        add(lever, scale(normal, 0.012)), 0.029, (0.43, 0.45, 0.46)
+    )
+    _visual_cylinder_between(
+        stage, f"{prim_path}/LeverBoot", add(lever, scale(normal, 0.010)),
+        add(lever, scale(normal, 0.028)), 0.017, (0.035, 0.040, 0.045)
+    )
+    # Fixed pushbutton collar.
+    button = surface_point(*cfg.button_uv)
+    _visual_cylinder_between(
+        stage, f"{prim_path}/ButtonBezel", add(button, scale(normal, 0.005)),
+        add(button, scale(normal, 0.012)), 0.032, (0.47, 0.49, 0.50)
+    )
+    _visual_cylinder_between(
+        stage, f"{prim_path}/ButtonCollar", add(button, scale(normal, 0.011)),
+        add(button, scale(normal, 0.021)), 0.024, (0.10, 0.11, 0.12)
+    )
+    # Neutral metal label plaques keep the assembly readable without relying
+    # on renderer-dependent text glyphs.
+    for kind, (uy, vz) in (("Knob", cfg.knob_uv), ("Lever", cfg.lever_uv), ("Button", cfg.button_uv)):
+        label_v = max(-0.088, vz - 0.050)
+        _visual_cube(
+            stage,
+            f"{prim_path}/Label{kind}",
+            (0.006, 0.047, 0.014),
+            surface_point(uy, label_v, 0.007),
+            (0.58, 0.60, 0.60),
+            rotate_y_deg=face_angle_deg,
+        )
+    return stage.GetPrimAtPath(prim_path)
 
 
 @configclass

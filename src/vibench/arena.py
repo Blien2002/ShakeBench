@@ -17,10 +17,10 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
+from .paths import PROJECT_ROOT
 from .visual_assets import author_textured_quad
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ROOM_CONFIG_PATH = PROJECT_ROOT / "configs" / "room.yaml"
 FLOOR_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "epoxy_floor_cool_gray_1k.jpg"
 WALLPAPER_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "industrial_wall_light_gray_1k.jpg"

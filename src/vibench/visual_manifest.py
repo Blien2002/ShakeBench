@@ -10,11 +10,16 @@ import yaml
 
 from .arena import load_room_arena_cfg, static_equipment_geometry_report
 from .config import BenchmarkConfig
+from .paths import PROJECT_ROOT
 from .shaker import ShakerGeometryCfg
-from .visual_assets import PlatformAppearanceCfg, WorktableAppearanceCfg, platform_shadow_layout
+from .visual_assets import (
+    ControlPanelAppearanceCfg,
+    PlatformAppearanceCfg,
+    WorktableAppearanceCfg,
+    platform_shadow_layout,
+)
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 VISUAL_MANIFEST_PATH = PROJECT_ROOT / "configs" / "visual_manifest.yaml"
 
 
@@ -62,6 +67,9 @@ def visual_feature_facts() -> dict[str, float]:
         "worktable_stretcher_count": 4,
         "worktable_footplate_count": 4,
         "worktable_foot_bolt_count": 16,
+        "control_panel_trim_count": 4,
+        "control_panel_label_plate_count": 3,
+        "control_panel_status_light_count": 3,
         "robot_mount_flange_count": 1,
         "robot_mount_bolt_count": 8,
         "stewart_segment_count": 12,

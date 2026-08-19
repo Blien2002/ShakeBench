@@ -6,8 +6,8 @@ import math
 import pytest
 import torch
 
-from vibration_benchmark_v2.config import BenchmarkConfig, VibrationConfig
-from vibration_benchmark_v2.controller import (
+from vibench.config import BenchmarkConfig, VibrationConfig
+from vibench.controller import (
     grasp_feasibility,
     grasp_feasibility_table,
     collision_safe_descend_clearance,
@@ -17,9 +17,10 @@ from vibration_benchmark_v2.controller import (
     rate_limit_translation,
     short_axis_yaw,
 )
-from vibration_benchmark_v2.diagnostics import classify_penetration_pair
-from vibration_benchmark_v2.vibration import estimated_substep_displacement_m, validate_impulsive_timestep
-from vibration_benchmark_v2.visual_manifest import (
+from vibench.diagnostics import classify_penetration_pair
+from vibench.supports import support_group_geometries
+from vibench.vibration import offline_support_travel_report
+from vibench.visual_manifest import (
     load_visual_manifest,
     prim_anchor_audit,
     visual_feature_facts,
@@ -29,13 +30,15 @@ from vibration_benchmark_v2.visual_manifest import (
 def test_default_profile_is_official_and_unassisted() -> None:
     cfg = BenchmarkConfig()
     assert cfg.physics_hz == 1000
-    assert cfg.solver_substeps == 4
-    assert cfg.effective_substep_hz == 4000
+    assert cfg.solver_substeps == 5
+    assert cfg.effective_substep_hz == 5000
     assert cfg.grasp_assist is False
     assert cfg.contact_solref == (0.00060, 1.0)
-    assert cfg.resolved_robot_base[2] - cfg.robot_base[2] == pytest.approx(0.007)
-    assert cfg.resolved_worktable_center[2] - cfg.worktable_center[2] == pytest.approx(0.007)
-    assert cfg.resolved_target_center[2] - cfg.target_center[2] == pytest.approx(0.007)
+    assert cfg.resolved_robot_base[2] - cfg.robot_base[2] == pytest.approx(cfg.assembly_clearance_m)
+    assert cfg.resolved_worktable_center == cfg.worktable_center
+    assert cfg.resolved_target_center == cfg.target_center
+    assert cfg.max_substep_displacement_m == pytest.approx(0.00040)
+    assert cfg.score_penetration_threshold_mm == pytest.approx(0.3360225, abs=1e-6)
 
 
 def test_penetration_pair_classifier_covers_v0_pairs() -> None:
@@ -51,43 +54,33 @@ def test_penetration_pair_classifier_covers_v0_pairs() -> None:
     assert len(pairs) == 6
 
 
-def test_official_rate_reduces_estimated_spectral_substep_displacement() -> None:
+def test_official_rate_keeps_replayed_substep_travel_below_geometry_gate() -> None:
     cfg = BenchmarkConfig()
-    training = estimated_substep_displacement_m(cfg.vibration, 240, 4)
-    official = estimated_substep_displacement_m(cfg.vibration, 1000, 4)
-    assert official < 0.3e-3
-    assert math.isclose(training / official, 1000 / 240, rel_tol=1.0e-12)
+    groups = support_group_geometries(cfg)
+    official = offline_support_travel_report(cfg, groups, 1000, 5)
+    training = offline_support_travel_report(cfg, groups, 240, 4)
+    assert official.max_substep_travel_m < cfg.max_substep_displacement_m
+    assert training.max_substep_travel_m > cfg.max_substep_displacement_m
 
 
 def test_training_spectral_profile_is_rejected_before_scene_build() -> None:
     cfg = BenchmarkConfig()
-    with pytest.raises(ValueError, match="unsafe spectral excitation"):
-        validate_impulsive_timestep(cfg.vibration, 240, 4, cfg.max_substep_displacement_m)
-    assert validate_impulsive_timestep(
-        cfg.vibration,
-        cfg.physics_hz,
-        cfg.solver_substeps,
-        cfg.max_substep_displacement_m,
-    ) < cfg.max_substep_displacement_m
-    safe_training = VibrationConfig(mode="spectral", spectral_scale=0.15)
-    assert validate_impulsive_timestep(
-        safe_training,
-        240,
-        cfg.solver_substeps,
-        cfg.max_substep_displacement_m,
-    ) < cfg.max_substep_displacement_m
+    groups = support_group_geometries(cfg)
+    training = offline_support_travel_report(cfg, groups, 240, 4)
+    assert training.max_substep_travel_m > cfg.max_substep_displacement_m
+    safe = BenchmarkConfig(vibration=VibrationConfig(mode="spectral", spectral_scale=0.15))
+    safe_report = offline_support_travel_report(safe, support_group_geometries(safe), 240, 4)
+    assert safe_report.max_substep_travel_m < cfg.max_substep_displacement_m
 
 
 def test_deterministic_sine_startup_gate_rejects_unsafe_motion() -> None:
-    from vibration_benchmark_v2.config import VibrationConfig
-
-    unsafe = VibrationConfig(mode="sine", sine_axis="tz", sine_amplitude=0.01, sine_frequency_hz=50.0)
-    try:
-        validate_impulsive_timestep(unsafe, 240, 4, 0.0002)
-    except ValueError as error:
-        assert "unsafe sine excitation" in str(error)
-    else:
-        raise AssertionError("unsafe sine excitation was not rejected")
+    unsafe = BenchmarkConfig(
+        vibration=VibrationConfig(
+            mode="sine", sine_axis="tz", sine_amplitude=0.01, sine_frequency_hz=50.0
+        )
+    )
+    report = offline_support_travel_report(unsafe, support_group_geometries(unsafe), 240, 4)
+    assert report.max_substep_travel_m > unsafe.max_substep_displacement_m
 
 
 def test_grasp_feasibility_table_and_short_axis_alignment() -> None:
@@ -187,8 +180,8 @@ def test_all_visual_attachments_are_within_five_mm_of_anchor() -> None:
 
 def test_parent_transform_fixes_remain_local_in_source() -> None:
     root = Path(__file__).resolve().parents[1]
-    visuals = (root / "src" / "vibration_benchmark_v2" / "visual_assets.py").read_text(encoding="utf-8")
-    arena = (root / "src" / "vibration_benchmark_v2" / "arena.py").read_text(encoding="utf-8")
+    visuals = (root / "src" / "vibench" / "visual_assets.py").read_text(encoding="utf-8")
+    arena = (root / "src" / "vibench" / "arena.py").read_text(encoding="utf-8")
     assert "(0.092 * math.cos(angle), 0.092 * math.sin(angle), 0.010)" in visuals
     assert "Gf.Vec3d(dx, dy, 0.008)" in visuals
     assert 'create_prim(sensor_root, "Xform"' in visuals
@@ -197,7 +190,7 @@ def test_parent_transform_fixes_remain_local_in_source() -> None:
 
 def test_settle_phase_holds_reset_pose_instead_of_sweeping_through_table() -> None:
     root = Path(__file__).resolve().parents[1]
-    controller = (root / "src" / "vibration_benchmark_v2" / "controller.py").read_text(encoding="utf-8")
+    controller = (root / "src" / "vibench" / "controller.py").read_text(encoding="utf-8")
     assert 'if phase.name == "settle"' in controller
     assert 'self.settle_pose_b = obs["ee_pose_b"].clone()' in controller
     assert 'self.orientation_b = self.settle_pose_b[:, 3:7]' in controller
@@ -211,8 +204,11 @@ def test_run_script_serializes_usd_build_by_default_but_allows_override() -> Non
     assert 'export PXR_WORK_THREAD_LIMIT="${PXR_WORK_THREAD_LIMIT:-1}"' in runner
 
 
-def test_c2_support_authoring_uses_local_anchor_once_and_matching_pitch_sign() -> None:
+def test_support_authoring_has_single_anchor_and_no_legacy_pitch_sign() -> None:
     root = Path(__file__).resolve().parents[1]
-    task = (root / "src" / "vibration_benchmark_v2" / "task.py").read_text(encoding="utf-8")
-    assert "rotated_offset = quat_apply(quat, local - anchor)" in task
-    assert "quat_from_euler_xyz(motion[:, 3], -motion[:, 4], motion[:, 5])" in task
+    supports = (root / "src" / "vibench" / "supports.py").read_text(encoding="utf-8")
+    task = (root / "src" / "vibench" / "task.py").read_text(encoding="utf-8")
+    assert "quat_apply(quat, local - anchor)" in supports
+    assert "quat_from_euler_xyz(q[:, 3], q[:, 4], q[:, 5])" in supports
+    assert "quat_from_euler_xyz(motion[:, 3], -motion[:, 4], motion[:, 5])" not in task
+    assert "write_support_groups(" in task

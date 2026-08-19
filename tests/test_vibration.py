@@ -6,12 +6,12 @@ from pathlib import Path
 
 import torch
 
-from vibration_benchmark_v2.arena import load_room_arena_cfg
-from vibration_benchmark_v2.config import BenchmarkConfig, VibrationConfig
-from vibration_benchmark_v2.mounting import analytic_delta_z, c2_support_motions, motion_at_mount
-from vibration_benchmark_v2.shaker import ShakerGeometryCfg, joint_points, solve_leg_transforms
-from vibration_benchmark_v2.vibration import SpectralVibration
-from vibration_benchmark_v2.wrist_camera import (
+from vibench.arena import load_room_arena_cfg
+from vibench.config import BenchmarkConfig, VibrationConfig
+from vibench.mounting import analytic_delta_z, c2_support_motions, motion_at_mount
+from vibench.shaker import ShakerGeometryCfg, joint_points, solve_leg_transforms
+from vibench.vibration import SpectralVibration
+from vibench.wrist_camera import (
     WRIST_CAMERA_AIM_H,
     WRIST_CAMERA_EYE_H,
     WRIST_CAMERA_FORWARD_H,
@@ -28,6 +28,15 @@ def test_seed_is_reproducible() -> None:
     for time_s in (0.0, 0.4, 1.0, 2.3):
         for lhs, rhs in zip(a.sample(time_s), b.sample(time_s)):
             torch.testing.assert_close(lhs, rhs)
+
+
+def test_active_axes_use_independent_random_streams() -> None:
+    source = SpectralVibration(VibrationConfig(mode="spectral"), 2, "cpu")
+    # Regression for the pre-fix bug where every axis reused the same RNG
+    # stream: same-tone axes had byte-identical phase vectors.
+    assert not torch.equal(source._phase["tx"], source._phase["tz"])
+    assert not torch.equal(source._phase["ty"], source._phase["ry"])
+    assert not torch.equal(source._phase["tx"][0], source._phase["tx"][1])
 
 
 def test_all_six_axes_are_present_after_ramp() -> None:
@@ -134,6 +143,15 @@ def test_stewart_leg_lengths_match_direct_analytic_geometry() -> None:
     expected = torch.linalg.norm(platen_world - base, dim=-1)
     torch.testing.assert_close(solved.lengths_m[0], expected, atol=1.0e-10, rtol=0.0)
     assert float(solved.lengths_m[0].max() - solved.lengths_m[0].min()) > 1.0e-3
+
+
+def test_clite_support_config_is_available_but_not_for_panel() -> None:
+    import pytest
+
+    clite = BenchmarkConfig(support_config="C2_CLITE")
+    assert clite.use_clite_support is True
+    with pytest.raises(ValueError):
+        BenchmarkConfig(task="panel_operation", support_config="C2_CLITE")
 
 
 def test_default_spectral_motion_keeps_all_stewart_legs_in_stroke() -> None:

@@ -1,4 +1,4 @@
-# Vibration Benchmark v2 — 第四轮改造提示词（穿透物理 · 抓取几何 · 资产回归）
+# ViBench — 第四轮改造提示词（穿透物理 · 抓取几何 · 资产回归）
 
 ## 0. 本轮的核心结论
 
@@ -318,5 +318,5 @@ platen 侧裙的黄黑警示条消失了。最可能的原因是第三轮 S1 按
 ```
 1. tests/ 现有测试必须继续全绿。新增纹理要同步 configs/assets.yaml 的 SHA-256。
 2. MJWarp 接触对数量增量为 0（新增视觉几何必须真正禁用 collision）。
-3. CURRENT_IMPLEMENTATION.md 第 14 节的复现命令必须仍能跑通。
+3. `docs/reports/current_implementation.md` 第 14 节的复现命令必须仍能跑通。
 ```

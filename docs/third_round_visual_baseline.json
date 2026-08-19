@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "/home/miracle04/Desktop/vibration_benchmark_v2/out/benchmark_v2_wrist_camera_fixed.mp4",
+  "source": "out/benchmark_v2_wrist_camera_fixed.mp4",
   "source_kind": "video",
   "time_s": 6.0,
   "frame_index": 180,

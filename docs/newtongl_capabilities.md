@@ -4,7 +4,7 @@ Verified on 2026-08-13 against the Newton package installed in the Isaac Lab
 3.0 virtual environment. Re-run with:
 
 ```bash
-/home/miracle04/IsaacLab-3.0/.venv/bin/python scripts/probe_newtongl_capabilities.py
+./run_python.sh scripts/probe_newtongl_capabilities.py
 ```
 
 ## Material inputs
