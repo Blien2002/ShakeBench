@@ -22,6 +22,9 @@ cd /path/to/ViBench
 # 若 Isaac Lab 不在 ~/IsaacLab-3.0，先指定其路径
 export ISAACLAB_ROOT=/path/to/IsaacLab-3.0
 
+# 快速安全演示（240 Hz 训练档、0.15x 谱幅值，录像）
+./scripts/demo.sh
+
 # 运行默认 16 s official 档基准回合（不录像，输出 metrics）
 ./run.sh
 
