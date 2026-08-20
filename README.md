@@ -1,6 +1,6 @@
-# ViBench
+# ShakeBench
 
-**ViBench** 是一个面向具身智能操作的独立 benchmark：Franka Panda 机械臂需要在基座与工作台同时受到六自由度振动激励的条件下，完成拾取—搬运—放置任务。项目基于 Isaac Lab + Newton/MJWarp，使用资产化的 Franka Panda、YCB 工件、参数化 Stewart 振动台与工业实验室房间，输出可复现的仿真轨迹、多视角视频和结构化评估 JSON。
+**ShakeBench** 是一个面向具身智能操作的独立 benchmark：Franka Panda 机械臂需要在基座与工作台同时受到六自由度振动激励的条件下，完成拾取—搬运—放置任务。项目基于 Isaac Lab + Newton/MJWarp，使用资产化的 Franka Panda、YCB 工件、参数化 Stewart 振动台与工业实验室房间，输出可复现的仿真轨迹、多视角视频和结构化评估 JSON。
 
 项目完全自包含：配置、纹理、生成器、测试与评估代码都在本仓库内；它不导入、不依赖桌面上的任何其他项目目录。唯一的外部运行时是另行安装的 Isaac Lab（含 Newton）环境，通过 `ISAACLAB_ROOT` 指定。
 
@@ -17,7 +17,7 @@
 ## 快速开始
 
 ```bash
-cd /path/to/ViBench
+cd /path/to/ShakeBench
 
 # 若 Isaac Lab 不在 ~/IsaacLab-3.0，先指定其路径
 export ISAACLAB_ROOT=/path/to/IsaacLab-3.0
@@ -33,8 +33,8 @@ export ISAACLAB_ROOT=/path/to/IsaacLab-3.0
 
 # 录像并输出结构化指标
 ./run.sh --record --vibration spectral --seed 17 --workpiece sugar_box \
-  --output out/vibench_wrist_camera.mp4 \
-  --metrics-output out/vibench_wrist_camera.json
+  --output out/shakebench_wrist_camera.mp4 \
+  --metrics-output out/shakebench_wrist_camera.json
 
 # 运行测试
 ./run_tests.sh
@@ -48,11 +48,11 @@ export ISAACLAB_ROOT=/path/to/IsaacLab-3.0
   --compare docs/visual_baseline.json --json-output out/audit.json
 ```
 
-可选地把本包以 editable 方式安装进 Isaac Lab venv，获得 `vibench` 控制台命令与 `python -m vibench`：
+可选地把本包以 editable 方式安装进 Isaac Lab venv，获得 `shakebench` 控制台命令与 `python -m shakebench`：
 
 ```bash
 "$ISAACLAB_ROOT/.venv/bin/python" -m pip install -e .
-vibench --help
+shakebench --help
 ```
 
 ## 常用 CLI 参数
@@ -68,12 +68,12 @@ vibench --help
 ## 项目结构
 
 ```
-ViBench/
+ShakeBench/
 ├── run.sh / run_tests.sh / run_python.sh   # Isaac Lab venv 启动器
-├── pyproject.toml                          # vibench 包与 vibench CLI
+├── pyproject.toml                          # shakebench 包与 shakebench CLI
 ├── configs/                                # 场景矩阵、资产/房间/视觉回归清单
 ├── assets/textures/                        # 仓库内生成的确定性纹理
-├── src/vibench/                            # benchmark 库与 CLI
+├── src/shakebench/                            # benchmark 库与 CLI
 │   ├── cli.py                              # 命令行入口
 │   ├── scene.py / task.py / controller.py  # 仿真场景、任务循环、脚本控制器
 │   ├── vibration.py / supports.py / shaker.py

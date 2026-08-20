@@ -1,10 +1,10 @@
 # 穿模根绝路线决赛：全部候选方案、优劣与实验结论
 
 更新日期：2026-08-18  
-项目：`ViBench`（Isaac Lab 3.0 + Newton 1.2.1 / MJWarp）  
+项目：`ShakeBench`（Isaac Lab 3.0 + Newton 1.2.1 / MJWarp）  
 文档目的：把穿模问题的**全部候选技术路线**放在同一张表上，给出每个方向的内容、优劣、实验证据、风险和最终排序。  
 实验证据目录：`out/penetration_experiments_20260818/`（该目录被 `.gitignore` 忽略）。  
-代码备份：`~/Desktop/ViBench_backups/ViBench_code_backup_20260818_105442.tar.gz`。
+代码备份：`~/Desktop/ShakeBench_backups/ShakeBench_code_backup_20260818_105442.tar.gz`。
 
 ---
 
@@ -198,7 +198,7 @@ JSON：`04_support_cadence_fair_substep_probe.json`
 
 **缺点 / 风险**
 
-- 真实子集不含 Panda、目标盒、桌腿与视觉平台，**尚未做完整 ViBench 场景验证**；
+- 真实子集不含 Panda、目标盒、桌腿与视觉平台，**尚未做完整 ShakeBench 场景验证**；
 - 完整场景集成需要：
   - 平台、Panda 根、工作台、桌腿、目标盒改为动态刚体；
   - 为每个支撑增加 mocap driver + weld 约束；
@@ -326,7 +326,7 @@ JSON：`05_newton_pipeline_probe.json`
    - 结果：kinematic 传送 0.9637 mm → C-lite mocap 4 kHz **0.0128 mm**，接触力 555.5 N → 477.5 N；
    - 证据：`out/penetration_experiments_20260818/08_clite_real_subset_probe.json`。
 
-2. **下一步：把 C-lite 扩展到完整 ViBench 场景**
+2. **下一步：把 C-lite 扩展到完整 ShakeBench 场景**
    - 将振动平台、Panda 浮动根、工作台、桌腿、目标盒改为动态刚体，各自用 mocap driver + WELD 约束跟踪原 C2 轨迹；
    - mocap 按 4 kHz 子步更新（1 kHz 更新会引入大约束冲击）；
    - 用 1 s official 谱 idle probe 记录**全接触对**穿透、腕力、拓扑；
@@ -340,7 +340,7 @@ JSON：`05_newton_pipeline_probe.json`
 
 ## 6. 附录：实验文件与备份
 
-- 备份：`~/Desktop/ViBench_backups/ViBench_code_backup_20260818_105442.tar.gz`
+- 备份：`~/Desktop/ShakeBench_backups/ShakeBench_code_backup_20260818_105442.tar.gz`
   - SHA-256：`1bca3cf66a357a3822c6bba26ebac27e0c9800ce4df55bbf97a9a0e4cc5d7498`
 - 实验结果：`out/penetration_experiments_20260818/`
   - `01_official_margin_only_probe.json`

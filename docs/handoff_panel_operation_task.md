@@ -1,4 +1,4 @@
-# 交接文档：ViBench 新增控制面板任务（panel_operation）
+# 交接文档：ShakeBench 新增控制面板任务（panel_operation）
 
 状态：**物理建模已替换，基线策略仍未全部收敛**。本仓库最后一次全量单测通过；knob 单控件已由真实碰撞和真实转动关节完成，lever/button 关节与碰撞模型已接入，但参考控制器尚未把两者操作成功，因此三控件完整序列仍未通过。
 
@@ -6,9 +6,9 @@
 
 ### 最新物理验证快照
 
-- knob：`success=true`，真实关节进度 1.0，最大穿透 0.317 mm，0 帧超过 0.5 mm；右指接触峰值约 1813 N（读数偏高，仍需力学标定）。指标：`/tmp/vibench_panel_knob_physical_v3.json`。
-- lever：已产生左右指接触并推动真实关节，最好一次约 6.2% 目标角；随后 contact-lost，未成功。已补齐球形握把 collider，最大穿透在最近安全轨迹中约 0.685 mm。指标：`/tmp/vibench_panel_lever_physical_v6.json`。
-- button：正确按钮接触可触发 operate 阶段，但 prismatic 关节仍保持 0，最终 operation-timeout；同时出现约 7.86 mm 手部穿透，未成功。指标：`/tmp/vibench_panel_button_physical_v2.json`。
+- knob：`success=true`，真实关节进度 1.0，最大穿透 0.317 mm，0 帧超过 0.5 mm；右指接触峰值约 1813 N（读数偏高，仍需力学标定）。指标：`/tmp/shakebench_panel_knob_physical_v3.json`。
+- lever：已产生左右指接触并推动真实关节，最好一次约 6.2% 目标角；随后 contact-lost，未成功。已补齐球形握把 collider，最大穿透在最近安全轨迹中约 0.685 mm。指标：`/tmp/shakebench_panel_lever_physical_v6.json`。
+- button：正确按钮接触可触发 operate 阶段，但 prismatic 关节仍保持 0，最终 operation-timeout；同时出现约 7.86 mm 手部穿透，未成功。指标：`/tmp/shakebench_panel_button_physical_v2.json`。
 - 三控件序列、随机种子组、official 1000 Hz：因 lever/button 未通过，未做成功声明。
 - panel 任务暂时禁用 wrist joint-wrench sensor：Newton 多 articulation 场景会把全局 body index 当成 robot-local index，启动时报 out-of-range；六个按链接过滤的指-控件接触传感器仍启用。
 
@@ -16,7 +16,7 @@
 
 ## 1. 需求（已与用户澄清）
 
-在现有 ViBench 中新增一个 `panel_operation` 任务：
+在现有 ShakeBench 中新增一个 `panel_operation` 任务：
 
 - **不要新建工作台**：直接在当前 C2 工作台上放一块固定的控制面板。
 - 面板上只有三个控件：**旋钮 knob、拨杆 lever、按钮 button**。
@@ -156,17 +156,17 @@
 
 | 文件 | 改动/作用 |
 |---|---|
-| `src/vibench/config.py` | `CONTROL_KINDS`、`sample_panel_sequence`、`PanelConfig`、`BenchmarkConfig.task/panel` |
-| `src/vibench/panel.py` | 面板布局解析（三角排列、pivot/尺寸/目标） |
-| `src/vibench/scene.py` | panel/knob/lever/button 场景资产、面板外观、6 个接触传感器、`_configure_panel_task` |
-| `src/vibench/visual_assets.py` | 面板正面显示细节 spawner |
-| `src/vibench/panel_task.py` | `PanelBenchmarkTask`、C2 支撑写出、控件状态写出、obs、metrics |
-| `src/vibench/panel_controller.py` | `ScriptedPanelController`、分段路点、IK clamp/rate-limit、proximity 操作门控 |
-| `src/vibench/cli.py` | `--task`/`--panel-sequence`/`--panel-seed`、任务分支、metrics JSON |
-| `src/vibench/recording.py` | 录像 overlay 的 panel 分支 |
-| `src/vibench/diagnostics.py` | 新增 finger<->control / finger<->panel 穿透语义 |
-| `src/vibench/wrist_camera.py` | `WristCameraAssemblyCfg.collision_enabled`（panel 任务关闭） |
-| `src/vibench/visual_manifest.py` / `configs/visual_manifest.yaml` | 面板视觉 feature facts/清单 |
+| `src/shakebench/config.py` | `CONTROL_KINDS`、`sample_panel_sequence`、`PanelConfig`、`BenchmarkConfig.task/panel` |
+| `src/shakebench/panel.py` | 面板布局解析（三角排列、pivot/尺寸/目标） |
+| `src/shakebench/scene.py` | panel/knob/lever/button 场景资产、面板外观、6 个接触传感器、`_configure_panel_task` |
+| `src/shakebench/visual_assets.py` | 面板正面显示细节 spawner |
+| `src/shakebench/panel_task.py` | `PanelBenchmarkTask`、C2 支撑写出、控件状态写出、obs、metrics |
+| `src/shakebench/panel_controller.py` | `ScriptedPanelController`、分段路点、IK clamp/rate-limit、proximity 操作门控 |
+| `src/shakebench/cli.py` | `--task`/`--panel-sequence`/`--panel-seed`、任务分支、metrics JSON |
+| `src/shakebench/recording.py` | 录像 overlay 的 panel 分支 |
+| `src/shakebench/diagnostics.py` | 新增 finger<->control / finger<->panel 穿透语义 |
+| `src/shakebench/wrist_camera.py` | `WristCameraAssemblyCfg.collision_enabled`（panel 任务关闭） |
+| `src/shakebench/visual_manifest.py` / `configs/visual_manifest.yaml` | 面板视觉 feature facts/清单 |
 | `configs/scenarios.yaml` | 三个 panel 场景 |
 | `docs/handoff_panel_operation_task.md` | 本交接文档 |
 

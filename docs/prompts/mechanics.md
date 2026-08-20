@@ -1,4 +1,4 @@
-能看到——仓库 `Blien2002/ViBench` 是公开的（Python，单次提交 `7dd5abd`，创建于 2026-08-17）。我把它克隆下来通读了 `vibration.py / mounting.py / task.py / config.py / scene.py / shaker.py` 和 `configs/`，并且把默认谱型按代码逻辑重新实现跑了一遍数值核对。
+能看到——仓库 `Blien2002/ShakeBench` 是公开的（Python，单次提交 `7dd5abd`，创建于 2026-08-17）。我把它克隆下来通读了 `vibration.py / mounting.py / task.py / config.py / scene.py / shaker.py` 和 `configs/`，并且把默认谱型按代码逻辑重新实现跑了一遍数值核对。
 
 先提一句：README 和 CLAUDE.md 大量引用 `tests/`、`docs/`（第四轮验证记录、穿透基线、prim 锚点审计）和 `tools/`，但这三个目录**没有提交进仓库**，`run_tests.sh` 也没有对应的测试可跑。所以下面的判断只基于源码本身，无法用作者声称的验证证据交叉检验。
 

@@ -1,4 +1,4 @@
-# ViBench — 第二轮改造提示词（基于实际渲染帧诊断）
+# ShakeBench — 第二轮改造提示词（基于实际渲染帧诊断）
 
 对齐对象：`out/benchmark_v2_wrist_camera_fixed.mp4`（1280×720 / 30 fps / 14.33 s / seed=17）
 前置文档：`docs/prompts/round1_scene_refactor_prompt.md`（第一轮）

@@ -4,7 +4,7 @@
 
 ## 项目简介
 
-这是 **ViBench**：一个面向具身智能操作的独立 Isaac Lab + Newton/MJWarp benchmark。Franka Panda 在其基座和工作台受到六轴振动激励时执行拾取与放置任务。本项目特意**不**导入旧版 RM75/MuJoCo 项目，也**不**依赖桌面上的任何其他项目目录——所有配置、资产、工具和测试都位于本仓库内；唯一外部运行时是 `ISAACLAB_ROOT` 指定的 Isaac Lab 环境。
+这是 **ShakeBench**：一个面向具身智能操作的独立 Isaac Lab + Newton/MJWarp benchmark。Franka Panda 在其基座和工作台受到六轴振动激励时执行拾取与放置任务。本项目特意**不**导入旧版 RM75/MuJoCo 项目，也**不**依赖桌面上的任何其他项目目录——所有配置、资产、工具和测试都位于本仓库内；唯一外部运行时是 `ISAACLAB_ROOT` 指定的 Isaac Lab 环境。
 
 `docs/reports/current_implementation.md` 是权威且最新的实现参考文档（中文）。进行非简单更改前请先阅读；行为发生变化时请同步更新。`docs/fourth_round_validation.md` 记录了当前的验证边界以及尚未得到证实的内容。
 
@@ -37,7 +37,7 @@
   --metrics-output out/benchmark_v2_wrist_camera_fixed.json
 ```
 
-CLI 完整实现位于 `src/vibench/cli.py`；当 `success=true` 时以状态码 0 退出，否则以状态码 2 退出——非零退出是合理的结果，不一定表示存在错误。
+CLI 完整实现位于 `src/shakebench/cli.py`；当 `success=true` 时以状态码 0 退出，否则以状态码 2 退出——非零退出是合理的结果，不一定表示存在错误。
 
 ## 每步调用链
 
@@ -55,7 +55,7 @@ CLI 完整实现位于 `src/vibench/cli.py`；当 `success=true` 时以状态码
 
 ## 无法从文件名推断的架构事实
 
-**C2 支撑布局（单坐标系硬装）。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*，所有被驱动资产属于同一个 deck `SupportGroup`，位姿统一由 `q + c + R(l-c)` 生成。`arm_mount_xy_m / table_mount_xy_m` 与两个 7 mm dynamic clearance 已删除；机器人根/桌腿底只用显式 `assembly_clearance_m=0.5 mm` 装配公差。`src/vibench/supports.py` 是支撑位姿的**唯一写入点**；Stewart 平台、房间、桌面饰边等视觉件不在此列。Panda 使用 `fix_root_link=False`，重力已开启。
+**C2 支撑布局（单坐标系硬装）。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*，所有被驱动资产属于同一个 deck `SupportGroup`，位姿统一由 `q + c + R(l-c)` 生成。`arm_mount_xy_m / table_mount_xy_m` 与两个 7 mm dynamic clearance 已删除；机器人根/桌腿底只用显式 `assembly_clearance_m=0.5 mm` 装配公差。`src/shakebench/supports.py` 是支撑位姿的**唯一写入点**；Stewart 平台、房间、桌面饰边等视觉件不在此列。Panda 使用 `fix_root_link=False`，重力已开启。
 
 **仅用于视觉呈现的 Newton 形状与结构 pair filter。** Stewart 平台、房间、桌面饰边、阴影和腕部相机外壳会被渲染，但都带有 `UsdPhysics.CollisionAPI`，且 `collisionEnabled=false`。同一刚性支撑组内的结构连接（`panda_link0↔VibrationFloor`、`WorkTableLeg↔VibrationFloor`、`WorkTableLeg↔WorkTableTop`）通过 Newton Builder 的 `add_shape_collision_filter_pair` 在模型构建时排除。当前拓扑为 386 个 Newton 形状 / 29 个 MJWarp 几何体 / **339 个候选配对**。
 
@@ -86,6 +86,6 @@ Newton/Isaac 在模型构建过程中可能因 `malloc(): unaligned tcache chunk
 
 ## 目录结构
 
-- `src/vibench/`——库与 CLI。`cli.py`（命令行入口）、`paths.py`（项目根解析）、`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`supports.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`panel_task.py`/`panel*.py`、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
+- `src/shakebench/`——库与 CLI。`cli.py`（命令行入口）、`paths.py`（项目根解析）、`config.py`（所有数值/资产 dataclass + 验证）、`vibration.py`、`supports.py`、`shaker.py`、`scene.py`（Newton cfg + 场景组装）、`arena.py`（房间）、`visual_assets.py`（USD UV 材质和细节）、`wrist_camera.py`、`benchmark_rendering.py`、`task.py`（仿真循环、观测值、指标）、`panel_task.py`/`panel*.py`、`controller.py`、`recording.py`、`diagnostics.py`、`visual_manifest.py`。
 - `configs/`——`scenarios.yaml`（场景矩阵 + 评估/接触/控制器策略）、`assets.yaml`（资产来源、许可证、纹理 SHA-256）、`room.yaml`、`visual_manifest.yaml`、`visual_regions.yaml`。
 - `docs/`——验证日志、视觉基线、锚点审计；`docs/reports/` 为权威实现说明与报告，`docs/prompts/` 为历史重构提示词。`out/`——生成的 MP4/PNG/JSON 产物。

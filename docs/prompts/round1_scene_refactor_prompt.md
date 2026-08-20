@@ -1,6 +1,6 @@
-# ViBench — 场景成熟化改造提示词
+# ShakeBench — 场景成熟化改造提示词
 
-面向项目：`ViBench`
+面向项目：`ShakeBench`
 技术栈：Isaac Lab 3.0 + Newton / MJWarp（`use_mujoco_contacts=True`），渲染为 NewtonGL ViewerGL
 对齐版本：`docs/reports/current_implementation.md`（2026-08-13）
 
@@ -80,7 +80,7 @@
 ## P0 — 建立上下文与改造计划
 
 ```
-我在 ViBench 做一个振动场景下的具身操作 benchmark，
+我在 ShakeBench 做一个振动场景下的具身操作 benchmark，
 技术栈是 Isaac Lab 3.0 + Newton/MJWarp（use_mujoco_contacts=True），渲染用 NewtonGL ViewerGL。
 项目根目录的 `docs/reports/current_implementation.md` 描述了已实现内容，先完整读一遍。
 
@@ -116,7 +116,7 @@
 - 不要建真实闭链机构。Stewart 平台是闭链，在 MJWarp 里需要 loop closure 约束，
   数值不稳且严重拖慢仿真，收益为负。
 
-新建 src/vibench/shaker.py，实现：
+新建 src/shakebench/shaker.py，实现：
 
 1. ShakerGeometryCfg（configclass）：
    - base_joint_radius（基座球铰分布圆半径，默认 0.75 m）

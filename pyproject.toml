@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vibench"
+name = "shakebench"
 version = "0.2.0"
-description = "ViBench: an embodied-intelligence manipulation benchmark under multi-axis vibration on Isaac Lab + Newton/MJWarp"
+description = "ShakeBench: an embodied-intelligence manipulation benchmark under multi-axis vibration on Isaac Lab + Newton/MJWarp"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Proprietary" }
@@ -19,14 +19,14 @@ classifiers = [
 dependencies = ["numpy", "torch", "imageio", "imageio-ffmpeg", "pillow", "pyyaml"]
 
 [project.scripts]
-vibench = "vibench.cli:main"
+shakebench = "shakebench.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.data-files]
-"share/vibench/configs" = ["configs/*.yaml"]
-"share/vibench/assets/textures" = ["assets/textures/*.jpg"]
+"share/shakebench/configs" = ["configs/*.yaml"]
+"share/shakebench/assets/textures" = ["assets/textures/*.jpg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

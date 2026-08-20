@@ -1,8 +1,8 @@
-# ViBench `panel_operation` 控制面板任务交接文档
+# ShakeBench `panel_operation` 控制面板任务交接文档
 
 更新时间：2026-08-19  
-对应项目：`/home/miracle04/Desktop/ViBench`  
-远程源码快照：`Blien2002/ViBench`，`main@7dd5abdfba707475c39a00b8cc545828739c7718`
+对应项目：`/home/miracle04/Desktop/ShakeBench`  
+远程源码快照：`Blien2002/ShakeBench`，`main@7dd5abdfba707475c39a00b8cc545828739c7718`
 
 ## 1. 当前结论
 
@@ -48,7 +48,7 @@
 
 ### 3.1 控制台与视觉建模
 
-`src/vibench/visual_assets.py` 和 `src/vibench/panel.py` 实现了程序化控制台：
+`src/shakebench/visual_assets.py` 和 `src/shakebench/panel.py` 实现了程序化控制台：
 
 - 楔形/五棱柱式机箱，控件安装在斜面而不是垂直面。
 - 独立操作面、边缘压条、后部平台、紧固件、铭牌、状态灯和三个固定座圈。
@@ -57,7 +57,7 @@
 
 ### 3.2 三类物理控件
 
-`src/vibench/panel_controls.py` 为每个控件创建两刚体、单自由度 articulation：根刚体随工作台运动，运动链接承担碰撞与可视几何。
+`src/shakebench/panel_controls.py` 为每个控件创建两刚体、单自由度 articulation：根刚体随工作台运动，运动链接承担碰撞与可视几何。
 
 旋钮：
 
@@ -83,7 +83,7 @@
 
 ### 3.3 场景接入
 
-`src/vibench/scene.py` 在 `panel_operation` 分支中完成：
+`src/shakebench/scene.py` 在 `panel_operation` 分支中完成：
 
 - 面板固定刚体、三个 articulation 和外观资产的创建。
 - 每个控件分别建立左指、右指接触传感器，共六个按运动链接过滤的传感器。
@@ -93,7 +93,7 @@
 
 ### 3.4 任务状态、观测和判定
 
-`src/vibench/panel_task.py` 的权威状态来自仿真关节：
+`src/shakebench/panel_task.py` 的权威状态来自仿真关节：
 
 ```text
 knob_progress  = knob_q / 72°
@@ -111,7 +111,7 @@ button_progress = -button_q / 4 mm
 
 ### 3.5 参考控制器
 
-`src/vibench/panel_controller.py` 实现确定性 DLS IK 基线：
+`src/shakebench/panel_controller.py` 实现确定性 DLS IK 基线：
 
 ```text
 settle -> pre -> approach -> move -> operate -> retreat
@@ -129,11 +129,11 @@ settle -> pre -> approach -> move -> operate -> retreat
 
 ### 3.6 配置、CLI 与记录
 
-- `src/vibench/config.py`：`PanelConfig`、随机指令采样、几何/速度/阈值校验。
-- `src/vibench/cli.py`：`--task panel_operation`、`--panel-sequence`、`--panel-seed` 及面板 metrics 输出。
+- `src/shakebench/config.py`：`PanelConfig`、随机指令采样、几何/速度/阈值校验。
+- `src/shakebench/cli.py`：`--task panel_operation`、`--panel-sequence`、`--panel-seed` 及面板 metrics 输出。
 - `configs/scenarios.yaml`：面板关闭振动、频谱演示和显式序列场景。
-- `src/vibench/recording.py`：录像 overlay 可显示指令和三控件状态。
-- `src/vibench/diagnostics.py`：支持 `finger<->knob/lever/button/panel` 穿透分类。
+- `src/shakebench/recording.py`：录像 overlay 可显示指令和三控件状态。
+- `src/shakebench/diagnostics.py`：支持 `finger<->knob/lever/button/panel` 穿透分类。
 
 ## 4. 已完成验证
 
@@ -158,7 +158,7 @@ PYTHONDONTWRITEBYTECODE=1 ./run_tests.sh -p no:cacheprovider
 ```bash
 ./run.sh --task panel_operation --panel-sequence knob \
   --vibration off --episode-s 16 --physics-profile training \
-  --metrics-output /tmp/vibench_panel_knob_physical_v3.json
+  --metrics-output /tmp/shakebench_panel_knob_physical_v3.json
 ```
 
 结果：
@@ -315,7 +315,7 @@ RuntimeError: joint_child contains out-of-range body indices for '/World/envs/en
 建议命令：
 
 ```bash
-cd /home/miracle04/Desktop/ViBench
+cd /home/miracle04/Desktop/ShakeBench
 
 PYTHONDONTWRITEBYTECODE=1 ./run_tests.sh -p no:cacheprovider
 
@@ -336,16 +336,16 @@ PYTHONDONTWRITEBYTECODE=1 ./run_tests.sh -p no:cacheprovider
 
 | 文件 | 职责 |
 |---|---|
-| `src/vibench/config.py` | 面板参数、随机顺序、配置校验 |
-| `src/vibench/panel.py` | 斜面布局和控件 pivot 解析 |
-| `src/vibench/panel_controls.py` | 三套物理 articulation、关节、碰撞和运动视觉 |
-| `src/vibench/visual_assets.py` | 控制台固定外观 |
-| `src/vibench/scene.py` | 场景资产、actuator、六路接触传感器 |
-| `src/vibench/panel_task.py` | 真实关节状态、观测、顺序判定和 metrics |
-| `src/vibench/panel_controller.py` | DLS IK 参考控制器和操作轨迹 |
-| `src/vibench/cli.py` | CLI、运行循环和 metrics JSON |
-| `src/vibench/recording.py` | 面板录像 overlay |
-| `src/vibench/diagnostics.py` | 穿透检测与语义分类 |
+| `src/shakebench/config.py` | 面板参数、随机顺序、配置校验 |
+| `src/shakebench/panel.py` | 斜面布局和控件 pivot 解析 |
+| `src/shakebench/panel_controls.py` | 三套物理 articulation、关节、碰撞和运动视觉 |
+| `src/shakebench/visual_assets.py` | 控制台固定外观 |
+| `src/shakebench/scene.py` | 场景资产、actuator、六路接触传感器 |
+| `src/shakebench/panel_task.py` | 真实关节状态、观测、顺序判定和 metrics |
+| `src/shakebench/panel_controller.py` | DLS IK 参考控制器和操作轨迹 |
+| `src/shakebench/cli.py` | CLI、运行循环和 metrics JSON |
+| `src/shakebench/recording.py` | 面板录像 overlay |
+| `src/shakebench/diagnostics.py` | 穿透检测与语义分类 |
 | `configs/scenarios.yaml` | 面板场景预设 |
 | `configs/visual_manifest.yaml` | 外观特征清单 |
 
@@ -365,4 +365,4 @@ PYTHONDONTWRITEBYTECODE=1 ./run_tests.sh -p no:cacheprovider
 
 ## 10. 仓库状态说明
 
-2026-08-17 已将不含 `docs/`、`tests/`、`tools/` 的源码快照强制发布到远程 `Blien2002/ViBench` 的 `main`，提交为 `7dd5abd`。因此本交接文档当前作为独立工件交付，不在该远程源码快照内。本地 `/home/miracle04/Desktop/ViBench` 仍保留文档、测试和未提交工作区，接手时不要用远程 checkout 覆盖本地未提交内容。
+2026-08-17 已将不含 `docs/`、`tests/`、`tools/` 的源码快照强制发布到远程 `Blien2002/ShakeBench` 的 `main`，提交为 `7dd5abd`。因此本交接文档当前作为独立工件交付，不在该远程源码快照内。本地 `/home/miracle04/Desktop/ShakeBench` 仍保留文档、测试和未提交工作区，接手时不要用远程 checkout 覆盖本地未提交内容。

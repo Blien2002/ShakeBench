@@ -28,9 +28,9 @@ https://creativecommons.org/licenses/by-nc/4.0/
 The Sketchfab listing is also marked NoAI: the model may not be used in
 datasets for, in the development of, or as inputs to generative AI programs.
 
-Use in ViBench
+Use in ShakeBench
 --------------
-The STL triangle topology is retained unchanged. At runtime ViBench converts
+The STL triangle topology is retained unchanged. At runtime ShakeBench converts
 millimetres to metres, maps the STL axes into the panel's tangent/lateral/
 normal frame, translates the base onto the mounting bezel, and assigns a
 neutral display color. The physical collision proxy remains a separate simple

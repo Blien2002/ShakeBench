@@ -1,7 +1,7 @@
 # Benchmark-v2 环境重建报告
 
 日期：2026-08-11；第三轮更新：2026-08-13  
-项目：`ViBench`
+项目：`ShakeBench`
 
 ## 1. 重建结果
 
@@ -85,7 +85,7 @@
 ## 6. 复现实验
 
 ```bash
-cd ViBench
+cd ShakeBench
 ./run.sh --record --episode-s 16 --vibration spectral --seed 17 \
   --workpiece sugar_box --workpiece-scale 0.75 \
   --output out/benchmark_v2_wrist_camera_fixed.mp4 \

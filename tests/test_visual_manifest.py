@@ -6,8 +6,8 @@ import math
 import pytest
 import torch
 
-from vibench.config import BenchmarkConfig, VibrationConfig
-from vibench.controller import (
+from shakebench.config import BenchmarkConfig, VibrationConfig
+from shakebench.controller import (
     grasp_feasibility,
     grasp_feasibility_table,
     collision_safe_descend_clearance,
@@ -17,10 +17,10 @@ from vibench.controller import (
     rate_limit_translation,
     short_axis_yaw,
 )
-from vibench.diagnostics import classify_penetration_pair
-from vibench.supports import support_group_geometries
-from vibench.vibration import offline_support_travel_report
-from vibench.visual_manifest import (
+from shakebench.diagnostics import classify_penetration_pair
+from shakebench.supports import support_group_geometries
+from shakebench.vibration import offline_support_travel_report
+from shakebench.visual_manifest import (
     load_visual_manifest,
     prim_anchor_audit,
     visual_feature_facts,
@@ -181,8 +181,8 @@ def test_all_visual_attachments_are_within_five_mm_of_anchor() -> None:
 
 def test_parent_transform_fixes_remain_local_in_source() -> None:
     root = Path(__file__).resolve().parents[1]
-    visuals = (root / "src" / "vibench" / "visual_assets.py").read_text(encoding="utf-8")
-    arena = (root / "src" / "vibench" / "arena.py").read_text(encoding="utf-8")
+    visuals = (root / "src" / "shakebench" / "visual_assets.py").read_text(encoding="utf-8")
+    arena = (root / "src" / "shakebench" / "arena.py").read_text(encoding="utf-8")
     assert "(0.092 * math.cos(angle), 0.092 * math.sin(angle), 0.010)" in visuals
     assert "Gf.Vec3d(dx, dy, 0.008)" in visuals
     assert 'create_prim(sensor_root, "Xform"' in visuals
@@ -191,7 +191,7 @@ def test_parent_transform_fixes_remain_local_in_source() -> None:
 
 def test_settle_phase_holds_reset_pose_instead_of_sweeping_through_table() -> None:
     root = Path(__file__).resolve().parents[1]
-    controller = (root / "src" / "vibench" / "controller.py").read_text(encoding="utf-8")
+    controller = (root / "src" / "shakebench" / "controller.py").read_text(encoding="utf-8")
     assert 'if phase.name == "settle"' in controller
     assert 'self.settle_pose_b = obs["ee_pose_b"].clone()' in controller
     assert 'self.orientation_b = self.settle_pose_b[:, 3:7]' in controller
@@ -209,8 +209,8 @@ def test_run_script_serializes_usd_build_by_default_but_allows_override() -> Non
 
 def test_support_authoring_has_single_anchor_and_no_legacy_pitch_sign() -> None:
     root = Path(__file__).resolve().parents[1]
-    supports = (root / "src" / "vibench" / "supports.py").read_text(encoding="utf-8")
-    task = (root / "src" / "vibench" / "task.py").read_text(encoding="utf-8")
+    supports = (root / "src" / "shakebench" / "supports.py").read_text(encoding="utf-8")
+    task = (root / "src" / "shakebench" / "task.py").read_text(encoding="utf-8")
     assert "quat_apply(quat, local - anchor)" in supports
     assert "quat_from_euler_xyz(q[:, 3], q[:, 4], q[:, 5])" in supports
     assert "quat_from_euler_xyz(motion[:, 3], -motion[:, 4], motion[:, 5])" not in task

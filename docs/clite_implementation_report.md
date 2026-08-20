@@ -1,7 +1,7 @@
 # C-lite 主支撑实现与评定报告
 
 更新日期：2026-08-18  
-备份：`~/Desktop/ViBench_backups/ViBench_code_backup_20260818_105442.tar.gz`  
+备份：`~/Desktop/ShakeBench_backups/ShakeBench_code_backup_20260818_105442.tar.gz`  
 默认行为：`support_config="C2"` 完全不变；C-lite 通过 `--support-config C2_CLITE` 显式启用。
 
 ---
@@ -10,18 +10,18 @@
 
 ### 1.1 配置
 
-- `src/vibench/config.py`
+- `src/shakebench/config.py`
   - `BenchmarkConfig.support_config: Literal["C2", "C2_CLITE"]`
   - `BenchmarkConfig.use_clite_support` property
   - `panel_operation + C2_CLITE` 显式拒绝
 
-- `src/vibench/cli.py`
+- `src/shakebench/cli.py`
   - 新参数 `--support-config C2|C2_CLITE`（默认 C2）
   - JSON 增加 `support_config` 字段
 
 ### 1.2 场景装配
 
-`src/vibench/scene.py`：
+`src/shakebench/scene.py`：
 
 - `_clite_dynamic_asset()`：把 RigidObject 的 `kinematic_enabled` 改为 `False`
 - `install_clite_model_constraints(cfg)`：注册 `PhysicsEvent.MODEL_INIT` 回调，在 Newton `ModelBuilder` finalize 之前：
@@ -34,7 +34,7 @@
 
 ### 1.3 任务循环
 
-`src/vibench/task.py`：
+`src/shakebench/task.py`：
 
 - `_resolve_clite_mocap_ids()`：求解器构建后，把 `clite_driver_platform` / `clite_driver_worktable` 映射为 MuJoCo mocap id，并记录初始 mocap 位姿。
 - `_write_clite_drivers()`：每步把三个轨迹写入 `mjw_data.mocap_pos/mocap_quat`：

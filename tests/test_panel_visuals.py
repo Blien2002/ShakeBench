@@ -5,7 +5,7 @@ import struct
 
 import pytest
 
-from vibench.panel import linear_rgb_to_srgb, panel_lamp_linear_rgb
+from shakebench.panel import linear_rgb_to_srgb, panel_lamp_linear_rgb
 
 
 def test_panel_lamps_are_dim_active_progressive_and_latched() -> None:
@@ -39,8 +39,8 @@ def test_panel_lamp_progress_is_clamped_and_srgb_encoded() -> None:
 
 def test_control_visuals_keep_moving_geometry_clear_of_fixed_hardware() -> None:
     root = Path(__file__).resolve().parents[1]
-    controls = (root / "src" / "vibench" / "panel_controls.py").read_text(encoding="utf-8")
-    appearance = (root / "src" / "vibench" / "visual_assets.py").read_text(encoding="utf-8")
+    controls = (root / "src" / "shakebench" / "panel_controls.py").read_text(encoding="utf-8")
+    appearance = (root / "src" / "shakebench" / "visual_assets.py").read_text(encoding="utf-8")
 
     assert "_visual_binary_stl_mesh" in controls
     assert "APOLLO_KNOB_STL_PATH" in controls

@@ -603,7 +603,7 @@ def install_clite_model_constraints(cfg: BenchmarkConfig):
         _on_model_init,
         PhysicsEvent.MODEL_INIT,
         order=-50,
-        name="vibench_clite_model_init",
+        name="shakebench_clite_model_init",
     )
 
 

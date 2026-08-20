@@ -7,20 +7,20 @@ from pathlib import Path
 import torch
 from isaaclab.utils.math import matrix_from_quat, quat_from_euler_xyz
 
-from vibench.arena import load_room_arena_cfg
-from vibench.config import BenchmarkConfig, VibrationConfig
-from vibench.shaker import ShakerGeometryCfg, joint_points, solve_leg_transforms
-from vibench.supports import (
+from shakebench.arena import load_room_arena_cfg
+from shakebench.config import BenchmarkConfig, VibrationConfig
+from shakebench.shaker import ShakerGeometryCfg, joint_points, solve_leg_transforms
+from shakebench.supports import (
     angular_velocity_from_euler_rates,
     support_group_geometries,
     support_pose_velocity,
 )
-from vibench.vibration import (
+from shakebench.vibration import (
     SpectralVibration,
     _euler_rotation_matrices,
     _synthesize_episode,
 )
-from vibench.wrist_camera import (
+from shakebench.wrist_camera import (
     WRIST_CAMERA_AIM_H,
     WRIST_CAMERA_EYE_H,
     WRIST_CAMERA_FORWARD_H,

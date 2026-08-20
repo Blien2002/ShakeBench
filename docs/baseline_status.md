@@ -22,7 +22,7 @@
 | `out/stage_a_off_smoke.json` | official 1000 Hz × 5，vibration=off，0.2 s smoke |
 | `out/stage_a_spectral_probe.json` | official 1000 Hz × 5，seed=17，1 s settle 探针，最大穿透 0.242 mm `workpiece<->worktable` |
 | `out/stage_a_16s_seed17.json` | 阶段 A 完整 16 s official 回合，seed=17：`lifted=true`，随后 `grasp_z_guard_triggered`，`success=false`；最大穿透 0.955 mm `workpiece<->worktable`，`support_geometry_valid=true`。诚实失败，不用于计分 |
-| `out/vibench_stage_a_latest.mp4/.json` | 阶段 A 最新录制：1280×720 H.264，6.1 s / 183 帧；`grasp_contact_timeout`，`success=false`，`support_geometry_valid=true` |
+| `out/shakebench_stage_a_latest.mp4/.json` | 阶段 A 最新录制：1280×720 H.264，6.1 s / 183 帧；`grasp_contact_timeout`，`success=false`，`support_geometry_valid=true` |
 | `out/stage_a_clite_16s_seed17.json` | C2_CLITE + iterations=120 的 16 s 实验：运行 5 min 尚未越过 settle 阶段，已终止，无 JSON；C2_CLITE 手动子步循环当前吞吐不足以跑官方完整回合 |
 
 ### 数值地板（1 s settle，只振动不操作）

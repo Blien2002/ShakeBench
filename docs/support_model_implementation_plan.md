@@ -161,7 +161,7 @@ VibrationConfig ──> SpectralVibration
 
 ## 3. 文件级实施方案
 
-### 3.1 `src/vibench/config.py`
+### 3.1 `src/shakebench/config.py`
 
 1. **删除**：
    - `arm_mount_xy_m`、`table_mount_xy_m`；
@@ -206,7 +206,7 @@ forbidden_contact_pairs: tuple[tuple[str, str], ...] = (
 
 运行时用子串/glob 匹配 shape label；命中且 `dist < 0` 即 `support_geometry_valid=false`。
 
-### 3.2 新建 `src/vibench/supports.py`
+### 3.2 新建 `src/shakebench/supports.py`
 
 ```python
 @dataclass(frozen=True)
@@ -253,7 +253,7 @@ linear  = qd[:3] + torch.linalg.cross(angular_velocity(q, qd), quat_apply(quat, 
 
 `angular_velocity` 使用精确的 `E(θ)θ̇`，不再把欧拉角速率当 ω。
 
-### 3.3 `src/vibench/vibration.py`
+### 3.3 `src/shakebench/vibration.py`
 
 1. `sample()` 保持为 deck 六轴 `q/qd/qdd`。
 2. `reseed()` 额外生成 table 通道的逐 tone 增益/相位表；**六个轴全部走传递率**：
@@ -298,7 +298,7 @@ def offline_support_travel_report(
 
 该重放是纯 NumPy、不启 Isaac；代价为每 seed 数万次解析采样（预计 < 1 s）。
 
-### 3.5 `src/vibench/task.py`
+### 3.5 `src/shakebench/task.py`
 
 - `_write_supports()` 改为调用 `write_support_groups()`；
 - 硬装 C2：只有一个 deck 组；
@@ -312,7 +312,7 @@ def offline_support_travel_report(
   - `support_geometry_valid`：运行时逐步扫描 `forbidden_contact_pairs`，任一命中（`dist < 0`）立即置 false 并记录 `support_geometry_invalid_t` 与 pair；
 - 硬装下 `robot ↔ worktable` 合法接触（如 `descend_table_contact`）不受禁止清单影响。
 
-### 3.6 `src/vibench/scene.py`
+### 3.6 `src/shakebench/scene.py`
 
 **硬装阶段：**
 
@@ -332,7 +332,7 @@ def offline_support_travel_report(
 - 可见层改为“金属腿 + bonded-stud 减振件”，减振件为纯视觉两段式伸缩件，`collision_enabled=False`；
 - 桌面、目标盒、工件阴影进 table 组。
 
-### 3.7 `src/vibench/panel_task.py` 与 `C2_CLITE`
+### 3.7 `src/shakebench/panel_task.py` 与 `C2_CLITE`
 
 - `panel_task.py` 删除重复支撑写入，复用 `supports.py`；
 - `isolated_table + panel_operation` 暂不组合（`__post_init__` 拒绝）；
@@ -341,7 +341,7 @@ def offline_support_travel_report(
   - `_write_clite_drivers()` 按 `SupportGroup.motion_source` 选择 `q_c` 或 `q_t`；
   - `isolated_table + C2_CLITE` 暂不组合。
 
-### 3.8 `src/vibench/cli.py`
+### 3.8 `src/shakebench/cli.py`
 
 - `--support-config` 增加 `isolated_table` 与 `legacy_virtual_mount`；
 - `legacy_virtual_mount` **硬性拒绝 `physics_profile=official`**；
@@ -355,7 +355,7 @@ def offline_support_travel_report(
   - `max_substep_travel_mm`、`max_outer_update_travel_mm`（重放真实值）
   - `ee_tracking_error_rms_m`、`max_ee_tracking_error_m`
 
-### 3.9 `src/vibench/recording.py`
+### 3.9 `src/shakebench/recording.py`
 
 - `C2 Delta-z` → `arm-table surface Δz`（硬装）/ `isolator relative travel`（isolated）；
 - isolated 模式叠加 table 相对位移曲线；

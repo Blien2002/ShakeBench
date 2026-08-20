@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ViBench command-line interface: run the embodied vibration-perturbed pick-and-place benchmark."""
+"""ShakeBench command-line interface: run the embodied vibration-perturbed pick-and-place benchmark."""
 
 from __future__ import annotations
 
@@ -18,21 +18,21 @@ import yaml
 import isaaclab.sim as sim_utils
 from isaaclab.scene import InteractiveScene
 
-from vibench import AssetConfig, BenchmarkConfig, PanelConfig, VibrationBenchmarkTask, VibrationConfig
-from vibench.config import AXES, CONTROL_KINDS, SpectralBand
-from vibench.controller import ScriptedPickPlaceController, grasp_feasibility_table
-from vibench.diagnostics import (
+from shakebench import AssetConfig, BenchmarkConfig, PanelConfig, VibrationBenchmarkTask, VibrationConfig
+from shakebench.config import AXES, CONTROL_KINDS, SpectralBand
+from shakebench.controller import ScriptedPickPlaceController, grasp_feasibility_table
+from shakebench.diagnostics import (
     collision_shape_geometry,
     configure_mujoco_contact_solref,
     print_contact_snapshot,
 )
-from vibench.panel_controller import ScriptedPanelController
-from vibench.panel_task import PanelBenchmarkTask
-from vibench.recording import BenchmarkRecorder
-from vibench.scene import install_clite_model_constraints, make_scene_cfg, make_sim_cfg
-from vibench.supports import install_structural_collision_exclusions, support_group_geometries
-from vibench.vibration import offline_support_travel_report
-from vibench.wrist_camera import (
+from shakebench.panel_controller import ScriptedPanelController
+from shakebench.panel_task import PanelBenchmarkTask
+from shakebench.recording import BenchmarkRecorder
+from shakebench.scene import install_clite_model_constraints, make_scene_cfg, make_sim_cfg
+from shakebench.supports import install_structural_collision_exclusions, support_group_geometries
+from shakebench.vibration import offline_support_travel_report
+from shakebench.wrist_camera import (
     WRIST_CAMERA_EYE_H,
     WRIST_CAMERA_FORWARD_H,
     WRIST_CAMERA_UP_H,
@@ -41,8 +41,8 @@ from vibench.wrist_camera import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="vibench",
-        description="Run a ViBench vibration-perturbed pick-and-place episode on Isaac Lab + Newton/MJWarp.",
+        prog="shakebench",
+        description="Run a ShakeBench vibration-perturbed pick-and-place episode on Isaac Lab + Newton/MJWarp.",
     )
     parser.add_argument("--scenario", help="Load a named scenario from configs/scenarios.yaml")
     parser.add_argument(

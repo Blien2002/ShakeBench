@@ -23,11 +23,11 @@ import torch
 import isaaclab.sim as sim_utils
 from isaaclab.scene import InteractiveScene
 
-from vibench import BenchmarkConfig, PanelConfig, VibrationConfig
-from vibench.panel_task import PanelBenchmarkTask
-from vibench.recording import BenchmarkRecorder
-from vibench.scene import make_scene_cfg, make_sim_cfg
-from vibench.supports import install_structural_collision_exclusions
+from shakebench import BenchmarkConfig, PanelConfig, VibrationConfig
+from shakebench.panel_task import PanelBenchmarkTask
+from shakebench.recording import BenchmarkRecorder
+from shakebench.scene import make_scene_cfg, make_sim_cfg
+from shakebench.supports import install_structural_collision_exclusions
 
 KNOB = 0
 LEVER = 1

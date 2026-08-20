@@ -251,5 +251,5 @@ def install_structural_collision_exclusions(
         _on_model_init,
         PhysicsEvent.MODEL_INIT,
         order=-55,
-        name="vibench_structural_collision_exclusions",
+        name="shakebench_structural_collision_exclusions",
     )

@@ -4,7 +4,7 @@ The visible console is a five-sided prism fixed to the existing C2 worktable.
 Its three controls are arranged on the sloped operator face: knob at the
 upper-left, lever at the lower-center, and button at the upper-right.  All
 coordinates returned here are in the same local task frame
-used by :func:`vibench.task.VibrationBenchmarkTask._support_state` (i.e. the
+used by :func:`shakebench.task.VibrationBenchmarkTask._support_state` (i.e. the
 undisturbed env frame before the table-mount motion is applied).
 """
 

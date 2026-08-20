@@ -1,7 +1,7 @@
 # 穿模问题根因分析与根绝方案（完整调研文档）
 
 更新日期：2026-08-17  
-项目：`ViBench`  
+项目：`ShakeBench`  
 后端：Isaac Lab 3.0 + Newton 1.2.1 / MJWarp（`use_mujoco_contacts=True`）  
 文档性质：调研与方案文档。本文只记录分析、实验、结论和待实施方案，**未修改任何项目源码**。
 
@@ -23,7 +23,7 @@
 - **方案 B（运动注入根治）**：把 `_write_supports()` 的更新频率从外层 1000 Hz 提高到 solver 子步 4000 Hz。这样训练档默认全谱（外层阶跃约 4.4 mm）变为每次支撑更新约 1.15 mm，在恢复 margin 后几何穿透同样降到 **0.000 mm**。
 - **方案 C（物理结构根治）**：废除 kinematic 位姿覆写，把支撑体改为动态刚体并用执行器/约束驱动振动轨迹，使支撑运动与接触约束在求解器中联合求解。这是最严格的物理方案，但改动和标定成本最高。
 
-随后在 **真实 ViBench 场景** 中完成 5 组小实验（见第 5A 节），结果推翻了隔离模型的部分结论：
+随后在 **真实 ShakeBench 场景** 中完成 5 组小实验（见第 5A 节），结果推翻了隔离模型的部分结论：
 
 - **简单方案 A 不成立**：只恢复 margin 会产生接触前 speculative 力，真实场景腕力峰值从 36.8 N 暴涨到 21.6 kN，工件被反重力悬空；margin+gap 组合在 box/mesh 混合场景中或失稳、或完全无接触。
 - **方案 B 部分成立但有副作用**：在公平的“1000 Hz×4 子步”对照中，支撑逐子步更新把工件↔桌面最大穿透从 0.307 mm 降到 0.161 mm，但暴露了右指↔桌面 1.279 mm 的新碰撞（settle 位姿下连续差动运动会真实扫到桌面，原 1 kHz 阶梯近似恰好跳过该碰撞）。
@@ -37,7 +37,7 @@
 
 ### 2.1 每步调用链
 
-`src/vibench/task.py` 的 `VibrationBenchmarkTask.step()`：
+`src/shakebench/task.py` 的 `VibrationBenchmarkTask.step()`：
 
 ```python
 def step(self, arm_target, finger_target):
@@ -56,7 +56,7 @@ def step(self, arm_target, finger_target):
 
 ### 2.2 支撑体运动映射
 
-`src/vibench/task.py` 的 `_write_supports()` 对以下对象直接写入 root pose/velocity：
+`src/shakebench/task.py` 的 `_write_supports()` 对以下对象直接写入 root pose/velocity：
 
 - `platform`（振动地板，kinematic）
 - `robot`（Panda 浮动根，`fix_root_link=False`，kinematic 驱动）
@@ -68,7 +68,7 @@ def step(self, arm_target, finger_target):
 
 ### 2.3 当前防穿透手段
 
-`src/vibench/vibration.py` 的 `validate_impulsive_timestep()`：
+`src/shakebench/vibration.py` 的 `validate_impulsive_timestep()`：
 
 ```python
 displacement = estimated_peak_velocity_m_s(cfg, mount_radius_m) / (physics_hz * substeps)
@@ -76,7 +76,7 @@ if cfg.mode != "off" and displacement > limit_m:
     raise ValueError(...)
 ```
 
-`src/vibench/config.py`：
+`src/shakebench/config.py`：
 
 ```python
 # Official 1000 Hz spectral profile is 0.264 mm at the conservative
@@ -85,7 +85,7 @@ if cfg.mode != "off" and displacement > limit_m:
 max_substep_displacement_m: float = 0.0003
 ```
 
-`src/vibench/diagnostics.py` 的 `configure_mujoco_contact_solref()` 在运行时统一覆写 `mjw_model.geom_solref`：
+`src/shakebench/diagnostics.py` 的 `configure_mujoco_contact_solref()` 在运行时统一覆写 `mjw_model.geom_solref`：
 
 - official: `(0.00060 s, 1.0)`
 - training: `(0.0025 s, 1.0)`
@@ -128,7 +128,7 @@ training: 1.056 m/s × 1/240 s  ≈ 4.4 mm/外层步
 
 ### 3.1 证据链
 
-1. `src/vibench/scene.py` 中所有任务碰撞体都请求了 `contact_offset=cfg.contact_margin_m`、`rest_offset=cfg.contact_margin_m`（默认 1 mm）。
+1. `src/shakebench/scene.py` 中所有任务碰撞体都请求了 `contact_offset=cfg.contact_margin_m`、`rest_offset=cfg.contact_margin_m`（默认 1 mm）。
 2. Isaac Lab 的 Newton 绑定注释（`isaaclab/envs/mdp/events.py` 约 831-832 行）明确：
    - `rest_offset -> shape_margin`（Newton margin）
    - `contact_offset -> shape_gap`（Newton gap = contact_offset - margin）
@@ -156,7 +156,7 @@ margin=0 时，MuJoCo 只在两几何表面**实际重叠**后才生成接触。
 
 ### 4.1 代码证据
 
-- `src/vibench/task.py`：`_write_supports()` 在 `sim.step()` 之前调用一次（见 2.1）。
+- `src/shakebench/task.py`：`_write_supports()` 在 `sim.step()` 之前调用一次（见 2.1）。
 - Isaac Lab Newton Manager（`isaaclab_newton/physics/newton_manager.py`）的 `step()` 流程为：
 
   ```text
@@ -182,7 +182,7 @@ margin=0 时，MuJoCo 只在两几何表面**实际重叠**后才生成接触。
 
 ### 5.1 实验原则
 
-- 所有实验都在 `$ISAACLAB_ROOT/.venv` 中运行，使用 `newton.ModelBuilder` 构建最小两刚体场景，**未加载、未修改 ViBench 场景代码**。
+- 所有实验都在 `$ISAACLAB_ROOT/.venv` 中运行，使用 `newton.ModelBuilder` 构建最小两刚体场景，**未加载、未修改 ShakeBench 场景代码**。
 - 实验场景刻意复刻项目关键结构：
   - 一个 **kinematic** 地板刚体（box，半尺寸 `0.2×0.2×0.01 m`，质量 1 kg，`is_kinematic=True`）；
   - 一个 **dynamic** 工件刚体（box，半尺寸 `0.02×0.02×0.02 m`，质量 0.1 kg）；
@@ -326,13 +326,13 @@ margin=0 时，MuJoCo 只在两几何表面**实际重叠**后才生成接触。
 
 ---
 
-## 5A. 真实 ViBench 场景验证实验（2026-08-18）
+## 5A. 真实 ShakeBench 场景验证实验（2026-08-18）
 
 ### 5A.1 代码备份
 
 实验前对当前代码做了完整备份：
 
-- 文件：`~/Desktop/ViBench_backups/ViBench_code_backup_20260818_105442.tar.gz`（12 MB）
+- 文件：`~/Desktop/ShakeBench_backups/ShakeBench_code_backup_20260818_105442.tar.gz`（12 MB）
 - SHA-256：`1bca3cf66a357a3822c6bba26ebac27e0c9800ce4df55bbf97a9a0e4cc5d7498`
 - 内容：完整仓库（含 `.git`），排除 `out/`、`__pycache__/`、`.pytest_cache/`
 - 已解包抽查 `src/` 与 `CLAUDE.md`，与工作区一致
@@ -425,7 +425,7 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
 
 **待实施改动（本阶段只做方案，不实施）**
 
-1. `src/vibench/diagnostics.py`
+1. `src/shakebench/diagnostics.py`
    - 扩展 `configure_mujoco_contact_solref(solref, friction_mu=None, margin_m=None)`：
      - 现有 `geom_solref` 写入之后，执行 `solver.mjw_model.geom_margin.fill_(margin_m)`；
      - 不要随后调用 `notify_model_changed(SHAPE_PROPERTIES)`，否则 margin 会被上游再次清零；
@@ -436,11 +436,11 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
        - `"upstream_issue": "#2106"`
    - 可选加固：提供 `assert_margin_intact()`，在 episode 开始与 `reset()` 后校验 `geom_margin` 非零；若被后续模型变更清零，则重写并记录事件。
 
-2. `src/vibench/cli.py`
+2. `src/shakebench/cli.py`
    - 调用点传入 `margin_m=cfg.contact_margin_m`；
    - 更新 JSON 的 `contact_response` 字段与打印内容。
 
-3. `src/vibench/config.py`
+3. `src/shakebench/config.py`
    - 增加“接触包络覆盖校验”：
 
      ```text
@@ -452,7 +452,7 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
    - 修正注释：现安全门计算的不是“支撑体每个子步的位移”，而是动态物体的积分增量；支撑体真实阶跃应按 `peak_velocity / physics_hz` 计算。
    - 保留原启动门作为第二道保险，但不再把它当作防穿模的唯一机制。
 
-4. `src/vibench/diagnostics.py` 的 `penetration_probe()`
+4. `src/shakebench/diagnostics.py` 的 `penetration_probe()`
    - 依据 5.3 实验，`contact.dist` 在 margin 恢复后仍为真实几何距离，现有 `max(0, -dist)` 计算保持不变；
    - 在真实场景集成验证时再次确认这一口径。
 
@@ -491,7 +491,7 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
 
 **待实施改动（方案阶段）**
 
-1. `src/vibench/config.py`
+1. `src/shakebench/config.py`
    - 保留 `dt` 作为控制器/观测节拍（1000 Hz）；
    - 新增 `support_update_decimation=4`（或等价配置 `support_dt=1/4000`）；
    - `SimulationCfg.dt` 改为 `support_dt`，`NewtonCfg.num_substeps=1`；
@@ -499,19 +499,19 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
      - official `0.00060 s ≥ 2 × 0.00025 s` 仍通过；
      - training `0.0025 s` 也通过。
 
-2. `src/vibench/task.py`
+2. `src/shakebench/task.py`
    - 拆分 `physics_tick(support_time_s)`：只负责振动采样、`_write_supports()`、`sim.step()`；
    - 保留现有 `step()` 作为 4 个 `physics_tick` 的聚合接口，或改为 `cli.py` 显式 4:1 tick 循环；
    - `time_s`、穿透采样、指标与录制仍按 1000 Hz 控制器节拍；
    - 关节目标每个控制器节拍设置一次，物理 tick 之间保持。
 
-3. `src/vibench/cli.py`
+3. `src/shakebench/cli.py`
    - 主循环改为 tick 驱动：
      - 每 4 个物理 tick 调用一次 `controller.command(obs)`、`scene.update()`、`observation()`；
      - 每个 tick 都做 `_write_supports()` + `sim.step()`；
    - 录制帧率与现有 30 FPS 对齐，不改变视频输出节奏。
 
-4. `src/vibench/vibration.py`
+4. `src/shakebench/vibration.py`
    - `validate_impulsive_timestep()` 的语义修正：比较对象变为 `peak_velocity × support_dt`；
    - 新增/修改日志字段，明确记录 `support_update_hz`、`outer_peak_displacement_mm` 与 `per_tick_displacement_mm`。
 
@@ -539,12 +539,12 @@ Newton #2106 只禁止在 **MJCF 编译期**给 NATIVECCD 模型设置非零 mar
 
 **实施路线**
 
-1. 先做独立可行性探针，不碰 ViBench 场景：
+1. 先做独立可行性探针，不碰 ShakeBench 场景：
    - `newton.ModelBuilder` 构造动态自由刚体平台 + 6-DOF 位置/速度跟踪执行器；
    - 在项目级振动速度（约 1.056 m/s 峰值）下测量跟踪误差、穿透与接触力；
    - 对比“动态驱动”与“kinematic 传送”两种注入方式的稳定性。
 
-2. 探针通过后再重构 `src/vibench/scene.py`：
+2. 探针通过后再重构 `src/shakebench/scene.py`：
    - `platform` 改为动态刚体并挂 6-DOF 驱动；
    - Panda 根与工作台通过 FIXED/WELD 关节附着到平台，或各自用 mocap+constraint 驱动；
    - 工作台/目标盒/桌腿随同一动态平台运动，保证原 C2 差动测点语义可重建。
@@ -620,7 +620,7 @@ NewtonCfg(collision_cfg=NewtonCollisionPipelineCfg(...),
 
 ## 8. 实施时必须遵守的边界
 
-1. **不修改上游 Newton 源码**。方案 A 使用运行时数据数组写回，方案 B 只改 ViBench 自身 tick 结构；如果阶段 2 需要 per-substep 回调，优先提交上游 patch，或在仓库中以显式、带版本断言的适配层实现。
+1. **不修改上游 Newton 源码**。方案 A 使用运行时数据数组写回，方案 B 只改 ShakeBench 自身 tick 结构；如果阶段 2 需要 per-substep 回调，优先提交上游 patch，或在仓库中以显式、带版本断言的适配层实现。
 2. **不得用视觉手段掩盖穿透**。穿透探针、视频叠加、JSON 指标保持现状并继续作为第一类指标。
 3. **不得恢复 `grasp_assist` 作为官方成绩**，不得放宽 `success`、滑移、接触丢失判据。
 4. **训练档仍不计分**，除非后续通过完整验证并显式更新 `configs/scenarios.yaml` 的 scoreable 规则。
@@ -632,7 +632,7 @@ NewtonCfg(collision_cfg=NewtonCollisionPipelineCfg(...),
 
 - 当前“减小振动幅度 + 调硬接触”的路径本质上是在绕开两个根因：**接触 margin 被清零** 与 **kinematic 支撑体传送式运动**。
 - **最小两刚体实验证明机制可行**：恢复 margin 或子步级支撑更新能把传送隧穿压到零，但该模型只有 box-box、单接触对，不能外推到真实场景。
-- **真实 ViBench 场景实验（2026-08-18）推翻了简单落地方案**：
+- **真实 ShakeBench 场景实验（2026-08-18）推翻了简单落地方案**：
   - 方案 A（运行时只恢复 margin）造成 21.6 kN 腕力峰值与工件悬空，不可接受；
   - margin+gap 运行时组合在 box/mesh 场景中失稳或无真实接触；
   - 方案 B 的公平对照把 workpiece↔worktable 穿透从 0.307 mm 降到 0.161 mm，但新增右指↔桌面 1.279 mm 碰撞；

@@ -113,7 +113,7 @@ class BenchmarkRecorder:
                 f"contact={left_n:.1f}/{right_n:.1f}N | hold={bool(obs['grasped'][0])}"
             )
         lines = (
-            ("ViBench | Isaac Lab + Newton", font, (230, 248, 255, 255)),
+            ("ShakeBench | Isaac Lab + Newton", font, (230, 248, 255, 255)),
             (detail, small, (255, 220, 100, 255)),
             (f"{task.cfg.vibration.mode} | seed={task.cfg.vibration.seed} | {dof_label} | a_rms={acceleration_rms_g:.2f} g", small, (190, 255, 195, 255)),
             (

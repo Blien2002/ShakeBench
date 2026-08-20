@@ -18,6 +18,6 @@ exec "${PROJECT_ROOT}/run.sh" --record \
   --workpiece sugar_box \
   --workpiece-scale 0.75 \
   --grasp-assist \
-  --output "${PROJECT_ROOT}/out/vibench_demo_full_05x_assist.mp4" \
-  --metrics-output "${PROJECT_ROOT}/out/vibench_demo_full_05x_assist.json" \
+  --output "${PROJECT_ROOT}/out/shakebench_demo_full_05x_assist.mp4" \
+  --metrics-output "${PROJECT_ROOT}/out/shakebench_demo_full_05x_assist.json" \
   "$@"

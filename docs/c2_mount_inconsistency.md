@@ -2,7 +2,7 @@
 
 更新日期：2026-08-18
 状态：**阶段 A 已按 `docs/support_model_implementation_plan.md` v1.2 修复**；本文保留为根因分析记录。修复后 official 1 s ×5 谱探针（`out/stage_a_spectral_probe.json`）不再出现 `robot_link<->platen` 伪接触。
-范围：`src/vibench/{config,mounting,scene,task}.py`、`configs/scenarios.yaml`
+范围：`src/shakebench/{config,mounting,scene,task}.py`、`configs/scenarios.yaml`
 结论：当前 C2 写法把**三个不同坐标系**叠加进同一组刚体，导致“振动地板 + Panda + 工作台”不是同一个刚体。该问题已经表现为 official 档可复现的伪接触、穿透指标失效和评分门槛无法通过。
 
 ---
@@ -30,7 +30,7 @@
 
 ### 2.1 C2 测点坐标（激励输入）
 
-`src/vibench/config.py`：
+`src/shakebench/config.py`：
 
 ```python
 arm_mount_xy_m:  tuple[float, float] = (0.75, -0.45)
@@ -71,7 +71,7 @@ Panda 基座与工作台中心在可见场景里只相距 0.65 m，这是为了�
 
 ### 3.1 测点映射
 
-`src/vibench/mounting.py::motion_at_mount()`：
+`src/shakebench/mounting.py::motion_at_mount()`：
 
 ```python
 out[..., :3] = motion[..., :3] + rotated_mount - mount
@@ -87,7 +87,7 @@ t_{\mathrm{mount}}(t) = t(t) + R(t)\,r_{\mathrm{mount}} - r_{\mathrm{mount}}
 
 ### 3.2 支撑状态写入
 
-`src/vibench/task.py::_support_state()`：
+`src/shakebench/task.py::_support_state()`：
 
 ```python
 quat = quat_from_euler_xyz(motion[:, 3], -motion[:, 4], motion[:, 5])

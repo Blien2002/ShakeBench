@@ -1,7 +1,7 @@
-# ViBench 当前实现说明
+# ShakeBench 当前实现说明
 
 更新日期：2026-08-18
-项目目录：`ViBench`
+项目目录：`ShakeBench`
 当前后端：Isaac Lab + Newton/MJWarp（`use_mujoco_contacts=True`）
 
 ## 1. 文档范围与当前结论
@@ -53,7 +53,7 @@ VibrationConfig ──> SpectralVibration ──> deck 六轴 q / qd / qdd
 
 `offline_support_travel_report()` 在场景构建前使用同一份 `SupportGroup` 几何表重放完整回合，执行启动安全门。
 
-主要入口：[src/vibench/cli.py](../../src/vibench/cli.py)（`scripts/run_demo.py` 为兼容启动器）。
+主要入口：[src/shakebench/cli.py](../../src/shakebench/cli.py)（`scripts/run_demo.py` 为兼容启动器）。
 
 ## 3. 物理后端
 
@@ -137,7 +137,7 @@ p = q[:3] + c + R(l - c)，  c = platform_center = (0, 0, 0.04)
 - 组内成员速度使用精确 Euler-rate → world angular velocity 映射；
 - `assembly_clearance_m=0.0005` 只用于避免同组结构面 `dist≈0` 的浮点抖动，不是动态间隙。
 
-实现位于 [src/vibench/supports.py](../../src/vibench/supports.py)。`task.py` 与 `panel_task.py` 都调用同一个 `write_support_groups()`；Stewart 平台视觉件继续由 deck 组 platform 成员的位姿驱动。
+实现位于 [src/shakebench/supports.py](../../src/shakebench/supports.py)。`task.py` 与 `panel_task.py` 都调用同一个 `write_support_groups()`；Stewart 平台视觉件继续由 deck 组 platform 成员的位姿驱动。
 
 ### 5.2 C2_CLITE（official 默认）
 
@@ -260,7 +260,7 @@ sugar_box@0.75 时约 `0.336 mm`。official 只有在“只振动不操作”的
 - 1280 × 720 主视图 + 384 × 240 腕部画中画；
 - 遥测：控制阶段、seed、振动曲线、`mount_delta_z`、双指接触、穿透、`support_geometry_valid`；
 - 输出 H.264 MP4 与结构化 metrics JSON；
-- 最新录制：`out/vibench_stage_a_latest.mp4`（6.1 s，183 帧，诚实失败）。
+- 最新录制：`out/shakebench_stage_a_latest.mp4`（6.1 s，183 帧，诚实失败）。
 
 ## 11. 配置与 CLI
 
@@ -268,7 +268,7 @@ sugar_box@0.75 时约 `0.336 mm`。official 只有在“只振动不操作”的
 
 | 文件 | 用途 |
 |---|---|
-| `src/vibench/config.py` | 数值、资产、振动与任务 dataclass |
+| `src/shakebench/config.py` | 数值、资产、振动与任务 dataclass |
 | `configs/scenarios.yaml` | 场景矩阵、物理档、接触策略、评分策略 |
 | `configs/assets.yaml` | 资产来源、许可、纹理 SHA-256 |
 | `configs/room.yaml` | 房间布局与视觉样式 |
@@ -322,7 +322,7 @@ sugar_box@0.75 时约 `0.336 mm`。official 只有在“只振动不操作”的
 ## 13. 复现当前版本
 
 ```bash
-cd ViBench
+cd ShakeBench
 ./run.sh --record \
   --physics-profile official \
   --episode-s 16 \
@@ -330,8 +330,8 @@ cd ViBench
   --seed 17 \
   --workpiece sugar_box \
   --workpiece-scale 0.75 \
-  --output out/vibench_stage_a_latest.mp4 \
-  --metrics-output out/vibench_stage_a_latest.json
+  --output out/shakebench_stage_a_latest.mp4 \
+  --metrics-output out/shakebench_stage_a_latest.json
 ```
 
 困难回合允许并应保留 `success=false`；不得用 `--grasp-assist` 或放宽门槛制造通过结果。

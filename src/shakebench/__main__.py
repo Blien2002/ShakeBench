@@ -1,4 +1,4 @@
-"""Allow ``python -m vibench`` from an Isaac Lab environment."""
+"""Allow ``python -m shakebench`` from an Isaac Lab environment."""
 
 from __future__ import annotations
 
