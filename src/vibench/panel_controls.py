@@ -9,6 +9,8 @@ industrial appearance does not make contact generation unnecessarily fragile.
 from __future__ import annotations
 
 import math
+from pathlib import Path
+import struct
 from typing import Any
 
 from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
@@ -17,8 +19,12 @@ from isaaclab.utils.configclass import configclass
 
 from .visual_assets import (
     _visual_cylinder_between,
-    _visual_extruded_polygon,
     _visual_sphere,
+)
+from .paths import PROJECT_ROOT
+
+APOLLO_KNOB_STL_PATH = (
+    PROJECT_ROOT / "assets" / "models" / "apollo_command_module_control_panel_knob.stl"
 )
 
 
@@ -61,6 +67,105 @@ def _add(a, b):
 
 def _scale(vector, factor):
     return tuple(float(factor) * float(value) for value in vector)
+
+
+def _visual_binary_stl_mesh(
+    stage: Any,
+    path: str,
+    stl_path: Path,
+    tangent,
+    lateral,
+    normal,
+    *,
+    base_normal_m: float,
+    in_plane_rotation_rad: float,
+    color: tuple[float, float, float],
+) -> None:
+    """Author a collision-free USD mesh from the original binary STL triangles."""
+
+    from pxr import Gf, UsdGeom, UsdPhysics
+
+    data = stl_path.read_bytes()
+    if len(data) < 84:
+        raise ValueError(f"binary STL is truncated: {stl_path}")
+    triangle_count = struct.unpack_from("<I", data, 80)[0]
+    expected_bytes = 84 + 50 * triangle_count
+    if len(data) != expected_bytes:
+        raise ValueError(
+            f"binary STL size mismatch for {stl_path}: "
+            f"expected {expected_bytes}, found {len(data)}"
+        )
+
+    triangles = []
+    source_normals = []
+    lowest_height_mm = math.inf
+    for triangle_index in range(triangle_count):
+        record = struct.unpack_from("<12fH", data, 84 + 50 * triangle_index)
+        source_normals.append(record[:3])
+        vertices = (
+            record[3:6],
+            record[6:9],
+            record[9:12],
+        )
+        triangles.append(vertices)
+        lowest_height_mm = min(lowest_height_mm, *(vertex[1] for vertex in vertices))
+
+    rotation_cos = math.cos(in_plane_rotation_rad)
+    rotation_sin = math.sin(in_plane_rotation_rad)
+
+    def mapped(source_xyz, *, direction: bool = False):
+        source_x, source_y, source_z = source_xyz
+        tangent_mm = rotation_cos * source_x - rotation_sin * source_z
+        lateral_mm = rotation_sin * source_x + rotation_cos * source_z
+        height_m = source_y if direction else source_y - lowest_height_mm
+        millimetres_to_metres = 0.001
+        normal_offset = 0.0 if direction else base_normal_m
+        return tuple(
+            millimetres_to_metres
+            * (
+                tangent_mm * tangent[axis]
+                + lateral_mm * lateral[axis]
+                + height_m * normal[axis]
+            )
+            + normal_offset * normal[axis]
+            for axis in range(3)
+        )
+
+    source_points = []
+    point_indices = {}
+    faces = []
+    for triangle in triangles:
+        face = []
+        for vertex in triangle:
+            point_index = point_indices.get(vertex)
+            if point_index is None:
+                point_index = len(source_points)
+                point_indices[vertex] = point_index
+                source_points.append(vertex)
+            face.append(point_index)
+        faces.append(tuple(face))
+    points = [mapped(vertex) for vertex in source_points]
+    mapped_normals = [mapped(source_normal, direction=True) for source_normal in source_normals]
+    # Direction vectors were scaled along with positions; normalize them for
+    # stable lighting while preserving the original STL facet normals.
+    mapped_normals = [
+        tuple(component / math.sqrt(sum(value * value for value in vector)) for component in vector)
+        for vector in mapped_normals
+    ]
+
+    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh.CreatePointsAttr([Gf.Vec3f(*point) for point in points])
+    mesh.CreateFaceVertexCountsAttr([3] * triangle_count)
+    mesh.CreateFaceVertexIndicesAttr([index for face in faces for index in face])
+    mesh.CreateNormalsAttr([Gf.Vec3f(*value) for value in mapped_normals])
+    mesh.SetNormalsInterpolation(UsdGeom.Tokens.uniform)
+    mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+    mesh.CreateDoubleSidedAttr(True)
+    gprim = UsdGeom.Gprim(mesh)
+    gprim.CreateDisplayColorAttr([Gf.Vec3f(*color)])
+    gprim.CreateDisplayOpacityAttr([1.0])
+    collision = UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
+    collision.CreateCollisionEnabledAttr(False)
 
 
 def _surface_quat(tangent) -> Any:
@@ -298,58 +403,41 @@ def spawn_panel_control_articulation(
     )
 
     if cfg.kind == "knob":
-        collider_center = _scale(normal, 0.027)
+        # The Smithsonian-derived STL spans 20.7 mm along its authored height
+        # axis.  This proxy stays inside that visible shell instead of
+        # protruding through its pointer or mounting flange.
+        collider_center = _scale(normal, 0.028)
         _collision_cylinder(
             stage,
             f"{link_path}/collision",
             cfg.radius_m,
-            0.034,
+            0.020,
             collider_center,
             frame_quat,
         )
-        pointer_outline = (
-            (-0.022, 0.0),
-            (-0.018, 0.010),
-            (-0.008, 0.014),
-            (0.006, 0.012),
-            (0.030, 0.003),
-            (0.030, -0.003),
-            (0.006, -0.012),
-            (-0.008, -0.014),
-            (-0.018, -0.010),
-        )
-        _visual_extruded_polygon(
+        _visual_binary_stl_mesh(
             stage,
-            f"{link_path}/Pointer",
-            (0.0, 0.0, 0.0),
+            f"{link_path}/ApolloKnob",
+            APOLLO_KNOB_STL_PATH,
             tangent,
             lateral,
             normal,
-            pointer_outline,
-            0.015,
-            0.038,
-            (0.68, 0.69, 0.67),
-        )
-        stripe_start = _add(_scale(tangent, -0.004), _scale(normal, 0.039))
-        stripe_end = _add(_scale(tangent, 0.027), _scale(normal, 0.039))
-        _visual_cylinder_between(
-            stage,
-            f"{link_path}/IndexStripe",
-            stripe_start,
-            stripe_end,
-            0.0018,
-            (0.94, 0.88, 0.66),
+            base_normal_m=0.018,
+            in_plane_rotation_rad=math.pi,
+            color=(0.31, 0.32, 0.31),
         )
     elif cfg.kind == "lever":
-        # The shaft proxy starts 2 mm outward of the pivot instead of flush on
-        # the operator face.  A flush end cap generates a small but permanent
-        # lever<->panel contact at rest under the zeroed NativeCCD margin.
+        # The 22 mm shaft proxy starts 10 mm outward of the pivot.  As the
+        # shaft rotates through 30 deg, its base-cap edge sweeps toward the
+        # operator face; at the former 2 mm root offset that edge penetrated
+        # the console by ~3.2 mm and physically blocked the last 3 deg of
+        # travel.  10 mm keeps the base edge clear through the full arc.
         _collision_cylinder(
             stage,
             f"{link_path}/collision",
             0.011,
             cfg.length_m,
-            _scale(normal, 0.5 * cfg.length_m + 0.002),
+            _scale(normal, 0.5 * cfg.length_m + 0.010),
             frame_quat,
         )
         shaft_start = _scale(normal, 0.020)
@@ -390,17 +478,26 @@ def spawn_panel_control_articulation(
         )
         _visual_cylinder_between(
             stage,
+            f"{link_path}/WitnessBand",
+            _scale(normal, 0.021),
+            _scale(normal, 0.026),
+            0.019,
+            (0.96, 0.62, 0.08),
+        )
+        _visual_cylinder_between(
+            stage,
             f"{link_path}/Cap",
-            _scale(normal, 0.018),
-            _scale(normal, 0.033),
+            _scale(normal, 0.026),
+            _scale(normal, 0.038),
             0.020,
             (0.82, 0.075, 0.050),
         )
-        _visual_sphere(
+        _visual_cylinder_between(
             stage,
-            f"{link_path}/Dome",
-            0.0195,
-            _scale(normal, 0.034),
-            (0.82, 0.075, 0.050),
+            f"{link_path}/Face",
+            _scale(normal, 0.038),
+            _scale(normal, 0.041),
+            0.0175,
+            (0.96, 0.13, 0.08),
         )
     return root

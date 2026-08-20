@@ -145,11 +145,11 @@ def test_controller_motion_limits_are_validated_in_config() -> None:
     )
     assert cfg.gripper_contact_preload_m == pytest.approx(0.0003)
     assert cfg.lift_takeoff_speed_m_s < cfg.arm_linear_speed_m_s
-    assert cfg.gripper_closing_speed_m_s == pytest.approx(0.006)
-    assert cfg.grasp_timeout_s == pytest.approx(4.0)
+    assert cfg.gripper_closing_speed_m_s == pytest.approx(0.010)
+    assert cfg.grasp_timeout_s == pytest.approx(6.0)
     assert cfg.gripper_contact_recovery_speed_m_s == pytest.approx(0.001)
     assert cfg.grasp_contact_loss_timeout_s < cfg.grasp_timeout_s
-    assert cfg.grasp_slip_tolerance_m == pytest.approx(0.008)
+    assert cfg.grasp_slip_tolerance_m == pytest.approx(0.010)
 
 
 def test_descend_clearance_accounts_for_full_finger_collider_reach() -> None:
@@ -202,7 +202,9 @@ def test_settle_phase_holds_reset_pose_instead_of_sweeping_through_table() -> No
 def test_run_script_serializes_usd_build_by_default_but_allows_override() -> None:
     root = Path(__file__).resolve().parents[1]
     runner = (root / "run.sh").read_text(encoding="utf-8")
+    python_runner = (root / "run_python.sh").read_text(encoding="utf-8")
     assert 'export PXR_WORK_THREAD_LIMIT="${PXR_WORK_THREAD_LIMIT:-1}"' in runner
+    assert 'export PXR_WORK_THREAD_LIMIT="${PXR_WORK_THREAD_LIMIT:-1}"' in python_runner
 
 
 def test_support_authoring_has_single_anchor_and_no_legacy_pitch_sign() -> None:

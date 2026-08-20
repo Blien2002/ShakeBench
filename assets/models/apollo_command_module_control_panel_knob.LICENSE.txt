@@ -1,0 +1,37 @@
+Apollo Command Module - Control Panel Knob
+==========================================
+
+Asset file
+----------
+apollo_command_module_control_panel_knob.stl
+
+Original file
+-------------
+CM_ControlPanelKnob_mm_1.1scale.stl
+
+Creator
+-------
+James / Jamesteam
+
+Source
+------
+https://sketchfab.com/3d-models/apollo-command-module-control-panel-knob-fad4ce0ecd1645bbbd0b3832878f921c
+
+The model page identifies the Smithsonian Institution as the source data.
+The downloaded model is 1:1 millimetre scale and was published July 22, 2016.
+
+License and restrictions
+------------------------
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+https://creativecommons.org/licenses/by-nc/4.0/
+
+The Sketchfab listing is also marked NoAI: the model may not be used in
+datasets for, in the development of, or as inputs to generative AI programs.
+
+Use in ViBench
+--------------
+The STL triangle topology is retained unchanged. At runtime ViBench converts
+millimetres to metres, maps the STL axes into the panel's tangent/lateral/
+normal frame, translates the base onto the mounting bezel, and assigns a
+neutral display color. The physical collision proxy remains a separate simple
+cylinder and is not derived from the licensed visual mesh.

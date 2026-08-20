@@ -7,4 +7,8 @@ set -euo pipefail
 # shellcheck source=scripts/isaac_env.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/isaac_env.sh"
 
+# Match run.sh: the bundled OpenUSD build can corrupt memory while authoring
+# large meshes in parallel.  Keep tool/probe scene construction deterministic
+# unless the caller explicitly supplies a different limit.
+export PXR_WORK_THREAD_LIMIT="${PXR_WORK_THREAD_LIMIT:-1}"
 exec "$VIBENCH_PYTHON" "$@"

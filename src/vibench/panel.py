@@ -18,6 +18,47 @@ from .config import CONTROL_KINDS, BenchmarkConfig
 CONTROL_INDEX = {kind: index for index, kind in enumerate(CONTROL_KINDS)}
 CONTROL_KINDS_BY_INDEX = CONTROL_KINDS
 
+PANEL_LAMP_COLORS = {
+    "knob": (0.18, 0.86, 0.34),
+    "lever": (0.96, 0.67, 0.08),
+    "button": (0.82, 0.10, 0.06),
+}
+PANEL_LAMP_OFF_SCALE = 0.07
+PANEL_LAMP_ACTIVE_SCALE = 0.35
+
+
+def panel_lamp_linear_rgb(
+    kind: str,
+    progress: float,
+    *,
+    active: bool,
+    completed: bool,
+) -> tuple[float, float, float]:
+    """Return the lamp's linear RGB for one control state."""
+
+    if kind not in PANEL_LAMP_COLORS:
+        raise ValueError(f"unknown panel control: {kind}")
+    progress = min(1.0, max(0.0, float(progress)))
+    if completed:
+        scale = 1.0
+    elif active:
+        scale = PANEL_LAMP_ACTIVE_SCALE + (1.0 - PANEL_LAMP_ACTIVE_SCALE) * progress
+    else:
+        scale = PANEL_LAMP_OFF_SCALE
+    return tuple(scale * channel for channel in PANEL_LAMP_COLORS[kind])
+
+
+def linear_rgb_to_srgb(rgb: tuple[float, float, float]) -> tuple[float, float, float]:
+    """Encode a linear RGB triplet for NewtonGL's sRGB shape-color buffer."""
+
+    def encode(channel: float) -> float:
+        channel = min(1.0, max(0.0, float(channel)))
+        if channel <= 0.0031308:
+            return 12.92 * channel
+        return 1.055 * channel ** (1.0 / 2.4) - 0.055
+
+    return tuple(encode(channel) for channel in rgb)
+
 
 def panel_table_top_z_m(cfg: BenchmarkConfig) -> float:
     """Physical tabletop height for the configured worktable."""

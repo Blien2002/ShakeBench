@@ -10,6 +10,7 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
+from .panel import CONTROL_KINDS_BY_INDEX, panel_lamp_linear_rgb
 from .paths import PROJECT_ROOT
 TABLE_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "phenolic_bench_dark_1k.jpg"
 PLATEN_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "platen_threaded_holes_1k.jpg"
@@ -729,7 +730,9 @@ def spawn_control_panel_appearance(
         (0.015, 0.022, 0.028),
         rotate_y_deg=face_angle_deg,
     )
-    for index, (uy, color) in enumerate(((-0.018, (0.18, 0.86, 0.34)), (0.0, (0.96, 0.67, 0.08)), (0.018, (0.82, 0.10, 0.06)))):
+    for index, uy in enumerate((-0.018, 0.0, 0.018)):
+        kind = CONTROL_KINDS_BY_INDEX[index]
+        color = panel_lamp_linear_rgb(kind, 0.0, active=False, completed=False)
         base = surface_point(uy, 0.067, 0.014)
         _visual_cylinder_between(
             stage,
@@ -744,8 +747,8 @@ def spawn_control_panel_appearance(
     # the corresponding articulation link in panel_controls.py.
     knob = surface_point(*cfg.knob_uv)
     for name, radius, start_m, end_m, color in (
-        ("KnobOuterBezel", 0.034, 0.005, 0.011, (0.44, 0.46, 0.47)),
-        ("KnobInnerBezel", 0.028, 0.010, 0.016, (0.11, 0.12, 0.13)),
+        ("KnobOuterBezel", 0.036, 0.005, 0.010, (0.44, 0.46, 0.47)),
+        ("KnobInnerBezel", 0.030, 0.010, 0.015, (0.11, 0.12, 0.13)),
     ):
         _visual_cylinder_between(
             stage, f"{prim_path}/{name}", add(knob, scale(normal, start_m)),
@@ -755,11 +758,11 @@ def spawn_control_panel_appearance(
     lever = surface_point(*cfg.lever_uv)
     _visual_cylinder_between(
         stage, f"{prim_path}/LeverBezel", add(lever, scale(normal, 0.005)),
-        add(lever, scale(normal, 0.012)), 0.029, (0.43, 0.45, 0.46)
+        add(lever, scale(normal, 0.010)), 0.029, (0.43, 0.45, 0.46)
     )
     _visual_cylinder_between(
-        stage, f"{prim_path}/LeverBoot", add(lever, scale(normal, 0.010)),
-        add(lever, scale(normal, 0.028)), 0.017, (0.035, 0.040, 0.045)
+        stage, f"{prim_path}/LeverPivotCap", add(lever, scale(normal, 0.010)),
+        add(lever, scale(normal, 0.014)), 0.014, (0.035, 0.040, 0.045)
     )
     # Fixed pushbutton collar.
     button = surface_point(*cfg.button_uv)

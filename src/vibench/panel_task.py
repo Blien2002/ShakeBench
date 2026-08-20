@@ -20,7 +20,14 @@ from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, subtract_frame_
 
 from .config import CONTROL_KINDS, BenchmarkConfig
 from .diagnostics import PenetrationSample, collision_shape_geometry, penetration_probe
-from .panel import CONTROL_INDEX, control_panel_layout, padded_sequence_ids
+from .panel import (
+    CONTROL_INDEX,
+    CONTROL_KINDS_BY_INDEX,
+    control_panel_layout,
+    linear_rgb_to_srgb,
+    padded_sequence_ids,
+    panel_lamp_linear_rgb,
+)
 from .shaker import solve_leg_transforms
 from .supports import support_group_geometries, support_pose_velocity, write_support_groups
 from .vibration import SpectralVibration
@@ -166,6 +173,8 @@ class PanelBenchmarkTask:
         )
         self._active_control_index = -1
         self._active_control = ""
+        self._lamp_shape_ids: dict[str, tuple[tuple[int, int], ...]] | None = None
+        self._lamp_last_srgb: dict[int, tuple[float, float, float]] = {}
         self._knob_contact_left_n = torch.zeros(self.num_envs, device=self.device)
         self._knob_contact_right_n = torch.zeros(self.num_envs, device=self.device)
         self._lever_contact_left_n = torch.zeros(self.num_envs, device=self.device)
@@ -305,6 +314,67 @@ class PanelBenchmarkTask:
         )
         self._control_peak_state = torch.maximum(self._control_peak_state, self._control_state)
 
+    def _ensure_panel_lamp_bindings(self) -> None:
+        """Locate each cloned annunciator shape in Newton's render model."""
+
+        if self._lamp_shape_ids is not None:
+            return
+        from isaaclab_newton.physics import NewtonManager
+
+        model = NewtonManager.get_model()
+        if model.shape_color is None:
+            raise RuntimeError("Newton model has no shape-color buffer for panel annunciators")
+        labels = [str(label or "") for label in model.shape_label]
+        bindings: dict[str, tuple[tuple[int, int], ...]] = {}
+        for lamp_index, kind in enumerate(CONTROL_KINDS_BY_INDEX):
+            suffix = f"/ControlPanel/Appearance/AnnunciatorLamp{lamp_index}"
+            matches = []
+            for shape_id, label in enumerate(labels):
+                if not label.endswith(suffix):
+                    continue
+                env_index = 0
+                marker = "/envs/env_"
+                if marker in label:
+                    env_token = label.split(marker, 1)[1].split("/", 1)[0]
+                    env_index = int(env_token)
+                matches.append((env_index, shape_id))
+            matches.sort()
+            if len(matches) != self.num_envs:
+                raise RuntimeError(
+                    f"expected {self.num_envs} Newton shapes for {kind} annunciator, "
+                    f"found {len(matches)}"
+                )
+            bindings[kind] = tuple(matches)
+        self._lamp_shape_ids = bindings
+
+    def _update_panel_lamps(self) -> None:
+        """Drive the three lamps from active, physical-progress, and done state."""
+
+        import warp as wp
+        from isaaclab_newton.physics import NewtonManager
+
+        self._ensure_panel_lamp_bindings()
+        assert self._lamp_shape_ids is not None
+        shape_color = NewtonManager.get_model().shape_color
+        for kind, matches in self._lamp_shape_ids.items():
+            control_index = CONTROL_INDEX[kind]
+            for env_index, shape_id in matches:
+                progress = float(self._control_state[env_index, control_index].item())
+                # Thirty-two visual levels avoid a GPU write for sub-pixel changes.
+                progress = round(progress * 32.0) / 32.0
+                completed = bool(self._control_completed[env_index, control_index].item())
+                linear_rgb = panel_lamp_linear_rgb(
+                    kind,
+                    progress,
+                    active=self._active_control == kind or progress > 0.0,
+                    completed=completed,
+                )
+                srgb = linear_rgb_to_srgb(linear_rgb)
+                if self._lamp_last_srgb.get(shape_id) == srgb:
+                    continue
+                shape_color[shape_id : shape_id + 1].fill_(wp.vec3(*srgb))
+                self._lamp_last_srgb[shape_id] = srgb
+
     def reset(self) -> dict[str, torch.Tensor]:
         self.scene.reset()
         joint_pos = self.robot.data.default_joint_pos.torch.clone()
@@ -335,6 +405,7 @@ class PanelBenchmarkTask:
         self.sim.step()
         self.scene.update(self.cfg.dt)
         self._update_control_state_from_joints()
+        self._update_panel_lamps()
 
         self.metrics = PanelEpisodeMetrics()
         self._current_penetration = PenetrationSample()
@@ -366,6 +437,7 @@ class PanelBenchmarkTask:
             self.metrics.wrong_order = True
         self._active_control_index = index
         self._active_control = kind
+        self._update_panel_lamps()
 
     def request_panel_progress(self, kind: str, progress: float) -> None:
         raise RuntimeError(
@@ -377,6 +449,7 @@ class PanelBenchmarkTask:
             self.metrics.wrong_order = True
         index = CONTROL_INDEX[kind]
         self._control_completed[:, index] |= self._control_peak_state[:, index] >= 0.95
+        self._update_panel_lamps()
 
     def mark_operation_timeout(self) -> None:
         self.metrics.operation_timeout = True
@@ -421,6 +494,7 @@ class PanelBenchmarkTask:
         self.sim.step()
         self.scene.update(self.cfg.dt)
         self._update_control_state_from_joints()
+        self._update_panel_lamps()
         self.time_s += self.cfg.dt
         self._update_penetration_metrics()
 
@@ -461,7 +535,7 @@ class PanelBenchmarkTask:
         lever_pivot_w = torch.cat((lever_w[:, :3], lever_w[:, 3:7]), dim=1)
         button_axis_w = quat_apply(
             button_w[:, 3:7],
-            self._surface_normal_local * 0.034,
+            self._surface_normal_local * 0.040,
         )
         button_face_w = torch.cat(
             (button_w[:, :3] + button_axis_w, button_w[:, 3:7]), dim=1
