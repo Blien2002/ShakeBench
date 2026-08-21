@@ -33,12 +33,21 @@ Each task has 50 committed initial states containing object placement, seed, sca
 
 ## Leaderboard
 
-Round 6 establishes the protocol but does not claim paper results.
+This table is generated from scorecard JSON files by
+`scripts/aggregate_scorecard.py --readme README.md`; privilege labels come
+from each policy's `requires_privileged` declaration. Pending cells are not
+experimental claims.
 
-| Policy | Privileged observations | Status |
-|---|---|---|
-| `scripted` | none | integration sentinel; score pending |
-| `random` | none | lower-bound sentinel; score pending |
+<!-- LEADERBOARD_START -->
+| Policy | Privileged | control_freq | SR @Γ=0.5 | Γ_c | f_c | grip_excess |
+|---|---|---:|---:|---:|---:|---:|
+| `oracle_full` | pending | pending | pending | pending | pending | pending |
+| `oracle_phase` | pending | pending | pending | pending | pending | pending |
+| `oracle_reactive` | pending | pending | pending | pending | pending | pending |
+| `classical` | pending | pending | pending | pending | pending | pending |
+| `scripted` | pending | pending | pending | pending | pending | pending |
+| `random` | pending | pending | pending | pending | pending | pending |
+<!-- LEADERBOARD_END -->
 
 ## Add a policy
 
@@ -68,7 +77,7 @@ The full observation/action contract is in [environments](docs/environments.md),
 @software{shakebench2026,
   title = {ShakeBench: Manipulation under Multi-Axis Vibration},
   year = {2026},
-  version = {0.2.0}
+  version = {0.3.0}
 }
 ```
 

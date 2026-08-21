@@ -22,5 +22,15 @@ Robot observations are always available as `robot0_joint_pos`, `robot0_joint_vel
 - `use_imu_obs`: delayed/noisy/quantized six-channel `deck_imu`.
 - `use_object_obs` (privileged): object/target truth, penetration, mounting delta, mass, friction, and COM offset.
 - `use_vibration_obs` (privileged): true `q`, `qd`, `qdd`, calibrated level, and `t0`.
+- `use_phase_obs` (privileged): padded analytic line frequencies, phases,
+  calibrated level, masks, and clock/ramp metadata; line amplitudes are
+  reconstructed from the published spectral shape rather than exposed as
+  state truth, and object truth is absent.
+- `use_instantaneous_load_obs` (privileged): current `vibration_qdd` only,
+  without phase, frequency, `t0`, or a history buffer.
 
 No world-frame `_w` key is exposed when privileged groups are disabled. The shaped PickPlace reward is negative object-to-target distance; sparse mode reports task completion. The episode is truncated at the derived horizon.
+
+`privileged_observation()` is recorder-only and returns the five Round-7
+supervision labels with `privileged_` prefixes. It is not merged into the
+mapping returned by `reset()` or `step()`.

@@ -10,7 +10,14 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 
-from ..config import AssetConfig, BenchmarkConfig, SpectralBand, VibrationConfig
+from ..config import (
+    AXES,
+    AssetConfig,
+    BenchmarkConfig,
+    SpectralBand,
+    VibrationConfig,
+    workpiece_mass_kg,
+)
 from ..controllers import make_controller
 from ..vibration import SpectralVibration, SyntheticDeckIMU, calibrate_level_scale
 
@@ -47,6 +54,8 @@ class ShakeBenchEnv(gym.Env):
     """
 
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
+    backend_name = "state_contract"
+    scoreable = False
 
     def __init__(
         self,
@@ -57,6 +66,7 @@ class ShakeBenchEnv(gym.Env):
         horizon: int | None = None,
         episode_s: float = 16.0,
         gamma: float = 0.50,
+        vibration_mode: str = "spectral",
         frequency_scale: float = 1.0,
         bandwidth_ratio: float | None = None,
         physics_profile: str = "official",
@@ -65,6 +75,8 @@ class ShakeBenchEnv(gym.Env):
         use_object_obs: bool = False,
         use_camera_obs: bool = True,
         use_vibration_obs: bool = False,
+        use_phase_obs: bool = False,
+        use_instantaneous_load_obs: bool = False,
         use_imu_obs: bool = True,
         reward_shaping: bool = True,
         has_renderer: bool = False,
@@ -123,6 +135,8 @@ class ShakeBenchEnv(gym.Env):
         self.use_object_obs = bool(use_object_obs)
         self.use_camera_obs = bool(use_camera_obs)
         self.use_vibration_obs = bool(use_vibration_obs)
+        self.use_phase_obs = bool(use_phase_obs)
+        self.use_instantaneous_load_obs = bool(use_instantaneous_load_obs)
         self.use_imu_obs = bool(use_imu_obs)
         self.reward_shaping = bool(reward_shaping)
         self.has_renderer = bool(has_renderer)
@@ -134,7 +148,10 @@ class ShakeBenchEnv(gym.Env):
         self.camera_width = int(camera_width)
         self._base_seed = int(seed)
         self._vibration_cfg = VibrationConfig(
-            seed=self._base_seed, gamma=gamma, frequency_scale=frequency_scale
+            mode=vibration_mode,
+            seed=self._base_seed,
+            gamma=gamma,
+            frequency_scale=frequency_scale,
         )
         if bandwidth_ratio is not None:
             ratio = float(bandwidth_ratio)
@@ -146,11 +163,15 @@ class ShakeBenchEnv(gym.Env):
                 for axis, axis_bands in self._vibration_cfg.bands.items()
             }
             self._vibration_cfg = replace(self._vibration_cfg, bands=bands)
-        level_scale, report = calibrate_level_scale(
-            self._vibration_cfg, self.physics_hz, self.episode_s
-        )
-        self._vibration_cfg = replace(self._vibration_cfg, level_scale=level_scale)
-        self.gamma_realized = float(report["gamma_realized"])
+        if self._vibration_cfg.mode == "off":
+            self._vibration_cfg = replace(self._vibration_cfg, level_scale=0.0)
+            self.gamma_realized = 0.0
+        else:
+            level_scale, report = calibrate_level_scale(
+                self._vibration_cfg, self.physics_hz, self.episode_s
+            )
+            self._vibration_cfg = replace(self._vibration_cfg, level_scale=level_scale)
+            self.gamma_realized = float(report["gamma_realized"])
         self.cfg = BenchmarkConfig(
             dt=1.0 / self.physics_hz,
             episode_s=self.episode_s,
@@ -161,7 +182,14 @@ class ShakeBenchEnv(gym.Env):
             solver_substeps=5 if self.physics_hz == 1000 else 4,
             contact_solref=(0.00060, 1.0) if self.physics_hz == 1000 else (0.0025, 1.0),
         )
+        self._object_mass_kg = workpiece_mass_kg(
+            self.cfg.assets.workpiece, self.cfg.assets.workpiece_scale
+        )
         self._vibration = SpectralVibration(self._vibration_cfg, 1, "cpu")
+        self._phase_tones = max(
+            (band.tones for bands in self._vibration_cfg.bands.values() for band in bands),
+            default=1,
+        )
         self._imu = SyntheticDeckIMU(self.physics_hz, self._base_seed)
         self.observation_space = spaces.Dict(self._observation_spaces())
         self._init_state: dict[str, Any] | None = None
@@ -210,6 +238,21 @@ class ShakeBenchEnv(gym.Env):
                     "vibration_t0": unbounded((1,)),
                 }
             )
+        if self.use_instantaneous_load_obs and not self.use_vibration_obs:
+            result["vibration_qdd"] = unbounded((6,))
+        if self.use_phase_obs:
+            result.update(
+                {
+                    "vibration_omega": unbounded((6, self._phase_tones)),
+                    "vibration_phase": unbounded((6, self._phase_tones)),
+                    "vibration_line_mask": spaces.Box(
+                        0, 1, (6, self._phase_tones), np.uint8
+                    ),
+                    "vibration_level_scale": unbounded((1,)),
+                    "vibration_time": unbounded((1,)),
+                    "vibration_ramp_s": unbounded((1,)),
+                }
+            )
         return result
 
     def _reset_state(self) -> None:
@@ -230,7 +273,16 @@ class ShakeBenchEnv(gym.Env):
         self._wrist_force = np.zeros(3, np.float32)
         self._wrist_torque = np.zeros(3, np.float32)
         self._last_motion = tuple(np.zeros((1, 6), np.float32) for _ in range(3))
+        self._last_motion_time_s = 0.0
         self._last_imu = np.zeros(6, np.float32)
+        self._grip_force_sum = 0.0
+        self._grip_force_count = 0
+        self._required_grip_force_min = float("inf")
+        self._grip_margin_min = float("inf")
+        self._grip_excess_sum = 0.0
+        self._grip_ratio_count = 0
+        self._ee_tracking_error_sq = 0.0
+        self._ee_tracking_error_count = 0
         if self._init_state is not None:
             placement = np.asarray(self._init_state["object_placement"], dtype=np.float32)
             if placement.shape[0] >= 1:
@@ -280,10 +332,14 @@ class ShakeBenchEnv(gym.Env):
         if seed is not None and self._init_state is None:
             self._base_seed = int(seed)
             candidate = replace(self._vibration_cfg, seed=self._base_seed, level_scale=1.0)
-            scale, report = calibrate_level_scale(candidate, self.physics_hz, self.episode_s)
+            if candidate.mode == "off":
+                scale, realized = 0.0, 0.0
+            else:
+                scale, report = calibrate_level_scale(candidate, self.physics_hz, self.episode_s)
+                realized = float(report["gamma_realized"])
             self._vibration_cfg = replace(candidate, level_scale=scale)
             self._vibration = SpectralVibration(self._vibration_cfg, 1, "cpu")
-            self.gamma_realized = float(report["gamma_realized"])
+            self.gamma_realized = realized
         self._reset_state()
         return self._observation(), self._info(False)
 
@@ -296,7 +352,8 @@ class ShakeBenchEnv(gym.Env):
             self._eef_pos += command[:3] / self.physics_steps_per_action
             self._gripper[0] = max(0.0, self._gripper[0] - 1e-4 * float(command[-1]))
         self._joint_vel = (self._joint_pos - previous) * self.physics_hz
-        q, qd, qdd = self._vibration.sample(self.time_s)
+        self._last_motion_time_s = self.time_s
+        q, qd, qdd = self._vibration.sample(self._last_motion_time_s)
         self._last_motion = tuple(value.numpy() for value in (q, qd, qdd))
         self._last_imu = self._imu.sample(
             self._last_motion[2][0, :3],
@@ -304,6 +361,21 @@ class ShakeBenchEnv(gym.Env):
             angular_accel_deck=self._last_motion[2][0, 3:],
             r_imu_deck=np.asarray(self.cfg.resolved_robot_base) - np.asarray(self.cfg.platform_center),
         )
+        if self.controller_config.get("name") == "VARIABLE_IMPEDANCE":
+            applied = max(0.0, float(command[12]))
+            r_wp = np.asarray(self._vibration_cfg.workpiece_offset_m, dtype=np.float32)
+            acceleration = self._last_motion[2][0, :3] + np.cross(
+                self._last_motion[2][0, 3:], r_wp
+            )
+            required = self._object_mass_kg * float(np.linalg.norm(acceleration)) / self.cfg.material_mu
+            self._grip_force_sum += applied
+            self._grip_force_count += 1
+            if required > 1.0e-9:
+                ratio = applied / required
+                self._required_grip_force_min = min(self._required_grip_force_min, required)
+                self._grip_margin_min = min(self._grip_margin_min, ratio)
+                self._grip_excess_sum += ratio
+                self._grip_ratio_count += 1
         self.physics_steps += 1
         self.time_s = self.physics_steps / self.physics_hz
 
@@ -313,7 +385,7 @@ class ShakeBenchEnv(gym.Env):
         for index in range(self.physics_steps_per_action):
             policy_step = index == 0
             alpha = (index + 1) / self.physics_steps_per_action if self.intra_step_mode == "interp" else 1.0
-            phase = 2.0 * math.pi * self.time_s * 8.0
+            phase = self._dominant_phase()
             output = self.controller.pre_action(
                 action_array, policy_step, alpha=alpha, phase=phase
             )
@@ -357,7 +429,7 @@ class ShakeBenchEnv(gym.Env):
                     "target_quat": self._target_quat.copy(),
                     "penetration_mm": np.zeros(1, np.float32),
                     "mount_delta_z": np.zeros(1, np.float32),
-                    "object_mass": np.array([0.5], np.float32),
+                    "object_mass": np.array([self._object_mass_kg], np.float32),
                     "object_mu": np.array([self.cfg.material_mu], np.float32),
                     "object_com_offset": np.zeros(3, np.float32),
                 }
@@ -372,10 +444,68 @@ class ShakeBenchEnv(gym.Env):
                     "vibration_t0": np.array([self._vibration_cfg.t0], np.float32),
                 }
             )
+        elif self.use_instantaneous_load_obs:
+            obs["vibration_qdd"] = qdd[0].astype(np.float32).copy()
+        if self.use_phase_obs:
+            obs.update(self._phase_observation())
         return obs
 
-    def _info(self, action_clipped: bool) -> dict[str, Any]:
+    def _phase_arrays(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return padded analytic line parameters without exposing state truth."""
+
+        omega = np.zeros((6, self._phase_tones), np.float32)
+        phase = np.zeros_like(omega)
+        mask = np.zeros_like(omega, dtype=np.uint8)
+        for axis, values in self._vibration._omega.items():
+            index = AXES.index(axis)
+            count = min(self._phase_tones, values.shape[1])
+            omega[index, :count] = values[0, :count].cpu().numpy()
+            phase[index, :count] = self._vibration._phase[axis][0, :count].cpu().numpy()
+            mask[index, :count] = 1
+        return omega, phase, mask
+
+    def _phase_observation(self) -> dict[str, np.ndarray]:
+        omega, phase0, mask = self._phase_arrays()
+        current = np.remainder(
+            omega * np.float32(self._last_motion_time_s + self._vibration_cfg.t0) + phase0,
+            np.float32(2.0 * math.pi),
+        ).astype(np.float32)
         return {
+            "vibration_omega": omega,
+            "vibration_phase": current,
+            "vibration_line_mask": mask,
+            "vibration_level_scale": np.array([self._vibration_cfg.level_scale], np.float32),
+            "vibration_time": np.array([self._last_motion_time_s], np.float32),
+            "vibration_ramp_s": np.array([self._vibration_cfg.ramp_s], np.float32),
+        }
+
+    def _dominant_phase(self) -> float:
+        if not self._vibration._omega:
+            return 0.0
+        axis = "tz" if "tz" in self._vibration._omega else next(iter(self._vibration._omega))
+        omega = float(self._vibration._omega[axis][0, 0].item())
+        phase = float(self._vibration._phase[axis][0, 0].item())
+        return omega * (self.time_s + self._vibration_cfg.t0) + phase
+
+    def privileged_observation(self) -> dict[str, np.ndarray]:
+        """Truth labels for recorders; this mapping is never returned to a policy."""
+
+        phase = self._phase_observation()["vibration_phase"]
+        return {
+            "privileged_object_pose": np.concatenate(
+                (self._object_pos, self._object_quat)
+            ).astype(np.float32),
+            "privileged_vibration_qdd": self._last_motion[2][0].astype(np.float32).copy(),
+            "privileged_phase": phase,
+            "privileged_object_mu": np.array([self.cfg.material_mu], np.float32),
+            "privileged_object_mass": np.array([self._object_mass_kg], np.float32),
+        }
+
+    def _info(self, action_clipped: bool) -> dict[str, Any]:
+        grip_count = max(self._grip_force_count, 1)
+        return {
+            "backend": "state_contract",
+            "scoreable": False,
             "action_clipped": bool(action_clipped),
             "control_freq": self.control_freq,
             "physics_hz": self.physics_hz,
@@ -384,11 +514,34 @@ class ShakeBenchEnv(gym.Env):
             "horizon": self.horizon,
             "intra_step_mode": self.intra_step_mode,
             "gamma_realized": self.gamma_realized,
+            "success": bool(np.linalg.norm(self._object_pos - self._target_pos) < 0.05),
+            "grasp_assist_used": False,
+            "support_geometry_valid": True,
+            "max_penetration_mm": 0.0,
+            "max_grasp_slip_m": 0.0,
+            "ee_tracking_error_rms_m": (
+                math.sqrt(self._ee_tracking_error_sq / self._ee_tracking_error_count)
+                if self._ee_tracking_error_count else 0.0
+            ),
+            "mean_grip_force_n": self._grip_force_sum / grip_count,
+            "min_required_grip_force_n": (
+                self._required_grip_force_min
+                if math.isfinite(self._required_grip_force_min) else 0.0
+            ),
+            "grip_margin_min": (
+                self._grip_margin_min if math.isfinite(self._grip_margin_min) else 0.0
+            ),
+            "grip_excess": (
+                self._grip_excess_sum / self._grip_ratio_count
+                if self._grip_ratio_count else 0.0
+            ),
             "privileged_observations": tuple(
                 name
                 for enabled, name in (
                     (self.use_object_obs, "object"),
                     (self.use_vibration_obs, "vibration"),
+                    (self.use_phase_obs, "phase"),
+                    (self.use_instantaneous_load_obs, "instantaneous_load"),
                 )
                 if enabled
             ),

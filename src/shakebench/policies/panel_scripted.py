@@ -38,6 +38,8 @@ LEVER_HAND_RADIUS_M = 0.110
 class ScriptedPanelController:
     """Reference policy, not part of the benchmark score definition."""
 
+    requires_privileged = ("object",)
+
     def __init__(self, task: PanelBenchmarkTask):
         self.task = task
         self.sequence = task.panel_sequence

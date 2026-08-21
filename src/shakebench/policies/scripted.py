@@ -145,6 +145,8 @@ class Phase:
 class ScriptedPickPlaceController:
     """Reference policy, not part of the benchmark score definition."""
 
+    requires_privileged = ("object",)
+
     def __init__(self, task: VibrationBenchmarkTask):
         self.task = task
         dimensions = getattr(

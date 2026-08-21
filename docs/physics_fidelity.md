@@ -26,3 +26,14 @@ With MuJoCo contacts, NativeCCD/MULTICCD clears the requested 1 mm margin. Metri
 - The training profile can materially increase penetration and cannot support official claims.
 - Upstream Newton construction can terminate without a Python traceback.
 - Grasp assist is off for scoring. When explicitly enabled for demos, it requires bilateral contact and penetration below 0.5 mm, and releases above 1.0 mm.
+
+## Round-7 Pareto gate
+
+The completed Γ=0.50 sweep is recorded in
+`docs/reports/fidelity_throughput_pareto.md`. At 1000 Hz × 4, lowering the
+Newton main iterations from 50 to 10 retained the penetration gate (0.048 mm
+for the measured seed) but did not improve wall time. The 500 Hz and 240 Hz
+profiles were 2–4× faster but measured 0.246–0.297 mm penetration and failed
+the 0.112 mm qualification line. Because no qualifying profile achieved the
+required ≥4× speedup, the official profile remains 1000 Hz × 4 / 50 iterations;
+prior penetration baselines are not invalidated.

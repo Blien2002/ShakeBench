@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 (Round 7 infrastructure)
+
+- Added three privilege-isolated oracle tiers and a non-learning FxLMS baseline.
+- Added base-frame tracking and grip margin/excess score aggregation.
+- Completed robomimic HDF5 collection, privileged-label isolation, dataset inspection, scorecard, and generated leaderboard tooling.
+- Marked the state-contract Gym backend non-scoreable and guarded paper-facing CLIs against synthetic results.
+- Documented that physical Oracle, decision-point, ceiling, correlation, and dataset gates remain blocked by the failed Round-5 full official grasp.
+
 ## 0.2.0 — 2026-08-21
 
 - Reparameterized excitation by realized peak acceleration Γ.

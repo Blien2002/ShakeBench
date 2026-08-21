@@ -17,7 +17,7 @@ from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, quat_inv, quat_
 
 from isaaclab_newton.physics import NewtonManager
 
-from ...config import BenchmarkConfig, workpiece_dimensions_m
+from ...config import BenchmarkConfig, workpiece_dimensions_m, workpiece_mass_kg
 from ...utils.diagnostics import (
     PenetrationSample,
     collision_shape_geometry,
@@ -73,7 +73,8 @@ class EpisodeMetrics:
     support_geometry_valid: bool = True
     mean_grip_force_n: float = 0.0
     min_required_grip_force_n: float = 0.0
-    ee_world_residual_rms_m: float = 0.0
+    grip_margin_min: float = 0.0
+    grip_excess: float = 0.0
 
 
 class VibrationBenchmarkTask:
@@ -185,6 +186,15 @@ class VibrationBenchmarkTask:
         self._history_index = 0
         self._ee_tracking_error_sq = 0.0
         self._ee_tracking_error_count = 0
+        self._grip_force_sum = 0.0
+        self._grip_force_count = 0
+        self._required_grip_force_min = float("inf")
+        self._grip_margin_min = float("inf")
+        self._grip_excess_sum = 0.0
+        self._grip_ratio_count = 0
+        self._workpiece_mass_kg = workpiece_mass_kg(
+            cfg.assets.workpiece, cfg.assets.workpiece_scale
+        )
         self._support_step_timing = {
             "sample": 0.0,
             "mocap_write": 0.0,
@@ -212,6 +222,29 @@ class VibrationBenchmarkTask:
             self.metrics.ee_tracking_error_rms_m = math.sqrt(
                 self._ee_tracking_error_sq / self._ee_tracking_error_count
             )
+        if self._grip_force_count:
+            self.metrics.mean_grip_force_n = self._grip_force_sum / self._grip_force_count
+        if math.isfinite(self._required_grip_force_min):
+            self.metrics.min_required_grip_force_n = self._required_grip_force_min
+        if math.isfinite(self._grip_margin_min):
+            self.metrics.grip_margin_min = self._grip_margin_min
+        if self._grip_ratio_count:
+            self.metrics.grip_excess = self._grip_excess_sum / self._grip_ratio_count
+
+    def record_grip_diagnostics(self, applied_force_n: float, required_force_n: float) -> None:
+        """Accumulate the Round-7 Coulomb margin and force-excess metrics."""
+
+        applied = max(0.0, float(applied_force_n))
+        required = max(0.0, float(required_force_n))
+        self._grip_force_sum += applied
+        self._grip_force_count += 1
+        if required <= 1.0e-9:
+            return
+        ratio = applied / required
+        self._required_grip_force_min = min(self._required_grip_force_min, required)
+        self._grip_margin_min = min(self._grip_margin_min, ratio)
+        self._grip_excess_sum += ratio
+        self._grip_ratio_count += 1
 
     def _repeat3(self, xyz: tuple[float, float, float]) -> torch.Tensor:
         return torch.tensor(xyz, dtype=torch.float32, device=self.device).repeat(self.num_envs, 1)
@@ -778,6 +811,27 @@ class VibrationBenchmarkTask:
             self.metrics.max_right_finger_contact_n,
             float(obs["right_finger_contact_n"][0, 0].item()),
         )
+        if self._grasp_requested:
+            applied = float(
+                (
+                    obs["left_finger_contact_n"][0, 0]
+                    + obs["right_finger_contact_n"][0, 0]
+                ).item()
+            )
+            lever = torch.tensor(
+                self.cfg.vibration.workpiece_offset_m,
+                device=self.device,
+                dtype=self._vibration_qdd.dtype,
+            )
+            acceleration = self._vibration_qdd[0, :3] + torch.linalg.cross(
+                self._vibration_qdd[0, 3:], lever
+            )
+            required = (
+                self._workpiece_mass_kg
+                * float(torch.linalg.vector_norm(acceleration).item())
+                / self.cfg.material_mu
+            )
+            self.record_grip_diagnostics(applied, required)
 
     def _update_penetration_metrics(self) -> None:
         self._current_penetration = penetration_probe()

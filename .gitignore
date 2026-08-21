@@ -37,6 +37,11 @@ docs/*
 !docs/policies.md
 !docs/asset_licenses.md
 !docs/overview.svg
+!docs/reports/
+docs/reports/*
+!docs/reports/oracle_tiers.md
+!docs/reports/plant_rejection_ceiling.md
+!docs/reports/fidelity_throughput_correlation.md
 !tests/
 tests/*
 !tests/test_vibration_calibration.py
@@ -45,6 +50,7 @@ tests/*
 !tests/test_control_freq.py
 !tests/test_init_files.py
 !tests/test_determinism.py
+!tests/test_round7.py
 
 # Virtual environments and package builds
 .venv/

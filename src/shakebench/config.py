@@ -221,6 +221,15 @@ YCB_DIMENSIONS_M: dict[str, tuple[float, float, float]] = {
     "mustard_bottle": (0.095, 0.058, 0.190),
 }
 
+# Nominal YCB object masses. Uniform asset scaling preserves density, so the
+# runtime mass used by diagnostics scales cubically with the authored mesh.
+YCB_MASSES_KG: dict[str, float] = {
+    "cracker_box": 0.411,
+    "sugar_box": 0.514,
+    "soup_can": 0.349,
+    "mustard_bottle": 0.603,
+}
+
 
 def workpiece_dimensions_m(name: str, scale: float) -> tuple[float, float, float]:
     """Return benchmark X/Y/Z extents after uniform scaling."""
@@ -228,6 +237,14 @@ def workpiece_dimensions_m(name: str, scale: float) -> tuple[float, float, float
     if name not in YCB_DIMENSIONS_M:
         raise ValueError(f"unsupported workpiece: {name}")
     return tuple(float(scale) * value for value in YCB_DIMENSIONS_M[name])
+
+
+def workpiece_mass_kg(name: str, scale: float) -> float:
+    """Return the density-preserving mass of a uniformly scaled YCB asset."""
+
+    if name not in YCB_MASSES_KG:
+        raise ValueError(f"unsupported workpiece: {name}")
+    return float(YCB_MASSES_KG[name]) * float(scale) ** 3
 
 
 @dataclass(frozen=True)

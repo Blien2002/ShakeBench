@@ -7,6 +7,13 @@ from .suites import (
     ShakeBenchPredictability,
     ShakeBenchSweep,
 )
+from .scorecard import (
+    aggregate_episodes,
+    bootstrap_interval,
+    critical_value,
+    decision_point,
+    paired_bootstrap_difference,
+)
 
 
 def get_benchmark_dict() -> dict[str, type[BenchmarkSuite]]:
@@ -18,4 +25,12 @@ def get_benchmark_dict() -> dict[str, type[BenchmarkSuite]]:
     }
 
 
-__all__ = ["BenchmarkSuite", "get_benchmark_dict"]
+__all__ = [
+    "BenchmarkSuite",
+    "aggregate_episodes",
+    "bootstrap_interval",
+    "critical_value",
+    "decision_point",
+    "get_benchmark_dict",
+    "paired_bootstrap_difference",
+]

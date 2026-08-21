@@ -6,5 +6,6 @@
   "stiffness_min": [10, 10, 10, 1, 1, 1],
   "stiffness_max": [3000, 3000, 3000, 300, 300, 300],
   "grip_force_min": 0,
-  "grip_force_max": 70
+  "grip_force_max": 70,
+  "feedforward_grip_ratio": 0.10
 }
