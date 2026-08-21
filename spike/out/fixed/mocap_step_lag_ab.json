@@ -1,0 +1,63 @@
+{
+  "calibration": {
+    "airborne_fraction": 0.0,
+    "gamma_realized": 0.5,
+    "gamma_target": 0.5,
+    "level_scale": 1.355673056197223,
+    "peak_deck_displacement_m": 0.002159725586231655,
+    "peak_deck_velocity_m_s": 0.09583436898266968,
+    "peak_factor_kappa": 3.547457410634082,
+    "per_axis_accel_peak_abs": {
+      "rx": 1.6606915873527766,
+      "ry": 1.5095138747263206,
+      "rz": 0.8151015975634872,
+      "tx": 1.832470617474253,
+      "ty": 1.485310959055587,
+      "tz": 4.364397630956445
+    },
+    "per_axis_accel_rms": {
+      "rx": 0.5857513517645873,
+      "ry": 0.5977947216801308,
+      "rz": 0.30996719518790555,
+      "tx": 0.6148175933042561,
+      "ty": 0.4756667092528484,
+      "tz": 1.3265667541283528
+    },
+    "per_axis_disp_rms": {
+      "rx": 0.0016658049558381676,
+      "ry": 0.0009667971411065922,
+      "rz": 0.0012853531886499472,
+      "tx": 0.0006604054106629533,
+      "ty": 0.00029217332376002314,
+      "tz": 0.0005378038056355177
+    },
+    "workpiece_az_peak_m_s2": 4.903325,
+    "workpiece_az_rms_m_s2": 1.3822082783295675
+  },
+  "conditions_by_lead_steps": {
+    "0": {
+      "command_displacement_peak_m": 0.0018140204416422542,
+      "error_over_command_peak": 0.050987512015355604,
+      "mujoco_warning_count": 0,
+      "weld_tracking_error_p90_m": 6.120145311567543e-05,
+      "weld_tracking_error_peak_m": 9.249238906433512e-05
+    },
+    "1": {
+      "command_displacement_peak_m": 0.0018140204416422542,
+      "error_over_command_peak": 0.04274467301259679,
+      "mujoco_warning_count": 0,
+      "weld_tracking_error_p90_m": 5.137257943014797e-05,
+      "weld_tracking_error_peak_m": 7.753971061616458e-05
+    }
+  },
+  "configuration": {
+    "gamma": 0.5,
+    "lite_physics": true,
+    "measurement_window_s": 6.0,
+    "physics_timestep_s": 0.0002,
+    "seed": 17
+  },
+  "created_utc": "2026-08-21T14:30:55.619895+00:00",
+  "schema": "shakebench_spike.mocap_split_step_ab.v1",
+  "selected_lead_steps": 1
+}

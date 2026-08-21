@@ -13,7 +13,7 @@ import mujoco
 import numpy as np
 import robosuite
 
-from env_shakedeck import ANCHOR, make_env
+from env_shakedeck import ANCHOR, DEFAULT_MOCAP_COMMAND_LEAD_STEPS, make_env
 from metrics import EpisodeMetrics, contact_snapshot
 from policies import ReactiveScriptedPolicy
 from vibration import calibrated_vibration
@@ -61,7 +61,13 @@ def _cube_table_penetration(env) -> float | None:
     return max(0.0, -min(distances))
 
 
-def _rollout(seed: int, timestep: float, window_s: float, vibration) -> dict:
+def _rollout(
+    seed: int,
+    timestep: float,
+    window_s: float,
+    vibration,
+    mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
+) -> dict:
     control_freq = DEFAULT_CONTROL_FREQ
     steps = int(round(window_s * control_freq))
     env = make_env(
@@ -70,6 +76,7 @@ def _rollout(seed: int, timestep: float, window_s: float, vibration) -> dict:
         motion_sampler=None if vibration is None else vibration.sample,
         control_freq=control_freq,
         horizon=steps + 1,
+        mocap_command_lead_steps=mocap_command_lead_steps,
     )
     try:
         action = np.zeros(env.action_dim, dtype=np.float64)
@@ -127,6 +134,8 @@ def _rollout(seed: int, timestep: float, window_s: float, vibration) -> dict:
             "mujoco_warning_count": _warning_count(env),
             "compiled_timestep_s": float(env.sim.model.opt.timestep),
             "mocap_body_count": int(env.sim.model.nmocap),
+            "mocap_command_lead_steps": mocap_command_lead_steps,
+            "contact_configuration": env.contact_configuration(),
         }
     finally:
         env.close()
@@ -188,6 +197,49 @@ def run_selfcheck(seed: int, timestep: float, window_s: float) -> dict:
             "expected": 0.0,
         },
     }
+
+
+def run_mocap_lag_check(seed: int, timestep: float, window_s: float) -> dict:
+    """Compare split-step mocap scheduling with and without a one-step lead."""
+
+    physics_hz = int(round(1.0 / timestep))
+    vibration, calibration = calibrated_vibration(
+        0.5,
+        seed=seed,
+        physics_hz=physics_hz,
+        episode_s=16.0,
+    )
+    conditions = {}
+    for lead_steps in (0, 1):
+        rollout = _rollout(
+            seed,
+            timestep,
+            window_s,
+            vibration,
+            mocap_command_lead_steps=lead_steps,
+        )
+        command_peak = rollout["command_displacement_peak_m"]
+        conditions[str(lead_steps)] = {
+            "command_displacement_peak_m": command_peak,
+            "weld_tracking_error_peak_m": rollout["weld_tracking_error_peak_m"],
+            "weld_tracking_error_p90_m": rollout["weld_tracking_error_p90_m"],
+            "error_over_command_peak": rollout["weld_tracking_error_peak_m"] / command_peak,
+            "mujoco_warning_count": rollout["mujoco_warning_count"],
+        }
+    return {
+        "schema": "shakebench_spike.mocap_split_step_ab.v1",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "configuration": {
+            "seed": seed,
+            "gamma": 0.5,
+            "physics_timestep_s": timestep,
+            "measurement_window_s": window_s,
+            "lite_physics": True,
+        },
+        "calibration": calibration,
+        "conditions_by_lead_steps": conditions,
+        "selected_lead_steps": DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
+    }
     return {
         "schema": "shakebench_spike.exp1_selfcheck.v1",
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -203,6 +255,7 @@ def run_selfcheck(seed: int, timestep: float, window_s: float) -> dict:
             "physics_timestep_s": timestep,
             "physics_hz": physics_hz,
             "control_freq_hz": DEFAULT_CONTROL_FREQ,
+            "mocap_command_lead_steps": DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
             "measurement_window_s": window_s,
             "calibration_episode_s": 16.0,
         },
@@ -230,17 +283,27 @@ def _runtime_warning_count(env) -> int:
 
 def run_task_episode(seed: int, timestep: float, episode_s: float, gamma: float) -> dict:
     physics_hz = int(round(1.0 / timestep))
-    vibration, calibration = calibrated_vibration(
-        gamma,
-        seed=seed,
-        physics_hz=physics_hz,
-        episode_s=episode_s,
-    )
+    if gamma == 0.0:
+        vibration = None
+        calibration = {
+            "gamma_target": 0.0,
+            "gamma_realized": 0.0,
+            "level_scale": 0.0,
+            "motion_sampler": "disabled",
+        }
+    else:
+        vibration, calibration = calibrated_vibration(
+            gamma,
+            seed=seed,
+            physics_hz=physics_hz,
+            episode_s=episode_s,
+        )
+        calibration["motion_sampler"] = "shakebench_spectral"
     max_policy_steps = int(round(episode_s * DEFAULT_CONTROL_FREQ))
     env = make_env(
         seed=seed,
         physics_timestep=timestep,
-        motion_sampler=vibration.sample,
+        motion_sampler=None if vibration is None else vibration.sample,
         control_freq=DEFAULT_CONTROL_FREQ,
         horizon=max_policy_steps + 1,
         direct_gripper=True,
@@ -266,10 +329,15 @@ def run_task_episode(seed: int, timestep: float, episode_s: float, gamma: float)
                 "physics_timestep_s": timestep,
                 "physics_hz": physics_hz,
                 "control_freq_hz": DEFAULT_CONTROL_FREQ,
+                "mocap_command_lead_steps": DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
                 "episode_limit_s": episode_s,
                 "elapsed_s": float(env.sim.data.time),
                 "policy_steps": len(actions),
                 "calibration": calibration,
+                "contact_configuration": env.contact_configuration(),
+                "object_mass_kg": float(
+                    env.sim.model.body_subtreemass[env.sim.model.body_name2id("cube_main")]
+                ),
                 # Exact post-latch commands are retained for experiment 2 tapes.
                 "actions": actions,
             }
@@ -303,9 +371,18 @@ def run_experiment1(
 
     failures = Counter(result["failure_reason"] for result in episode_results if not result["success"])
     slips = np.asarray([result["max_grasp_slip_m"] for result in episode_results], dtype=np.float64)
+    both_zero = np.asarray(
+        [
+            value
+            for result in episode_results
+            if (value := result["post_latch_finger_force_n"]["both_zero_fraction"])
+            is not None
+        ],
+        dtype=np.float64,
+    )
     success_count = sum(bool(result["success"]) for result in episode_results)
     summary = {
-        "schema": "shakebench_spike.exp1_summary.v1",
+        "schema": "shakebench_spike.exp1_condition_summary.v2",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "versions": {
             "python": platform.python_version(),
@@ -320,6 +397,7 @@ def run_experiment1(
             "gamma": gamma,
             "physics_timestep_s": timestep,
             "control_freq_hz": DEFAULT_CONTROL_FREQ,
+            "mocap_command_lead_steps": DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
             "episode_limit_s": episode_s,
             "grasp_slip_tolerance_m": 0.010,
             "grasp_assist": False,
@@ -332,6 +410,15 @@ def run_experiment1(
             "p90": float(np.percentile(slips, 90)),
             "max": float(np.max(slips)),
         },
+        "post_latch_both_fingers_zero_fraction": (
+            {
+                "median": float(np.median(both_zero)),
+                "p90": float(np.percentile(both_zero, 90)),
+                "max": float(np.max(both_zero)),
+            }
+            if both_zero.size
+            else {"median": None, "p90": None, "max": None}
+        ),
         "grasp_slip_exceeded_count": sum(bool(result["grasp_slip_exceeded"]) for result in episode_results),
         "grasp_slip_exceeded_reproduced": any(
             bool(result["grasp_slip_exceeded"]) for result in episode_results
@@ -346,15 +433,83 @@ def run_experiment1(
     return summary
 
 
+def _gamma_slug(gamma: float) -> str:
+    return str(float(gamma)).replace(".", "p")
+
+
+def run_experiment1_comparison(
+    *,
+    seed_start: int,
+    episodes: int,
+    timestep: float,
+    episode_s: float,
+    gamma: float,
+    output_dir: Path,
+) -> dict:
+    """Run the zero-vibration control before the requested nonzero condition."""
+
+    control_dir = output_dir / "gamma_0p0"
+    target_dir = output_dir / f"gamma_{_gamma_slug(gamma)}"
+    control = run_experiment1(
+        seed_start=seed_start,
+        episodes=episodes,
+        timestep=timestep,
+        episode_s=episode_s,
+        gamma=0.0,
+        output_dir=control_dir,
+    )
+    target = run_experiment1(
+        seed_start=seed_start,
+        episodes=episodes,
+        timestep=timestep,
+        episode_s=episode_s,
+        gamma=gamma,
+        output_dir=target_dir,
+    )
+    comparison = {
+        "schema": "shakebench_spike.exp1_comparison.v2",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "control": control,
+        "target": target,
+        "success_rate_delta": target["success_rate"] - control["success_rate"],
+        "experiment1_gate_passed": target["experiment1_gate_passed"],
+        "condition_directories": {
+            "control": control_dir.name,
+            "target": target_dir.name,
+        },
+    }
+    (output_dir / "exp1_comparison.json").write_text(
+        json.dumps(comparison, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    # Keep the historical aggregate filename useful while the per-condition
+    # summaries remain in their own directories.
+    (output_dir / "exp1_summary.json").write_text(
+        json.dumps(comparison, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return comparison
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--self-check", action="store_true", help="run mandatory experiment 1a gate")
+    parser.add_argument(
+        "--mocap-lag-check",
+        action="store_true",
+        help="compare zero-step and one-step-lead mocap writes under lite_physics",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--timestep", type=float, default=DEFAULT_TIMESTEP)
     parser.add_argument("--window-s", type=float, default=DEFAULT_WINDOW_S)
     parser.add_argument("--episodes", type=int, default=20)
     parser.add_argument("--episode-s", type=float, default=16.0)
     parser.add_argument("--gamma", type=float, default=0.5)
+    parser.add_argument(
+        "--no-zero-control",
+        action="store_true",
+        help="debug only: skip the mandatory gamma=0 comparison condition",
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -369,19 +524,47 @@ def main() -> int:
         output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["all_passed"] else 2
+    if args.mocap_lag_check:
+        result = run_mocap_lag_check(args.seed, args.timestep, args.window_s)
+        output = args.output or default_out / "mocap_step_lag_ab.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
     if args.episodes < 1:
         parser.error("--episodes must be positive")
+    if args.gamma < 0.0:
+        parser.error("--gamma must be non-negative")
     selfcheck_path = default_out / "exp1_selfcheck.json"
-    if not selfcheck_path.is_file() or not json.loads(selfcheck_path.read_text())["all_passed"]:
-        parser.error("experiment 1a gate has not passed; run --self-check first")
-    result = run_experiment1(
-        seed_start=args.seed,
-        episodes=args.episodes,
-        timestep=args.timestep,
-        episode_s=args.episode_s,
-        gamma=args.gamma,
-        output_dir=args.output or default_out,
+    selfcheck = json.loads(selfcheck_path.read_text()) if selfcheck_path.is_file() else None
+    selfcheck_is_current = bool(
+        selfcheck
+        and selfcheck.get("all_passed")
+        and selfcheck.get("configuration", {}).get("mocap_command_lead_steps")
+        == DEFAULT_MOCAP_COMMAND_LEAD_STEPS
+        and "contact_configuration" in selfcheck.get("zero_rollout", {})
     )
+    if not selfcheck_is_current:
+        parser.error("current experiment 1a gate has not passed; rerun --self-check")
+    output_dir = args.output or default_out
+    if args.gamma > 0.0 and not args.no_zero_control:
+        result = run_experiment1_comparison(
+            seed_start=args.seed,
+            episodes=args.episodes,
+            timestep=args.timestep,
+            episode_s=args.episode_s,
+            gamma=args.gamma,
+            output_dir=output_dir,
+        )
+    else:
+        result = run_experiment1(
+            seed_start=args.seed,
+            episodes=args.episodes,
+            timestep=args.timestep,
+            episode_s=args.episode_s,
+            gamma=args.gamma,
+            output_dir=output_dir,
+        )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["experiment1_gate_passed"] else 2
 

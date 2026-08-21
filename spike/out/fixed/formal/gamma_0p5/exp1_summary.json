@@ -1,0 +1,83 @@
+{
+  "configuration": {
+    "control_freq_hz": 20,
+    "episode_limit_s": 16.0,
+    "episodes": 20,
+    "gamma": 0.5,
+    "grasp_assist": false,
+    "grasp_slip_tolerance_m": 0.01,
+    "mocap_command_lead_steps": 1,
+    "physics_timestep_s": 0.0002,
+    "seed_start": 0,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "created_utc": "2026-08-21T14:29:22.032153+00:00",
+  "episode_files": [
+    "exp1_seed_000.json",
+    "exp1_seed_001.json",
+    "exp1_seed_002.json",
+    "exp1_seed_003.json",
+    "exp1_seed_004.json",
+    "exp1_seed_005.json",
+    "exp1_seed_006.json",
+    "exp1_seed_007.json",
+    "exp1_seed_008.json",
+    "exp1_seed_009.json",
+    "exp1_seed_010.json",
+    "exp1_seed_011.json",
+    "exp1_seed_012.json",
+    "exp1_seed_013.json",
+    "exp1_seed_014.json",
+    "exp1_seed_015.json",
+    "exp1_seed_016.json",
+    "exp1_seed_017.json",
+    "exp1_seed_018.json",
+    "exp1_seed_019.json"
+  ],
+  "experiment1_gate_passed": false,
+  "failure_reason_histogram": {
+    "grasp_slip_exceeded": 8
+  },
+  "grasp_slip_exceeded_count": 8,
+  "grasp_slip_exceeded_reproduced": true,
+  "max_grasp_slip_distribution_m": {
+    "max": 0.02253652211261177,
+    "median": 0.0053331207346454,
+    "p90": 0.020710574255877606
+  },
+  "post_latch_both_fingers_zero_fraction": {
+    "max": 0.5555555555555556,
+    "median": 0.012345679012345678,
+    "p90": 0.45000000000000007
+  },
+  "schema": "shakebench_spike.exp1_condition_summary.v2",
+  "success_count": 12,
+  "success_rate": 0.6,
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  }
+}

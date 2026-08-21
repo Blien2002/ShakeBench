@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
 
 import mujoco
@@ -94,6 +95,8 @@ class EpisodeMetrics:
     obj_slip_on_table_m: float = 0.0
     max_object_lift_m: float = 0.0
     _hold_reference_b: np.ndarray | None = None
+    _left_force_n: list[float] = field(default_factory=list)
+    _right_force_n: list[float] = field(default_factory=list)
 
     @classmethod
     def start(cls, env: ShakeDeckLift) -> "EpisodeMetrics":
@@ -118,6 +121,11 @@ class EpisodeMetrics:
                 float(np.linalg.norm(object_b - self.initial_object_b)),
             )
         else:
+            # Release intentionally removes both contacts, so force diagnostics
+            # cover only the interval in which the latch is meant to hold.
+            if policy.phase in ("grasp", "lift", "transfer_hold", "place"):
+                self._left_force_n.append(contacts.left_cube_n)
+                self._right_force_n.append(contacts.right_cube_n)
             slip = float(
                 np.linalg.norm(
                     (hand_b - object_b) - policy.hand_minus_object_b_at_grasp
@@ -144,6 +152,22 @@ class EpisodeMetrics:
         failure_reason = policy.failure_reason
         if failure_reason is None and slip_exceeded:
             failure_reason = "grasp_slip_exceeded"
+        force_samples = len(self._left_force_n)
+        both_zero = sum(
+            left == 0.0 and right == 0.0
+            for left, right in zip(self._left_force_n, self._right_force_n, strict=True)
+        )
+
+        def force_summary(values: list[float]) -> dict:
+            if not values:
+                return {"mean": None, "min": None, "max": None}
+            array = np.asarray(values, dtype=np.float64)
+            return {
+                "mean": float(np.mean(array)),
+                "min": float(np.min(array)),
+                "max": float(np.max(array)),
+            }
+
         return {
             "success": success,
             "failure_reason": None if success else failure_reason or "episode_timeout",
@@ -154,6 +178,12 @@ class EpisodeMetrics:
             "obj_slip_on_table_m": self.obj_slip_on_table_m,
             "max_object_lift_m": self.max_object_lift_m,
             "transfer_hold_s": policy.hold_time_s,
+            "post_latch_finger_force_n": {
+                "sample_count": force_samples,
+                "left": force_summary(self._left_force_n),
+                "right": force_summary(self._right_force_n),
+                "both_zero_fraction": both_zero / force_samples if force_samples else None,
+            },
             "phase_history": policy.phase_history,
             "mujoco_warning_count": warning_count,
         }

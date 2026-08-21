@@ -20,6 +20,10 @@ CONTACT_SOLREF = (6.0e-4, 1.0)
 WELD_SOLREF = (4.0e-4, 1.0)
 MATERIAL_MU = 1.5
 DECK_BALLAST_KG = 400.0
+PANDA_PAD_SOLREF = (1.0e-2, 0.5)
+PANDA_PAD_FRICTION = (2.0, 5.0e-2, 1.0e-4)
+CUBE_TABLE_PAIR_FRICTION = (1.5, 1.5, 5.0e-3, 1.0e-4, 1.0e-4)
+DEFAULT_MOCAP_COMMAND_LEAD_STEPS = 1
 
 MotionSampler = Callable[[float], tuple[np.ndarray, np.ndarray, np.ndarray]]
 
@@ -109,16 +113,20 @@ def shake_deck_xml(xml_str: str) -> str:
     if contact is None:
         contact = ET.SubElement(root, "contact")
     ET.SubElement(contact, "exclude", body1="table", body2="robot0_base")
-
-    for geom in root.iter("geom"):
-        if geom.get("contype", "1") == "0":
-            continue
-        geom.set("margin", f"{CONTACT_MARGIN_M:g}")
-        geom.set("gap", f"{CONTACT_MARGIN_M:g}")
-        geom.set("solref", _numbers(CONTACT_SOLREF))
-        friction = geom.get("friction", "").split()
-        rolling = friction[1:] if len(friction) >= 3 else ["0.005", "0.0001"]
-        geom.set("friction", " ".join((f"{MATERIAL_MU:g}", *rolling[:2])))
+    # These parameters belong to the workpiece-table interaction, not to every
+    # collision geom in the model. An explicit pair avoids contaminating the
+    # Panda pads through MuJoCo's per-contact parameter combination rules.
+    ET.SubElement(
+        contact,
+        "pair",
+        name="cube_table_contact",
+        geom1="cube_g0",
+        geom2="table_collision",
+        margin=f"{CONTACT_MARGIN_M:g}",
+        gap=f"{CONTACT_MARGIN_M:g}",
+        solref=_numbers(CONTACT_SOLREF),
+        friction=_numbers(CUBE_TABLE_PAIR_FRICTION),
+    )
 
     return ET.tostring(root, encoding="unicode")
 
@@ -128,10 +136,16 @@ class ShakeDeckLift(Lift):
 
     motion_sampler: MotionSampler | None = None
     write_zero_motion: bool = True
+    mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS
 
-    def configure_shakedeck(self, motion_sampler: MotionSampler | None) -> None:
+    def configure_shakedeck(
+        self,
+        motion_sampler: MotionSampler | None,
+        mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
+    ) -> None:
         self.motion_sampler = motion_sampler
         self.write_zero_motion = motion_sampler is None
+        self.mocap_command_lead_steps = mocap_command_lead_steps
         # Lift intentionally drops its cube from 10 mm. The spike measures
         # table-relative slip, so start in static contact instead of folding
         # that unrelated free-fall distance into the diagnostic.
@@ -148,6 +162,7 @@ class ShakeDeckLift(Lift):
         self.sim.forward()
 
     def _write_deck_target(self, time_s: float) -> None:
+        time_s += self.mocap_command_lead_steps * float(self.sim.model.opt.timestep)
         if self.motion_sampler is None:
             q = np.zeros(6, dtype=np.float64)
         else:
@@ -166,6 +181,63 @@ class ShakeDeckLift(Lift):
             q, _qd, _qdd = self.motion_sampler(float(self.sim.data.time))
         return ANCHOR + q[:3], _quat_wxyz_from_euler_xyz(q[3:])
 
+    def contact_configuration(self) -> dict:
+        """Return the compiled contact parameters that guard this regression."""
+
+        model = self.sim.model
+
+        def geom_parameters(name: str) -> dict:
+            geom_id = model.geom_name2id(name)
+            return {
+                "margin_m": float(model.geom_margin[geom_id]),
+                "gap_m": float(model.geom_gap[geom_id]),
+                "solref": np.asarray(model.geom_solref[geom_id]).tolist(),
+                "friction": np.asarray(model.geom_friction[geom_id]).tolist(),
+            }
+
+        pair_id = next(
+            index
+            for index in range(model.npair)
+            if {
+                int(model.pair_geom1[index]),
+                int(model.pair_geom2[index]),
+            }
+            == {
+                model.geom_name2id("cube_g0"),
+                model.geom_name2id("table_collision"),
+            }
+        )
+        return {
+            "cube_table_pair": {
+                "margin_m": float(model.pair_margin[pair_id]),
+                "gap_m": float(model.pair_gap[pair_id]),
+                "solref": np.asarray(model.pair_solref[pair_id]).tolist(),
+                "friction": np.asarray(model.pair_friction[pair_id]).tolist(),
+            },
+            "left_finger_pad": geom_parameters("gripper0_right_finger1_pad_collision"),
+            "right_finger_pad": geom_parameters("gripper0_right_finger2_pad_collision"),
+        }
+
+    def validate_contact_configuration(self) -> None:
+        configuration = self.contact_configuration()
+        pair = configuration["cube_table_pair"]
+        if not (
+            pair["margin_m"] == CONTACT_MARGIN_M
+            and pair["gap_m"] == CONTACT_MARGIN_M
+            and np.array_equal(pair["solref"], np.asarray(CONTACT_SOLREF))
+            and np.array_equal(pair["friction"], np.asarray(CUBE_TABLE_PAIR_FRICTION))
+        ):
+            raise RuntimeError(f"cube-table contact pair is misconfigured: {pair}")
+        for side in ("left_finger_pad", "right_finger_pad"):
+            pad = configuration[side]
+            if not (
+                pad["margin_m"] == 0.0
+                and pad["gap_m"] == 0.0
+                and np.array_equal(pad["solref"], np.asarray(PANDA_PAD_SOLREF))
+                and np.array_equal(pad["friction"], np.asarray(PANDA_PAD_FRICTION))
+            ):
+                raise RuntimeError(f"{side} no longer has Panda stock contact parameters: {pad}")
+
 
 def make_env(
     *,
@@ -175,6 +247,7 @@ def make_env(
     control_freq: int = 20,
     horizon: int = 1000,
     direct_gripper: bool = False,
+    mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
 ) -> ShakeDeckLift:
     """Build a headless deterministic Lift and then install the XML processor."""
 
@@ -197,5 +270,6 @@ def make_env(
         lite_physics=True,
         seed=seed,
     )
-    env.configure_shakedeck(motion_sampler)
+    env.configure_shakedeck(motion_sampler, mocap_command_lead_steps)
+    env.validate_contact_configuration()
     return env
