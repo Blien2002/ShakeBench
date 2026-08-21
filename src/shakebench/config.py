@@ -5,13 +5,20 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import math
 import random
-from typing import Literal
-
-from .shaker import ShakerGeometryCfg
+from typing import Any, Literal
 
 
 AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
 CONTROL_KINDS = ("knob", "lever", "button")
+
+# Standard gravity used by the Gamma calibration.  Gamma is the realized peak
+# vertical acceleration at the workpiece divided by this exact value.
+G = 9.80665
+
+# Hard ceiling of the displacement-limited feasibility wedge.  At and above a
+# tz centre frequency of 8 Hz the deck displacement gate no longer binds and
+# Gamma is capped at this value.
+GAMMA_CEIL = 4.0
 
 
 def sample_panel_sequence(seed: int, controls: tuple[str, ...] = CONTROL_KINDS) -> tuple[str, ...]:
@@ -30,59 +37,149 @@ def sample_panel_sequence(seed: int, controls: tuple[str, ...] = CONTROL_KINDS) 
 
 @dataclass(frozen=True)
 class SpectralBand:
-    """A narrow PSD band represented by random-phase spectral lines."""
+    """One narrow acceleration-PSD band of random-phase spectral lines.
+
+    ``accel_rms`` is a *relative* acceleration RMS (m/s^2 for tx/ty/tz,
+    rad/s^2 for rx/ry/rz).  The absolute level is fixed at runtime by the
+    Gamma calibration; only the ratios between bands are authored here.
+    """
 
     center_hz: float
-    rms: float
-    bandwidth_ratio: float = 0.08
+    accel_rms: float
+    bandwidth_ratio: float = 0.10
     tones: int = 12
 
     def __post_init__(self) -> None:
-        if self.center_hz <= 0.0 or self.rms < 0.0:
-            raise ValueError("center_hz must be positive and rms must be non-negative")
+        if self.center_hz <= 0.0 or self.accel_rms < 0.0:
+            raise ValueError("center_hz must be positive and accel_rms must be non-negative")
         if not 0.0 <= self.bandwidth_ratio < 1.0 or self.tones < 1:
             raise ValueError("invalid bandwidth_ratio or tones")
 
 
-def _default_bands() -> dict[str, tuple[SpectralBand, ...]]:
-    # Same legacy excitation family used by the prior MuJoCo/RM75 benchmark.
-    return {
-        "tx": (SpectralBand(18.0, 0.00050, 0.08, 12),),
-        "ty": (SpectralBand(13.0, 0.00025, 0.10, 10),),
-        "tz": (SpectralBand(32.0, 0.00150, 0.06, 12),),
-        "rx": (SpectralBand(8.0, 0.00400, 0.10, 12),),
-        "ry": (SpectralBand(11.0, 0.00200, 0.10, 10),),
-        "rz": (SpectralBand(6.0, 0.00120, 0.12, 8),),
+# Relative spectral shape of the contact-preserving excitation family.  Only
+# ratios are meaningful here; the absolute level is supplied at runtime by the
+# Gamma calibration.  Translation units are m/s^2 and rotation units rad/s^2.
+_TRANSLATION_BAND_SHAPES: dict[str, tuple[float, float, float, int]] = {
+    "tz": (8.0, 1.000, 0.10, 12),
+    "tx": (5.0, 0.500, 0.10, 12),
+    "ty": (6.5, 0.350, 0.10, 10),
+}
+
+# Rotation bands are never hand-picked angular amplitudes.  Each rotational
+# band induces, at ``reference_lever_m``, a tangential acceleration equal to
+# ``kappa_rot`` times the translational band it is linked to:
+#     sigma_alpha = kappa_rot * sigma_a_trans / reference_lever_m.
+# rx/ry link to tz (vertical differential) and rz links to tx (horizontal
+# differential).  ``linked`` stores the translational axis name.
+_ROTATION_BAND_SHAPES: dict[str, tuple[float, str, float, int]] = {
+    "rx": (3.0, "tz", 0.12, 12),
+    "ry": (4.0, "tz", 0.12, 10),
+    "rz": (2.5, "tx", 0.12, 8),
+}
+
+
+def _default_bands(
+    *,
+    kappa_rot: float = 0.30,
+    reference_lever_m: float = 0.65,
+) -> dict[str, tuple[SpectralBand, ...]]:
+    """Return the default relative acceleration-PSD band table.
+
+    Translational entries are authored explicitly; rotational entries are
+    derived from the kappa_rot differential/common-mode rule so that
+    ``kappa_rot`` remains a physically meaningful, independently scannable
+    knob instead of six hand-picked milliradian numbers.
+    """
+
+    translational = {
+        axis: (SpectralBand(center_hz, accel_rms, bandwidth_ratio, tones),)
+        for axis, (center_hz, accel_rms, bandwidth_ratio, tones) in _TRANSLATION_BAND_SHAPES.items()
     }
+    rotational = {}
+    for axis, (center_hz, linked, bandwidth_ratio, tones) in _ROTATION_BAND_SHAPES.items():
+        linked_rms = translational[linked][0].accel_rms
+        rotational[axis] = (
+            SpectralBand(
+                center_hz,
+                kappa_rot * linked_rms / reference_lever_m,
+                bandwidth_ratio,
+                tones,
+            ),
+        )
+    return {**translational, **rotational}
 
 
 @dataclass(frozen=True)
 class VibrationConfig:
-    """Six-axis sine or seeded spectral excitation.
+    """Gamma-calibrated six-axis excitation.
 
-    At fixed acceleration RMS, peak velocity scales as ``v = a / omega``.
-    Lowering frequency while increasing displacement therefore worsens
-    contact penetration; official scenarios keep a per-substep displacement
-    safety check enabled.
+    Bands store only the relative spectral *shape* (acceleration PSD
+    normalized to unit level).  ``calibrate_level_scale`` solves the single
+    absolute ``level_scale`` that makes the realized peak vertical workpiece
+    acceleration equal ``gamma * G``, so acceleration is the first-class
+    quantity and displacement is derived per tone.
+
+    ``mode="sine"`` is a deprecated alias for ``sweep`` and is kept for one
+    release cycle.
     """
 
-    mode: Literal["off", "sine", "spectral"] = "spectral"
+    mode: Literal["off", "sweep", "sine", "spectral"] = "spectral"
     seed: int = 17
     ramp_s: float = 0.75
+    # Absolute difficulty: realized peak vertical acceleration at the
+    # workpiece divided by G.  gamma >= 1 enters the ballistic (periodic
+    # contact-loss) regime and requires ballistic_allowed=True.
+    gamma: float = 0.50
+    # Global centre-frequency multiplier for the authored band shapes.
+    frequency_scale: float = 1.0
+    # Reference arm--table spacing used by the rotational band rule.
+    reference_lever_m: float = 0.65
+    # Workpiece position relative to the deck centre; the Gamma calibration
+    # evaluates a_z = qdd_z + (alpha x r_wp)_z at this point.
+    workpiece_offset_m: tuple[float, float, float] = (0.65, 0.0, 0.0)
+    # Displacement-limited feasibility gate: deck centre peak displacement
+    # must stay below this value, otherwise startup is refused.
+    max_deck_displacement_m: float = 0.025
+    # Explicit opt-in for the ballistic (Gamma >= 1) regime.
+    ballistic_allowed: bool = False
+    # Differential/common-mode ratio for rotation bands; only used when the
+    # default bands are requested.
+    kappa_rot: float = 0.30
+    # Runtime-computed absolute level in m/s^2 (rad/s^2 for rotational
+    # channels).  The CLI calibrates this before building the simulation.
+    level_scale: float = 1.0
     sine_axis: Literal["tx", "ty", "tz", "rx", "ry", "rz"] = "tz"
-    sine_amplitude: float = 0.0015
     sine_frequency_hz: float = 5.0
-    spectral_scale: float = 1.0
     active_axes: tuple[str, ...] = AXES
-    bands: dict[str, tuple[SpectralBand, ...]] = field(default_factory=_default_bands)
+    bands: dict[str, tuple[SpectralBand, ...]] | None = None
 
     def __post_init__(self) -> None:
-        if self.mode not in ("off", "sine", "spectral"):
-            raise ValueError("mode must be off, sine, or spectral")
+        if self.mode not in ("off", "sweep", "sine", "spectral"):
+            raise ValueError("mode must be off, sweep, sine (deprecated alias), or spectral")
         if self.ramp_s <= 0.0 or self.sine_frequency_hz <= 0.0:
             raise ValueError("ramp and sine frequency must be positive")
-        if self.spectral_scale <= 0.0:
-            raise ValueError("spectral_scale must be positive")
+        if self.sine_axis not in AXES:
+            raise ValueError(f"unknown sweep axis: {self.sine_axis}")
+        if self.gamma <= 0.0:
+            raise ValueError("gamma must be positive")
+        if self.gamma >= 1.0 and not self.ballistic_allowed:
+            raise ValueError(
+                f"gamma={self.gamma} puts the workpiece in the ballistic regime "
+                "(periodic loss of table contact). Set ballistic_allowed=True to opt in; "
+                "such runs are not eligible for the official contact-preserving score."
+            )
+        if self.frequency_scale <= 0.0:
+            raise ValueError("frequency_scale must be positive")
+        if self.reference_lever_m <= 0.0:
+            raise ValueError("reference_lever_m must be positive")
+        if len(self.workpiece_offset_m) != 3:
+            raise ValueError("workpiece_offset_m must contain exactly three components")
+        if self.max_deck_displacement_m <= 0.0:
+            raise ValueError("max_deck_displacement_m must be positive")
+        if self.kappa_rot < 0.0:
+            raise ValueError("kappa_rot must be non-negative")
+        if self.level_scale < 0.0:
+            raise ValueError("level_scale must be non-negative")
         if not self.active_axes:
             raise ValueError("active_axes must contain at least one vibration axis")
         invalid_active = set(self.active_axes) - set(AXES)
@@ -90,6 +187,12 @@ class VibrationConfig:
             raise ValueError(f"unknown active vibration axes: {sorted(invalid_active)}")
         if len(set(self.active_axes)) != len(self.active_axes):
             raise ValueError("active_axes must not contain duplicates")
+        if self.bands is None:
+            object.__setattr__(
+                self,
+                "bands",
+                _default_bands(kappa_rot=self.kappa_rot, reference_lever_m=self.reference_lever_m),
+            )
         unknown = set(self.bands) - set(AXES)
         if unknown:
             raise ValueError(f"unknown vibration axes: {sorted(unknown)}")
@@ -158,7 +261,9 @@ class PanelConfig:
     console_front_height_m: float = 0.055
     console_rear_flat_depth_m: float = 0.025
     knob_uv: tuple[float, float] = (-0.085, 0.055)
-    knob_radius_m: float = 0.022
+    # Matches the 25.737 mm radial envelope of the Apollo runtime LOD with a
+    # small collision guard, preventing fingers from entering the visual mesh.
+    knob_radius_m: float = 0.026
     knob_length_m: float = 0.036
     knob_center_standoff_m: float = 0.020
     knob_goal_rad: float = math.radians(72.0)
@@ -269,7 +374,10 @@ class BenchmarkConfig:
     assets: AssetConfig = field(default_factory=AssetConfig)
     panel: PanelConfig = field(default_factory=PanelConfig)
     vibration: VibrationConfig = field(default_factory=VibrationConfig)
-    shaker: ShakerGeometryCfg = field(default_factory=ShakerGeometryCfg)
+    # Lazy-loaded so BenchmarkConfig can be constructed in the offline
+    # Gamma-calibration tests without Isaac Lab.  First attribute access
+    # materializes the real ShakerGeometryCfg.
+    shaker: Any = field(default=None)
     material_mu: float = 1.5
     support_config: Literal["C2", "C2_CLITE"] = "C2"
     # C2_CLITE only: update the welded mocap drivers every N solver substeps.
@@ -318,9 +426,23 @@ class BenchmarkConfig:
     gripper_opening_speed_m_s: float = 0.040
     gripper_contact_preload_m: float = 0.0003
     grasp_timeout_s: float = 6.0
+    # Bilateral contact must remain confirmed for this long before transport;
+    # grasp_timeout_s remains a failure deadline rather than a fixed dwell.
+    grasp_settle_s: float = 0.30
     grasp_contact_loss_timeout_s: float = 0.20
     grasp_slip_tolerance_m: float = 0.010
     grasp_assist: bool = False
+
+    def __getattribute__(self, name: str):
+        """Materialize the Isaac-Lab shaker geometry on first access."""
+
+        value = object.__getattribute__(self, name)
+        if name == "shaker" and value is None:
+            from .shaker import ShakerGeometryCfg
+
+            value = ShakerGeometryCfg()
+            object.__setattr__(self, "shaker", value)
+        return value
 
     def __post_init__(self) -> None:
         if self.dt <= 0.0 or self.episode_s <= 0.0 or self.num_envs < 1:
@@ -359,8 +481,14 @@ class BenchmarkConfig:
             raise ValueError("lift takeoff duration must be positive")
         if not 0.0 <= self.gripper_contact_preload_m <= 0.002:
             raise ValueError("gripper contact preload must be in [0, 2.0] mm")
-        if self.grasp_timeout_s <= 0.0 or self.grasp_contact_loss_timeout_s <= 0.0:
-            raise ValueError("grasp timeout and contact-loss timeout must be positive")
+        if min(
+            self.grasp_timeout_s,
+            self.grasp_settle_s,
+            self.grasp_contact_loss_timeout_s,
+        ) <= 0.0:
+            raise ValueError("grasp timeout, settle time, and contact-loss timeout must be positive")
+        if self.grasp_settle_s >= self.grasp_timeout_s:
+            raise ValueError("grasp settle time must be shorter than the grasp timeout")
         if self.grasp_z_guard_margin_m < 0.0:
             raise ValueError("grasp z-guard margin must be non-negative")
         if self.grasp_slip_tolerance_m <= 0.0:

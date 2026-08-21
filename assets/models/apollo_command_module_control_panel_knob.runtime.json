@@ -1,0 +1,85 @@
+{
+  "units": "millimetres",
+  "source": {
+    "vertices": 25474,
+    "triangles": 50944,
+    "edges": 76416,
+    "euler_characteristic": 2,
+    "edge_multiplicity": {
+      "2": 76416
+    },
+    "watertight": true,
+    "bounds_min": [
+      -25.724849700927734,
+      -0.1202658861875534,
+      -25.07921600341797
+    ],
+    "bounds_max": [
+      24.272974014282227,
+      20.58036231994629,
+      24.883468627929688
+    ],
+    "extent": [
+      49.99782371520996,
+      20.700628206133842,
+      49.962684631347656
+    ]
+  },
+  "runtime_lod": {
+    "vertices": 816,
+    "triangles": 1624,
+    "edges": 2436,
+    "euler_characteristic": 4,
+    "connected_components": 2,
+    "edge_multiplicity": {
+      "2": 2436
+    },
+    "watertight": true,
+    "bounds_min": [
+      -25.724849700927734,
+      -0.1202658861875534,
+      -25.07921600341797
+    ],
+    "bounds_max": [
+      24.272974014282227,
+      20.58036231994629,
+      24.883468627929688
+    ],
+    "extent": [
+      49.99782371520996,
+      20.700628206133842,
+      49.962684631347656
+    ],
+    "construction": "two overlapping closed exterior solids: a 256-segment elliptical base and a convex grip fitted to the source-derived y>=3 mm crown point cloud",
+    "base_triangles": 1024,
+    "grip_triangles": 600,
+    "base_top_y_mm": 3.3,
+    "grip_bottom_y_mm": 2.8,
+    "internal_overlap_mm": 0.5,
+    "outer_envelope_unchanged": true,
+    "visual_purpose": "removes all deep concave/interior-looking faces while preserving the Apollo base and grip envelopes"
+  },
+  "extent_absolute_difference": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "previous_topology_preserving_lod_surface_distance": {
+    "samples_per_mesh": 100000,
+    "rms": 0.13644802821750948,
+    "mean": 0.12088751566499589,
+    "p95": 0.23613756404537847,
+    "p99": 0.2929900958548042,
+    "max": 0.534741779929529,
+    "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+  },
+  "sampled_symmetric_surface_distance": {
+    "samples_per_mesh": 100000,
+    "rms": 1.0129544882283128,
+    "mean": 0.6282770097136823,
+    "p95": 2.7412068556897564,
+    "p99": 3.2853132735860444,
+    "max": 3.3458948303313267,
+    "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+  }
+}

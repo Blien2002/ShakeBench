@@ -1,0 +1,150 @@
+{
+  "source_archive": "assets/switch.zip::source/Interruptor.fbx",
+  "license_status": "user-provided; no license or attribution metadata present in archive",
+  "source_scene": {
+    "meshes": 11,
+    "triangles": 12780
+  },
+  "selected_components": {
+    "names": [
+      "Bolt.001",
+      "Sphere.001"
+    ],
+    "raw_triangles": 5780,
+    "closure_cap_triangles": 32,
+    "closed_triangles": 5812,
+    "bounds_min_mm": [
+      -49.799015045166016,
+      34.99650955200195,
+      -42.65985107421875
+    ],
+    "bounds_max_mm": [
+      50.56106948852539,
+      171.00367736816406,
+      44.254547119140625
+    ],
+    "extent_mm": [
+      100.3600845336914,
+      136.0071678161621,
+      86.91439819335938
+    ]
+  },
+  "runtime_lod": {
+    "base": {
+      "vertices": 238,
+      "triangles": 472,
+      "edges": 708,
+      "euler_characteristic": 2,
+      "connected_components": 1,
+      "edge_multiplicity": {
+        "2": 708
+      },
+      "watertight": true,
+      "bounds_min": [
+        -49.799015045166016,
+        34.99650955200195,
+        -42.65985107421875
+      ],
+      "bounds_max": [
+        50.56106948852539,
+        94.58031463623047,
+        44.254547119140625
+      ],
+      "extent": [
+        100.3600845336914,
+        59.583805084228516,
+        86.91439819335938
+      ]
+    },
+    "handle": {
+      "vertices": 289,
+      "triangles": 574,
+      "edges": 861,
+      "euler_characteristic": 2,
+      "connected_components": 1,
+      "edge_multiplicity": {
+        "2": 861
+      },
+      "watertight": true,
+      "bounds_min": [
+        -13.280226707458496,
+        61.951751708984375,
+        -19.163230895996094
+      ],
+      "bounds_max": [
+        13.69201374053955,
+        171.00367736816406,
+        10.689663887023926
+      ],
+      "extent": [
+        26.972240447998047,
+        109.05192565917969,
+        29.85289478302002
+      ]
+    },
+    "triangles": 1046,
+    "watertight": true,
+    "connected_components": 2,
+    "extent_mm": [
+      100.3600845336914,
+      136.0071678161621,
+      86.91439819335938
+    ],
+    "construction": "convex outward exterior shells of retained Bolt.001 shallow hex collar/body and Sphere.001 toggle handle",
+    "visual_purpose": "removes threaded/interior-looking concavities visible during lever articulation while retaining the selected outer envelopes"
+  },
+  "installed": {
+    "uniform_scale": 0.56,
+    "source_origin_mm": [
+      0.3810272216796875,
+      34.99650955200195,
+      0.7973480224609375
+    ],
+    "base_normal_m": 0.016,
+    "lever_pivot_normal_m": 0.031094935607910157,
+    "top_normal_m": 0.09216401397705079,
+    "max_base_radius_m": 0.028100828486697586,
+    "max_handle_radius_m": 0.011178354458403183
+  },
+  "selection_rationale": "Kept central toggle handle Sphere.001 and mounting body Bolt.001 through its shallow hexagonal collar; excluded Cube.002 and Cube.003 rectangular enclosure plus unrelated screws, dial plate, text and indicators.",
+  "exterior_shell_distance_to_closed_selected_source_mm": {
+    "base": {
+      "samples_per_mesh": 100000,
+      "rms": 7.348942276630715,
+      "mean": 5.047350198082252,
+      "p95": 14.33532867687016,
+      "p99": 19.481094692015542,
+      "max": 26.50811814228188,
+      "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+    },
+    "handle": {
+      "samples_per_mesh": 100000,
+      "rms": 0.16093295078748074,
+      "mean": 0.14254838110680534,
+      "p95": 0.27883174205413935,
+      "p99": 0.3458026378465361,
+      "max": 0.5716428580531014,
+      "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+    }
+  },
+  "previous_topology_preserving_lod_surface_distance_mm": {
+    "base": {
+      "samples_per_mesh": 100000,
+      "rms": 0.315843443035816,
+      "mean": 0.28513760648870345,
+      "p95": 0.5334664745421106,
+      "p99": 0.6579993041478432,
+      "max": 1.1260650543485955,
+      "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+    },
+    "handle": {
+      "samples_per_mesh": 100000,
+      "rms": 0.1609481689388106,
+      "mean": 0.1426677241531471,
+      "p95": 0.27823424155097987,
+      "p99": 0.34419309247356356,
+      "max": 0.523293641766004,
+      "method": "bidirectional deterministic area-weighted samples with nearest-sample cKDTree"
+    }
+  }
+}

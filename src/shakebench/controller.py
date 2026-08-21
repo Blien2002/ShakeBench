@@ -200,6 +200,7 @@ class ScriptedPickPlaceController:
         self.failure_reason: str | None = None
         self.descend_target_reached = False
         self.contact_loss_time_s = 0.0
+        self.grasp_ready_time_s = 0.0
         self.ik.reset()
 
     @property
@@ -435,6 +436,14 @@ class ScriptedPickPlaceController:
                     self.contact_finger_target,
                     desired_fingers,
                 )
+            if (
+                phase.name == "grasp"
+                and bool(self.finger_contact_latched.all().item())
+                and self.task.metrics.bilateral_contact_confirmed
+            ):
+                self.grasp_ready_time_s += self.task.cfg.dt
+            elif phase.name == "grasp":
+                self.grasp_ready_time_s = 0.0
         else:
             self.contact_finger_target = None
             self.finger_contact_latched.zero_()
@@ -462,25 +471,24 @@ class ScriptedPickPlaceController:
                 self.task.mark_descend_timeout()
                 self.failure_reason = "descend_contact_timeout"
                 self.phase_index = len(self.phases)
-        elif phase.name == "grasp" and self.phase_time >= phase.duration_s:
-            if (
-                not bool(self.finger_contact_latched.all().item())
-                or not self.task.metrics.bilateral_contact_confirmed
-            ):
-                self.task.mark_grasp_contact_timeout()
-                self.failure_reason = "grasp_contact_timeout"
-                self.phase_index = len(self.phases)
-            else:
-                # Establish the transport/slip reference only after the grasp
-                # has settled and passed the bilateral-contact gate.  Using
-                # the first touch as zero incorrectly counted normal centering
-                # motion during closure as a dropped object.
+        elif phase.name == "grasp":
+            grasp_ready = self.grasp_ready_time_s >= self.task.cfg.grasp_settle_s
+            if grasp_ready:
+                # The timeout is a failure deadline, not a mandatory dwell.
+                # Once real bilateral contact has been latched and allowed to
+                # settle, start transport while the object is still centered
+                # instead of squeezing it against the moving table for the
+                # entire timeout window.
                 self.grasp_hand_position_b = obs["ee_pose_b"][:, :3].clone()
                 self.hand_minus_object_b = (
                     obs["ee_pose_b"][:, :3] - obs["workpiece_pose_b"][:, :3]
                 ).clone()
                 self.phase_time = 0.0
                 self.phase_index += 1
+            elif self.phase_time >= phase.duration_s:
+                self.task.mark_grasp_contact_timeout()
+                self.failure_reason = "grasp_contact_timeout"
+                self.phase_index = len(self.phases)
         elif self.phase_time >= phase.duration_s:
             self.phase_time = 0.0
             self.phase_index += 1

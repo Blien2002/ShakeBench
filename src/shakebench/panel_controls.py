@@ -19,13 +19,42 @@ from isaaclab.utils.configclass import configclass
 
 from .visual_assets import (
     _visual_cylinder_between,
-    _visual_sphere,
 )
 from .paths import PROJECT_ROOT
 
-APOLLO_KNOB_STL_PATH = (
+APOLLO_KNOB_SOURCE_STL_PATH = (
     PROJECT_ROOT / "assets" / "models" / "apollo_command_module_control_panel_knob.stl"
 )
+APOLLO_KNOB_RUNTIME_STL_PATH = (
+    PROJECT_ROOT
+    / "assets"
+    / "models"
+    / "apollo_command_module_control_panel_knob.runtime.stl"
+)
+
+# The runtime LOD preserves the source STL's 49.998 x 20.701 x 49.963 mm
+# envelope.  Its lowest point is mounted four millimetres above the fixed
+# bezel's 15 mm top.  The proxy fully encloses the 25.737 mm radial and
+# 20.701 mm normal extents so robot fingers cannot enter the visible mesh.
+APOLLO_KNOB_VISUAL_BASE_NORMAL_M = 0.019
+APOLLO_KNOB_COLLIDER_RADIUS_M = 0.026
+APOLLO_KNOB_COLLIDER_HEIGHT_M = 0.021
+
+SWITCH_BASE_RUNTIME_STL_PATH = (
+    PROJECT_ROOT / "assets" / "models" / "switch_control_base.runtime.stl"
+)
+SWITCH_HANDLE_RUNTIME_STL_PATH = (
+    PROJECT_ROOT / "assets" / "models" / "switch_control_handle.runtime.stl"
+)
+# FBX source axes are X/Z in the mounting plane and +Y outward.  Both runtime
+# components use this shared origin so the fixed base and moving handle retain
+# their authored alignment after uniform down-scaling to the panel.
+SWITCH_SOURCE_ORIGIN = (0.3810272216796875, 34.99650955200195, 0.7973480224609375)
+SWITCH_SCALE_M_PER_SOURCE_UNIT = 0.00056
+SWITCH_BASE_NORMAL_M = 0.016
+SWITCH_LEVER_PIVOT_NORMAL_M = 0.031094935607910157
+SWITCH_LEVER_TOP_NORMAL_M = 0.09216401397705079
+SWITCH_HANDLE_COLLIDER_RADIUS_M = 0.0115
 
 
 @configclass
@@ -80,6 +109,8 @@ def _visual_binary_stl_mesh(
     base_normal_m: float,
     in_plane_rotation_rad: float,
     color: tuple[float, float, float],
+    scale_m_per_source_unit: float = 0.001,
+    source_origin: tuple[float, float, float] | None = None,
 ) -> None:
     """Author a collision-free USD mesh from the original binary STL triangles."""
 
@@ -110,18 +141,23 @@ def _visual_binary_stl_mesh(
         triangles.append(vertices)
         lowest_height_mm = min(lowest_height_mm, *(vertex[1] for vertex in vertices))
 
+    if source_origin is None:
+        source_origin = (0.0, lowest_height_mm, 0.0)
     rotation_cos = math.cos(in_plane_rotation_rad)
     rotation_sin = math.sin(in_plane_rotation_rad)
 
     def mapped(source_xyz, *, direction: bool = False):
         source_x, source_y, source_z = source_xyz
+        if not direction:
+            source_x -= source_origin[0]
+            source_y -= source_origin[1]
+            source_z -= source_origin[2]
         tangent_mm = rotation_cos * source_x - rotation_sin * source_z
         lateral_mm = rotation_sin * source_x + rotation_cos * source_z
-        height_m = source_y if direction else source_y - lowest_height_mm
-        millimetres_to_metres = 0.001
+        height_m = source_y
         normal_offset = 0.0 if direction else base_normal_m
         return tuple(
-            millimetres_to_metres
+            scale_m_per_source_unit
             * (
                 tangent_mm * tangent[axis]
                 + lateral_mm * lateral[axis]
@@ -314,6 +350,7 @@ def _define_joint(
     body1: str,
     frame_quat,
     goal: float,
+    joint_position=(0.0, 0.0, 0.0),
 ) -> None:
     from pxr import Gf, Sdf, UsdPhysics
 
@@ -343,8 +380,8 @@ def _define_joint(
         damping = 0.08 if kind == "knob" else 0.05
     joint.CreateBody0Rel().SetTargets([Sdf.Path(body0)])
     joint.CreateBody1Rel().SetTargets([Sdf.Path(body1)])
-    joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
-    joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+    joint.CreateLocalPos0Attr().Set(Gf.Vec3f(*joint_position))
+    joint.CreateLocalPos1Attr().Set(Gf.Vec3f(*joint_position))
     joint.CreateLocalRot0Attr().Set(frame_quat)
     joint.CreateLocalRot1Attr().Set(frame_quat)
     drive = UsdPhysics.DriveAPI.Apply(joint.GetPrim(), drive_name)
@@ -400,73 +437,84 @@ def spawn_panel_control_articulation(
         link_path,
         frame_quat,
         cfg.goal,
+        joint_position=(
+            _scale(normal, SWITCH_LEVER_PIVOT_NORMAL_M)
+            if cfg.kind == "lever"
+            else (0.0, 0.0, 0.0)
+        ),
     )
 
     if cfg.kind == "knob":
-        # The Smithsonian-derived STL spans 20.7 mm along its authored height
-        # axis.  This proxy stays inside that visible shell instead of
-        # protruding through its pointer or mounting flange.
-        collider_center = _scale(normal, 0.028)
+        # The former 22 x 20 mm proxy was smaller than the Apollo visual by
+        # 3.74 mm radially and 0.70 mm in height.  Contacts were therefore
+        # physically valid while a finger visibly penetrated the render mesh.
+        # This cylinder conservatively encloses the certified runtime LOD.
+        collider_center = _scale(
+            normal,
+            APOLLO_KNOB_VISUAL_BASE_NORMAL_M + 0.5 * APOLLO_KNOB_COLLIDER_HEIGHT_M,
+        )
         _collision_cylinder(
             stage,
             f"{link_path}/collision",
-            cfg.radius_m,
-            0.020,
+            max(float(cfg.radius_m), APOLLO_KNOB_COLLIDER_RADIUS_M),
+            APOLLO_KNOB_COLLIDER_HEIGHT_M,
             collider_center,
             frame_quat,
         )
         _visual_binary_stl_mesh(
             stage,
             f"{link_path}/ApolloKnob",
-            APOLLO_KNOB_STL_PATH,
+            APOLLO_KNOB_RUNTIME_STL_PATH,
             tangent,
             lateral,
             normal,
-            base_normal_m=0.018,
+            base_normal_m=APOLLO_KNOB_VISUAL_BASE_NORMAL_M,
             in_plane_rotation_rad=math.pi,
             color=(0.31, 0.32, 0.31),
         )
     elif cfg.kind == "lever":
-        # The 22 mm shaft proxy starts 10 mm outward of the pivot.  As the
-        # shaft rotates through 30 deg, its base-cap edge sweeps toward the
-        # operator face; at the former 2 mm root offset that edge penetrated
-        # the console by ~3.2 mm and physically blocked the last 3 deg of
-        # travel.  10 mm keeps the base edge clear through the full arc.
+        # The source switch has a fixed threaded body/hex collar and a separate
+        # moving toggle.  Keeping the 28.1 mm-radius base on the articulation
+        # root is essential: rotating that wide collar by 30 degrees would
+        # sweep it through the operator face even when its rest pose is clear.
+        _visual_binary_stl_mesh(
+            stage,
+            f"{prim_path}/SwitchBase",
+            SWITCH_BASE_RUNTIME_STL_PATH,
+            tangent,
+            lateral,
+            normal,
+            base_normal_m=SWITCH_BASE_NORMAL_M,
+            in_plane_rotation_rad=0.0,
+            color=(0.34, 0.36, 0.37),
+            scale_m_per_source_unit=SWITCH_SCALE_M_PER_SOURCE_UNIT,
+            source_origin=SWITCH_SOURCE_ORIGIN,
+        )
+        collider_height = SWITCH_LEVER_TOP_NORMAL_M - SWITCH_LEVER_PIVOT_NORMAL_M
         _collision_cylinder(
             stage,
             f"{link_path}/collision",
-            0.011,
-            cfg.length_m,
-            _scale(normal, 0.5 * cfg.length_m + 0.010),
+            max(float(cfg.radius_m), SWITCH_HANDLE_COLLIDER_RADIUS_M),
+            collider_height,
+            _scale(
+                normal,
+                SWITCH_LEVER_PIVOT_NORMAL_M + 0.5 * collider_height,
+            ),
             frame_quat,
         )
-        shaft_start = _scale(normal, 0.020)
-        shaft_end = _scale(normal, 0.074)
-        _visual_cylinder_between(
+        _visual_binary_stl_mesh(
             stage,
-            f"{link_path}/Shaft",
-            shaft_start,
-            shaft_end,
-            0.006,
-            (0.68, 0.70, 0.70),
+            f"{link_path}/SwitchHandle",
+            SWITCH_HANDLE_RUNTIME_STL_PATH,
+            tangent,
+            lateral,
+            normal,
+            base_normal_m=SWITCH_BASE_NORMAL_M,
+            in_plane_rotation_rad=0.0,
+            color=(0.055, 0.060, 0.065),
+            scale_m_per_source_unit=SWITCH_SCALE_M_PER_SOURCE_UNIT,
+            source_origin=SWITCH_SOURCE_ORIGIN,
         )
-        grip_start = _scale(normal, 0.060)
-        grip_end = _scale(normal, 0.090)
-        _collision_sphere(
-            stage,
-            f"{link_path}/grip_collision",
-            0.011,
-            grip_end,
-        )
-        _visual_cylinder_between(
-            stage,
-            f"{link_path}/Grip",
-            grip_start,
-            grip_end,
-            0.011,
-            (0.055, 0.060, 0.065),
-        )
-        _visual_sphere(stage, f"{link_path}/GripCap", 0.011, grip_end, (0.055, 0.060, 0.065))
     else:
         _collision_cylinder(
             stage,

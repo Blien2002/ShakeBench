@@ -1,4 +1,4 @@
-schema_version: 3
+schema_version: 4
 common:
   robot: franka_panda
   table: phenolic_worktable_c2
@@ -7,6 +7,9 @@ common:
   solver_iterations: 50
   workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
   default_workpiece_scale: 0.75
+  gamma: 0.50
+  frequency_scale: 1.0
+  ballistic_allowed: false
 physics_profiles:
   official:
     physics_hz: 1000
@@ -23,12 +26,6 @@ physics_profiles:
     contact_solref: [0.0025, 1.0]
     scoreable: false
     note: Throughput profile; larger single-step travel can increase penetration.
-  training:
-    physics_hz: 240
-    substeps: 4
-    contact_solref: [0.0025, 1.0]
-    scoreable: false
-    note: Throughput profile; larger single-step travel can increase penetration.
 contact_policy:
   requested_pair_margin_m: 0.001
   backend_limit: MuJoCo NativeCCD zeroes authored margins with use_mujoco_contacts=true.
@@ -39,74 +36,88 @@ controller_policy:
   finger_table_clearance_m: 0.012
   runtime_descend_rule: Raise the finger-body target using the live finger collider reach and workpiece height.
   arm_linear_speed_m_s: 0.15
-  lift_takeoff_speed_m_s: 0.020
-  lift_takeoff_duration_s: 0.75
+  lift_takeoff_speed_m_s: 0.012
+  lift_takeoff_duration_s: 1.20
   descend_linear_speed_m_s: 0.060
   place_linear_speed_m_s: 0.080
-  gripper_closing_speed_m_s: 0.003
+  gripper_closing_speed_m_s: 0.010
   gripper_contact_recovery_speed_m_s: 0.001
   gripper_opening_speed_m_s: 0.040
   gripper_contact_preload_m: 0.0003
-  grasp_timeout_s: 2.5
+  grasp_timeout_s: 6.0
+  grasp_settle_s: 0.30
   grasp_contact_loss_timeout_s: 0.20
-  grasp_slip_tolerance_m: 0.008
+  grasp_slip_tolerance_m: 0.010
   table_contact_during_descend: fail
   contact_loss_during_transport: fail
 scenarios:
   clean_baseline:
     vibration: off
     seeds: [0]
+  z_sweep_control:
+    vibration: sweep
+    axis: tz
+    frequency_hz: 5.0
+    gamma: 0.50
+    seeds: [0]
+    note: Single-axis narrowband sweep calibrated to Gamma=0.50.
   z_sine_control:
     vibration: sine
     axis: tz
     frequency_hz: 5.0
-    amplitude_m: 0.0015
+    gamma: 0.50
     seeds: [0]
+    note: Deprecated alias of z_sweep_control; 'sine' remains for one release cycle.
   legacy_random_6dof:
     vibration: spectral
-    spectral_scale: 1.0
+    gamma: 0.50
+    frequency_scale: 1.0
     axes: [tx, ty, tz, rx, ry, rz]
     seeds: [17, 31, 47, 73, 101]
+    note: Contact-preserving replacement for the old spectral_scale=1.0 family; displacement and acceleration are no longer tied by a single scale.
   safe_full_6dof_demo:
     vibration: spectral
-    spectral_scale: 0.15
+    gamma: 0.15
+    frequency_scale: 1.0
     axes: [tx, ty, tz, rx, ry, rz]
     seeds: [17]
-    note: Safe 240 Hz visualization profile; not an official score profile.
+    note: Mild full-6DOF visualization profile inside the contact-preserving wedge.
   vehicle_longitudinal_2dof_demo:
     vibration: spectral
-    spectral_scale: 1.0
+    gamma: 0.50
+    frequency_scale: 1.0
     axes: [tx, tz]
     bands:
       tx:
-        - {center_hz: 5.0, rms_m: 0.0012, bandwidth_ratio: 0.12, tones: 8}
+        - {center_hz: 5.0, accel_rms: 0.50, bandwidth_ratio: 0.12, tones: 8}
       tz:
-        - {center_hz: 8.0, rms_m: 0.0015, bandwidth_ratio: 0.10, tones: 10}
+        - {center_hz: 8.0, accel_rms: 1.00, bandwidth_ratio: 0.10, tones: 10}
     workpiece: sugar_box
     workpiece_scale: 0.55
     gripper_closing_speed_m_s: 0.006
     grasp_timeout_s: 4.5
     episode_s: 20.0
     seeds: [17]
-    note: Low-frequency longitudinal vehicle-plane demo with visibly large X/Z displacement; not an official score profile.
+    note: Longitudinal vehicle-plane demo with vertical-dominant acceleration; calibrated to Gamma=0.50.
   vehicle_longitudinal_3dof_demo:
     vibration: spectral
-    spectral_scale: 1.0
+    gamma: 0.50
+    frequency_scale: 1.0
     axes: [tx, tz, ry]
     bands:
       tx:
-        - {center_hz: 5.0, rms: 0.0012, bandwidth_ratio: 0.12, tones: 8}
+        - {center_hz: 5.0, accel_rms: 0.50, bandwidth_ratio: 0.12, tones: 8}
       tz:
-        - {center_hz: 8.0, rms: 0.0015, bandwidth_ratio: 0.10, tones: 10}
+        - {center_hz: 8.0, accel_rms: 1.00, bandwidth_ratio: 0.10, tones: 10}
       ry:
-        - {center_hz: 2.5, rms: 0.0015, bandwidth_ratio: 0.12, tones: 8}
+        - {center_hz: 4.0, accel_rms: 0.461538, bandwidth_ratio: 0.12, tones: 8}
     workpiece: sugar_box
     workpiece_scale: 0.55
     gripper_closing_speed_m_s: 0.006
     grasp_timeout_s: 4.5
     episode_s: 20.0
     seeds: [17]
-    note: Longitudinal vehicle demo with X/Z translation plus Y pitch, producing arm-table differential motion; not an official score profile.
+    note: Longitudinal vehicle demo with X/Z translation plus pitch, producing arm-table differential motion; calibrated to Gamma=0.50.
   panel_operation:
     task: panel_operation
     vibration: off
@@ -116,11 +127,12 @@ scenarios:
   panel_operation_spectral_demo:
     task: panel_operation
     vibration: spectral
-    spectral_scale: 0.15
+    gamma: 0.30
+    frequency_scale: 1.0
     axes: [tx, ty, tz, rx, ry, rz]
     episode_s: 24.0
     seeds: [17]
-    note: Panel operation under the safe reduced-amplitude 6-DOF spectral vibration; not an official score profile.
+    note: Panel operation under a Gamma=0.30 contact-preserving 6-DOF spectrum.
   panel_sequence_knob_button:
     task: panel_operation
     vibration: off
@@ -128,6 +140,115 @@ scenarios:
     episode_s: 16.0
     seeds: [0]
     note: Explicit two-control instruction (knob then button) for deterministic validation.
+  # --- Round-5 Gamma difficulty ladder (all strictly inside Gamma < 1) ---
+  ladder_g015:
+    vibration: spectral
+    gamma: 0.15
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Official difficulty ladder step 1/5; contact-preserving by construction.
+  ladder_g030:
+    vibration: spectral
+    gamma: 0.30
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Official difficulty ladder step 2/5; contact-preserving by construction.
+  ladder_g050:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Official difficulty ladder step 3/5; contact-preserving by construction.
+  ladder_g075:
+    vibration: spectral
+    gamma: 0.75
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Official difficulty ladder step 4/5; contact-preserving by construction.
+  ladder_g095:
+    vibration: spectral
+    gamma: 0.95
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Official difficulty ladder step 5/5; contact-preserving by construction.
+  # --- Round-5 frequency sweep (Gamma fixed at 0.50) ---
+  sweep_f025:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 0.25
+    seeds: [17, 31, 47, 73, 101]
+    note: tz centre 2 Hz. At Gamma=0.50 this point lies outside the displacement wedge (Gamma_max ~0.26); startup is refused with the feasible Gamma_max in the error.
+  sweep_f050:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 0.5
+    seeds: [17, 31, 47, 73, 101]
+    note: tz centre 4 Hz; inside the displacement wedge for Gamma=0.50.
+  sweep_f100:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: tz centre 8 Hz; default frequency, simultaneously activates inertial-load and geometric-mismatch failure modes.
+  sweep_f200:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 2.0
+    seeds: [17, 31, 47, 73, 101]
+    note: tz centre 16 Hz.
+  sweep_f400:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 4.0
+    seeds: [17, 31, 47, 73, 101]
+    note: tz centre 32 Hz.
+  # --- Round-5 predictability controls: same Gamma, three bandwidths ---
+  predictability_bw000:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 1.0
+    axes: [tx, ty, tz, rx, ry, rz]
+    bands:
+      tz:
+        - {center_hz: 8.0, accel_rms: 1.000000, bandwidth_ratio: 0.0, tones: 12}
+      tx:
+        - {center_hz: 5.0, accel_rms: 0.500000, bandwidth_ratio: 0.0, tones: 12}
+      ty:
+        - {center_hz: 6.5, accel_rms: 0.350000, bandwidth_ratio: 0.0, tones: 10}
+      rx:
+        - {center_hz: 3.0, accel_rms: 0.461538, bandwidth_ratio: 0.0, tones: 12}
+      ry:
+        - {center_hz: 4.0, accel_rms: 0.461538, bandwidth_ratio: 0.0, tones: 10}
+      rz:
+        - {center_hz: 2.5, accel_rms: 0.230769, bandwidth_ratio: 0.0, tones: 8}
+    seeds: [17, 31, 47, 73, 101]
+    note: Pure-sine predictability control; bandwidth_ratio=0 collapses each band to one deterministic line.
+  predictability_bw010:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 1.0
+    seeds: [17, 31, 47, 73, 101]
+    note: Default narrowband predictability control (10% relative bandwidth).
+  predictability_bw040:
+    vibration: spectral
+    gamma: 0.50
+    frequency_scale: 1.0
+    axes: [tx, ty, tz, rx, ry, rz]
+    bands:
+      tz:
+        - {center_hz: 8.0, accel_rms: 1.000000, bandwidth_ratio: 0.40, tones: 12}
+      tx:
+        - {center_hz: 5.0, accel_rms: 0.500000, bandwidth_ratio: 0.40, tones: 12}
+      ty:
+        - {center_hz: 6.5, accel_rms: 0.350000, bandwidth_ratio: 0.40, tones: 10}
+      rx:
+        - {center_hz: 3.0, accel_rms: 0.461538, bandwidth_ratio: 0.40, tones: 12}
+      ry:
+        - {center_hz: 4.0, accel_rms: 0.461538, bandwidth_ratio: 0.40, tones: 10}
+      rz:
+        - {center_hz: 2.5, accel_rms: 0.230769, bandwidth_ratio: 0.40, tones: 8}
+    seeds: [17, 31, 47, 73, 101]
+    note: Wideband predictability control (40% relative bandwidth); same Gamma as bw000/bw010.
 evaluation:
   success_xy_m: 0.07
   require_lift: true

@@ -7,6 +7,7 @@ import argparse
 from dataclasses import asdict
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -31,7 +32,11 @@ from shakebench.panel_task import PanelBenchmarkTask
 from shakebench.recording import BenchmarkRecorder
 from shakebench.scene import install_clite_model_constraints, make_scene_cfg, make_sim_cfg
 from shakebench.supports import install_structural_collision_exclusions, support_group_geometries
-from shakebench.vibration import offline_support_travel_report
+from shakebench.vibration import (
+    calibrate_level_scale,
+    offline_support_travel_report,
+    validate_deck_displacement_gate,
+)
 from shakebench.wrist_camera import (
     WRIST_CAMERA_EYE_H,
     WRIST_CAMERA_FORWARD_H,
@@ -61,6 +66,11 @@ def parse_args() -> argparse.Namespace:
         help="Seed for sampling a random ordered control subset when --panel-sequence is not given",
     )
     parser.add_argument("--record", action="store_true")
+    parser.add_argument(
+        "--record-full-episode",
+        action="store_true",
+        help="When recording, keep simulating and capturing after the controller finishes until --episode-s",
+    )
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "out" / "benchmark_v2_demo.mp4")
     parser.add_argument(
         "--camera-preset",
@@ -70,15 +80,31 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-overlays", action="store_true", help="Record clean NewtonGL frames without telemetry panels")
     parser.add_argument("--workpiece", choices=("cracker_box", "sugar_box", "soup_can", "mustard_bottle"), default="sugar_box")
     parser.add_argument("--workpiece-scale", type=float, default=0.75)
-    parser.add_argument("--vibration", choices=("off", "sine", "spectral"), default="spectral")
-    parser.add_argument("--sine-axis", choices=("tx", "ty", "tz", "rx", "ry", "rz"), default="tz")
-    parser.add_argument("--sine-amplitude", type=float, default=0.0015)
-    parser.add_argument("--sine-frequency-hz", type=float, default=5.0)
     parser.add_argument(
-        "--spectral-scale",
+        "--vibration",
+        choices=("off", "sweep", "sine", "spectral"),
+        default="spectral",
+        help="Excitation mode; 'sine' is a deprecated alias for 'sweep'",
+    )
+    parser.add_argument("--sine-axis", choices=("tx", "ty", "tz", "rx", "ry", "rz"), default="tz", help="Axis used by sweep mode")
+    parser.add_argument("--sine-frequency-hz", type=float, default=5.0, help="Centre frequency used by sweep mode")
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0.50,
+        help="Target Gamma: realized peak vertical workpiece acceleration divided by g. "
+        "The absolute excitation level is calibrated per seed so this is exact.",
+    )
+    parser.add_argument(
+        "--frequency-scale",
         type=float,
         default=1.0,
-        help="Scale every enabled spectral axis together; 0.15 is safe for the 240 Hz full-6DOF profile",
+        help="Global multiplier for every authored spectral centre frequency",
+    )
+    parser.add_argument(
+        "--allow-ballistic",
+        action="store_true",
+        help="Opt in to gamma >= 1 (periodic table-contact loss); such runs are not official-score eligible",
     )
     parser.add_argument(
         "--vibration-axes",
@@ -137,8 +163,8 @@ def scenario_bands(payload: dict) -> dict[str, tuple[SpectralBand, ...]] | None:
         axis: tuple(
             SpectralBand(
                 center_hz=float(band["center_hz"]),
-                rms=float(band["rms"] if "rms" in band else band["rms_m"]),
-                bandwidth_ratio=float(band.get("bandwidth_ratio", 0.08)),
+                accel_rms=float(band["accel_rms"]),
+                bandwidth_ratio=float(band.get("bandwidth_ratio", 0.10)),
                 tones=int(band.get("tones", 12)),
             )
             for band in bands
@@ -149,12 +175,26 @@ def scenario_bands(payload: dict) -> dict[str, tuple[SpectralBand, ...]] | None:
 
 def main() -> int:
     args = parse_args()
+    if args.record_full_episode and not args.record:
+        raise ValueError("--record-full-episode requires --record")
     scenario = load_scenario(args.scenario)
     task_kind = scenario.get("task", args.task)
     if task_kind not in ("pick_place", "panel_operation"):
         raise ValueError(f"unknown task {task_kind!r}; expected pick_place or panel_operation")
     vibration_mode = scenario.get("vibration", args.vibration)
-    spectral_scale = float(scenario.get("spectral_scale", args.spectral_scale))
+    if vibration_mode == "sine":
+        print(
+            "[DEPRECATED] --vibration sine is an alias for sweep and will be removed "
+            "in a future release; use --vibration sweep.",
+            file=sys.stderr,
+        )
+    gamma = float(scenario.get("gamma", args.gamma))
+    frequency_scale = float(scenario.get("frequency_scale", args.frequency_scale))
+    ballistic_allowed = bool(scenario.get("ballistic_allowed", args.allow_ballistic))
+    sweep_axis = str(scenario.get("axis", scenario.get("sine_axis", args.sine_axis)))
+    sweep_frequency_hz = float(
+        scenario.get("frequency_hz", scenario.get("sine_frequency_hz", args.sine_frequency_hz))
+    )
     configured_axes = scenario.get("axes", args.vibration_axes)
     if isinstance(configured_axes, str):
         active_axes = tuple(axis.strip() for axis in configured_axes.split(",") if axis.strip())
@@ -232,10 +272,11 @@ def main() -> int:
         vibration=VibrationConfig(
             mode=vibration_mode,
             seed=args.seed,
-            sine_axis=args.sine_axis,
-            sine_amplitude=args.sine_amplitude,
-            sine_frequency_hz=args.sine_frequency_hz,
-            spectral_scale=spectral_scale,
+            gamma=gamma,
+            frequency_scale=frequency_scale,
+            ballistic_allowed=ballistic_allowed,
+            sine_axis=sweep_axis,
+            sine_frequency_hz=sweep_frequency_hz,
             active_axes=active_axes,
             **({"bands": spectral_bands} if spectral_bands is not None else {}),
         ),
@@ -248,6 +289,24 @@ def main() -> int:
         grasp_assist=args.grasp_assist,
         **benchmark_overrides,
     )
+    if cfg.vibration.mode == "off":
+        calibration = None
+    else:
+        # One replay per seed solves the analytic level scale; the scale is
+        # then frozen into the config so SpectralVibration and the telemetry
+        # overlays all consume the same calibrated number.
+        level_scale, calibration = calibrate_level_scale(
+            cfg, cfg.physics_hz, cfg.episode_s
+        )
+        # VibrationConfig is frozen by contract; the calibrated absolute level
+        # is the single runtime-solved field, written through the same
+        # object.__setattr__ channel the dataclass uses internally.
+        object.__setattr__(cfg.vibration, "level_scale", level_scale)
+        validate_deck_displacement_gate(
+            cfg,
+            calibration["gamma_target"],
+            calibration["peak_deck_displacement_m"],
+        )
     support_groups = support_group_geometries(cfg)
     support_travel = offline_support_travel_report(
         cfg, support_groups, cfg.physics_hz, cfg.solver_substeps
@@ -333,6 +392,17 @@ def main() -> int:
             f"substeps={cfg.solver_substeps} effective_hz={cfg.effective_substep_hz} "
             f"replayed_peak_substep={1000.0 * support_travel.max_substep_travel_m:.3f}mm"
         )
+        if calibration is not None:
+            regime = "ballistic" if cfg.vibration.gamma >= 1.0 else "contact_preserving"
+            print(
+                f"[EXCITATION] gamma={calibration['gamma_target']:.4f} "
+                f"realized={calibration['gamma_realized']:.6f} "
+                f"level_scale={calibration['level_scale']:.6f} m/s^2 "
+                f"frequency_scale={cfg.vibration.frequency_scale:.2f} "
+                f"airborne={calibration['airborne_fraction']:.4%} "
+                f"peak_deck_disp={1000.0 * calibration['peak_deck_displacement_m']:.3f}mm "
+                f"regime={regime}"
+            )
         print(f"[USD] work_thread_limit={os.environ.get('PXR_WORK_THREAD_LIMIT', 'unset')}")
         print(f"[CONTACT_RESPONSE] {json.dumps(contact_response, sort_keys=True)}")
         if task_kind != "panel_operation":
@@ -343,10 +413,17 @@ def main() -> int:
                     f"{1000.0 * row['min_horizontal_m']:.1f} {row['feasible']}"
                 )
         try:
-            while task.time_s < cfg.episode_s and not controller.finished:
+            last_arm = None
+            last_fingers = None
+            while task.time_s < cfg.episode_s and (
+                not controller.finished or args.record_full_episode
+            ):
                 with torch.inference_mode():
-                    arm, fingers = controller.command(obs)
-                    obs = task.step(arm, fingers)
+                    if not controller.finished:
+                        last_arm, last_fingers = controller.command(obs)
+                    if last_arm is None or last_fingers is None:
+                        raise RuntimeError("controller finished before producing an initial command")
+                    obs = task.step(last_arm, last_fingers)
                     if task_kind == "pick_place":
                         task.record_ee_tracking_error(
                             controller.commanded_position_b,
@@ -456,11 +533,21 @@ def main() -> int:
                     ),
                     "panel_seed": cfg.panel.seed if cfg.task == "panel_operation" else None,
                     "vibration_mode": cfg.vibration.mode,
-                    "sine_axis": cfg.vibration.sine_axis if cfg.vibration.mode == "sine" else None,
-                    "sine_amplitude": cfg.vibration.sine_amplitude if cfg.vibration.mode == "sine" else None,
-                    "sine_frequency_hz": cfg.vibration.sine_frequency_hz if cfg.vibration.mode == "sine" else None,
-                    "spectral_scale": cfg.vibration.spectral_scale if cfg.vibration.mode == "spectral" else None,
-                    "vibration_axes": list(cfg.vibration.active_axes) if cfg.vibration.mode == "spectral" else ([cfg.vibration.sine_axis] if cfg.vibration.mode == "sine" else []),
+                    "sine_axis": cfg.vibration.sine_axis if cfg.vibration.mode in ("sweep", "sine") else None,
+                    "sine_frequency_hz": cfg.vibration.sine_frequency_hz if cfg.vibration.mode in ("sweep", "sine") else None,
+                    "vibration_axes": list(cfg.vibration.active_axes) if cfg.vibration.mode == "spectral" else ([cfg.vibration.sine_axis] if cfg.vibration.mode in ("sweep", "sine") else []),
+                    "gamma_target": None if calibration is None else calibration["gamma_target"],
+                    "gamma_realized": None if calibration is None else calibration["gamma_realized"],
+                    "level_scale": None if calibration is None else calibration["level_scale"],
+                    "frequency_scale": None if cfg.vibration.mode == "off" else cfg.vibration.frequency_scale,
+                    "kappa_rot": None if cfg.vibration.mode == "off" else cfg.vibration.kappa_rot,
+                    "airborne_fraction": None if calibration is None else calibration["airborne_fraction"],
+                    "peak_deck_displacement_m": None if calibration is None else calibration["peak_deck_displacement_m"],
+                    "regime": (
+                        None
+                        if calibration is None
+                        else ("ballistic" if cfg.vibration.gamma >= 1.0 else "contact_preserving")
+                    ),
                     "observed_vibration_window_s": observation_window_s,
                     "observed_vibration_displacement_rms": observed_axis_rms,
                     "observed_vibration_displacement_peak_abs": observed_axis_peak_abs,
@@ -495,6 +582,7 @@ def main() -> int:
                         "gripper_opening_speed_m_s": cfg.gripper_opening_speed_m_s,
                         "gripper_contact_preload_m": cfg.gripper_contact_preload_m,
                         "grasp_timeout_s": cfg.grasp_timeout_s,
+                        "grasp_settle_s": cfg.grasp_settle_s,
                         "grasp_contact_loss_timeout_s": cfg.grasp_contact_loss_timeout_s,
                         "grasp_slip_tolerance_m": cfg.grasp_slip_tolerance_m,
                     },

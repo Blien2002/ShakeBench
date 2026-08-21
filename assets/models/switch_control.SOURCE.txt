@@ -1,0 +1,29 @@
+Switch control runtime asset source
+===================================
+
+Source archive: assets/switch.zip
+Source member: source/Interruptor.fbx
+Provenance: user-provided to the ShakeBench workspace on 2026-08-20.
+
+No license, author, attribution, or redistribution terms were present in the
+archive.  The runtime LODs therefore have unknown reuse/redistribution rights;
+do not redistribute them outside the user-authorized project without first
+obtaining or confirming the source model's license.
+
+Geometry selection
+------------------
+
+Retained FBX components:
+- Sphere.001: moving toggle handle.
+- Bolt.001: threaded mounting body and shallow hexagonal collar.
+
+Excluded components include Cube.002 and Cube.003 (the large rectangular
+enclosure below the collar), plus unrelated screws, dial plate, text, indicator
+planes, camera, and lights.  The handle's single 32-edge opening was capped in
+its hidden overlap with the mounting body before topology-preserving decimation.
+
+Generated runtime files:
+- switch_control_base.runtime.stl: 1,800 triangles, closed/watertight.
+- switch_control_handle.runtime.stl: 500 triangles, closed/watertight.
+- switch_control.runtime.json: selection, topology, bounds, scaling, and sampled
+  surface-distance metrics.

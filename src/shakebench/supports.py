@@ -19,8 +19,6 @@ from typing import Any, Literal
 
 import torch
 
-from isaaclab.utils.math import quat_apply, quat_from_euler_xyz
-
 from .config import BenchmarkConfig
 
 
@@ -79,6 +77,10 @@ def support_pose_velocity(
     env_origins: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Return (position, xyzw quaternion, 6-D velocity) for one group member."""
+
+    # Imported here so support geometry construction and the offline replay
+    # gate stay importable without Isaac Lab.
+    from isaaclab.utils.math import quat_apply, quat_from_euler_xyz
 
     quat = quat_from_euler_xyz(q[:, 3], q[:, 4], q[:, 5])
     anchor = local.new_tensor(rotation_anchor)

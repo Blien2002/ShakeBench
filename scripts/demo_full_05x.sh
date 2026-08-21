@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Complete-task demo with the 6-DOF spectrum scaled to 0.5x.
+# Complete-task demo with the 6-DOF spectrum calibrated to Gamma=0.50.
 #
 # This uses the 240 Hz training profile with 8 solver substeps and enables
 # the disclosed grasp-assist stabilizer, so it is a visual demonstration and
@@ -13,7 +13,7 @@ exec "${PROJECT_ROOT}/run.sh" --record \
   --solver-substeps 8 \
   --episode-s 16 \
   --vibration spectral \
-  --spectral-scale 0.5 \
+  --gamma 0.50 \
   --seed 17 \
   --workpiece sugar_box \
   --workpiece-scale 0.75 \

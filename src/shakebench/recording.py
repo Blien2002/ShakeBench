@@ -8,6 +8,7 @@ from pathlib import Path
 import imageio.v2 as imageio
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+import torch
 from isaaclab_newton.video_recording import NewtonGlPerspectiveVideoCfg
 
 from .benchmark_rendering import BenchmarkNewtonGlPerspectiveVideo
@@ -63,9 +64,15 @@ class BenchmarkRecorder:
         small = ImageFont.load_default(size=14)
         draw.rounded_rectangle((20, 18, 760, 148), radius=10, fill=(4, 9, 17, 205), outline=(72, 205, 255, 220), width=1)
         delta_z_mm = float(obs["mount_delta_z"][0, 0].item()) * 1000.0
-        if task.cfg.vibration.mode == "spectral":
+        mode = task.cfg.vibration.mode
+        if mode in ("spectral", "sweep", "sine"):
+            motion_axes = (
+                task.cfg.vibration.active_axes
+                if mode == "spectral"
+                else (task.cfg.vibration.sine_axis,)
+            )
             motion_values = []
-            for axis in task.cfg.vibration.active_axes:
+            for axis in motion_axes:
                 index = ("tx", "ty", "tz", "rx", "ry", "rz").index(axis)
                 value = float(obs["vibration_q"][0, index].item())
                 motion_values.append(
@@ -89,10 +96,10 @@ class BenchmarkRecorder:
         acceleration_rms_g = self._nominal_acceleration_rms_g(task)
         penetration_mm = float(obs["penetration_mm"][0, 0].item())
         penetration_color = (255, 92, 92, 255) if penetration_mm > 0.5 else (165, 235, 205, 255)
-        if task.cfg.vibration.mode == "spectral":
+        if mode == "spectral":
             active = task.cfg.vibration.active_axes
             dof_label = f"{len(active)}-DOF {','.join(active)}"
-        elif task.cfg.vibration.mode == "sine":
+        elif mode in ("sweep", "sine"):
             dof_label = f"1-DOF {task.cfg.vibration.sine_axis}"
         else:
             dof_label = "0-DOF"
@@ -148,23 +155,53 @@ class BenchmarkRecorder:
         self.frames += 1
 
     @staticmethod
-    def _nominal_acceleration_rms_g(task) -> float:
-        if task.cfg.vibration.mode == "off":
+    def _axis_rms(task, axis: str, derivative: int = 0) -> float:
+        """RMS of one synthesized axis from its actual per-tone amplitudes.
+
+        ``derivative`` selects displacement (0), velocity (1), or acceleration
+        (2).  The amplitudes/omegas are the exact calibrated lines used by the
+        runtime sampler, so this is the realized telemetry RMS, not a
+        centre-frequency approximation.
+        """
+
+        vibration = getattr(task, "vibration", None)
+        if vibration is None:
             return 0.0
-        if task.cfg.vibration.mode == "sine":
-            if task.cfg.vibration.sine_axis not in ("tx", "ty", "tz"):
-                return 0.0
-            omega = 2.0 * math.pi * task.cfg.vibration.sine_frequency_hz
-            return omega * omega * task.cfg.vibration.sine_amplitude / math.sqrt(2.0) / 9.80665
+        amplitude = vibration._amplitude.get(axis)
+        omega = vibration._omega.get(axis)
+        if amplitude is None or omega is None or amplitude.numel() == 0:
+            return 0.0
+        factor = {0: 1.0, 1: omega, 2: omega.square()}[derivative]
+        # Independent random-phase lines add in power, not by averaging the
+        # per-line powers.  Averaging here under-reported an N-tone band's
+        # RMS by sqrt(N), even though the runtime displacement was correct.
+        squared = ((amplitude * factor) ** 2).sum(dim=1)
+        return float(torch.sqrt(squared.mean() / 2.0).item())
+
+    @staticmethod
+    def _nominal_acceleration_rms_g(task) -> float:
+        cfg = task.cfg.vibration
+        if cfg.mode == "off":
+            return 0.0
         axis_rms = []
-        for axis in ("tx", "ty", "tz"):
-            if axis not in task.cfg.vibration.active_axes:
-                continue
-            squared = sum(
-                ((2.0 * math.pi * band.center_hz) ** 2 * band.rms) ** 2
-                for band in task.cfg.vibration.bands[axis]
-            )
-            axis_rms.append(task.cfg.vibration.spectral_scale * math.sqrt(squared))
+        if cfg.mode in ("sweep", "sine"):
+            axes = (cfg.sine_axis,)
+        else:
+            axes = tuple(axis for axis in ("tx", "ty", "tz") if axis in cfg.active_axes)
+        r_wp = np.asarray(cfg.workpiece_offset_m, dtype=float)
+        unit_axes = {
+            "rx": np.array((1.0, 0.0, 0.0)),
+            "ry": np.array((0.0, 1.0, 0.0)),
+            "rz": np.array((0.0, 0.0, 1.0)),
+        }
+        for axis in axes:
+            rms = BenchmarkRecorder._axis_rms(task, axis, derivative=2)
+            if axis.startswith("t"):
+                axis_rms.append(rms)
+            else:
+                # Rotational sweep: project alpha x r_wp onto vertical.
+                lever = float(np.cross(unit_axes[axis], r_wp)[2])
+                axis_rms.append(abs(lever) * rms)
         return math.sqrt(sum(value * value for value in axis_rms)) / 9.80665
 
     def _plot(self, draw: ImageDraw.ImageDraw, task) -> None:
@@ -187,16 +224,20 @@ class BenchmarkRecorder:
             (175, 125, 255, 255),
         )
         default_limits = (0.002, 0.001, 0.005, 0.012, 0.006, 0.004)
+        mode = task.cfg.vibration.mode
         axes = []
         for axis_index, (axis_name, default_limit, color) in enumerate(
             zip(("tx", "ty", "tz", "rx", "ry", "rz"), default_limits, colors)
         ):
-            if task.cfg.vibration.mode == "spectral" and axis_name not in task.cfg.vibration.active_axes:
+            if mode == "spectral" and axis_name not in task.cfg.vibration.active_axes:
                 continue
-            if task.cfg.vibration.mode == "spectral":
-                commanded_rms = task.cfg.vibration.spectral_scale * math.sqrt(
-                    sum(band.rms * band.rms for band in task.cfg.vibration.bands[axis_name])
-                )
+            if mode in ("sweep", "sine") and axis_name != task.cfg.vibration.sine_axis:
+                continue
+            if mode in ("spectral", "sweep", "sine"):
+                # Derived displacement RMS from the actual calibrated
+                # per-tone lines (accel_amp / omega**2), never a centre-
+                # frequency approximation.
+                commanded_rms = self._axis_rms(task, axis_name, derivative=0)
                 limit = max(3.0 * commanded_rms, 1.0e-9)
             else:
                 limit = default_limit

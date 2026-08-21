@@ -602,9 +602,9 @@ class ControlPanelAppearanceCfg(SpawnerCfg):
     """Display-only sloped console and compound controls for the panel task.
 
     The silhouette is an original five-sided industrial console inspired by
-    laboratory control desks.  The selector uses the broad-rear/tapered-tip
-    visual language of an Apollo-era pointer knob, but no third-party mesh is
-    copied or bundled.  Every shape in this review layer is collision-disabled.
+    laboratory control desks.  The fixed bezel is dimensioned around the
+    separately attributed Apollo knob runtime LOD on its moving link.  Every
+    shape in this review layer is collision-disabled.
     """
 
     func = None
@@ -746,6 +746,8 @@ def spawn_control_panel_appearance(
     # Fixed bezels live on the console.  Moving handles/caps are authored by
     # the corresponding articulation link in panel_controls.py.
     knob = surface_point(*cfg.knob_uv)
+    # The moving Apollo mesh starts at 19 mm normal offset.  Keeping the fixed
+    # inner bezel at or below 15 mm provides a 4 mm full-rotation visual gap.
     for name, radius, start_m, end_m, color in (
         ("KnobOuterBezel", 0.036, 0.005, 0.010, (0.44, 0.46, 0.47)),
         ("KnobInnerBezel", 0.030, 0.010, 0.015, (0.11, 0.12, 0.13)),

@@ -8,6 +8,18 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Documentation and test sources stay local and are not published remotely
+docs/
+tests/
+README.md
+CLAUDE.md
+CHANGELOG*
+CONTRIBUTING*
+SECURITY.md
+run_tests.sh
+test_*.py
+*_test.py
+
 # Virtual environments and package builds
 .venv/
 venv/
