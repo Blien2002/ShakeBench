@@ -1,0 +1,135 @@
+{
+  "all_passed": true,
+  "calibration": {
+    "airborne_fraction": 0.0,
+    "gamma_realized": 0.5,
+    "gamma_target": 0.5,
+    "level_scale": 1.355673056197223,
+    "peak_deck_displacement_m": 0.002159725586231655,
+    "peak_deck_velocity_m_s": 0.09583436898266968,
+    "peak_factor_kappa": 3.547457410634082,
+    "per_axis_accel_peak_abs": {
+      "rx": 1.6606915873527766,
+      "ry": 1.5095138747263206,
+      "rz": 0.8151015975634872,
+      "tx": 1.832470617474253,
+      "ty": 1.485310959055587,
+      "tz": 4.364397630956445
+    },
+    "per_axis_accel_rms": {
+      "rx": 0.5857513517645873,
+      "ry": 0.5977947216801308,
+      "rz": 0.30996719518790555,
+      "tx": 0.6148175933042561,
+      "ty": 0.4756667092528484,
+      "tz": 1.3265667541283528
+    },
+    "per_axis_disp_rms": {
+      "rx": 0.0016658049558381676,
+      "ry": 0.0009667971411065922,
+      "rz": 0.0012853531886499472,
+      "tx": 0.0006604054106629533,
+      "ty": 0.00029217332376002314,
+      "tz": 0.0005378038056355177
+    },
+    "workpiece_az_peak_m_s2": 4.903325,
+    "workpiece_az_rms_m_s2": 1.3822082783295675
+  },
+  "checks": {
+    "determinism": {
+      "expected": 0.0,
+      "max_abs_qpos_difference": 0.0,
+      "pass": true
+    },
+    "mujoco_warnings": {
+      "counts": [
+        0,
+        0,
+        0
+      ],
+      "pass": true
+    },
+    "static_penetration": {
+      "contact_samples": 120,
+      "diagnostic_limit_m_lt": 5e-06,
+      "expected_order_m": 2e-07,
+      "max_m": 9.838562045096089e-08,
+      "median_m": 9.838562023932462e-08,
+      "pass": true
+    },
+    "weld_tracking": {
+      "command_peak_m": 0.0018140204416422542,
+      "error_over_command_peak": 0.050987512015355604,
+      "error_p90_m": 6.120145311567543e-05,
+      "error_peak_m": 9.249238906433512e-05,
+      "limit_ratio_lt": 0.2,
+      "pass": true
+    },
+    "zero_trajectory": {
+      "ee_drift_m": 6.529723803263675e-07,
+      "joint_drift_rad": 1.560178127135714e-06,
+      "limits": {
+        "ee_drift_m_lt": 5e-05,
+        "joint_drift_rad_lt": 0.001
+      },
+      "pass": true
+    }
+  },
+  "configuration": {
+    "calibration_episode_s": 16.0,
+    "control_freq_hz": 20,
+    "gamma": 0.5,
+    "measurement_window_s": 6.0,
+    "physics_hz": 5000,
+    "physics_timestep_s": 0.0002,
+    "seed": 17
+  },
+  "created_utc": "2026-08-21T12:43:49.935512+00:00",
+  "reference_scale": {
+    "full_episode_peak_deck_displacement_m": 0.00216,
+    "full_episode_peak_deck_velocity_m_s": 0.0958,
+    "gamma_realized": 0.5,
+    "level_scale": 1.35567,
+    "six_second_command_peak_m": 0.00181,
+    "six_second_ee_wobble_base_m": 0.0012,
+    "six_second_obj_slip_on_table_m": 2.6e-05,
+    "six_second_weld_error_m": 8.88e-05
+  },
+  "schema": "shakebench_spike.exp1_selfcheck.v1",
+  "shaken_rollout": {
+    "command_displacement_peak_m": 0.0018140204416422542,
+    "compiled_timestep_s": 0.0002,
+    "contact_samples": 120,
+    "ee_wobble_base_m": 0.0012766744015723394,
+    "ee_world_drift_max_m": 0.0019321132428604983,
+    "joint_drift_max_rad": 0.0018036268819150436,
+    "mocap_body_count": 3,
+    "mujoco_warning_count": 0,
+    "obj_slip_on_table_m": 2.6878475569807796e-07,
+    "static_penetration_max_m": 1.4230520322885964e-07,
+    "static_penetration_median_m": 1.0427630302376617e-07,
+    "weld_tracking_error_p90_m": 6.120145311567543e-05,
+    "weld_tracking_error_peak_m": 9.249238906433512e-05
+  },
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  },
+  "zero_rollout": {
+    "command_displacement_peak_m": 0.0,
+    "compiled_timestep_s": 0.0002,
+    "contact_samples": 120,
+    "ee_wobble_base_m": 3.8764346527109556e-07,
+    "ee_world_drift_max_m": 6.529723803263675e-07,
+    "joint_drift_max_rad": 1.560178127135714e-06,
+    "mocap_body_count": 3,
+    "mujoco_warning_count": 0,
+    "obj_slip_on_table_m": 1.9681133592628672e-07,
+    "static_penetration_max_m": 9.838562045096089e-08,
+    "static_penetration_median_m": 9.838562023932462e-08,
+    "weld_tracking_error_p90_m": 2.288786843385182e-07,
+    "weld_tracking_error_peak_m": 2.2887868733612054e-07
+  }
+}

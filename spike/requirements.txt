@@ -1,0 +1,2 @@
+robosuite==1.5.2
+mujoco==3.3.7
