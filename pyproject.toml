@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "ShakeBench: an embodied-intelligence manipulation benchmark under multi-axis vibration on Isaac Lab + Newton/MJWarp"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 keywords = ["embodied-ai", "manipulation", "benchmark", "isaac-lab", "newton", "vibration", "robotics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = ["numpy", "torch", "imageio", "imageio-ffmpeg", "pillow", "pyyaml"]
+dependencies = ["numpy", "torch", "imageio", "imageio-ffmpeg", "pillow", "pyyaml", "gymnasium>=1.0", "h5py>=3.10"]
 
 [project.scripts]
 shakebench = "shakebench.cli:main"
@@ -26,7 +26,11 @@ where = ["src"]
 
 [tool.setuptools.data-files]
 "share/shakebench/configs" = ["configs/*.yaml"]
+"share/shakebench/configs/suites" = ["configs/suites/*.yaml"]
 "share/shakebench/assets/textures" = ["assets/textures/*.jpg"]
+
+[tool.setuptools.package-data]
+shakebench = ["controllers/config/*.json", "init_files/*.hdf5"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

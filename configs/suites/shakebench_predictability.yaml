@@ -1,0 +1,5 @@
+name: shakebench_predictability
+axis: bandwidth_ratio
+values: [0.0, 0.10, 0.40]
+workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
+init_states_per_task: 50

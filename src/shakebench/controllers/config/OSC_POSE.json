@@ -1,0 +1,12 @@
+{
+  "name": "OSC_POSE",
+  "action_dim": 7,
+  "intra_step_mode": "zoh",
+  "input_min": [-1, -1, -1, -1, -1, -1],
+  "input_max": [1, 1, 1, 1, 1, 1],
+  "output_min": [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
+  "output_max": [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
+  "kp": 150,
+  "damping": 1.0,
+  "impedance_mode": "fixed"
+}

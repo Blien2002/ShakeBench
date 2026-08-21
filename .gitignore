@@ -20,6 +20,32 @@ run_tests.sh
 test_*.py
 *_test.py
 
+# Round-6 public benchmark surface (legacy development artifacts remain ignored).
+!/README.md
+!/CLAUDE.md
+!/CHANGELOG.md
+!/run_tests.sh
+!docs/
+docs/*
+!docs/installation.md
+!docs/quickstart.md
+!docs/code_structure.md
+!docs/environments.md
+!docs/vibration_model.md
+!docs/benchmark_protocol.md
+!docs/physics_fidelity.md
+!docs/policies.md
+!docs/asset_licenses.md
+!docs/overview.svg
+!tests/
+tests/*
+!tests/test_vibration_calibration.py
+!tests/test_observation_isolation.py
+!tests/test_env_api.py
+!tests/test_control_freq.py
+!tests/test_init_files.py
+!tests/test_determinism.py
+
 # Virtual environments and package builds
 .venv/
 venv/

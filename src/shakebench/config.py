@@ -148,6 +148,10 @@ class VibrationConfig:
     # Runtime-computed absolute level in m/s^2 (rad/s^2 for rotational
     # channels).  The CLI calibrates this before building the simulation.
     level_scale: float = 1.0
+    # Scalar offset into the same deterministic infinite realization. It is
+    # shared by every axis and tone; independent phase offsets would change
+    # the waveform rather than select another time window.
+    t0: float = 0.0
     sine_axis: Literal["tx", "ty", "tz", "rx", "ry", "rz"] = "tz"
     sine_frequency_hz: float = 5.0
     active_axes: tuple[str, ...] = AXES
@@ -180,6 +184,8 @@ class VibrationConfig:
             raise ValueError("kappa_rot must be non-negative")
         if self.level_scale < 0.0:
             raise ValueError("level_scale must be non-negative")
+        if not math.isfinite(self.t0) or self.t0 < 0.0:
+            raise ValueError("t0 must be a finite non-negative time offset")
         if not self.active_axes:
             raise ValueError("active_axes must contain at least one vibration axis")
         invalid_active = set(self.active_axes) - set(AXES)

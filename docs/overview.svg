@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+  <title id="title">ShakeBench overview</title>
+  <desc id="desc">A robot manipulates an object while a six-axis shaker moves its deck.</desc>
+  <rect width="960" height="360" fill="#101820"/>
+  <rect x="80" y="270" width="800" height="28" rx="8" fill="#18a3a8"/>
+  <path d="M120 315h720l-55 30H175z" fill="#426779"/>
+  <g fill="none" stroke="#f2b134" stroke-width="13" stroke-linecap="round">
+    <path d="M270 265v-92l70-48 58 55 65-56"/>
+  </g>
+  <g fill="#e8eef2" stroke="#101820" stroke-width="5">
+    <circle cx="270" cy="173" r="19"/><circle cx="340" cy="125" r="19"/>
+    <circle cx="398" cy="180" r="19"/><circle cx="463" cy="124" r="19"/>
+  </g>
+  <path d="M456 111l62 27-13 28-62-27z" fill="#f2b134"/>
+  <rect x="610" y="215" width="180" height="50" rx="5" fill="#647d8a"/>
+  <rect x="650" y="165" width="54" height="50" rx="4" fill="#ec5b45"/>
+  <path d="M130 250l-28-23m28 23l-34 4m734-4l28-23m-28 23l34 4" stroke="#76d7da" stroke-width="8"/>
+  <text x="480" y="62" fill="#f7fafb" font-family="sans-serif" font-size="36" text-anchor="middle">Manipulation under calibrated 6-DoF vibration</text>
+  <text x="480" y="335" fill="#a9c7d3" font-family="sans-serif" font-size="21" text-anchor="middle">Γ-normalized excitation · isolated observations · fixed initial phase</text>
+</svg>

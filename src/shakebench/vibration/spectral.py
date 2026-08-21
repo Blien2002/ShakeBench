@@ -17,7 +17,7 @@ from typing import Any, Iterable
 import numpy as np
 import torch
 
-from .config import AXES, G, GAMMA_CEIL, SpectralBand, VibrationConfig
+from ..config import AXES, G, GAMMA_CEIL, SpectralBand, VibrationConfig
 
 # ``sweep`` is a single-axis, single narrow band whose absolute level is still
 # fixed by the Gamma calibration.  ``sine`` is a deprecated alias.
@@ -195,7 +195,7 @@ def _synthesize_episode(
     for axis_index, axis in enumerate(_mode_axes(cfg)):
         index = AXES.index(axis)
         lines = _synthesize_axis_lines(cfg, env_id, axis, axis_index, level_scale)
-        _add_axis_contribution(q, qd, qdd, time_s, index, lines)
+        _add_axis_contribution(q, qd, qdd, time_s + cfg.t0, index, lines)
     if not ramp:
         return time_s, q, qd, qdd
     r, rd, rdd = _ramp_values(time_s, cfg.ramp_s)
@@ -419,7 +419,7 @@ def offline_support_travel_report(
     accurate to far below the reported millimetre quantities.
     """
 
-    from .supports import SupportGroup
+    from ..supports import SupportGroup
 
     if physics_hz <= 0 or substeps <= 0:
         raise ValueError("physics_hz and substeps must be positive")
@@ -585,7 +585,7 @@ class SpectralVibration:
         if self.cfg.mode != "off":
             for axis in self._amplitude:
                 index = AXES.index(axis)
-                angle = self._omega[axis] * time_s + self._phase[axis]
+                angle = self._omega[axis] * (time_s + self.cfg.t0) + self._phase[axis]
                 q[:, index] = torch.sum(self._amplitude[axis] * torch.sin(angle), dim=1)
                 qd[:, index] = torch.sum(
                     self._amplitude[axis] * self._omega[axis] * torch.cos(angle), dim=1

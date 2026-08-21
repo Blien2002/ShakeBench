@@ -1,0 +1,10 @@
+{
+  "name": "VARIABLE_IMPEDANCE",
+  "action_dim": 13,
+  "intra_step_mode": "zoh",
+  "equilibrium_output_max": [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
+  "stiffness_min": [10, 10, 10, 1, 1, 1],
+  "stiffness_max": [3000, 3000, 3000, 300, 300, 300],
+  "grip_force_min": 0,
+  "grip_force_max": 70
+}

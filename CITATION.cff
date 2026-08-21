@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use ShakeBench, please cite this software."
+title: "ShakeBench: Manipulation under Multi-Axis Vibration"
+type: software
+version: 0.2.0
+date-released: 2026-08-21
+license: MIT
+authors:
+  - family-names: "ShakeBench Contributors"

@@ -1,4 +1,4 @@
-schema_version: 4
+schema_version: 5
 common:
   robot: franka_panda
   table: phenolic_worktable_c2

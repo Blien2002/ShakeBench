@@ -1,0 +1,7 @@
+{
+  "name": "JOINT_POSITION",
+  "action_dim": 8,
+  "intra_step_mode": "zoh",
+  "input_min": -1.0,
+  "input_max": 1.0
+}

@@ -1,0 +1,6 @@
+name: shakebench_sweep
+axis: frequency_scale
+values: [0.25, 0.5, 1.0, 2.0, 4.0]
+fixed_gamma: 0.15
+workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
+init_states_per_task: 50

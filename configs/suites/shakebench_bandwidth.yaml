@@ -1,0 +1,5 @@
+name: shakebench_bandwidth
+axis: control_freq
+values: [2, 5, 10, 20, 50, 200]
+workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
+init_states_per_task: 50

@@ -1,0 +1,5 @@
+name: shakebench_ladder
+axis: gamma
+values: [0.15, 0.30, 0.50, 0.75, 0.95]
+workpieces: [cracker_box, sugar_box, soup_can, mustard_bottle]
+init_states_per_task: 50
