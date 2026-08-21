@@ -17,8 +17,8 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
-from .paths import PROJECT_ROOT
-from .visual_assets import author_textured_quad
+from ...utils.paths import PROJECT_ROOT
+from ..visual_assets import author_textured_quad
 
 
 ROOM_CONFIG_PATH = PROJECT_ROOT / "configs" / "room.yaml"

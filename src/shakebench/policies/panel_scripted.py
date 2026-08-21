@@ -17,10 +17,10 @@ import torch
 from isaaclab.controllers import DifferentialIKController, DifferentialIKControllerCfg
 from isaaclab.utils.math import quat_apply, quat_inv
 
-from .config import CONTROL_KINDS
-from .controller import latch_finger_contact_targets, rate_limit_joint_target, rate_limit_translation
-from .panel import CONTROL_INDEX
-from .panel_task import PanelBenchmarkTask
+from ..config import CONTROL_KINDS
+from .scripted import latch_finger_contact_targets, rate_limit_joint_target, rate_limit_translation
+from ..models.objects.panel import CONTROL_INDEX
+from ..envs.manipulation.panel_operation import PanelBenchmarkTask
 
 
 OPEN_FINGER_M = 0.040

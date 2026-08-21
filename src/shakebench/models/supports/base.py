@@ -19,7 +19,7 @@ from typing import Any, Literal
 
 import torch
 
-from .config import BenchmarkConfig
+from ...config import BenchmarkConfig
 
 
 @dataclass(frozen=True)
@@ -128,7 +128,7 @@ def support_group_geometries(cfg: BenchmarkConfig) -> tuple[SupportGroup, ...]:
         SupportMember("worktable", cfg.resolved_worktable_center, bound_radius_m=worktable_radius),
     ]
     if cfg.task == "panel_operation":
-        from .panel import control_panel_layout
+        from ..objects.panel import control_panel_layout
 
         layout = control_panel_layout(cfg)
         panel_radius = 0.5 * math.hypot(cfg.panel.console_width_m, cfg.panel.console_depth_m)

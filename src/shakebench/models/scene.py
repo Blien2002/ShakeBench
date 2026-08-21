@@ -16,22 +16,22 @@ from isaaclab.sim import SimulationCfg
 from isaaclab.utils.configclass import configclass
 from isaaclab_assets import FRANKA_PANDA_HIGH_PD_CFG
 
-from .arena import load_room_arena_cfg
-from .config import BenchmarkConfig, YCB_ASSETS
-from .panel import control_panel_layout, panel_table_top_z_m
-from .panel_controls import (
+from .arenas.room import load_room_arena_cfg
+from ..config import BenchmarkConfig, YCB_ASSETS
+from .objects.panel import control_panel_layout, panel_table_top_z_m
+from .objects.panel_controls import (
     PanelConsoleCollisionCfg,
     PanelControlArticulationCfg,
     spawn_panel_console_collision,
     spawn_panel_control_articulation,
 )
-from .shaker import (
+from .supports.shaker import (
     ShakerBaseVisualCfg,
     ShakerGeometryCfg,
     make_shaker_leg_collection_cfg,
     spawn_shaker_base_visuals,
 )
-from .wrist_camera import WristCameraAssemblyCfg, spawn_wrist_camera_assembly
+from ..sensors.wrist_camera import WristCameraAssemblyCfg, spawn_wrist_camera_assembly
 from .visual_assets import (
     ControlPanelAppearanceCfg,
     PlatformAppearanceCfg,

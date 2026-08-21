@@ -18,15 +18,15 @@ from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, quat_inv, quat_
 from isaaclab_newton.physics import NewtonManager
 
 from ...config import BenchmarkConfig, workpiece_dimensions_m
-from ...diagnostics import (
+from ...utils.diagnostics import (
     PenetrationSample,
     collision_shape_geometry,
     forbidden_contact_violation,
     penetration_probe,
 )
-from ...scene import CLITE_DRIVER_LABELS
-from ...shaker import solve_leg_transforms
-from ...supports import (
+from ...models.scene import CLITE_DRIVER_LABELS
+from ...models.supports.shaker import solve_leg_transforms
+from ...models.supports.base import (
     HARD_STRUCTURAL_EXCLUSIONS,
     SupportGroup,
     support_group_geometries,

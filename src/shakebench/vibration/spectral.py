@@ -419,7 +419,7 @@ def offline_support_travel_report(
     accurate to far below the reported millimetre quantities.
     """
 
-    from ..supports import SupportGroup
+    from ..models.supports.base import SupportGroup
 
     if physics_hz <= 0 or substeps <= 0:
         raise ValueError("physics_hz and substeps must be positive")

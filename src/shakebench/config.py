@@ -444,7 +444,7 @@ class BenchmarkConfig:
 
         value = object.__getattribute__(self, name)
         if name == "shaker" and value is None:
-            from .shaker import ShakerGeometryCfg
+            from .models.supports.shaker import ShakerGeometryCfg
 
             value = ShakerGeometryCfg()
             object.__setattr__(self, "shaker", value)

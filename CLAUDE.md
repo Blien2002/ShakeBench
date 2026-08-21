@@ -44,18 +44,18 @@ CLI 完整实现位于 `src/shakebench/cli.py`；当 `success=true` 时以状态
 整个系统就是一个循环；理解以下顺序即可弄清大部分代码：
 
 1. `SpectralVibration.sample()` (`vibration/spectral.py`)——生成*地板中心*处的六轴位移/速度/加速度。各谱线的导数均通过解析法计算，绝不使用有限差分。
-2. `write_support_groups()` (`supports.py`)——把 deck 六轴运动经单一刚体变换 `p = q[:3] + c + R(l-c)` 写入所有支撑成员，而非采用小角度近似。
+2. `write_support_groups()` (`models/supports/base.py`)——把 deck 六轴运动经单一刚体变换 `p = q[:3] + c + R(l-c)` 写入所有支撑成员，而非采用小角度近似。
 3. `VibrationBenchmarkTask._write_supports()` (`envs/manipulation/pick_place.py`)——将运动学状态写入振动地板、Panda 的**浮动**根节点、工作台及桌腿、目标箱，以及 12 个通过解析法求解的 Stewart 杆件。
-4. `ScriptedPickPlaceController.command()` (`controller.py`)——DLS 微分 IK + 阶段状态机。
+4. `ScriptedPickPlaceController.command()` (`policies/scripted.py`)——DLS 微分 IK + 阶段状态机。
 5. Newton/MJWarp 推进动力学与接触计算。
 6. `task.observation()`——位姿、滤波后的接触、腕部力/力矩、穿透量、相机外参。
-7. `BenchmarkRecorder` (`recording.py`)——合成主视图、腕部画中画及遥测叠加层。
+7. `BenchmarkRecorder` (`utils/recording.py`)——合成主视图、腕部画中画及遥测叠加层。
 
 工件从不通过脚本控制——它只响应重力和接触。
 
 ## 无法从文件名推断的架构事实
 
-**C2 支撑布局（单坐标系硬装）。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*，所有被驱动资产属于同一个 deck `SupportGroup`，位姿统一由 `q + c + R(l-c)` 生成。`arm_mount_xy_m / table_mount_xy_m` 与两个 7 mm dynamic clearance 已删除；机器人根/桌腿底只用显式 `assembly_clearance_m=0.5 mm` 装配公差。`src/shakebench/supports.py` 是支撑位姿的**唯一写入点**；Stewart 平台、房间、桌面饰边等视觉件不在此列。Panda 使用 `fix_root_link=False`，重力已开启。
+**C2 支撑布局（单坐标系硬装）。** 机械臂和工作台是固定在同一个可见振动地板上的*同级节点*，所有被驱动资产属于同一个 deck `SupportGroup`，位姿统一由 `q + c + R(l-c)` 生成。`arm_mount_xy_m / table_mount_xy_m` 与两个 7 mm dynamic clearance 已删除；机器人根/桌腿底只用显式 `assembly_clearance_m=0.5 mm` 装配公差。`src/shakebench/models/supports/base.py` 是支撑位姿的**唯一写入点**；Stewart 平台、房间、桌面饰边等视觉件不在此列。Panda 使用 `fix_root_link=False`，重力已开启。
 
 **仅用于视觉呈现的 Newton 形状与结构 pair filter。** Stewart 平台、房间、桌面饰边、阴影和腕部相机外壳会被渲染，但都带有 `UsdPhysics.CollisionAPI`，且 `collisionEnabled=false`。同一刚性支撑组内的结构连接（`panda_link0↔VibrationFloor`、`WorkTableLeg↔VibrationFloor`、`WorkTableLeg↔WorkTableTop`）通过 Newton Builder 的 `add_shape_collision_filter_pair` 在模型构建时排除。当前拓扑为 386 个 Newton 形状 / 29 个 MJWarp 几何体 / **339 个候选配对**。
 
@@ -65,7 +65,7 @@ CLI 完整实现位于 `src/shakebench/cli.py`；当 `success=true` 时以状态
 
 **渲染约束（NewtonGL/ViewerGL）。** Albedo/roughness/metallic 有效。Normal maps、opacity 和 emissive 不会传入着色器；请将浮雕效果和 AO 烘焙进 RGB。USD point/area lights 不会被导入。Directional shadow mapping 虽然存在，但已特意禁用（在移动特写镜头中不稳定）。后端限制见 `docs/installation.md`。
 
-**腕部相机。** 这是位于 `panda_hand/WristCamera` 下方的真实建模 D415-style 组件，具有固定的手眼外参（`WRIST_CAMERA_EYE_H/FORWARD_H/UP_H`）。视点、光轴和图像向上方向均由同一个 `panda_hand` quaternion 变换——`benchmark_rendering.py` 扩展了 NewtonGL，使其可接受完整的滚转自由度。它不会跟踪工件，不会相对世界坐标系保持稳定，也没有数字防抖。不要通过重新瞄准来“修复”抖动。
+**腕部相机。** 这是位于 `panda_hand/WristCamera` 下方的真实建模 D415-style 组件，具有固定的手眼外参（`WRIST_CAMERA_EYE_H/FORWARD_H/UP_H`）。视点、光轴和图像向上方向均由同一个 `panda_hand` quaternion 变换——`utils/benchmark_rendering.py` 扩展了 NewtonGL，使其可接受完整的滚转自由度。它不会跟踪工件，不会相对世界坐标系保持稳定，也没有数字防抖。不要通过重新瞄准来“修复”抖动。
 
 **视觉回归采用手动审计。** `configs/visual_manifest.yaml` 声明预期的 prim 路径、父 prim、材质绑定和数量；`configs/visual_regions.yaml` 为 `tools/visual_audit.py` 提供固定像素 ROI。Round 6 不再把纹理哈希和截图脚手架作为 benchmark 测试。
 
@@ -86,6 +86,6 @@ Newton/Isaac 在模型构建过程中可能因 `malloc(): unaligned tcache chunk
 
 ## 目录结构
 
-- `src/shakebench/`——库与 CLI。Round 6 的公开结构见 `docs/code_structure.md`；旧模块路径保留兼容导出，策略入口是 `shakebench.make()`。
+- `src/shakebench/`——库与 CLI。包根只保留 `__init__.py`、`__main__.py`、`cli.py`、`config.py`；完整结构见 `docs/code_structure.md`，策略入口是 `shakebench.make()`。
 - `configs/`——`scenarios.yaml`（场景矩阵 + 评估/接触/控制器策略）、`assets.yaml`（资产来源、许可证、纹理 SHA-256）、`room.yaml`、`visual_manifest.yaml`、`visual_regions.yaml`。
 - `docs/`——面向使用者的安装、环境、振动模型、评测协议与物理可信度文档。开发过程材料只保留在 git 历史；`out/` 是本地生成的 MP4/PNG/JSON 产物。

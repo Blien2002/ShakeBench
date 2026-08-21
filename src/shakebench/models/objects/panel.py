@@ -4,7 +4,7 @@ The visible console is a five-sided prism fixed to the existing C2 worktable.
 Its three controls are arranged on the sloped operator face: knob at the
 upper-left, lever at the lower-center, and button at the upper-right.  All
 coordinates returned here are in the same local task frame
-used by :func:`shakebench.task.VibrationBenchmarkTask._support_state` (i.e. the
+used by :class:`shakebench.envs.manipulation.pick_place.VibrationBenchmarkTask` (i.e. the
 undisturbed env frame before the table-mount motion is applied).
 """
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-from .config import CONTROL_KINDS, BenchmarkConfig
+from ...config import CONTROL_KINDS, BenchmarkConfig
 
 CONTROL_INDEX = {kind: index for index, kind in enumerate(CONTROL_KINDS)}
 CONTROL_KINDS_BY_INDEX = CONTROL_KINDS

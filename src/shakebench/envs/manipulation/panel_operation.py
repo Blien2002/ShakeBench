@@ -19,8 +19,8 @@ from isaaclab.sensors import ContactSensor, JointWrenchSensor
 from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, subtract_frame_transforms
 
 from ...config import CONTROL_KINDS, BenchmarkConfig
-from ...diagnostics import PenetrationSample, collision_shape_geometry, penetration_probe
-from ...panel import (
+from ...utils.diagnostics import PenetrationSample, collision_shape_geometry, penetration_probe
+from ...models.objects.panel import (
     CONTROL_INDEX,
     CONTROL_KINDS_BY_INDEX,
     control_panel_layout,
@@ -28,8 +28,8 @@ from ...panel import (
     padded_sequence_ids,
     panel_lamp_linear_rgb,
 )
-from ...shaker import solve_leg_transforms
-from ...supports import support_group_geometries, support_pose_velocity, write_support_groups
+from ...models.supports.shaker import solve_leg_transforms
+from ...models.supports.base import support_group_geometries, support_pose_velocity, write_support_groups
 from ...vibration import SpectralVibration
 from ...sensors.wrist_camera import NewtonGlWristCameraSensor, wrist_camera_frame_from_hand
 

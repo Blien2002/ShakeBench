@@ -17,10 +17,10 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
-from .visual_assets import (
+from ..visual_assets import (
     _visual_cylinder_between,
 )
-from .paths import PROJECT_ROOT
+from ...utils.paths import PROJECT_ROOT
 
 APOLLO_KNOB_SOURCE_STL_PATH = (
     PROJECT_ROOT / "assets" / "models" / "apollo_command_module_control_panel_knob.stl"

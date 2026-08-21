@@ -11,7 +11,7 @@ import sys
 import time
 from pathlib import Path
 
-from .paths import PROJECT_ROOT
+from .utils.paths import PROJECT_ROOT
 
 import torch
 import yaml
@@ -21,23 +21,23 @@ from isaaclab.scene import InteractiveScene
 
 from shakebench import AssetConfig, BenchmarkConfig, PanelConfig, VibrationBenchmarkTask, VibrationConfig
 from shakebench.config import AXES, CONTROL_KINDS, SpectralBand
-from shakebench.controller import ScriptedPickPlaceController, grasp_feasibility_table
-from shakebench.diagnostics import (
+from shakebench.policies.scripted import ScriptedPickPlaceController, grasp_feasibility_table
+from shakebench.utils.diagnostics import (
     collision_shape_geometry,
     configure_mujoco_contact_solref,
     print_contact_snapshot,
 )
-from shakebench.panel_controller import ScriptedPanelController
-from shakebench.panel_task import PanelBenchmarkTask
-from shakebench.recording import BenchmarkRecorder
-from shakebench.scene import install_clite_model_constraints, make_scene_cfg, make_sim_cfg
-from shakebench.supports import install_structural_collision_exclusions, support_group_geometries
+from shakebench.policies.panel_scripted import ScriptedPanelController
+from shakebench.envs.manipulation.panel_operation import PanelBenchmarkTask
+from shakebench.utils.recording import BenchmarkRecorder
+from shakebench.models.scene import install_clite_model_constraints, make_scene_cfg, make_sim_cfg
+from shakebench.models.supports.base import install_structural_collision_exclusions, support_group_geometries
 from shakebench.vibration import (
     calibrate_level_scale,
     offline_support_travel_report,
     validate_deck_displacement_gate,
 )
-from shakebench.wrist_camera import (
+from shakebench.sensors.wrist_camera import (
     WRIST_CAMERA_EYE_H,
     WRIST_CAMERA_FORWARD_H,
     WRIST_CAMERA_UP_H,

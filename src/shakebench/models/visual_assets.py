@@ -10,8 +10,8 @@ from isaaclab.sim.spawners.spawner_cfg import SpawnerCfg
 from isaaclab.sim.utils import clone, create_prim, get_current_stage
 from isaaclab.utils.configclass import configclass
 
-from .panel import CONTROL_KINDS_BY_INDEX, panel_lamp_linear_rgb
-from .paths import PROJECT_ROOT
+from .objects.panel import CONTROL_KINDS_BY_INDEX, panel_lamp_linear_rgb
+from ..utils.paths import PROJECT_ROOT
 TABLE_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "phenolic_bench_dark_1k.jpg"
 PLATEN_TEXTURE_PATH = PROJECT_ROOT / "assets" / "textures" / "platen_threaded_holes_1k.jpg"
 

@@ -37,13 +37,13 @@ __all__ = [
 ]
 
 _LAZY_EXPORTS = {
-    "BenchmarkSceneCfg": ("scene", "BenchmarkSceneCfg"),
-    "make_scene_cfg": ("scene", "make_scene_cfg"),
-    "make_sim_cfg": ("scene", "make_sim_cfg"),
-    "ShakerGeometryCfg": ("shaker", "ShakerGeometryCfg"),
-    "solve_leg_transforms": ("shaker", "solve_leg_transforms"),
+    "BenchmarkSceneCfg": ("models.scene", "BenchmarkSceneCfg"),
+    "make_scene_cfg": ("models.scene", "make_scene_cfg"),
+    "make_sim_cfg": ("models.scene", "make_sim_cfg"),
+    "ShakerGeometryCfg": ("models.supports.shaker", "ShakerGeometryCfg"),
+    "solve_leg_transforms": ("models.supports.shaker", "solve_leg_transforms"),
     "SpectralVibration": ("vibration", "SpectralVibration"),
-    "VibrationBenchmarkTask": ("task", "VibrationBenchmarkTask"),
+    "VibrationBenchmarkTask": ("envs.manipulation.pick_place", "VibrationBenchmarkTask"),
 }
 
 

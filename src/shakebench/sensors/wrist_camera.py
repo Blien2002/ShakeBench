@@ -193,7 +193,7 @@ class NewtonGlWristCameraSensor:
     def __init__(self, width: int = 384, height: int = 240):
         from isaaclab_newton.video_recording import NewtonGlPerspectiveVideoCfg
 
-        from ..benchmark_rendering import BenchmarkNewtonGlPerspectiveVideo
+        from ..utils.benchmark_rendering import BenchmarkNewtonGlPerspectiveVideo
 
         self.width = width
         self.height = height

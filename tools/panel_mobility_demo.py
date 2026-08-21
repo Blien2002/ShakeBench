@@ -24,10 +24,10 @@ import isaaclab.sim as sim_utils
 from isaaclab.scene import InteractiveScene
 
 from shakebench import BenchmarkConfig, PanelConfig, VibrationConfig
-from shakebench.panel_task import PanelBenchmarkTask
-from shakebench.recording import BenchmarkRecorder
-from shakebench.scene import make_scene_cfg, make_sim_cfg
-from shakebench.supports import install_structural_collision_exclusions
+from shakebench.envs.manipulation.panel_operation import PanelBenchmarkTask
+from shakebench.utils.recording import BenchmarkRecorder
+from shakebench.models.scene import make_scene_cfg, make_sim_cfg
+from shakebench.models.supports.base import install_structural_collision_exclusions
 
 KNOB = 0
 LEVER = 1

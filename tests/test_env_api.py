@@ -1,5 +1,6 @@
 from gymnasium.utils.env_checker import check_env
 import numpy as np
+from pathlib import Path
 import pytest
 
 import shakebench
@@ -24,3 +25,13 @@ def test_horizon_is_derived_and_rate_must_divide_physics() -> None:
         shakebench.make("PickPlace", control_freq=5, episode_s=16.0, horizon=81)
     with pytest.raises(ValueError, match="integer multiple"):
         shakebench.make("PickPlace", control_freq=30)
+
+
+def test_package_root_contains_only_public_entry_modules() -> None:
+    package_root = Path(shakebench.__file__).resolve().parent
+    root_modules = {path.name for path in package_root.glob("*.py")}
+    assert root_modules == {"__init__.py", "__main__.py", "cli.py", "config.py"}
+
+    from shakebench.utils.paths import PROJECT_ROOT
+
+    assert (PROJECT_ROOT / "configs" / "scenarios.yaml").is_file()
