@@ -1,0 +1,2861 @@
+{
+  "cells": {
+    "0.0": {
+      "frozen_replay": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2598455598455598,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.0549999999998065,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.30500000000266,
+              12.204999999998233
+            ],
+            "retained_sample_count": 1917,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12504710855860923,
+              "median": 0.0017406750986869546,
+              "p90": 0.0888681359883293
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2535849056603774,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.405000000000447,
+              4.755000000001186,
+              5.605000000002979,
+              10.655000000001845,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1978,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13020362444599326,
+              "median": 0.004175582091983011,
+              "p90": 0.10174627239891637
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2670634920634921,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.9049999999998228,
+              3.7549999999996193,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12401478819737119,
+              "median": 0.001530811701362035,
+              "p90": 0.08367907674635698
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.26046511627906976,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.20499999999979,
+              4.054999999999708,
+              4.405000000000447,
+              5.255000000002241,
+              10.30500000000266,
+              12.15499999999835
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12060514875072809,
+              "median": 0.0016489729649729313,
+              "p90": 0.09359842424778288
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.25648854961832057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1948,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12317394625462108,
+              "median": 0.00497664057561786,
+              "p90": 0.08917025397083371
+            }
+          },
+          {
+            "excluded_sample_count": 683,
+            "excluded_sample_fraction": 0.2721115537848605,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12016404579654409,
+              "median": 0.0013860836303490314,
+              "p90": 0.08668623572248145
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.26289062500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582
+            ],
+            "retained_sample_count": 1887,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12111802616066294,
+              "median": 0.0013821227263501482,
+              "p90": 0.08602324023422947
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2574712643678161,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.404999999999768,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998
+            ],
+            "retained_sample_count": 1938,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.11879795824162528,
+              "median": 0.0036313738296208454,
+              "p90": 0.07749098471995913
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2692,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.7549999999998394,
+              3.604999999999636,
+              3.9549999999995973,
+              4.805000000001291,
+              9.85500000000371,
+              11.754999999999281
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12273822892984379,
+              "median": 0.0014992045444257086,
+              "p90": 0.07907321870561657
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2618677042801556,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.2549999999997845,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466
+            ],
+            "retained_sample_count": 1897,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13111667102898528,
+              "median": 0.003817043761732626,
+              "p90": 0.09429472596819449
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2721115537848605,
+          "median": 0.2611664102796127,
+          "p90": 0.26949115537848606
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13111667102898528,
+          "median": 0.12295608759223244,
+          "p90": 0.13029492910429247
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.00497664057561786,
+          "median": 0.001694824031829943,
+          "p90": 0.004255687940346496
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10174627239891637,
+          "median": 0.08777718585540537,
+          "p90": 0.09503988061126668
+        }
+      },
+      "reactive_scripted": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.283011583011583,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.255000000002777,
+              12.15499999999835,
+              12.904999999996601
+            ],
+            "retained_sample_count": 1857,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13134737813277922,
+              "median": 0.004331881260107687,
+              "p90": 0.09523899340325254
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.27622641509433965,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.3550000000003415,
+              4.70500000000108,
+              5.555000000002874,
+              10.605000000001962,
+              12.45499999999765,
+              13.204999999995902
+            ],
+            "retained_sample_count": 1918,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1354615121634094,
+              "median": 0.01099262552330654,
+              "p90": 0.10599352181689232
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.29087301587301584,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8549999999998283,
+              3.704999999999625,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165,
+              12.554999999997417
+            ],
+            "retained_sample_count": 1787,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12939520318418396,
+              "median": 0.0036293335004763797,
+              "p90": 0.09048257653536576
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.2841085271317829,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.1549999999997955,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466,
+              12.854999999996718
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12750226816405086,
+              "median": 0.004787022315361193,
+              "p90": 0.09989548758825206
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.27938931297709924,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998,
+              13.054999999996252
+            ],
+            "retained_sample_count": 1888,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1300321261317628,
+              "median": 0.013759043430844593,
+              "p90": 0.09068635142827362
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2960159362549801,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.604999999999636,
+              4.004999999999603,
+              4.855000000001397,
+              9.905000000003593,
+              11.754999999999281,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1767,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12700832360559944,
+              "median": 0.004342206833684323,
+              "p90": 0.09273553382285654
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28632812500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.904999999999603,
+              4.2550000000001305,
+              5.105000000001924,
+              10.15500000000301,
+              12.004999999998699,
+              12.75499999999695
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12787849115973535,
+              "median": 0.003291871915311998,
+              "p90": 0.09200455053875733
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.2804597701149425,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.3549999999997735,
+              4.154999999999919,
+              4.505000000000658,
+              5.355000000002452,
+              10.405000000002428,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1878,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1259740714957537,
+              "median": 0.010743550494618934,
+              "p90": 0.08184478471942974
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.2932,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.7049999999998449,
+              3.5549999999996413,
+              3.904999999999603,
+              4.755000000001186,
+              9.805000000003826,
+              11.704999999999398,
+              12.45499999999765
+            ],
+            "retained_sample_count": 1767,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12920501347852242,
+              "median": 0.0027822871433147755,
+              "p90": 0.0856072961015457
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28521400778210115,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.20499999999979,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582,
+              12.804999999996834
+            ],
+            "retained_sample_count": 1837,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13604897078115052,
+              "median": 0.00949358361102754,
+              "p90": 0.10055287247168804
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2960159362549801,
+          "median": 0.28466126745694204,
+          "p90": 0.293481593625498
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13604897078115052,
+          "median": 0.1293001083313532,
+          "p90": 0.13552025802518353
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.013759043430844593,
+          "median": 0.004564614574522758,
+          "p90": 0.011269267314060343
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10599352181689232,
+          "median": 0.09237004218080694,
+          "p90": 0.10109693740620847
+        }
+      }
+    },
+    "0.3": {
+      "frozen_replay": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2598455598455598,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.0549999999998065,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.30500000000266,
+              12.204999999998233
+            ],
+            "retained_sample_count": 1917,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12469313016108881,
+              "median": 0.0019961146878909788,
+              "p90": 0.08988313891319238
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2535849056603774,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.405000000000447,
+              4.755000000001186,
+              5.605000000002979,
+              10.655000000001845,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1978,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1303810104559133,
+              "median": 0.004352283910865567,
+              "p90": 0.10193398488795993
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2670634920634921,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.9049999999998228,
+              3.7549999999996193,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1236129643588483,
+              "median": 0.0023460988181089925,
+              "p90": 0.08421006532039368
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.26046511627906976,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.20499999999979,
+              4.054999999999708,
+              4.405000000000447,
+              5.255000000002241,
+              10.30500000000266,
+              12.15499999999835
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12067173322595186,
+              "median": 0.002941077907820572,
+              "p90": 0.09397182954107851
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.25648854961832057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1948,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12395163821239095,
+              "median": 0.004939014563571428,
+              "p90": 0.0893468486472925
+            }
+          },
+          {
+            "excluded_sample_count": 683,
+            "excluded_sample_fraction": 0.2721115537848605,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12068878643947616,
+              "median": 0.0038734985676898604,
+              "p90": 0.08680332373514323
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.26289062500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582
+            ],
+            "retained_sample_count": 1887,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1211065456469799,
+              "median": 0.00211374032006221,
+              "p90": 0.0868722624789891
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2574712643678161,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.404999999999768,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998
+            ],
+            "retained_sample_count": 1938,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.11907225536710365,
+              "median": 0.003662205220311341,
+              "p90": 0.07764229595455784
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2692,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.7549999999998394,
+              3.604999999999636,
+              3.9549999999995973,
+              4.805000000001291,
+              9.85500000000371,
+              11.754999999999281
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12283962159717235,
+              "median": 0.0024980184296201,
+              "p90": 0.07973102602943634
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2618677042801556,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.2549999999997845,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466
+            ],
+            "retained_sample_count": 1897,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1308419822553287,
+              "median": 0.004980083471457298,
+              "p90": 0.09594016812884844
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2721115537848605,
+          "median": 0.2611664102796127,
+          "p90": 0.26949115537848606
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.1308419822553287,
+          "median": 0.12322629297801033,
+          "p90": 0.13042710763585483
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.004980083471457298,
+          "median": 0.0033016415640659564,
+          "p90": 0.004943121454360015
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10193398488795993,
+          "median": 0.0881095555631408,
+          "p90": 0.09653954980475958
+        }
+      },
+      "reactive_scripted": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 753,
+            "excluded_sample_fraction": 0.2929961089494163,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.0549999999998065,
+              3.804999999999614,
+              4.2550000000001305,
+              5.105000000001924,
+              10.15500000000301,
+              12.054999999998582,
+              12.804999999996834
+            ],
+            "retained_sample_count": 1817,
+            "sample_count": 2570,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13081859719594904,
+              "median": 0.006575536722347743,
+              "p90": 0.09667570445789551
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.27622641509433965,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.3550000000003415,
+              4.70500000000108,
+              5.555000000002874,
+              10.605000000001962,
+              12.45499999999765,
+              13.204999999995902
+            ],
+            "retained_sample_count": 1918,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.135726626250849,
+              "median": 0.011130962212519305,
+              "p90": 0.1060719766133389
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2948412698412698,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8549999999998283,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165,
+              12.554999999997417
+            ],
+            "retained_sample_count": 1777,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1296482795886006,
+              "median": 0.004466890568257855,
+              "p90": 0.09046449717391514
+            }
+          },
+          {
+            "excluded_sample_count": 762,
+            "excluded_sample_fraction": 0.29420849420849415,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.1549999999997955,
+              3.804999999999614,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.15499999999835,
+              12.904999999996601
+            ],
+            "retained_sample_count": 1828,
+            "sample_count": 2590,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12749384417985635,
+              "median": 0.006818630057439719,
+              "p90": 0.10176917683413854
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.2772727272727272,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.404999999997766,
+              13.154999999996019
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2640,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13044060726790332,
+              "median": 0.013630583232854885,
+              "p90": 0.09122358977759283
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28972332015810276,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.6549999999996303,
+              4.004999999999603,
+              4.905000000001502,
+              9.955000000003476,
+              11.854999999999048,
+              12.6049999999973
+            ],
+            "retained_sample_count": 1797,
+            "sample_count": 2530,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12612217878613288,
+              "median": 0.004802387478229492,
+              "p90": 0.09338671892163516
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28632812500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.8549999999996083,
+              4.205000000000025,
+              5.055000000001819,
+              10.105000000003127,
+              12.004999999998699,
+              12.75499999999695
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1284840558908992,
+              "median": 0.004278469087640367,
+              "p90": 0.09247174640573577
+            }
+          },
+          {
+            "excluded_sample_count": 762,
+            "excluded_sample_fraction": 0.2919540229885057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.3549999999997735,
+              4.004999999999603,
+              4.505000000000658,
+              5.355000000002452,
+              10.405000000002428,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1848,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12534634746561255,
+              "median": 0.013910726584010095,
+              "p90": 0.08213895327105954
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.29437751004016066,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.7049999999998449,
+              3.5549999999996413,
+              3.904999999999603,
+              4.755000000001186,
+              9.805000000003826,
+              11.654999999999514,
+              12.404999999997766
+            ],
+            "retained_sample_count": 1757,
+            "sample_count": 2490,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12970826134584826,
+              "median": 0.002777628811009745,
+              "p90": 0.08522374399717639
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.2841085271317829,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.20499999999979,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.104999999998466,
+              12.854999999996718
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2580,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1375350858892104,
+              "median": 0.010699696629889798,
+              "p90": 0.1009111082751934
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2948412698412698,
+          "median": 0.29083867157330423,
+          "p90": 0.2944238860202716
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.1375350858892104,
+          "median": 0.1296782704672244,
+          "p90": 0.13590747221468513
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.013910726584010095,
+          "median": 0.006697083389893731,
+          "p90": 0.013658597567970405
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.1060719766133389,
+          "median": 0.09292923266368547,
+          "p90": 0.10219945681205857
+        }
+      }
+    },
+    "0.5": {
+      "frozen_replay": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2598455598455598,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.0549999999998065,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.30500000000266,
+              12.204999999998233
+            ],
+            "retained_sample_count": 1917,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12434811933610965,
+              "median": 0.0026539988372726374,
+              "p90": 0.09058853960635496
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2535849056603774,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.405000000000447,
+              4.755000000001186,
+              5.605000000002979,
+              10.655000000001845,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1978,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1304816774284607,
+              "median": 0.004517119924715448,
+              "p90": 0.10212296650034008
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2670634920634921,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.9049999999998228,
+              3.7549999999996193,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12369171055674691,
+              "median": 0.0030929456923933403,
+              "p90": 0.08447212185587749
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.26046511627906976,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.20499999999979,
+              4.054999999999708,
+              4.405000000000447,
+              5.255000000002241,
+              10.30500000000266,
+              12.15499999999835
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12092081127678031,
+              "median": 0.003637691072526233,
+              "p90": 0.09418571905110548
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.25648854961832057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1948,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12436992827083088,
+              "median": 0.004998899144605381,
+              "p90": 0.08947356771615363
+            }
+          },
+          {
+            "excluded_sample_count": 683,
+            "excluded_sample_fraction": 0.2721115537848605,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12008663685285872,
+              "median": 0.004694161134189038,
+              "p90": 0.08678289528633118
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.26289062500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582
+            ],
+            "retained_sample_count": 1887,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12127864032726055,
+              "median": 0.002823986728188468,
+              "p90": 0.0872403519390489
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2574712643678161,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.404999999999768,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998
+            ],
+            "retained_sample_count": 1938,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.11918798721018173,
+              "median": 0.004505278780247821,
+              "p90": 0.07780165986436226
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2692,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.7549999999998394,
+              3.604999999999636,
+              3.9549999999995973,
+              4.805000000001291,
+              9.85500000000371,
+              11.754999999999281
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12284580208256551,
+              "median": 0.003643828640782117,
+              "p90": 0.08004210759861632
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2618677042801556,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.2549999999997845,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466
+            ],
+            "retained_sample_count": 1897,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13062950081246885,
+              "median": 0.006819137321183891,
+              "p90": 0.09635252949661212
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2721115537848605,
+          "median": 0.2611664102796127,
+          "p90": 0.26949115537848606
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13062950081246885,
+          "median": 0.12326875631965621,
+          "p90": 0.13049645976686153
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.006819137321183891,
+          "median": 0.004074553710514969,
+          "p90": 0.005180922962263231
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10212296650034008,
+          "median": 0.08835695982760126,
+          "p90": 0.09692957319698492
+        }
+      },
+      "reactive_scripted": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2868725868725869,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.0549999999998065,
+              3.9549999999995973,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.15499999999835,
+              12.904999999996601
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13088897221308254,
+              "median": 0.004785833015472582,
+              "p90": 0.09657778152792132
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.275187969924812,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.3550000000003415,
+              4.70500000000108,
+              5.555000000002874,
+              10.605000000001962,
+              12.504999999997533,
+              13.254999999995785
+            ],
+            "retained_sample_count": 1928,
+            "sample_count": 2660,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1358710719605316,
+              "median": 0.01246762546065425,
+              "p90": 0.10610718398787411
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2936758893280632,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8549999999998283,
+              3.704999999999625,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048,
+              12.6049999999973
+            ],
+            "retained_sample_count": 1787,
+            "sample_count": 2530,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12946919763177195,
+              "median": 0.0045739619746350225,
+              "p90": 0.09012404535312607
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2891050583657587,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              3.904999999999603,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582,
+              12.804999999996834
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2570,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1277256284051975,
+              "median": 0.004657236886878569,
+              "p90": 0.10074752523900708
+            }
+          },
+          {
+            "excluded_sample_count": 742,
+            "excluded_sample_fraction": 0.28212927756653994,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.154999999999919,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.354999999997883,
+              13.104999999996135
+            ],
+            "retained_sample_count": 1888,
+            "sample_count": 2630,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1289694776985256,
+              "median": 0.01429781731469679,
+              "p90": 0.09099696860476865
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28972332015810276,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9049999999998228,
+              3.6549999999996303,
+              4.004999999999603,
+              4.905000000001502,
+              9.955000000003476,
+              11.854999999999048,
+              12.6049999999973
+            ],
+            "retained_sample_count": 1797,
+            "sample_count": 2530,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1256116952389275,
+              "median": 0.0046176463766662195,
+              "p90": 0.09387007646809312
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28521400778210115,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.904999999999603,
+              4.2550000000001305,
+              5.105000000001924,
+              10.15500000000301,
+              12.054999999998582,
+              12.804999999996834
+            ],
+            "retained_sample_count": 1837,
+            "sample_count": 2570,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12885455880786476,
+              "median": 0.004290180289437288,
+              "p90": 0.0929584997239704
+            }
+          },
+          {
+            "excluded_sample_count": 762,
+            "excluded_sample_fraction": 0.2930769230769231,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.3549999999997735,
+              4.004999999999603,
+              4.505000000000658,
+              5.355000000002452,
+              10.355000000002544,
+              12.204999999998233,
+              12.954999999996485
+            ],
+            "retained_sample_count": 1838,
+            "sample_count": 2600,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12493051586059338,
+              "median": 0.01498094164604375,
+              "p90": 0.08246757219873821
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.29437751004016066,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.7049999999998449,
+              3.5549999999996413,
+              3.904999999999603,
+              4.755000000001186,
+              9.805000000003826,
+              11.654999999999514,
+              12.404999999997766
+            ],
+            "retained_sample_count": 1757,
+            "sample_count": 2490,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13001964053770368,
+              "median": 0.003291025255737044,
+              "p90": 0.08466411344564767
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.287984496124031,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.20499999999979,
+              3.904999999999603,
+              4.305000000000236,
+              5.15500000000203,
+              10.255000000002777,
+              12.104999999998466,
+              12.854999999996718
+            ],
+            "retained_sample_count": 1837,
+            "sample_count": 2580,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13872952350698137,
+              "median": 0.010683194055930859,
+              "p90": 0.09985270452759125
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.29437751004016066,
+          "median": 0.28854477724489486,
+          "p90": 0.29374605139927296
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13872952350698137,
+          "median": 0.12921933766514876,
+          "p90": 0.13615691711517658
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.01498094164604375,
+          "median": 0.004721534951175575,
+          "p90": 0.014366129747831486
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10610718398787411,
+          "median": 0.09341428809603175,
+          "p90": 0.10128349111389379
+        }
+      }
+    },
+    "0.75": {
+      "frozen_replay": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2598455598455598,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.0549999999998065,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.30500000000266,
+              12.204999999998233
+            ],
+            "retained_sample_count": 1917,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12406637335895987,
+              "median": 0.003528324089576329,
+              "p90": 0.09143095794943076
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2535849056603774,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.405000000000447,
+              4.755000000001186,
+              5.605000000002979,
+              10.655000000001845,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1978,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13059173180744377,
+              "median": 0.005039114065844436,
+              "p90": 0.1021361208608482
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2670634920634921,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.9049999999998228,
+              3.7549999999996193,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12437238094794323,
+              "median": 0.00400978828538177,
+              "p90": 0.08454747592455322
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.26046511627906976,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.20499999999979,
+              4.054999999999708,
+              4.405000000000447,
+              5.255000000002241,
+              10.30500000000266,
+              12.15499999999835
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12072328870249721,
+              "median": 0.005019939678439233,
+              "p90": 0.09432575382938158
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.25648854961832057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1948,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12498424253061265,
+              "median": 0.005264148490516679,
+              "p90": 0.08968881698656767
+            }
+          },
+          {
+            "excluded_sample_count": 683,
+            "excluded_sample_fraction": 0.2721115537848605,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12003034583979791,
+              "median": 0.004756711933336672,
+              "p90": 0.08691230833651896
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.26289062500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582
+            ],
+            "retained_sample_count": 1887,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12161290078125561,
+              "median": 0.0033019934448379373,
+              "p90": 0.08775067652746975
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2574712643678161,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.404999999999768,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998
+            ],
+            "retained_sample_count": 1938,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1193589603416439,
+              "median": 0.00563140716041486,
+              "p90": 0.07782411110649037
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2692,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.7549999999998394,
+              3.604999999999636,
+              3.9549999999995973,
+              4.805000000001291,
+              9.85500000000371,
+              11.754999999999281
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12287996324175603,
+              "median": 0.004611088651867573,
+              "p90": 0.08004606266117337
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2618677042801556,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.2549999999997845,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466
+            ],
+            "retained_sample_count": 1897,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1303596523778252,
+              "median": 0.007881370934159547,
+              "p90": 0.09616700031924508
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2721115537848605,
+          "median": 0.2611664102796127,
+          "p90": 0.26949115537848606
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13059173180744377,
+          "median": 0.12347316830035795,
+          "p90": 0.13038286032078705
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.007881370934159547,
+          "median": 0.0048883258058879525,
+          "p90": 0.0058564035377893274
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.1021361208608482,
+          "median": 0.08871974675701871,
+          "p90": 0.09676391237340538
+        }
+      },
+      "reactive_scripted": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.2945945945945946,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.0549999999998065,
+              3.604999999999636,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.15499999999835,
+              12.904999999996601
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13023753497521348,
+              "median": 0.004277113664198501,
+              "p90": 0.09759174633595855
+            }
+          },
+          {
+            "excluded_sample_count": 761,
+            "excluded_sample_fraction": 0.2882575757575757,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.504999999999757,
+              4.104999999999814,
+              4.655000000000975,
+              5.505000000002768,
+              10.555000000002078,
+              12.404999999997766,
+              13.154999999996019
+            ],
+            "retained_sample_count": 1879,
+            "sample_count": 2640,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13554610046464155,
+              "median": 0.01773236782417728,
+              "p90": 0.10641185083555013
+            }
+          },
+          {
+            "excluded_sample_count": 753,
+            "excluded_sample_fraction": 0.29880952380952386,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8549999999998283,
+              3.604999999999636,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165,
+              12.554999999997417
+            ],
+            "retained_sample_count": 1767,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13001014923623372,
+              "median": 0.004738155815119291,
+              "p90": 0.0906966163164112
+            }
+          },
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.29233716475095783,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              3.704999999999625,
+              4.3550000000003415,
+              5.255000000002241,
+              10.30500000000266,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2610,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1277840684643045,
+              "median": 0.005039389023540081,
+              "p90": 0.10232699464025838
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.2772727272727272,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.5549999999997515,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.404999999997766,
+              13.154999999996019
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2640,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13090785179038197,
+              "median": 0.01743898216565625,
+              "p90": 0.0922319591151954
+            }
+          },
+          {
+            "excluded_sample_count": 764,
+            "excluded_sample_fraction": 0.3031746031746032,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": false,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9049999999998228,
+              3.404999999999658,
+              3.9549999999995973,
+              4.855000000001397,
+              9.905000000003593,
+              11.804999999999165,
+              12.554999999997417
+            ],
+            "retained_sample_count": 1756,
+            "sample_count": 2520,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12578350488964077,
+              "median": 0.004312244999886165,
+              "p90": 0.0937277662908516
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28521400778210115,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.904999999999603,
+              4.2550000000001305,
+              5.105000000001924,
+              10.15500000000301,
+              12.054999999998582,
+              12.804999999996834
+            ],
+            "retained_sample_count": 1837,
+            "sample_count": 2570,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12943367183453783,
+              "median": 0.004719819656441107,
+              "p90": 0.09348908066099905
+            }
+          },
+          {
+            "excluded_sample_count": 761,
+            "excluded_sample_fraction": 0.2915708812260537,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.5549999999997515,
+              4.054999999999708,
+              4.5550000000007635,
+              5.405000000002557,
+              10.405000000002428,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1849,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12654010100406252,
+              "median": 0.014653512428638302,
+              "p90": 0.08078419255466905
+            }
+          },
+          {
+            "excluded_sample_count": 743,
+            "excluded_sample_fraction": 0.2983935742971887,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8049999999998338,
+              3.504999999999647,
+              3.904999999999603,
+              4.755000000001186,
+              9.805000000003826,
+              11.654999999999514,
+              12.404999999997766
+            ],
+            "retained_sample_count": 1747,
+            "sample_count": 2490,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13050682881314374,
+              "median": 0.004611489040751248,
+              "p90": 0.08396301809106485
+            }
+          },
+          {
+            "excluded_sample_count": 753,
+            "excluded_sample_fraction": 0.2896153846153846,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.20499999999979,
+              3.904999999999603,
+              4.3550000000003415,
+              5.255000000002241,
+              10.30500000000266,
+              12.204999999998233,
+              12.954999999996485
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2600,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13888931984250247,
+              "median": 0.013523171941888096,
+              "p90": 0.10004800376917175
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.3031746031746032,
+          "median": 0.29195402298850576,
+          "p90": 0.2992460317460318
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13888931984250247,
+          "median": 0.13012384210572359,
+          "p90": 0.13588042240242765
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.01773236782417728,
+          "median": 0.004888772419329686,
+          "p90": 0.017468320731508353
+        },
+        "metric_applicable_episode_count": 9,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10641185083555013,
+          "median": 0.09360842347592532,
+          "p90": 0.10273548025978756
+        }
+      }
+    },
+    "0.95": {
+      "frozen_replay": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2598455598455598,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.0549999999998065,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.30500000000266,
+              12.204999999998233
+            ],
+            "retained_sample_count": 1917,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12376509763604332,
+              "median": 0.0038201352501092403,
+              "p90": 0.09110835276220143
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2535849056603774,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.405000000000447,
+              4.755000000001186,
+              5.605000000002979,
+              10.655000000001845,
+              12.504999999997533
+            ],
+            "retained_sample_count": 1978,
+            "sample_count": 2650,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13067151605109192,
+              "median": 0.005760184804572801,
+              "p90": 0.10239316699532444
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2670634920634921,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.9049999999998228,
+              3.7549999999996193,
+              4.104999999999814,
+              4.955000000001608,
+              10.00500000000336,
+              11.854999999999048
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12503487017474163,
+              "median": 0.0049077588805469165,
+              "p90": 0.08455302413275809
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.26046511627906976,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.20499999999979,
+              4.054999999999708,
+              4.405000000000447,
+              5.255000000002241,
+              10.30500000000266,
+              12.15499999999835
+            ],
+            "retained_sample_count": 1908,
+            "sample_count": 2580,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12067066603210418,
+              "median": 0.004734071091680107,
+              "p90": 0.09377010330566203
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.25648854961832057,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.504999999999757,
+              4.2550000000001305,
+              4.605000000000869,
+              5.455000000002663,
+              10.505000000002195,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1948,
+            "sample_count": 2620,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12557466578620893,
+              "median": 0.0055096589405170746,
+              "p90": 0.08980326368826091
+            }
+          },
+          {
+            "excluded_sample_count": 683,
+            "excluded_sample_fraction": 0.2721115537848605,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.6549999999996303,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2510,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.11950993794627755,
+              "median": 0.004705218586150071,
+              "p90": 0.0873123668196613
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.26289062500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.004999999999812,
+              3.9549999999995973,
+              4.305000000000236,
+              5.15500000000203,
+              10.205000000002894,
+              12.054999999998582
+            ],
+            "retained_sample_count": 1887,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12196272162930684,
+              "median": 0.0036821744191136243,
+              "p90": 0.0878330278254859
+            }
+          },
+          {
+            "excluded_sample_count": 672,
+            "excluded_sample_fraction": 0.2574712643678161,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.404999999999768,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.304999999998
+            ],
+            "retained_sample_count": 1938,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1195305004808941,
+              "median": 0.006495089543329814,
+              "p90": 0.07778703126001286
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2692,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              1.7549999999998394,
+              3.604999999999636,
+              3.9549999999995973,
+              4.805000000001291,
+              9.85500000000371,
+              11.754999999999281
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2500,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12299056460553343,
+              "median": 0.00575246134796674,
+              "p90": 0.08013023143482098
+            }
+          },
+          {
+            "excluded_sample_count": 673,
+            "excluded_sample_fraction": 0.2618677042801556,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 7,
+            "phase_transition_times_s": [
+              0.804999999999944,
+              2.2549999999997845,
+              4.004999999999603,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.104999999998466
+            ],
+            "retained_sample_count": 1897,
+            "sample_count": 2570,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13013386086557552,
+              "median": 0.009802370564409352,
+              "p90": 0.09669549222656168
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.2721115537848605,
+          "median": 0.2611664102796127,
+          "p90": 0.26949115537848606
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13067151605109192,
+          "median": 0.12337783112078837,
+          "p90": 0.13018762638412715
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.009802370564409352,
+          "median": 0.0052087089105319955,
+          "p90": 0.006825817645437767
+        },
+        "metric_applicable_episode_count": 10,
+        "p90_error_episode_distribution_m": {
+          "max": 0.10239316699532444,
+          "median": 0.08881814575687341,
+          "p90": 0.09726525970343795
+        }
+      },
+      "reactive_scripted": {
+        "computed_episode_count": 10,
+        "episodes": [
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.2945945945945946,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.0549999999998065,
+              3.604999999999636,
+              4.3550000000003415,
+              5.205000000002135,
+              10.255000000002777,
+              12.15499999999835,
+              12.904999999996601
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2590,
+            "seed": 0,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12975912038234297,
+              "median": 0.004750136795744211,
+              "p90": 0.0981365324798975
+            }
+          },
+          {
+            "excluded_sample_count": 761,
+            "excluded_sample_fraction": 0.2882575757575757,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.504999999999757,
+              4.104999999999814,
+              4.655000000000975,
+              5.505000000002768,
+              10.555000000002078,
+              12.404999999997766,
+              13.154999999996019
+            ],
+            "retained_sample_count": 1879,
+            "sample_count": 2640,
+            "seed": 1,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1344029538624215,
+              "median": 0.018140112288922962,
+              "p90": 0.1060588569930142
+            }
+          },
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.3027777777777778,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": false,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.8549999999998283,
+              3.404999999999658,
+              4.054999999999708,
+              4.905000000001502,
+              9.955000000003476,
+              11.804999999999165,
+              12.554999999997417
+            ],
+            "retained_sample_count": 1757,
+            "sample_count": 2520,
+            "seed": 2,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13006644629615396,
+              "median": 0.004445856639059185,
+              "p90": 0.09103706639527749
+            }
+          },
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.29233716475095783,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              3.6549999999996303,
+              4.3550000000003415,
+              5.255000000002241,
+              10.30500000000266,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1847,
+            "sample_count": 2610,
+            "seed": 3,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12773486759559866,
+              "median": 0.005423266284959193,
+              "p90": 0.10306151863427203
+            }
+          },
+          {
+            "excluded_sample_count": 762,
+            "excluded_sample_fraction": 0.2897338403041825,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.4549999999997625,
+              4.004999999999603,
+              4.5550000000007635,
+              5.405000000002557,
+              10.455000000002311,
+              12.354999999997883,
+              13.104999999996135
+            ],
+            "retained_sample_count": 1868,
+            "sample_count": 2630,
+            "seed": 4,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12771692507264004,
+              "median": 0.016060673973545977,
+              "p90": 0.09234698025334481
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28858267716535435,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.2549999999997845,
+              3.6549999999996303,
+              4.004999999999603,
+              4.905000000001502,
+              9.955000000003476,
+              11.904999999998932,
+              12.654999999997184
+            ],
+            "retained_sample_count": 1807,
+            "sample_count": 2540,
+            "seed": 5,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12476966019601705,
+              "median": 0.005499071177405557,
+              "p90": 0.09390608630970523
+            }
+          },
+          {
+            "excluded_sample_count": 733,
+            "excluded_sample_fraction": 0.28632812500000004,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9549999999998173,
+              3.8549999999996083,
+              4.205000000000025,
+              5.055000000001819,
+              10.105000000003127,
+              12.004999999998699,
+              12.75499999999695
+            ],
+            "retained_sample_count": 1827,
+            "sample_count": 2560,
+            "seed": 6,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.12981287322909374,
+              "median": 0.005238477893024164,
+              "p90": 0.09418037195968491
+            }
+          },
+          {
+            "excluded_sample_count": 732,
+            "excluded_sample_fraction": 0.2804597701149425,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.604999999999746,
+              4.205000000000025,
+              4.5550000000007635,
+              5.405000000002557,
+              10.405000000002428,
+              12.254999999998116,
+              13.004999999996368
+            ],
+            "retained_sample_count": 1878,
+            "sample_count": 2610,
+            "seed": 7,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1266892542244729,
+              "median": 0.010643911585538726,
+              "p90": 0.08032828738124043
+            }
+          },
+          {
+            "excluded_sample_count": 763,
+            "excluded_sample_fraction": 0.3076612903225806,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": false,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              1.9049999999998228,
+              3.3549999999996634,
+              3.8549999999996083,
+              4.70500000000108,
+              9.755000000003943,
+              11.604999999999631,
+              12.354999999997883
+            ],
+            "retained_sample_count": 1717,
+            "sample_count": 2480,
+            "seed": 8,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.1290033816035703,
+              "median": 0.004635961275700926,
+              "p90": 0.08373404225066537
+            }
+          },
+          {
+            "excluded_sample_count": 762,
+            "excluded_sample_fraction": 0.2953488372093023,
+            "exclusion_half_window_s": 0.25,
+            "metric_applicable": true,
+            "phase_transition_count": 8,
+            "phase_transition_times_s": [
+              0.7549999999999495,
+              2.20499999999979,
+              3.804999999999614,
+              4.305000000000236,
+              5.15500000000203,
+              10.255000000002777,
+              12.104999999998466,
+              12.854999999996718
+            ],
+            "retained_sample_count": 1818,
+            "sample_count": 2580,
+            "seed": 9,
+            "status": "computed",
+            "tracking_error_m": {
+              "max": 0.13767899393358707,
+              "median": 0.010530206822525045,
+              "p90": 0.09960036700893937
+            }
+          }
+        ],
+        "excluded_sample_fraction_distribution": {
+          "max": 0.3076612903225806,
+          "median": 0.29103550252757016,
+          "p90": 0.3032661290322581
+        },
+        "max_error_episode_distribution_m": {
+          "max": 0.13767899393358707,
+          "median": 0.12938125099295664,
+          "p90": 0.13473055786953805
+        },
+        "median_error_episode_distribution_m": {
+          "max": 0.018140112288922962,
+          "median": 0.005461168731182375,
+          "p90": 0.016268617805083676
+        },
+        "metric_applicable_episode_count": 8,
+        "p90_error_episode_distribution_m": {
+          "max": 0.1060588569930142,
+          "median": 0.09404322913469507,
+          "p90": 0.10336125247014624
+        }
+      }
+    }
+  },
+  "created_utc": "2026-08-22T15:35:48.548368+00:00",
+  "method": {
+    "downgrade_if_excluded_fraction_gt": 0.3,
+    "excluded_window": "within +/-0.25 s of every observed phase change",
+    "source": "authorized iso_final STRONG ladder 200 Hz tracking traces",
+    "statistics": [
+      "median",
+      "p90",
+      "max"
+    ]
+  },
+  "mujoco_warning_count": 0,
+  "old_iso_dataset_audit": {
+    "new_rollout_for_old_dataset_was_not_run": true,
+    "probes": [
+      {
+        "available_related_fields": [
+          "eef_command_tracking_error_m",
+          "acquisition_trace_200hz",
+          "target_position_b_by_policy_step"
+        ],
+        "has_full_tracking_trace": false,
+        "path": "out/iso/ladder/STRONG/gamma_0p95/reactive_scripted/seed_000.json"
+      },
+      {
+        "available_related_fields": [
+          "eef_command_tracking_error_m"
+        ],
+        "has_full_tracking_trace": false,
+        "path": "out/iso/ladder/STRONG/gamma_0p95/frozen_replay/seed_000.json"
+      }
+    ],
+    "reason": "old episodes persisted only aggregate tracking statistics; the 200 Hz acquisition trace has finger force/joints but no EE pose or target",
+    "status": "not_recomputable_without_new_simulation"
+  },
+  "schema": "shakebench_spike.iso_final.ee_tracking_recomputed.v1",
+  "unavailable_new_episode_paths": []
+}

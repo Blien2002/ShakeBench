@@ -1,0 +1,968 @@
+{
+  "any_parameter_bound": false,
+  "binding_rule": "alternate must improve both aggregate success rate and placement P90, and rescue at least 50% of baseline failures; worsening never binds",
+  "created_utc": "2026-08-22T15:35:38.710935+00:00",
+  "effect_condition": {
+    "baseline_seed_count": 20,
+    "baseline_success_rate": 0.95,
+    "gamma": 0.5,
+    "operating_point": "STRONG",
+    "selected_hold_force_n_per_finger": 12.0,
+    "strategy": "reactive_scripted"
+  },
+  "mujoco_warning_count": 0,
+  "schema": "shakebench_spike.iso_final.attribution_v2.v1",
+  "single_parameter_checks": {
+    "hold_force_x2": {
+      "aggregate_improved": false,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16323326278150246,
+          "median": 0.15003948164957048,
+          "p90": 0.16180626364308032
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.006359229586947702,
+          "median": 0.004449009511050423,
+          "p90": 0.0061466939739487116
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11945267548332573,
+          "median": 0.10471392484438913,
+          "p90": 0.11153518552778656
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.007104755520472853,
+          "median": 0.003499798872225726,
+          "p90": 0.00571217073307132
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.006486957586707839,
+          "median": 0.00148781633479607,
+          "p90": 0.003313848805822803
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.0018404907975460123,
+            "median": 0.0,
+            "p90": 6.172839506172928e-05
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.10514855562017757,
+            "median": 0.01676207092529517,
+            "p90": 0.04367601084679922
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.007104755520472853,
+            "median": 0.003499798872225726,
+            "p90": 0.00571217073307132
+          }
+        },
+        "success_count": 20,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.006885963300976579,
+          "median": 0.0030587342176042784,
+          "p90": 0.004949379055534369
+        }
+      },
+      "alternate_value": 20.0,
+      "alternate_was_capped_at_panda_limit": true,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16323326278150246,
+          "median": 0.15003985221372682,
+          "p90": 0.16180626364308032
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.0062980099393411555,
+          "median": 0.004448081663774667,
+          "p90": 0.0061466939739487116
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11945252132541358,
+          "median": 0.10470420635490052,
+          "p90": 0.11146693582988094
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.010059753881131898,
+          "median": 0.003374980395425352,
+          "p90": 0.0050078261114918235
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.009648000609625618,
+          "median": 0.0019870710825972675,
+          "p90": 0.002963112442072046
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.003067484662576687,
+            "median": 0.0,
+            "p90": 0.0013580246913580264
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0006172839506172839,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.10869061822935865,
+            "median": 0.01641209684670033,
+            "p90": 0.04667841924100553
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.010059753881131898,
+            "median": 0.003374980395425352,
+            "p90": 0.0050078261114918235
+          }
+        },
+        "success_count": 19,
+        "success_rate": 0.95,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.006885963300976579,
+          "median": 0.0030587342176042784,
+          "p90": 0.004949379055534369
+        }
+      },
+      "baseline_failure_count": 1,
+      "baseline_failure_rescue_fraction": 1.0,
+      "baseline_failures_rescued_count": 1,
+      "baseline_value": 12.0,
+      "effect_parameter_bound": false,
+      "paired_results": [
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.001723563138563849,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020608542981965035,
+          "baseline_success": true,
+          "seed": 0
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.003258852307623121,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002981088667263963,
+          "baseline_success": true,
+          "seed": 1
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0017859393556720609,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0025772437051355397,
+          "baseline_success": true,
+          "seed": 2
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.003808817289619931,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0029611150837173883,
+          "baseline_success": true,
+          "seed": 3
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0014542508163844995,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00107713410437829,
+          "baseline_success": true,
+          "seed": 4
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0016875139565817735,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001976492099769538,
+          "baseline_success": true,
+          "seed": 5
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.006486957586707839,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009648000609625618,
+          "baseline_success": false,
+          "seed": 6
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0007703771941635402,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00047248152948387067,
+          "baseline_success": true,
+          "seed": 7
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0019873188118677363,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020278329429261016,
+          "baseline_success": true,
+          "seed": 8
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0015213818532076404,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020619181041116315,
+          "baseline_success": true,
+          "seed": 9
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0024634706952548695,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002577291035538368,
+          "baseline_success": true,
+          "seed": 10
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0012769013793924142,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014629149753414236,
+          "baseline_success": true,
+          "seed": 11
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0009155431676056618,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0005089467040925551,
+          "baseline_success": true,
+          "seed": 12
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0011723210102174886,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0011160994486458095,
+          "baseline_success": true,
+          "seed": 13
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0010995349287603886,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0028570077149012046,
+          "baseline_success": true,
+          "seed": 14
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0013120201589333724,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0013890659224866137,
+          "baseline_success": true,
+          "seed": 15
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.000938858196267455,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0010337222762070622,
+          "baseline_success": true,
+          "seed": 16
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0011197775365537398,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0012038035421395809,
+          "baseline_success": true,
+          "seed": 17
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0014294897022156293,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014166142885360528,
+          "baseline_success": true,
+          "seed": 18
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0021580018923564683,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001997650065424997,
+          "baseline_success": true,
+          "seed": 19
+        }
+      ],
+      "parameter": "gripper_force_limit_n_per_finger"
+    },
+    "move_gain_4_to_3": {
+      "aggregate_improved": false,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16309244969706868,
+          "median": 0.15026069620473087,
+          "p90": 0.1615429857497632
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.05618505367238022,
+          "median": 0.021220493195717074,
+          "p90": 0.024997280296334915
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.13162522190359674,
+          "median": 0.11118764162552669,
+          "p90": 0.12251240789670662
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_contact_lost": 2
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.004289574357156052,
+          "median": 0.003041518636120234,
+          "p90": 0.004201132383971631
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.14086914324763256,
+          "median": 0.002055816755308035,
+          "p90": 0.015230497936264301
+        },
+        "placement_within_70mm_count": 18,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.09302325581395349,
+            "median": 0.0,
+            "p90": 0.0030484699575609024
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.02066115702479339,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.044497409519154915,
+            "median": 0.0179113227417581,
+            "p90": 0.03349052322837857
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.004289574357156052,
+            "median": 0.003041518636120234,
+            "p90": 0.004201132383971631
+          }
+        },
+        "success_count": 18,
+        "success_rate": 0.9,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.005967652014130717,
+          "median": 0.0031671432958290625,
+          "p90": 0.005101007853398292
+        }
+      },
+      "alternate_value": 3.0,
+      "alternate_was_capped_at_panda_limit": false,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16323326278150246,
+          "median": 0.15003985221372682,
+          "p90": 0.16180626364308032
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.0062980099393411555,
+          "median": 0.004448081663774667,
+          "p90": 0.0061466939739487116
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11945252132541358,
+          "median": 0.10470420635490052,
+          "p90": 0.11146693582988094
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.010059753881131898,
+          "median": 0.003374980395425352,
+          "p90": 0.0050078261114918235
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.009648000609625618,
+          "median": 0.0019870710825972675,
+          "p90": 0.002963112442072046
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.003067484662576687,
+            "median": 0.0,
+            "p90": 0.0013580246913580264
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0006172839506172839,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.10869061822935865,
+            "median": 0.01641209684670033,
+            "p90": 0.04667841924100553
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.010059753881131898,
+            "median": 0.003374980395425352,
+            "p90": 0.0050078261114918235
+          }
+        },
+        "success_count": 19,
+        "success_rate": 0.95,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.006885963300976579,
+          "median": 0.0030587342176042784,
+          "p90": 0.004949379055534369
+        }
+      },
+      "baseline_failure_count": 1,
+      "baseline_failure_rescue_fraction": 1.0,
+      "baseline_failures_rescued_count": 1,
+      "baseline_value": 4.0,
+      "effect_parameter_bound": false,
+      "paired_results": [
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0019866660801012973,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020608542981965035,
+          "baseline_success": true,
+          "seed": 0
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0021249674305147733,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002981088667263963,
+          "baseline_success": true,
+          "seed": 1
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.002182573580448248,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0025772437051355397,
+          "baseline_success": true,
+          "seed": 2
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0018406290887247301,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0029611150837173883,
+          "baseline_success": true,
+          "seed": 3
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.002438531917087332,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00107713410437829,
+          "baseline_success": true,
+          "seed": 4
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0014141947801281295,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001976492099769538,
+          "baseline_success": true,
+          "seed": 5
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0036800420609582993,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009648000609625618,
+          "baseline_success": false,
+          "seed": 6
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.001533145373499993,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00047248152948387067,
+          "baseline_success": true,
+          "seed": 7
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0019704532349433617,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020278329429261016,
+          "baseline_success": true,
+          "seed": 8
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0008560865377634751,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020619181041116315,
+          "baseline_success": true,
+          "seed": 9
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0013428907091252134,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002577291035538368,
+          "baseline_success": true,
+          "seed": 10
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.001300312641983825,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014629149753414236,
+          "baseline_success": true,
+          "seed": 11
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0011401750437660429,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0005089467040925551,
+          "baseline_success": true,
+          "seed": 12
+        },
+        {
+          "alternate_failure_reason": "grasp_contact_lost",
+          "alternate_placement_error_m": 0.14086914324763256,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0011160994486458095,
+          "baseline_success": true,
+          "seed": 13
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0012112180731917459,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0028570077149012046,
+          "baseline_success": true,
+          "seed": 14
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0024824946011965036,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0013890659224866137,
+          "baseline_success": true,
+          "seed": 15
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.002276517124526595,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0010337222762070622,
+          "baseline_success": true,
+          "seed": 16
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0024529358057943196,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0012038035421395809,
+          "baseline_success": true,
+          "seed": 17
+        },
+        {
+          "alternate_failure_reason": "grasp_contact_lost",
+          "alternate_placement_error_m": 0.11918460081401669,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014166142885360528,
+          "baseline_success": true,
+          "seed": 18
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0031529300845582094,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001997650065424997,
+          "baseline_success": true,
+          "seed": 19
+        }
+      ],
+      "parameter": "move_action_gain"
+    },
+    "osc_kp_150_to_300": {
+      "aggregate_improved": false,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.2558866236486878,
+          "median": 0.17903727799926594,
+          "p90": 0.24423225241464763
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.09519776764187346,
+          "median": 0.0030062758103497063,
+          "p90": 0.08225560108768588
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.21145901403204037,
+          "median": 0.14565567930834147,
+          "p90": 0.20208547819906522
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "descend_contact_timeout": 8,
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.01111835301128316,
+          "median": 0.0026067798217713606,
+          "p90": 0.004485843952415567
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.15102622515424347,
+          "median": 0.003541214994617771,
+          "p90": 0.15064765354897036
+        },
+        "placement_within_70mm_count": 12,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.001388888888888889,
+            "median": 0.0,
+            "p90": 0.0013108237547892721
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.0370067546910706,
+            "median": 0.028742796388936183,
+            "p90": 0.03523310239128204
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.01111835301128316,
+            "median": 0.0036683398347717097,
+            "p90": 0.004873580339729197
+          }
+        },
+        "success_count": 11,
+        "success_rate": 0.55,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.005848528637059975,
+          "median": 0.0028749202921422084,
+          "p90": 0.005100112137886937
+        }
+      },
+      "alternate_value": 300.0,
+      "alternate_was_capped_at_panda_limit": false,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16323326278150246,
+          "median": 0.15003985221372682,
+          "p90": 0.16180626364308032
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.0062980099393411555,
+          "median": 0.004448081663774667,
+          "p90": 0.0061466939739487116
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11945252132541358,
+          "median": 0.10470420635490052,
+          "p90": 0.11146693582988094
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.010059753881131898,
+          "median": 0.003374980395425352,
+          "p90": 0.0050078261114918235
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.009648000609625618,
+          "median": 0.0019870710825972675,
+          "p90": 0.002963112442072046
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.003067484662576687,
+            "median": 0.0,
+            "p90": 0.0013580246913580264
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0006172839506172839,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.10869061822935865,
+            "median": 0.01641209684670033,
+            "p90": 0.04667841924100553
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.010059753881131898,
+            "median": 0.003374980395425352,
+            "p90": 0.0050078261114918235
+          }
+        },
+        "success_count": 19,
+        "success_rate": 0.95,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.006885963300976579,
+          "median": 0.0030587342176042784,
+          "p90": 0.004949379055534369
+        }
+      },
+      "baseline_failure_count": 1,
+      "baseline_failure_rescue_fraction": 1.0,
+      "baseline_failures_rescued_count": 1,
+      "baseline_value": 150.0,
+      "effect_parameter_bound": false,
+      "paired_results": [
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.002522402318917641,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020608542981965035,
+          "baseline_success": true,
+          "seed": 0
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14947732670559127,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002981088667263963,
+          "baseline_success": true,
+          "seed": 1
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0014558872308231587,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0025772437051355397,
+          "baseline_success": true,
+          "seed": 2
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.15102622515424347,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0029611150837173883,
+          "baseline_success": true,
+          "seed": 3
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.1490512046808378,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00107713410437829,
+          "baseline_success": true,
+          "seed": 4
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0032400788103153074,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001976492099769538,
+          "baseline_success": true,
+          "seed": 5
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.004478310058131289,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009648000609625618,
+          "baseline_success": false,
+          "seed": 6
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14979227000285855,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.00047248152948387067,
+          "baseline_success": true,
+          "seed": 7
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.0013921859472942493,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020278329429261016,
+          "baseline_success": true,
+          "seed": 8
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14904575209255258,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0020619181041116315,
+          "baseline_success": true,
+          "seed": 9
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0016038093265795987,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.002577291035538368,
+          "baseline_success": true,
+          "seed": 10
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0035190524636875237,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014629149753414236,
+          "baseline_success": true,
+          "seed": 11
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.15053307407598768,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0005089467040925551,
+          "baseline_success": true,
+          "seed": 12
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0008061133949683961,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0011160994486458095,
+          "baseline_success": true,
+          "seed": 13
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.001696955539095214,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0028570077149012046,
+          "baseline_success": true,
+          "seed": 14
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.15063359077003938,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0013890659224866137,
+          "baseline_success": true,
+          "seed": 15
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.003563377525548018,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0010337222762070622,
+          "baseline_success": true,
+          "seed": 16
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0006313947845385915,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0012038035421395809,
+          "baseline_success": true,
+          "seed": 17
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0014447530930983027,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0014166142885360528,
+          "baseline_success": true,
+          "seed": 18
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.15077421855934925,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.001997650065424997,
+          "baseline_success": true,
+          "seed": 19
+        }
+      ],
+      "parameter": "osc_kp"
+    }
+  },
+  "status": "completed"
+}

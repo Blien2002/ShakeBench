@@ -150,6 +150,7 @@ class EpisodeMetrics:
     _left_force_n: list[float] = field(default_factory=list)
     _right_force_n: list[float] = field(default_factory=list)
     _tracking_error_m: list[float] = field(default_factory=list)
+    _tracking_trace_200hz: list[dict] = field(default_factory=list)
     _translational_slip_m: list[float] = field(default_factory=list)
     _rotational_slip_rad: list[float] = field(default_factory=list)
     _grasp_relative_rotation: np.ndarray | None = None
@@ -176,8 +177,17 @@ class EpisodeMetrics:
         self._final_object_b = object_b.copy()
         target_b = getattr(policy, "last_target_b", None)
         if target_b is not None:
-            self._tracking_error_m.append(
-                float(np.linalg.norm(hand_b - np.asarray(target_b)))
+            target_b = np.asarray(target_b)
+            tracking_error_m = float(np.linalg.norm(hand_b - target_b))
+            self._tracking_error_m.append(tracking_error_m)
+            self._tracking_trace_200hz.append(
+                {
+                    "time_s": float(env.sim.data.time),
+                    "phase": str(policy.phase),
+                    "error_m": tracking_error_m,
+                    "eef_position_b_m": hand_b.tolist(),
+                    "target_position_b_m": target_b.tolist(),
+                }
             )
         self.max_penetration_m = max(self.max_penetration_m, contacts.max_penetration_m)
         self.max_object_lift_m = max(
@@ -295,6 +305,7 @@ class EpisodeMetrics:
                 "within_tolerance": placement_error_m <= 0.070,
             },
             "eef_command_tracking_error_m": distribution(self._tracking_error_m),
+            "eef_command_tracking_trace_200hz": self._tracking_trace_200hz,
             "grasp_slip_decomposition": {
                 "translation_m": distribution(self._translational_slip_m),
                 "rotation_rad": distribution(self._rotational_slip_rad),

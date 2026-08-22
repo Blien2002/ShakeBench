@@ -1,0 +1,415 @@
+{
+  "adjacent_comparisons": [
+    {
+      "absolute_success_rate_delta_percentage_points": 30.000000000000004,
+      "candidate_hold_force_n_per_finger": 3.0,
+      "next_higher_force_n_per_finger": 6.0,
+      "passed": false,
+      "placement_p90_ratio_criterion_lt_1p3": false,
+      "success_rate_criterion_lt_10pp": false,
+      "symmetric_placement_p90_ratio": 10.744171077221742
+    },
+    {
+      "absolute_success_rate_delta_percentage_points": 9.999999999999998,
+      "candidate_hold_force_n_per_finger": 6.0,
+      "next_higher_force_n_per_finger": 12.0,
+      "passed": false,
+      "placement_p90_ratio_criterion_lt_1p3": false,
+      "success_rate_criterion_lt_10pp": false,
+      "symmetric_placement_p90_ratio": 1.7564842572575343
+    },
+    {
+      "absolute_success_rate_delta_percentage_points": 4.999999999999993,
+      "candidate_hold_force_n_per_finger": 12.0,
+      "next_higher_force_n_per_finger": 20.0,
+      "passed": true,
+      "placement_p90_ratio_criterion_lt_1p3": true,
+      "success_rate_criterion_lt_10pp": true,
+      "symmetric_placement_p90_ratio": 1.1369861132168118
+    }
+  ],
+  "condition": {
+    "acquisition_force_n_per_finger": 20.0,
+    "cube_table_sliding_mu": 0.3,
+    "gamma": 0.95,
+    "isolator": {
+      "damping_ratio": 0.2,
+      "natural_frequency_hz": 5.0,
+      "omega_n_rad_s": 31.41592653589793,
+      "payload_mass_kg": 0.07011,
+      "rotational_damping_n_m_s_rad": [
+        21.526192862397263,
+        21.526192862397263,
+        42.88902290680785
+      ],
+      "rotational_stiffness_n_m_rad": [
+        1690.663233906607,
+        1690.663233906607,
+        3368.495982091798
+      ],
+      "table_inertia_kg_m2": [
+        1.713,
+        1.713,
+        3.413
+      ],
+      "table_mass_kg": 32.0,
+      "translational_damping_n_s_m": 402.1238596594935,
+      "translational_stiffness_n_m": 31582.734083485946,
+      "vertical_springref_m": 0.009961385175468481
+    },
+    "operating_point": "STRONG",
+    "seed_count_per_force": 20,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "created_utc": "2026-08-22T15:40:24.619065+00:00",
+  "criterion": {
+    "both_required": true,
+    "comparison_scope": "candidate versus next higher force only",
+    "placement_p90": "symmetric larger/smaller ratio < 1.3",
+    "success_rate": "absolute difference < 10 percentage points"
+  },
+  "mujoco_warning_count": 0,
+  "rows": [
+    {
+      "condition": {
+        "cube_table_sliding_mu": 0.3,
+        "cube_table_solref_timeconst_s": 0.0006,
+        "diagnostic_frequency_hz": 200,
+        "episode_limit_s": 16.0,
+        "gamma": 0.95,
+        "grip_mode": "force_limited_close",
+        "gripper_force_limit_n": 3.0,
+        "move_action_gain": 4.0,
+        "osc_kp": 150.0,
+        "pad_solref_dampratio": 0.5,
+        "physics_timestep_s": 0.0002,
+        "policy_frequency_hz": 20
+      },
+      "hold_force_n_per_finger": 3.0,
+      "summary": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.1503651969333952,
+          "p90": 0.1629730518712609
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.03126001533995844,
+          "median": 0.005711436303803144,
+          "p90": 0.023795980831335935
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.12009549730577404,
+          "median": 0.10664670469866996,
+          "p90": 0.11839271579994669
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 10
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.031935825936633196,
+          "median": 0.009994866776428309,
+          "p90": 0.0157697697391702
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.1791253728325111,
+          "median": 0.007665688788932024,
+          "p90": 0.1383812360897001
+        },
+        "placement_within_70mm_count": 17,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.6571428571428571,
+            "median": 0.011145617667356798,
+            "p90": 0.17222222222222278
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.24444444444444444,
+            "median": 0.002461561766265243,
+            "p90": 0.09285714285714289
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.16951452955613297,
+            "median": 0.07997873843289677,
+            "p90": 0.13905411857860348
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.031935825936633196,
+            "median": 0.009994866776428309,
+            "p90": 0.0157697697391702
+          }
+        },
+        "success_count": 10,
+        "success_rate": 0.5,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.014754391513756526,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      }
+    },
+    {
+      "condition": {
+        "cube_table_sliding_mu": 0.3,
+        "cube_table_solref_timeconst_s": 0.0006,
+        "diagnostic_frequency_hz": 200,
+        "episode_limit_s": 16.0,
+        "gamma": 0.95,
+        "grip_mode": "force_limited_close",
+        "gripper_force_limit_n": 6.0,
+        "move_action_gain": 4.0,
+        "osc_kp": 150.0,
+        "pad_solref_dampratio": 0.5,
+        "physics_timestep_s": 0.0002,
+        "policy_frequency_hz": 20
+      },
+      "hold_force_n_per_finger": 6.0,
+      "summary": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.15036714705374865,
+          "p90": 0.1629730518712609
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.008359828780614784,
+          "median": 0.004972130651914801,
+          "p90": 0.006998988606705198
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.12009747858067449,
+          "median": 0.10505373177996577,
+          "p90": 0.11272115425866122
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 4
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.019118732794864757,
+          "median": 0.007061703487754862,
+          "p90": 0.012503170275152105
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.013844655464193063,
+          "median": 0.005000605589906684,
+          "p90": 0.012879656801358668
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.01707317073170732,
+            "median": 0.003703703703703704,
+            "p90": 0.01149068322981367
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.004968944099378882,
+            "median": 0.0006192009815198221,
+            "p90": 0.004884071062932852
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.18483947081142238,
+            "median": 0.07031137565449821,
+            "p90": 0.15921269501293978
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.019118732794864757,
+            "median": 0.007061703487754862,
+            "p90": 0.012503170275152105
+          }
+        },
+        "success_count": 16,
+        "success_rate": 0.8,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.014754391513756526,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      }
+    },
+    {
+      "condition": {
+        "cube_table_sliding_mu": 0.3,
+        "cube_table_solref_timeconst_s": 0.0006,
+        "diagnostic_frequency_hz": 200,
+        "episode_limit_s": 16.0,
+        "gamma": 0.95,
+        "grip_mode": "force_limited_close",
+        "gripper_force_limit_n": 12.0,
+        "move_action_gain": 4.0,
+        "osc_kp": 150.0,
+        "pad_solref_dampratio": 0.5,
+        "physics_timestep_s": 0.0002,
+        "policy_frequency_hz": 20
+      },
+      "hold_force_n_per_finger": 12.0,
+      "summary": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.1503696465974622,
+          "p90": 0.1629730518712609
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.00831298618852705,
+          "median": 0.004941826450785771,
+          "p90": 0.007054707728859156
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11990544136150724,
+          "median": 0.10507065191356052,
+          "p90": 0.11273580219306167
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 2
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.013015351169372271,
+          "median": 0.006152315768587571,
+          "p90": 0.01019163657720557
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.009516841907793545,
+          "median": 0.0038261257620170186,
+          "p90": 0.007332634350773042
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.0055900621118012426,
+            "median": 0.0015356820234869017,
+            "p90": 0.0037060041407867496
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.002484472049689441,
+            "median": 0.0,
+            "p90": 0.001923932213787287
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.14152417985924604,
+            "median": 0.056383623071003475,
+            "p90": 0.12636404346366006
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.013015351169372271,
+            "median": 0.006152315768587571,
+            "p90": 0.01019163657720557
+          }
+        },
+        "success_count": 18,
+        "success_rate": 0.9,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.014754391513756526,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      }
+    },
+    {
+      "condition": {
+        "cube_table_sliding_mu": 0.3,
+        "cube_table_solref_timeconst_s": 0.0006,
+        "diagnostic_frequency_hz": 200,
+        "episode_limit_s": 16.0,
+        "gamma": 0.95,
+        "grip_mode": "force_limited_close",
+        "gripper_force_limit_n": 20.0,
+        "move_action_gain": 4.0,
+        "osc_kp": 150.0,
+        "pad_solref_dampratio": 0.5,
+        "physics_timestep_s": 0.0002,
+        "policy_frequency_hz": 20
+      },
+      "hold_force_n_per_finger": 20.0,
+      "summary": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.1503711223214629,
+          "p90": 0.1629730518712609
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.008185467746629604,
+          "median": 0.004982690283391179,
+          "p90": 0.007059308858687885
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11977273441239973,
+          "median": 0.10509723069614849,
+          "p90": 0.11276701939266359
+        },
+        "episode_count": 20,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.010426738065632175,
+          "median": 0.005884667561755942,
+          "p90": 0.008593860631637888
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.0069682691884636406,
+          "median": 0.0033164326391984167,
+          "p90": 0.0064491854962302276
+        },
+        "placement_within_70mm_count": 20,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.004347826086956522,
+            "median": 0.0,
+            "p90": 0.0018932550436615487
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.0018633540372670807,
+            "median": 0.0,
+            "p90": 0.0006722372779283357
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.19660461490037395,
+            "median": 0.05801415412888098,
+            "p90": 0.1144329115519565
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.010426738065632175,
+            "median": 0.005884667561755942,
+            "p90": 0.008593860631637888
+          }
+        },
+        "success_count": 19,
+        "success_rate": 0.95,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.014754391513756526,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      }
+    }
+  ],
+  "saturated_within_panda_limit": true,
+  "schema": "shakebench_spike.iso_final.hold_saturation.v1",
+  "selected_hold_force_n_per_finger": 12.0,
+  "stop_after_1a": false
+}
