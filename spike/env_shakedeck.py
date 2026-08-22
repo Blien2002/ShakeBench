@@ -62,6 +62,10 @@ def shake_deck_xml(
     xml_str: str,
     *,
     gripper_force_limit_n: float | None = None,
+    pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
+    cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
+    cube_table_sliding_mu: float = MATERIAL_MU,
+    decoupled_table: bool = False,
 ) -> str:
     """Move Lift's table and Panda base under a welded dynamic deck."""
 
@@ -97,11 +101,40 @@ def shake_deck_xml(
         rgba="0 0 0 0",
     )
     ET.SubElement(deck, "site", name="deck_anchor", pos="0 0 0", size="0.002")
-    for body in movable.values():
+    deck_members = ("robot0_base",) if decoupled_table else ("table", "robot0_base")
+    for name in deck_members:
+        body = movable[name]
         original = np.fromstring(body.get("pos", "0 0 0"), sep=" ")
         body.set("pos", _numbers(original - ANCHOR))
         deck.append(body)
     worldbody.append(deck)
+
+    if decoupled_table:
+        table_driver = ET.Element(
+            "body", name="table_deck_drv", mocap="true", pos=_numbers(ANCHOR)
+        )
+        worldbody.append(table_driver)
+        table_deck = ET.Element("body", name="table_deck", pos=_numbers(ANCHOR))
+        ET.SubElement(table_deck, "freejoint", name="table_deck_freejoint")
+        ET.SubElement(
+            table_deck,
+            "geom",
+            name="table_deck_ballast",
+            type="box",
+            size="0.10 0.10 0.01",
+            mass=f"{DECK_BALLAST_KG:g}",
+            contype="0",
+            conaffinity="0",
+            rgba="0 0 0 0",
+        )
+        ET.SubElement(
+            table_deck, "site", name="table_deck_anchor", pos="0 0 0", size="0.002"
+        )
+        table = movable["table"]
+        table_original = np.fromstring(table.get("pos", "0 0 0"), sep=" ")
+        table.set("pos", _numbers(table_original - ANCHOR))
+        table_deck.append(table)
+        worldbody.append(table_deck)
 
     equality = root.find("equality")
     if equality is None:
@@ -114,6 +147,15 @@ def shake_deck_xml(
         body2="deck",
         solref=_numbers(WELD_SOLREF),
     )
+    if decoupled_table:
+        ET.SubElement(
+            equality,
+            "weld",
+            name="table_deck_weld",
+            body1="table_deck_drv",
+            body2="table_deck",
+            solref=_numbers(WELD_SOLREF),
+        )
 
     contact = root.find("contact")
     if contact is None:
@@ -130,9 +172,25 @@ def shake_deck_xml(
         geom2="table_collision",
         margin=f"{CONTACT_MARGIN_M:g}",
         gap=f"{CONTACT_MARGIN_M:g}",
-        solref=_numbers(CONTACT_SOLREF),
-        friction=_numbers(CUBE_TABLE_PAIR_FRICTION),
+        solref=_numbers(cube_table_solref),
+        friction=_numbers(
+            (cube_table_sliding_mu, cube_table_sliding_mu, *CUBE_TABLE_PAIR_FRICTION[2:])
+        ),
     )
+
+    if pad_solref_dampratio <= 0.0:
+        raise ValueError("pad solref damping ratio must be positive")
+    pad_names = {
+        "gripper0_right_finger1_pad_collision",
+        "gripper0_right_finger2_pad_collision",
+    }
+    configured_pads = 0
+    for geom in root.iter("geom"):
+        if geom.get("name") in pad_names:
+            geom.set("solref", _numbers((PANDA_PAD_SOLREF[0], pad_solref_dampratio)))
+            configured_pads += 1
+    if configured_pads != 2:
+        raise ValueError(f"expected two Panda finger pads, configured {configured_pads}")
 
     if gripper_force_limit_n is not None:
         if not 0.0 < gripper_force_limit_n <= 20.0:
@@ -160,6 +218,11 @@ class ShakeDeckLift(Lift):
     write_zero_motion: bool = True
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS
     gripper_force_limit_n: float | None = None
+    pad_solref_dampratio: float = PANDA_PAD_SOLREF[1]
+    cube_table_solref: tuple[float, float] = CONTACT_SOLREF
+    cube_table_sliding_mu: float = MATERIAL_MU
+    table_motion_sampler: MotionSampler | None = None
+    decoupled_table: bool = False
     physics_step_callback: PhysicsStepCallback | None = None
 
     def configure_shakedeck(
@@ -167,17 +230,33 @@ class ShakeDeckLift(Lift):
         motion_sampler: MotionSampler | None,
         mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
         gripper_force_limit_n: float | None = None,
+        pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
+        cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
+        cube_table_sliding_mu: float = MATERIAL_MU,
+        table_motion_sampler: MotionSampler | None = None,
     ) -> None:
         self.motion_sampler = motion_sampler
         self.write_zero_motion = motion_sampler is None
         self.mocap_command_lead_steps = mocap_command_lead_steps
         self.gripper_force_limit_n = gripper_force_limit_n
+        self.pad_solref_dampratio = pad_solref_dampratio
+        self.cube_table_solref = cube_table_solref
+        self.cube_table_sliding_mu = cube_table_sliding_mu
+        self.table_motion_sampler = table_motion_sampler
+        self.decoupled_table = table_motion_sampler is not None
         # Lift intentionally drops its cube from 10 mm. The spike measures
         # table-relative slip, so start in static contact instead of folding
         # that unrelated free-fall distance into the diagnostic.
         self.placement_initializer.z_offset = 0.0
         self.set_xml_processor(
-            partial(shake_deck_xml, gripper_force_limit_n=gripper_force_limit_n)
+            partial(
+                shake_deck_xml,
+                gripper_force_limit_n=gripper_force_limit_n,
+                pad_solref_dampratio=pad_solref_dampratio,
+                cube_table_solref=cube_table_solref,
+                cube_table_sliding_mu=cube_table_sliding_mu,
+                decoupled_table=self.decoupled_table,
+            )
         )
         self.reset()
         self.deck_body_id = self.sim.model.body_name2id("deck")
@@ -186,6 +265,15 @@ class ShakeDeckLift(Lift):
         self.deck_mocap_id = int(self.sim.model.body_mocapid[driver_body_id])
         if self.deck_mocap_id < 0:
             raise RuntimeError("deck_drv did not compile as a mocap body")
+        if self.decoupled_table:
+            self.table_deck_body_id = self.sim.model.body_name2id("table_deck")
+            self.table_deck_site_id = self.sim.model.site_name2id("table_deck_anchor")
+            table_driver_body_id = self.sim.model.body_name2id("table_deck_drv")
+            self.table_deck_mocap_id = int(
+                self.sim.model.body_mocapid[table_driver_body_id]
+            )
+            if self.table_deck_mocap_id < 0:
+                raise RuntimeError("table_deck_drv did not compile as a mocap body")
         self._write_deck_target(0.0)
         self.sim.forward()
 
@@ -197,6 +285,12 @@ class ShakeDeckLift(Lift):
             q, _qd, _qdd = self.motion_sampler(time_s)
         self.sim.data.mocap_pos[self.deck_mocap_id] = ANCHOR + q[:3]
         self.sim.data.mocap_quat[self.deck_mocap_id] = _quat_wxyz_from_euler_xyz(q[3:])
+        if self.decoupled_table:
+            table_q, _table_qd, _table_qdd = self.table_motion_sampler(time_s)
+            self.sim.data.mocap_pos[self.table_deck_mocap_id] = ANCHOR + table_q[:3]
+            self.sim.data.mocap_quat[self.table_deck_mocap_id] = _quat_wxyz_from_euler_xyz(
+                table_q[3:]
+            )
 
     def _pre_action(self, action, policy_step=False):
         super()._pre_action(action, policy_step=policy_step)
@@ -213,6 +307,12 @@ class ShakeDeckLift(Lift):
             q = np.zeros(6, dtype=np.float64)
         else:
             q, _qd, _qdd = self.motion_sampler(float(self.sim.data.time))
+        return ANCHOR + q[:3], _quat_wxyz_from_euler_xyz(q[3:])
+
+    def commanded_table_pose(self) -> tuple[np.ndarray, np.ndarray]:
+        if not self.decoupled_table:
+            return self.commanded_deck_pose()
+        q, _qd, _qdd = self.table_motion_sampler(float(self.sim.data.time))
         return ANCHOR + q[:3], _quat_wxyz_from_euler_xyz(q[3:])
 
     def contact_configuration(self) -> dict:
@@ -274,8 +374,17 @@ class ShakeDeckLift(Lift):
         if not (
             pair["margin_m"] == CONTACT_MARGIN_M
             and pair["gap_m"] == CONTACT_MARGIN_M
-            and np.array_equal(pair["solref"], np.asarray(CONTACT_SOLREF))
-            and np.array_equal(pair["friction"], np.asarray(CUBE_TABLE_PAIR_FRICTION))
+            and np.array_equal(pair["solref"], np.asarray(self.cube_table_solref))
+            and np.array_equal(
+                pair["friction"],
+                np.asarray(
+                    (
+                        self.cube_table_sliding_mu,
+                        self.cube_table_sliding_mu,
+                        *CUBE_TABLE_PAIR_FRICTION[2:],
+                    )
+                ),
+            )
         ):
             raise RuntimeError(f"cube-table contact pair is misconfigured: {pair}")
         for side in ("left_finger_pad", "right_finger_pad"):
@@ -283,7 +392,10 @@ class ShakeDeckLift(Lift):
             if not (
                 pad["margin_m"] == 0.0
                 and pad["gap_m"] == 0.0
-                and np.array_equal(pad["solref"], np.asarray(PANDA_PAD_SOLREF))
+                and np.array_equal(
+                    pad["solref"],
+                    np.asarray((PANDA_PAD_SOLREF[0], self.pad_solref_dampratio)),
+                )
                 and np.array_equal(pad["friction"], np.asarray(PANDA_PAD_FRICTION))
             ):
                 raise RuntimeError(f"{side} no longer has Panda stock contact parameters: {pad}")
@@ -313,12 +425,18 @@ def make_env(
     direct_gripper: bool = False,
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
     gripper_force_limit_n: float | None = None,
+    pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
+    cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
+    cube_table_sliding_mu: float = MATERIAL_MU,
+    osc_kp: float = 150.0,
+    table_motion_sampler: MotionSampler | None = None,
 ) -> ShakeDeckLift:
     """Build a headless deterministic Lift and then install the XML processor."""
 
     # robosuite reads this global while constructing both MJCF and controllers.
     macros.SIMULATION_TIMESTEP = physics_timestep
     controller = load_composite_controller_config(controller="BASIC", robot="Panda")
+    controller["body_parts"]["right"]["kp"] = osc_kp
     env = ShakeDeckLift(
         robots="Panda",
         controller_configs=controller,
@@ -339,6 +457,10 @@ def make_env(
         motion_sampler,
         mocap_command_lead_steps,
         gripper_force_limit_n,
+        pad_solref_dampratio,
+        cube_table_solref,
+        cube_table_sliding_mu,
+        table_motion_sampler,
     )
     env.validate_contact_configuration()
     return env

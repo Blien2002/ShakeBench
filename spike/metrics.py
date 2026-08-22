@@ -157,6 +157,16 @@ class EpisodeMetrics:
             left == 0.0 and right == 0.0
             for left, right in zip(self._left_force_n, self._right_force_n, strict=True)
         )
+        left_below = sum(value <= CONTACT_THRESHOLD_N for value in self._left_force_n)
+        right_below = sum(value <= CONTACT_THRESHOLD_N for value in self._right_force_n)
+        unilateral_below = sum(
+            (left <= CONTACT_THRESHOLD_N) != (right <= CONTACT_THRESHOLD_N)
+            for left, right in zip(self._left_force_n, self._right_force_n, strict=True)
+        )
+        bilateral_below = sum(
+            left <= CONTACT_THRESHOLD_N and right <= CONTACT_THRESHOLD_N
+            for left, right in zip(self._left_force_n, self._right_force_n, strict=True)
+        )
 
         def force_summary(values: list[float]) -> dict:
             if not values:
@@ -183,6 +193,19 @@ class EpisodeMetrics:
                 "left": force_summary(self._left_force_n),
                 "right": force_summary(self._right_force_n),
                 "both_zero_fraction": both_zero / force_samples if force_samples else None,
+                "contact_threshold_n": CONTACT_THRESHOLD_N,
+                "left_below_threshold_fraction": (
+                    left_below / force_samples if force_samples else None
+                ),
+                "right_below_threshold_fraction": (
+                    right_below / force_samples if force_samples else None
+                ),
+                "exactly_one_below_threshold_fraction": (
+                    unilateral_below / force_samples if force_samples else None
+                ),
+                "both_below_threshold_fraction": (
+                    bilateral_below / force_samples if force_samples else None
+                ),
             },
             "phase_history": policy.phase_history,
             "mujoco_warning_count": warning_count,

@@ -1,0 +1,8 @@
+{
+  "schema": "shakebench_spike.stage2b.not_run.v1",
+  "stage": "B2-5",
+  "parameter": "cube_table_solref_timeconst_s",
+  "planned_values": [0.0006, 0.0012],
+  "status": "not_run",
+  "reason": "B2-2 failed first: 3 N was not on the required grip-force success-rate plateau. Protocol requires returning to Stage A before later sensitivity rows."
+}

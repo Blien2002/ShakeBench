@@ -1,0 +1,9 @@
+{
+  "schema": "shakebench_spike.stage2b.not_run.v1",
+  "stage": "B2-6",
+  "parameter": "move_action_gain",
+  "planned_values": [4.0, 1.0],
+  "status": "not_run",
+  "diagnostic_only_not_in_gate_2": true,
+  "reason": "B2-2 failed first: 3 N was not on the required grip-force success-rate plateau. Protocol requires returning to Stage A before later sensitivity rows."
+}

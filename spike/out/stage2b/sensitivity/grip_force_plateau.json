@@ -1,0 +1,66 @@
+{
+  "adjacent_success_rate_deltas": {
+    "vs_1p5_percentage_points": 100.0,
+    "vs_6p0_percentage_points": 0.0
+  },
+  "created_utc": "2026-08-22T02:45:56.817849+00:00",
+  "curve": [
+    {
+      "episode_count": 20,
+      "failure_reason_histogram": {
+        "descend_contact_timeout": 20
+      },
+      "force_limit_n_per_finger": 1.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.0,
+        "median": 0.0,
+        "p90": 0.0
+      },
+      "success_count": 0,
+      "success_rate": 0.0
+    },
+    {
+      "episode_count": 20,
+      "failure_reason_histogram": {
+        "descend_contact_timeout": 20
+      },
+      "force_limit_n_per_finger": 1.5,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.0,
+        "median": 0.0,
+        "p90": 0.0
+      },
+      "success_count": 0,
+      "success_rate": 0.0
+    },
+    {
+      "episode_count": 20,
+      "failure_reason_histogram": {},
+      "force_limit_n_per_finger": 3.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.0037984172842572407,
+        "median": 0.0024018805087020322,
+        "p90": 0.003262433827839038
+      },
+      "success_count": 20,
+      "success_rate": 1.0
+    },
+    {
+      "episode_count": 20,
+      "failure_reason_histogram": {},
+      "force_limit_n_per_finger": 6.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.0034429964167273746,
+        "median": 0.0021829329157844503,
+        "p90": 0.0029990495973852456
+      },
+      "success_count": 20,
+      "success_rate": 1.0
+    }
+  ],
+  "force_derivation_scope": "mg/(2*mu)*1.95 covers only vertical gravity-plus-inertial load; lateral inertia and moment from grasp-point eccentricity are omitted, so 0.5293 N/finger is a lower bound, not a complete requirement.",
+  "plateau_criterion": "absolute SR difference from both adjacent points is <5 percentage points",
+  "schema": "shakebench_spike.stage2b.grip_force_plateau.v1",
+  "seed_selection": "all 20 seeds because the B1 gamma=0.5 failure set is empty",
+  "three_newton_on_platform": false
+}

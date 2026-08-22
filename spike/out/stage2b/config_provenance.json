@@ -1,0 +1,37 @@
+{
+  "schema": "shakebench_spike.stage2b.config_provenance.v1",
+  "stage": "B0",
+  "repository_baseline_commit": "0c38ca0927f7043255d8c0c88f692ace4d4413e0",
+  "dirty_change": {
+    "file": "src/shakebench/config.py",
+    "committed_value_m": 0.0003,
+    "working_tree_value_before_disposition_m": 0.0009,
+    "first_observed_file_mtime_local": "2026-08-21T15:16:44.186871276+08:00",
+    "intent_in_working_tree_comment": "Target approximately 1.8 N per centered flat pad and roughly 2x the static vertical-load requirement at mu=1.5.",
+    "corresponding_formal_artifact_found": false,
+    "disposition": "reverted_to_committed_value",
+    "rationale": "The 0.9 mm tuning was uncommitted and lacked a corresponding formal artifact. Restoring 0.3 mm removes source ambiguity without adopting an unvalidated main-repository design change. Stage 2B rollout code remains isolated under spike/."
+  },
+  "round5_provenance": {
+    "artifact_glob": "out/round5*.json",
+    "artifact_count": 22,
+    "embedded_field": "controller_motion_limits.gripper_contact_preload_m",
+    "value_counts_m": {
+      "0.0003": 21,
+      "0.0015": 1
+    },
+    "non_default_artifacts": [
+      {
+        "file": "out/round5_official_grasp_probe_preload15_seed17.json",
+        "value_m": 0.0015,
+        "classification": "explicit_preload_1.5_mm_diagnostic_probe"
+      }
+    ],
+    "conclusion": "All 21 Round-5 official, baseline, settle, smoke, and Pareto artifacts used 0.3 mm. The sole 1.5 mm result is explicitly named and documented as a diagnostic preload probe. No Round-5 artifact used 0.9 mm."
+  },
+  "post_disposition": {
+    "src_shakebench_config_worktree_diff_present": false,
+    "effective_default_preload_m": 0.0003,
+    "main_repository_numeric_design_changed_by_stage2b": false
+  }
+}

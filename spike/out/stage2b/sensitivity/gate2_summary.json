@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-08-22T02:45:56.817982+00:00",
+  "grip_force_three_newton_on_platform": false,
+  "not_run_due_to_force_platform_failure": [
+    "osc_kp",
+    "physics_timestep_s",
+    "cube_table_solref_timeconst_s",
+    "move_action_gain"
+  ],
+  "passed": false,
+  "regular_parameter_passes": {
+    "pad_solref_dampratio": true
+  },
+  "schema": "shakebench_spike.stage2b.gate2.v1",
+  "stop_reason": "3 N is not on a success-rate plateau relative to both adjacent force points; Stage 2B protocol requires returning to Stage A."
+}

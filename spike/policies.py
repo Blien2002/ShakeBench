@@ -31,6 +31,7 @@ class ReactiveConfig:
     grasp_settle_s: float = 0.30
     contact_loss_timeout_s: float = 0.20
     transfer_hold_s: float = 4.0
+    move_action_gain: float = 4.0
 
     @property
     def dt(self) -> float:
@@ -147,7 +148,7 @@ class ReactiveScriptedPolicy:
         # Its achieved-frame goal is compliant and realizes about one quarter
         # of a small requested step here, so this gain restores the authored
         # Cartesian rate while the feedback loop still clips at the target.
-        return np.clip(4.0 * delta / 0.05, -1.0, 1.0)
+        return np.clip(self.config.move_action_gain * delta / 0.05, -1.0, 1.0)
 
     def _finger_guard_triggered(self) -> bool:
         object_z = float(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id("cube_main")][2])

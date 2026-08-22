@@ -1,0 +1,446 @@
+{
+  "created_utc": "2026-08-22T02:31:22.826048+00:00",
+  "excluded_from_b1_b2_and_c_gates": true,
+  "phase_offset_rad": 1.5707963267948966,
+  "policy_rollouts_run": false,
+  "rows": [
+    {
+      "base_frame_ee_wobble_m": 0.00035755767818309724,
+      "base_frame_table_motion_m": 0.0008065631350227174,
+      "base_weld_tracking_error_peak_m": 2.3643580498468593e-05,
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.15,
+        "gamma_target": 0.15,
+        "level_scale": 0.4067019168591669,
+        "peak_deck_displacement_m": 0.0006479176758694965,
+        "peak_deck_velocity_m_s": 0.028750310694800905,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.49820747620583306,
+          "ry": 0.4528541624178961,
+          "rz": 0.24453047926904614,
+          "tx": 0.5497411852422759,
+          "ty": 0.44559328771667606,
+          "tz": 1.3093192892869336
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.17572540552937618,
+          "ry": 0.17933841650403926,
+          "rz": 0.09299015855637166,
+          "tx": 0.18444527799127683,
+          "ty": 0.1427000127758545,
+          "tz": 0.39797002623850586
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0004997414867514502,
+          "ry": 0.00029003914233197766,
+          "rz": 0.0003856059565949842,
+          "tx": 0.000198121623198886,
+          "ty": 8.765199712800693e-05,
+          "tz": 0.00016134114169065532
+        },
+        "workpiece_az_peak_m_s2": 1.4709975,
+        "workpiece_az_rms_m_s2": 0.41466248349887025
+      },
+      "diagnostic_frequency_hz": 200,
+      "gamma": 0.15,
+      "measurement_window_s": 6.0,
+      "mocap_body_count": 4,
+      "mujoco_warning_count": 0,
+      "physics_frequency_hz": 5000,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20,
+      "sample_count": 1200,
+      "seed": 17,
+      "table_calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.15,
+        "gamma_target": 0.15,
+        "level_scale": 0.4067019168591669,
+        "peak_deck_displacement_m": 0.0006479176758694965,
+        "peak_deck_velocity_m_s": 0.028750310694800905,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.49820747620583306,
+          "ry": 0.4528541624178961,
+          "rz": 0.24453047926904614,
+          "tx": 0.5497411852422759,
+          "ty": 0.44559328771667606,
+          "tz": 1.3093192892869336
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.17572540552937618,
+          "ry": 0.17933841650403926,
+          "rz": 0.09299015855637166,
+          "tx": 0.18444527799127683,
+          "ty": 0.1427000127758545,
+          "tz": 0.39797002623850586
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0004997414867514502,
+          "ry": 0.00029003914233197766,
+          "rz": 0.0003856059565949842,
+          "tx": 0.000198121623198886,
+          "ty": 8.765199712800693e-05,
+          "tz": 0.00016134114169065532
+        },
+        "workpiece_az_peak_m_s2": 1.4709975,
+        "workpiece_az_rms_m_s2": 0.41466248349887025
+      },
+      "table_frame_object_slip_m": 2.470009551097155e-07,
+      "table_weld_tracking_error_peak_m": 2.410150895069963e-05
+    },
+    {
+      "base_frame_ee_wobble_m": 0.0007687765937322613,
+      "base_frame_table_motion_m": 0.0016129708516077362,
+      "base_weld_tracking_error_peak_m": 4.7507755697788225e-05,
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.3,
+        "gamma_target": 0.3,
+        "level_scale": 0.8134038337183338,
+        "peak_deck_displacement_m": 0.001295835351738993,
+        "peak_deck_velocity_m_s": 0.05750062138960181,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.9964149524116661,
+          "ry": 0.9057083248357922,
+          "rz": 0.4890609585380923,
+          "tx": 1.0994823704845518,
+          "ty": 0.8911865754333521,
+          "tz": 2.6186385785738673
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.35145081105875237,
+          "ry": 0.3586768330080785,
+          "rz": 0.18598031711274332,
+          "tx": 0.36889055598255366,
+          "ty": 0.285400025551709,
+          "tz": 0.7959400524770117
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0009994829735029004,
+          "ry": 0.0005800782846639553,
+          "rz": 0.0007712119131899684,
+          "tx": 0.000396243246397772,
+          "ty": 0.00017530399425601386,
+          "tz": 0.00032268228338131063
+        },
+        "workpiece_az_peak_m_s2": 2.941995,
+        "workpiece_az_rms_m_s2": 0.8293249669977405
+      },
+      "diagnostic_frequency_hz": 200,
+      "gamma": 0.3,
+      "measurement_window_s": 6.0,
+      "mocap_body_count": 4,
+      "mujoco_warning_count": 0,
+      "physics_frequency_hz": 5000,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20,
+      "sample_count": 1200,
+      "seed": 17,
+      "table_calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.3,
+        "gamma_target": 0.3,
+        "level_scale": 0.8134038337183338,
+        "peak_deck_displacement_m": 0.001295835351738993,
+        "peak_deck_velocity_m_s": 0.05750062138960181,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.9964149524116661,
+          "ry": 0.9057083248357922,
+          "rz": 0.4890609585380923,
+          "tx": 1.0994823704845518,
+          "ty": 0.8911865754333521,
+          "tz": 2.6186385785738673
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.35145081105875237,
+          "ry": 0.3586768330080785,
+          "rz": 0.18598031711274332,
+          "tx": 0.36889055598255366,
+          "ty": 0.285400025551709,
+          "tz": 0.7959400524770117
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0009994829735029004,
+          "ry": 0.0005800782846639553,
+          "rz": 0.0007712119131899684,
+          "tx": 0.000396243246397772,
+          "ty": 0.00017530399425601386,
+          "tz": 0.00032268228338131063
+        },
+        "workpiece_az_peak_m_s2": 2.941995,
+        "workpiece_az_rms_m_s2": 0.8293249669977405
+      },
+      "table_frame_object_slip_m": 2.469995936570178e-07,
+      "table_weld_tracking_error_peak_m": 4.803345909593579e-05
+    },
+    {
+      "base_frame_ee_wobble_m": 0.0012752904950023502,
+      "base_frame_table_motion_m": 0.0026883034400527607,
+      "base_weld_tracking_error_peak_m": 7.945638682259649e-05,
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.5,
+        "gamma_target": 0.5,
+        "level_scale": 1.355673056197223,
+        "peak_deck_displacement_m": 0.002159725586231655,
+        "peak_deck_velocity_m_s": 0.09583436898266968,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 1.6606915873527766,
+          "ry": 1.5095138747263206,
+          "rz": 0.8151015975634872,
+          "tx": 1.832470617474253,
+          "ty": 1.485310959055587,
+          "tz": 4.364397630956445
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.5857513517645873,
+          "ry": 0.5977947216801308,
+          "rz": 0.30996719518790555,
+          "tx": 0.6148175933042561,
+          "ty": 0.4756667092528484,
+          "tz": 1.3265667541283528
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0016658049558381676,
+          "ry": 0.0009667971411065922,
+          "rz": 0.0012853531886499472,
+          "tx": 0.0006604054106629533,
+          "ty": 0.00029217332376002314,
+          "tz": 0.0005378038056355177
+        },
+        "workpiece_az_peak_m_s2": 4.903325,
+        "workpiece_az_rms_m_s2": 1.3822082783295675
+      },
+      "diagnostic_frequency_hz": 200,
+      "gamma": 0.5,
+      "measurement_window_s": 6.0,
+      "mocap_body_count": 4,
+      "mujoco_warning_count": 0,
+      "physics_frequency_hz": 5000,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20,
+      "sample_count": 1200,
+      "seed": 17,
+      "table_calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.5,
+        "gamma_target": 0.5,
+        "level_scale": 1.355673056197223,
+        "peak_deck_displacement_m": 0.002159725586231655,
+        "peak_deck_velocity_m_s": 0.09583436898266968,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 1.6606915873527766,
+          "ry": 1.5095138747263206,
+          "rz": 0.8151015975634872,
+          "tx": 1.832470617474253,
+          "ty": 1.485310959055587,
+          "tz": 4.364397630956445
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.5857513517645873,
+          "ry": 0.5977947216801308,
+          "rz": 0.30996719518790555,
+          "tx": 0.6148175933042561,
+          "ty": 0.4756667092528484,
+          "tz": 1.3265667541283528
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0016658049558381676,
+          "ry": 0.0009667971411065922,
+          "rz": 0.0012853531886499472,
+          "tx": 0.0006604054106629533,
+          "ty": 0.00029217332376002314,
+          "tz": 0.0005378038056355177
+        },
+        "workpiece_az_peak_m_s2": 4.903325,
+        "workpiece_az_rms_m_s2": 1.3822082783295675
+      },
+      "table_frame_object_slip_m": 2.7468280580070494e-07,
+      "table_weld_tracking_error_peak_m": 7.993157693995313e-05
+    },
+    {
+      "base_frame_ee_wobble_m": 0.0019018988799303996,
+      "base_frame_table_motion_m": 0.004032435319164091,
+      "base_weld_tracking_error_peak_m": 0.0001192946082830798,
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.7500000000000001,
+        "gamma_target": 0.75,
+        "level_scale": 2.033509584295835,
+        "peak_deck_displacement_m": 0.003239588379347483,
+        "peak_deck_velocity_m_s": 0.14375155347400456,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 2.491037381029166,
+          "ry": 2.2642708120894808,
+          "rz": 1.222652396345231,
+          "tx": 2.7487059262113807,
+          "ty": 2.227966438583381,
+          "tz": 6.54659644643467
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.878627027646881,
+          "ry": 0.8966920825201963,
+          "rz": 0.46495079278185836,
+          "tx": 0.9222263899563844,
+          "ty": 0.7135000638792727,
+          "tz": 1.98985013119253
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0024987074337572517,
+          "ry": 0.0014501957116598884,
+          "rz": 0.0019280297829749212,
+          "tx": 0.0009906081159944305,
+          "ty": 0.00043825998564003474,
+          "tz": 0.0008067057084532768
+        },
+        "workpiece_az_peak_m_s2": 7.354987500000001,
+        "workpiece_az_rms_m_s2": 2.073312417494352
+      },
+      "diagnostic_frequency_hz": 200,
+      "gamma": 0.75,
+      "measurement_window_s": 6.0,
+      "mocap_body_count": 4,
+      "mujoco_warning_count": 0,
+      "physics_frequency_hz": 5000,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20,
+      "sample_count": 1200,
+      "seed": 17,
+      "table_calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.7500000000000001,
+        "gamma_target": 0.75,
+        "level_scale": 2.033509584295835,
+        "peak_deck_displacement_m": 0.003239588379347483,
+        "peak_deck_velocity_m_s": 0.14375155347400456,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 2.491037381029166,
+          "ry": 2.2642708120894808,
+          "rz": 1.222652396345231,
+          "tx": 2.7487059262113807,
+          "ty": 2.227966438583381,
+          "tz": 6.54659644643467
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.878627027646881,
+          "ry": 0.8966920825201963,
+          "rz": 0.46495079278185836,
+          "tx": 0.9222263899563844,
+          "ty": 0.7135000638792727,
+          "tz": 1.98985013119253
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0024987074337572517,
+          "ry": 0.0014501957116598884,
+          "rz": 0.0019280297829749212,
+          "tx": 0.0009906081159944305,
+          "ty": 0.00043825998564003474,
+          "tz": 0.0008067057084532768
+        },
+        "workpiece_az_peak_m_s2": 7.354987500000001,
+        "workpiece_az_rms_m_s2": 2.073312417494352
+      },
+      "table_frame_object_slip_m": 3.445373608502828e-07,
+      "table_weld_tracking_error_peak_m": 0.00011976093095700588
+    },
+    {
+      "base_frame_ee_wobble_m": 0.002380094509606574,
+      "base_frame_table_motion_m": 0.005107806902832344,
+      "base_weld_tracking_error_peak_m": 0.000151071030907677,
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.95,
+        "gamma_target": 0.95,
+        "level_scale": 2.5757788067747236,
+        "peak_deck_displacement_m": 0.004103478613840144,
+        "peak_deck_velocity_m_s": 0.18208530106707238,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 3.155314015970276,
+          "ry": 2.8680763619800085,
+          "rz": 1.5486930353706254,
+          "tx": 3.481694173201081,
+          "ty": 2.822090822205616,
+          "tz": 8.292355498817246
+        },
+        "per_axis_accel_rms": {
+          "rx": 1.1129275683527156,
+          "ry": 1.1358099711922485,
+          "rz": 0.5889376708570204,
+          "tx": 1.1681534272780865,
+          "ty": 0.9037667475804119,
+          "tz": 2.5204768328438703
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.003165029416092518,
+          "ry": 0.0018369145681025251,
+          "rz": 0.0024421710584348996,
+          "tx": 0.0012547702802596114,
+          "ty": 0.000555129315144044,
+          "tz": 0.0010218272307074836
+        },
+        "workpiece_az_peak_m_s2": 9.316317499999998,
+        "workpiece_az_rms_m_s2": 2.6261957288261786
+      },
+      "diagnostic_frequency_hz": 200,
+      "gamma": 0.95,
+      "measurement_window_s": 6.0,
+      "mocap_body_count": 4,
+      "mujoco_warning_count": 0,
+      "physics_frequency_hz": 5000,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20,
+      "sample_count": 1200,
+      "seed": 17,
+      "table_calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.95,
+        "gamma_target": 0.95,
+        "level_scale": 2.5757788067747236,
+        "peak_deck_displacement_m": 0.004103478613840144,
+        "peak_deck_velocity_m_s": 0.18208530106707238,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 3.155314015970276,
+          "ry": 2.8680763619800085,
+          "rz": 1.5486930353706254,
+          "tx": 3.481694173201081,
+          "ty": 2.822090822205616,
+          "tz": 8.292355498817246
+        },
+        "per_axis_accel_rms": {
+          "rx": 1.1129275683527156,
+          "ry": 1.1358099711922485,
+          "rz": 0.5889376708570204,
+          "tx": 1.1681534272780865,
+          "ty": 0.9037667475804119,
+          "tz": 2.5204768328438703
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.003165029416092518,
+          "ry": 0.0018369145681025251,
+          "rz": 0.0024421710584348996,
+          "tx": 0.0012547702802596114,
+          "ty": 0.000555129315144044,
+          "tz": 0.0010218272307074836
+        },
+        "workpiece_az_peak_m_s2": 9.316317499999998,
+        "workpiece_az_rms_m_s2": 2.6261957288261786
+      },
+      "table_frame_object_slip_m": 7.004457563012014e-07,
+      "table_weld_tracking_error_peak_m": 0.0001515301663485469
+    }
+  ],
+  "schema": "shakebench_spike.stage2b.decoupled_instrument.v1",
+  "stage": "B3",
+  "structural_change": "The Panda base remains on deck; table is attached to an independent mocap+weld support with equal spectral amplitudes and a uniform pi/2 phase offset on every spectral line."
+}

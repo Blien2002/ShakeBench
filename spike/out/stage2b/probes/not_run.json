@@ -1,0 +1,6 @@
+{
+  "schema": "shakebench_spike.stage2b.not_run.v1",
+  "stage": "D",
+  "status": "not_run",
+  "reason": "Stage C was not permitted, so its non-discrimination trigger was never evaluated. D1 and D2 were therefore not triggered."
+}

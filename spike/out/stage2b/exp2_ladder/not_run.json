@@ -1,0 +1,7 @@
+{
+  "schema": "shakebench_spike.stage2b.not_run.v1",
+  "stage": "C",
+  "status": "not_run",
+  "planned_episode_count": 120,
+  "reason": "Gate 2 failed because 3 N was not on the required grip-force success-rate plateau. Stage C is forbidden until both gates pass."
+}

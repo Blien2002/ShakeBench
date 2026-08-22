@@ -30,8 +30,9 @@ from shakebench.vibration import spectral as sp  # noqa: E402
 class NumpyVibration:
     """Analytic per-physics-step evaluator of the authored six-axis motion."""
 
-    def __init__(self, config: VibrationConfig):
+    def __init__(self, config: VibrationConfig, phase_offset_rad: float = 0.0):
         self.config = config
+        self.phase_offset_rad = phase_offset_rad
         self._lines: dict[int, list[tuple[np.ndarray, np.ndarray, np.ndarray]]] = {}
         for axis_index, axis in enumerate(config.active_axes):
             coordinate = AXES.index(axis)
@@ -53,7 +54,7 @@ class NumpyVibration:
         spectral_time = time_s + self.config.t0
         for coordinate, bands in self._lines.items():
             for accel_amp, omega, phase in bands:
-                angle = spectral_time * omega + phase
+                angle = spectral_time * omega + phase + self.phase_offset_rad
                 q[coordinate] += np.sum(accel_amp / omega**2 * np.sin(angle))
                 qd[coordinate] += np.sum(accel_amp / omega * np.cos(angle))
                 qdd[coordinate] -= np.sum(accel_amp * np.sin(angle))
@@ -73,6 +74,7 @@ def calibrated_vibration(
     physics_hz: int,
     episode_s: float,
     t0: float = 0.0,
+    phase_offset_rad: float = 0.0,
 ) -> tuple[NumpyVibration, dict]:
     """Create a calibrated VibrationConfig without touching Isaac modules."""
 
@@ -86,7 +88,7 @@ def calibrated_vibration(
     )
     level_scale, report = sp.calibrate_level_scale(config, physics_hz, episode_s)
     config = dataclasses.replace(config, level_scale=level_scale)
-    return NumpyVibration(config), report
+    return NumpyVibration(config, phase_offset_rad=phase_offset_rad), report
 
 
 def _smoothstep5(time_s: float, ramp_s: float) -> tuple[float, float, float]:
@@ -99,4 +101,3 @@ def _smoothstep5(time_s: float, ramp_s: float) -> tuple[float, float, float]:
     first = (30.0 * u**2 - 60.0 * u**3 + 30.0 * u**4) / ramp_s
     second = (60.0 * u - 180.0 * u**2 + 120.0 * u**3) / ramp_s**2
     return value, first, second
-
