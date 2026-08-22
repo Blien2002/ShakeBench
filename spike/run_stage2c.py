@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import asdict
 from datetime import datetime, timezone
 import json
@@ -26,6 +26,7 @@ from run_stage2b import (
     _distribution,
     _vibration,
     _warning_count,
+    airborne_summary,
     run_condition,
     run_reactive_episode,
     summarize_condition,
@@ -150,12 +151,17 @@ def run_frozen_episode(
         switch_step = _force_switch_event(tape)["policy_step_index"]
         decimation = physics_hz // condition.diagnostic_frequency_hz
         physics_steps = 0
+        airborne_phase_counts: dict[str, list[int]] = defaultdict(lambda: [0, 0])
 
         def sample(stepped_env) -> None:
             nonlocal physics_steps
             physics_steps += 1
             if physics_steps % decimation == 0:
-                metrics.update(stepped_env, state, contact_snapshot(stepped_env))
+                contacts = contact_snapshot(stepped_env)
+                counts = airborne_phase_counts[state.phase]
+                counts[0] += 1
+                counts[1] += int(contacts.cube_table_n == 0.0)
+                metrics.update(stepped_env, state, contacts)
 
         env.physics_step_callback = sample
         contact_loss_time_s = 0.0
@@ -238,6 +244,10 @@ def run_frozen_episode(
                 "recorded_force_switch_policy_step_index": switch_step,
                 "gripper_force_switch_history": env.gripper_force_switch_history,
                 "gripper_force_validation_history": env.gripper_force_validation_history,
+                "cube_table_airborne_200hz": airborne_summary(
+                    airborne_phase_counts,
+                    diagnostic_frequency_hz=condition.diagnostic_frequency_hz,
+                ),
                 "calibration": calibration,
             }
         )

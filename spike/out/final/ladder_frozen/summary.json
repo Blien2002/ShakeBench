@@ -1,0 +1,1166 @@
+{
+  "action_tape": {
+    "force_switch": "recorded policy-step index replayed open-loop",
+    "policy_frequency_hz": 20,
+    "source": "Stage2C Gamma=0 reactive policy.command() outputs, seeds 0-9"
+  },
+  "created_utc": "2026-08-22T05:57:00.809696+00:00",
+  "gammas": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    0.75,
+    0.95,
+    1.2,
+    1.5
+  ],
+  "rows": {
+    "0.0": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.02103825136612022,
+              "airborne_sample_count": 77,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.48450704225352115,
+              "airborne_sample_count": 344,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 0.9986559139784946,
+              "airborne_sample_count": 3715,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.658,
+              "airborne_sample_count": 987,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.02375,
+            "median": 0.00778030303030303,
+            "p90": 0.021742088607594936
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.009661229611041405,
+            "airborne_sample_count": 77,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0017317524990077765,
+          "median": 0.0016116474967800458,
+          "p90": 0.0016932754533703508
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.000989336468024616,
+          "median": 6.241772693720048e-05,
+          "p90": 0.0006430265598653683
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "available": false,
+          "reason": "legacy pre-W2 episode; airborne diagnostic was not recorded"
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0017317524990077765,
+          "median": 0.0016116474967800458,
+          "p90": 0.0016932754533703508
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0009893364680242831,
+          "median": 6.241772693743133e-05,
+          "p90": 0.0006430265598650816
+        }
+      }
+    },
+    "0.15": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.017486338797814208,
+              "airborne_sample_count": 64,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8436619718309859,
+              "airborne_sample_count": 599,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 0.999731182795699,
+              "airborne_sample_count": 3719,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.6766666666666666,
+              "airborne_sample_count": 1015,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.02375,
+            "median": 0.005829124579124579,
+            "p90": 0.020602848101265822
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.008030112923462986,
+            "airborne_sample_count": 64,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.001686690856517126,
+          "median": 0.001305714176013439,
+          "p90": 0.0015600073555547837
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0006000150004222477,
+          "median": 0.00011983229870633376,
+          "p90": 0.0004903759174067447
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.0016483516483516484,
+              "airborne_sample_count": 6,
+              "sample_count": 3640
+            },
+            "finished": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.725,
+              "airborne_sample_count": 522,
+              "sample_count": 720
+            },
+            "lift": {
+              "airborne_fraction": 0.9947058823529412,
+              "airborne_sample_count": 1691,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3730,
+              "sample_count": 3730
+            },
+            "release": {
+              "airborne_fraction": 0.7226666666666667,
+              "airborne_sample_count": 1084,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.007692307692307693,
+            "median": 0.0,
+            "p90": 0.0007692307692307665
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0007643312101910828,
+            "airborne_sample_count": 6,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7850
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0019857032130653745,
+          "median": 0.0015619439657463927,
+          "p90": 0.0017779840415119395
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0004126050688125999,
+          "median": 0.00011910799065005756,
+          "p90": 0.0004099758566646056
+        }
+      }
+    },
+    "0.3": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.015300546448087432,
+              "airborne_sample_count": 56,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8845070422535212,
+              "airborne_sample_count": 628,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.6893333333333334,
+              "airborne_sample_count": 1034,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.021518987341772152,
+            "median": 0.005601851851851852,
+            "p90": 0.019026898734177213
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.007026348808030113,
+            "airborne_sample_count": 56,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.00262740560944714,
+          "median": 0.0016926075405372027,
+          "p90": 0.002469451471863439
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0007592405059129477,
+          "median": 0.00022674542380638602,
+          "p90": 0.0005615452781822038
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2720
+            },
+            "descend": {
+              "airborne_fraction": 0.0002747252747252747,
+              "airborne_sample_count": 1,
+              "sample_count": 3640
+            },
+            "finished": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.7338028169014085,
+              "airborne_sample_count": 521,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 0.9982456140350877,
+              "airborne_sample_count": 1707,
+              "sample_count": 1710
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3730,
+              "sample_count": 3730
+            },
+            "release": {
+              "airborne_fraction": 0.7153333333333334,
+              "airborne_sample_count": 1073,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.0011494252873563218,
+            "median": 0.0,
+            "p90": 0.00011494252873563177
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0001272264631043257,
+            "airborne_sample_count": 1,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7860
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.002521953892735954,
+          "median": 0.0017945637951273393,
+          "p90": 0.0024324406016518418
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0004694539818485658,
+          "median": 0.00023470517945611133,
+          "p90": 0.000411762794183075
+        }
+      }
+    },
+    "0.5": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.013387978142076503,
+              "airborne_sample_count": 49,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8887323943661972,
+              "airborne_sample_count": 631,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.7086666666666667,
+              "airborne_sample_count": 1063,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.020253164556962026,
+            "median": 0.004518518518518519,
+            "p90": 0.0166503164556962
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.006148055207026349,
+            "airborne_sample_count": 49,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0033287381276008994,
+          "median": 0.0023894909589879127,
+          "p90": 0.003108697128487516
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0011390850869419176,
+          "median": 0.00021690214221839151,
+          "p90": 0.0010611931364468785
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "available": false,
+          "reason": "legacy pre-W2 episode; airborne diagnostic was not recorded"
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.003798289675601922,
+          "median": 0.002219065805059759,
+          "p90": 0.002897878813283185
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.002244714990430869,
+          "median": 0.000636147358827579,
+          "p90": 0.0015287721241503199
+        }
+      }
+    },
+    "0.75": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.013387978142076503,
+              "airborne_sample_count": 49,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8788732394366198,
+              "airborne_sample_count": 624,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.722,
+              "airborne_sample_count": 1083,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.021518987341772152,
+            "median": 0.002484567901234568,
+            "p90": 0.019026898734177213
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.006148055207026349,
+            "airborne_sample_count": 49,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.00440918084514303,
+          "median": 0.0032304220304421438,
+          "p90": 0.00427389655353309
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0019751749474173565,
+          "median": 0.0002309660382322678,
+          "p90": 0.001879840986039598
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2770
+            },
+            "descend": {
+              "airborne_fraction": 0.0036312849162011174,
+              "airborne_sample_count": 13,
+              "sample_count": 3580
+            },
+            "finished": {
+              "airborne_fraction": 0.01,
+              "airborne_sample_count": 1,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.7177215189873418,
+              "airborne_sample_count": 567,
+              "sample_count": 790
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1720,
+              "sample_count": 1720
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3770,
+              "sample_count": 3770
+            },
+            "release": {
+              "airborne_fraction": 0.588,
+              "airborne_sample_count": 882,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.009333333333333334,
+            "median": 0.0,
+            "p90": 0.00507126436781609
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0016560509554140127,
+            "airborne_sample_count": 13,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7850
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.005544932910093495,
+          "median": 0.003257835113975989,
+          "p90": 0.005383012202023009
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0017366110331277563,
+          "median": 0.0007954914516447855,
+          "p90": 0.0016256935080767006
+        }
+      }
+    },
+    "0.95": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.011202185792349727,
+              "airborne_sample_count": 41,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8507042253521127,
+              "airborne_sample_count": 604,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.7173333333333334,
+              "airborne_sample_count": 1076,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.01625,
+            "median": 0.0024250440917107582,
+            "p90": 0.014825
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0051442910915934755,
+            "airborne_sample_count": 41,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.006219802059723513,
+          "median": 0.0037650390537483447,
+          "p90": 0.005130455364328648
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0023005436266009802,
+          "median": 0.00044920622109328827,
+          "p90": 0.0014016467985952452
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "available": false,
+          "reason": "legacy pre-W2 episode; airborne diagnostic was not recorded"
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.008808975480661955,
+          "median": 0.004127657625866254,
+          "p90": 0.007993414691970903
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.002667650691534745,
+          "median": 0.0011659818768625099,
+          "p90": 0.0016318572588179341
+        }
+      }
+    },
+    "1.2": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.013653136531365314,
+              "airborne_sample_count": 37,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.014754098360655738,
+              "airborne_sample_count": 54,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.7690140845070422,
+              "airborne_sample_count": 546,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1700,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.7173333333333334,
+              "airborne_sample_count": 1076,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.001875,
+              "airborne_sample_count": 3,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.02142857142857143,
+            "median": 0.010839506172839505,
+            "p90": 0.021267857142857144
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.011794228356336261,
+            "airborne_sample_count": 94,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.007713229570279997,
+          "median": 0.004473215615744485,
+          "p90": 0.0062581364352059
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.002531040735861606,
+          "median": 0.0013632942937917545,
+          "p90": 0.0022696712494967206
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.013028169014084507,
+              "airborne_sample_count": 37,
+              "sample_count": 2840
+            },
+            "descend": {
+              "airborne_fraction": 0.004,
+              "airborne_sample_count": 14,
+              "sample_count": 3500
+            },
+            "finished": {
+              "airborne_fraction": 0.19,
+              "airborne_sample_count": 19,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.6111111111111112,
+              "airborne_sample_count": 495,
+              "sample_count": 810
+            },
+            "lift": {
+              "airborne_fraction": 0.9930635838150289,
+              "airborne_sample_count": 1718,
+              "sample_count": 1730
+            },
+            "place": {
+              "airborne_fraction": 0.999731182795699,
+              "airborne_sample_count": 3719,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.572,
+              "airborne_sample_count": 858,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.002,
+              "airborne_sample_count": 3,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10120,
+              "sample_count": 10120
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.02077922077922078,
+            "median": 0.0031645569620253164,
+            "p90": 0.020511657017681116
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0068877551020408165,
+            "airborne_sample_count": 54,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7840
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.009361628545304881,
+          "median": 0.0052494945979436654,
+          "p90": 0.007494978134499657
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.004347171851106303,
+          "median": 0.0017206622527941265,
+          "p90": 0.002922814320471025
+        }
+      }
+    },
+    "1.5": {
+      "frozen_replay": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.07011070110701106,
+              "airborne_sample_count": 190,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.04453551912568306,
+              "airborne_sample_count": 163,
+              "sample_count": 3660
+            },
+            "grasp": {
+              "airborne_fraction": 0.8140845070422535,
+              "airborne_sample_count": 578,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 0.9988235294117647,
+              "airborne_sample_count": 1698,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3720,
+              "sample_count": 3720
+            },
+            "release": {
+              "airborne_fraction": 0.666,
+              "airborne_sample_count": 999,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.01625,
+              "airborne_sample_count": 26,
+              "sample_count": 1600
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10110,
+              "sample_count": 10110
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.07808219178082192,
+            "median": 0.05130489138927957,
+            "p90": 0.0765582191780822
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.04755332496863237,
+            "airborne_sample_count": 379,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7970
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.009783911489965755,
+          "median": 0.0057524840315047844,
+          "p90": 0.007498309985034775
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.005680645640075944,
+          "median": 0.003222173987471957,
+          "p90": 0.004636716504114046
+        }
+      },
+      "reactive_scripted": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0735191637630662,
+              "airborne_sample_count": 211,
+              "sample_count": 2870
+            },
+            "descend": {
+              "airborne_fraction": 0.029565217391304348,
+              "airborne_sample_count": 102,
+              "sample_count": 3450
+            },
+            "finished": {
+              "airborne_fraction": 0.1,
+              "airborne_sample_count": 10,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.5764705882352941,
+              "airborne_sample_count": 490,
+              "sample_count": 850
+            },
+            "lift": {
+              "airborne_fraction": 0.9867052023121388,
+              "airborne_sample_count": 1707,
+              "sample_count": 1730
+            },
+            "place": {
+              "airborne_fraction": 0.9994736842105263,
+              "airborne_sample_count": 3798,
+              "sample_count": 3800
+            },
+            "release": {
+              "airborne_fraction": 0.616,
+              "airborne_sample_count": 924,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.012,
+              "airborne_sample_count": 18,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10180,
+              "sample_count": 10180
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.07794117647058824,
+            "median": 0.044888888888888895,
+            "p90": 0.07468600953895072
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.04232736572890026,
+            "airborne_sample_count": 331,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7820
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 1
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.010588234964435719,
+          "median": 0.00588367300027349,
+          "p90": 0.009865352465524583
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 9,
+        "success_rate": 0.9,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.006552358875051238,
+          "median": 0.003426757375257673,
+          "p90": 0.004464663992982703
+        }
+      }
+    }
+  },
+  "schema": "shakebench_spike.final.w3.v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ]
+}

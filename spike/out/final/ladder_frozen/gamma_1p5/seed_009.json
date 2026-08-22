@@ -1,0 +1,417 @@
+{
+  "base_frame_table_motion_m": 2.49588070847046e-15,
+  "calibration": {
+    "airborne_fraction": 0.0286625,
+    "gamma_realized": 1.5,
+    "gamma_target": 1.5,
+    "level_scale": 5.029035484449724,
+    "motion_sampler": "shakebench_spectral",
+    "peak_deck_displacement_m": 0.0075480225645064725,
+    "peak_deck_velocity_m_s": 0.3195022977245867,
+    "peak_factor_kappa": 2.8946379738023458,
+    "per_axis_accel_peak_abs": {
+      "rx": 5.354214505543153,
+      "ry": 6.324373654244397,
+      "rz": 3.588075977082285,
+      "tx": 6.86394442096162,
+      "ty": 5.31024745568839,
+      "tz": 13.599344744602513
+    },
+    "per_axis_accel_rms": {
+      "rx": 2.3074259218338673,
+      "ry": 2.336329488647639,
+      "rz": 1.0574549576958145,
+      "tx": 2.4045303776513567,
+      "ty": 1.8478647590935717,
+      "tz": 4.8499522175723015
+    },
+    "per_axis_disp_rms": {
+      "rx": 0.006533046926260105,
+      "ry": 0.003848952822259147,
+      "rz": 0.004410369815555196,
+      "tx": 0.0025346762398015194,
+      "ty": 0.0011357496806682476,
+      "tz": 0.0019633345066637354
+    },
+    "workpiece_az_peak_m_s2": 14.709975,
+    "workpiece_az_rms_m_s2": 5.081801293678613
+  },
+  "condition": {
+    "cube_table_sliding_mu": 1.5,
+    "cube_table_solref_timeconst_s": 0.0006,
+    "diagnostic_frequency_hz": 200,
+    "episode_limit_s": 16.0,
+    "gamma": 1.5,
+    "grip_mode": "force_limited_close",
+    "gripper_force_limit_n": 3.0,
+    "move_action_gain": 4.0,
+    "osc_kp": 150.0,
+    "pad_solref_dampratio": 0.5,
+    "physics_timestep_s": 0.0002,
+    "policy_frequency_hz": 20
+  },
+  "cube_table_airborne_200hz": {
+    "airborne_definition": "cube-table normal force is exactly 0 N",
+    "by_phase": {
+      "approach": {
+        "airborne_fraction": 0.0,
+        "airborne_sample_count": 0,
+        "sample_count": 290
+      },
+      "descend": {
+        "airborne_fraction": 0.07714285714285714,
+        "airborne_sample_count": 27,
+        "sample_count": 350
+      },
+      "grasp": {
+        "airborne_fraction": 0.7285714285714285,
+        "airborne_sample_count": 51,
+        "sample_count": 70
+      },
+      "lift": {
+        "airborne_fraction": 1.0,
+        "airborne_sample_count": 170,
+        "sample_count": 170
+      },
+      "place": {
+        "airborne_fraction": 1.0,
+        "airborne_sample_count": 370,
+        "sample_count": 370
+      },
+      "release": {
+        "airborne_fraction": 0.7866666666666666,
+        "airborne_sample_count": 118,
+        "sample_count": 150
+      },
+      "settle": {
+        "airborne_fraction": 0.0,
+        "airborne_sample_count": 0,
+        "sample_count": 160
+      },
+      "transfer_hold": {
+        "airborne_fraction": 1.0,
+        "airborne_sample_count": 1010,
+        "sample_count": 1010
+      }
+    },
+    "diagnostic_frequency_hz": 200,
+    "pre_latch": {
+      "airborne_fraction": 0.0896551724137931,
+      "airborne_sample_count": 78,
+      "phases": [
+        "settle",
+        "approach",
+        "descend",
+        "grasp"
+      ],
+      "sample_count": 870
+    }
+  },
+  "ee_wobble_base_m": 0.1961000450513283,
+  "environment_variant": "hard_mounted_mu_1p5",
+  "executed_policy_steps": 257,
+  "failure_reason": null,
+  "gamma": 1.5,
+  "grasp_slip_exceeded": false,
+  "gripper_force_switch_history": [
+    {
+      "after": {
+        "gripper0_right_gripper_finger_joint1": {
+          "force_limited": true,
+          "force_range_n": [
+            -3.0,
+            3.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "gripper0_right_gripper_finger_joint2": {
+          "force_limited": true,
+          "force_range_n": [
+            -3.0,
+            3.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "before": {
+        "gripper0_right_gripper_finger_joint1": {
+          "force_limited": true,
+          "force_range_n": [
+            -20.0,
+            20.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "gripper0_right_gripper_finger_joint2": {
+          "force_limited": true,
+          "force_range_n": [
+            -20.0,
+            20.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "event": "gripper_force_limit_switch",
+      "from_limit_n_per_finger": 20.0,
+      "model_step_index": 20000,
+      "policy_step_index": 80,
+      "post_switch_validation": {
+        "actual_force_ranges_n": [
+          [
+            -3.0,
+            3.0
+          ],
+          [
+            -3.0,
+            3.0
+          ]
+        ],
+        "expected_force_range_n": [
+          -3.0,
+          3.0
+        ],
+        "model_step_index": 20000,
+        "passed": true,
+        "phase": "hold",
+        "time_s": 3.9999999999995923
+      },
+      "time_s": 3.9999999999995923,
+      "to_limit_n_per_finger": 3.0,
+      "trigger": "frozen_tape_index"
+    }
+  ],
+  "gripper_force_validation_history": [
+    {
+      "actual_force_ranges_n": [
+        [
+          -20.0,
+          20.0
+        ],
+        [
+          -20.0,
+          20.0
+        ]
+      ],
+      "expected_force_range_n": [
+        -20.0,
+        20.0
+      ],
+      "model_step_index": 0,
+      "passed": true,
+      "phase": "acquisition",
+      "time_s": 0.0
+    },
+    {
+      "actual_force_ranges_n": [
+        [
+          -3.0,
+          3.0
+        ],
+        [
+          -3.0,
+          3.0
+        ]
+      ],
+      "expected_force_range_n": [
+        -3.0,
+        3.0
+      ],
+      "model_step_index": 20000,
+      "passed": true,
+      "phase": "hold",
+      "time_s": 3.9999999999995923
+    }
+  ],
+  "max_grasp_slip_m": 0.0062443277787346575,
+  "max_object_lift_m": 0.12998353780458644,
+  "max_penetration_m": 0.005816521503499067,
+  "mujoco_warning_count": 0,
+  "obj_slip_on_table_m": 0.002937778601706977,
+  "phase_history": [
+    {
+      "phase": "settle",
+      "time_s": 0.0
+    },
+    {
+      "after": {
+        "gripper0_right_gripper_finger_joint1": {
+          "force_limited": true,
+          "force_range_n": [
+            -3.0,
+            3.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "gripper0_right_gripper_finger_joint2": {
+          "force_limited": true,
+          "force_range_n": [
+            -3.0,
+            3.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "before": {
+        "gripper0_right_gripper_finger_joint1": {
+          "force_limited": true,
+          "force_range_n": [
+            -20.0,
+            20.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "gripper0_right_gripper_finger_joint2": {
+          "force_limited": true,
+          "force_range_n": [
+            -20.0,
+            20.0
+          ],
+          "gain_parameters": [
+            1000.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "event": "gripper_force_limit_switch",
+      "from_limit_n_per_finger": 20.0,
+      "model_step_index": 20000,
+      "policy_step_index": 80,
+      "post_switch_validation": {
+        "actual_force_ranges_n": [
+          [
+            -3.0,
+            3.0
+          ],
+          [
+            -3.0,
+            3.0
+          ]
+        ],
+        "expected_force_range_n": [
+          -3.0,
+          3.0
+        ],
+        "model_step_index": 20000,
+        "passed": true,
+        "phase": "hold",
+        "time_s": 3.9999999999995923
+      },
+      "time_s": 3.9999999999995923,
+      "to_limit_n_per_finger": 3.0,
+      "trigger": "frozen_tape_index"
+    }
+  ],
+  "post_latch_finger_force_n": {
+    "both_below_threshold_fraction": 0.009876543209876543,
+    "both_zero_fraction": 0.008024691358024692,
+    "contact_threshold_n": 0.05,
+    "exactly_one_below_threshold_fraction": 0.006790123456790123,
+    "left": {
+      "max": 10.1749665602703,
+      "mean": 2.958725796211292,
+      "min": 0.0
+    },
+    "left_below_threshold_fraction": 0.012345679012345678,
+    "right": {
+      "max": 8.63766615449523,
+      "mean": 2.942509456299857,
+      "min": 0.0
+    },
+    "right_below_threshold_fraction": 0.014197530864197531,
+    "sample_count": 1620
+  },
+  "recorded_force_switch_policy_step_index": 80,
+  "schema": "shakebench_spike.stage2c.frozen_episode.v1",
+  "seed": 9,
+  "source_action_count": 257,
+  "source_tape_gamma": 0.0,
+  "source_tape_seed": 9,
+  "strategy": "frozen_replay",
+  "success": true,
+  "transfer_hold_s": 5.04999999999999
+}

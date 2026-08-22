@@ -1,0 +1,17 @@
+{
+  "corrected_gate_2_passed": true,
+  "corrected_rule": "one-sided saturation at the highest tested Gamma: increasing the operating value must not change success rate",
+  "created_utc": "2026-08-22T04:55:18.707976+00:00",
+  "difference_percentage_points": 0.0,
+  "gamma": 0.95,
+  "higher_force_n_per_finger": 6.0,
+  "new_rollouts_run_for_w0": false,
+  "old_rule": "3 N must differ from both 1.5 N and 6 N by <5 percentage points",
+  "operating_force_n_per_finger": 3.0,
+  "reason": "requiring SR(P/2) approximately equal SR(P) imposes a twofold success-rate safety factor and incorrectly rejects any physical threshold knee",
+  "schema": "shakebench_spike.final.gate2_reinterpretation.v1",
+  "success_rates": {
+    "3.0": 1.0,
+    "6.0": 1.0
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "created_utc": "2026-08-22T05:56:58.856245+00:00",
+  "rows": {
+    "0.15": {
+      "condition_summary": {
+        "condition": {
+          "cube_table_sliding_mu": 1.5,
+          "cube_table_solref_timeconst_s": 0.0006,
+          "diagnostic_frequency_hz": 200,
+          "episode_limit_s": 16.0,
+          "gamma": 0.15,
+          "grip_mode": "force_limited_close",
+          "gripper_force_limit_n": 3.0,
+          "move_action_gain": 4.0,
+          "osc_kp": 150.0,
+          "pad_solref_dampratio": 0.5,
+          "physics_timestep_s": 0.0002,
+          "policy_frequency_hz": 20
+        },
+        "created_utc": "2026-08-22T05:56:58.786892+00:00",
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0019857032130653745,
+          "median": 0.0015619439657463927,
+          "p90": 0.0017779840415119395
+        },
+        "mujoco_warning_count": 0,
+        "post_latch_contact_loss_fraction_distributions": {
+          "both_below_threshold_fraction": {
+            "max": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "both_zero_fraction": {
+            "max": 0.0,
+            "median": 0.0,
+            "p90": 0.0
+          },
+          "exactly_one_below_threshold_fraction": {
+            "max": 0.003105590062111801,
+            "median": 0.0,
+            "p90": 0.0019875776397515524
+          },
+          "left_below_threshold_fraction": {
+            "max": 0.0006211180124223603,
+            "median": 0.0,
+            "p90": 6.211180124223581e-05
+          },
+          "right_below_threshold_fraction": {
+            "max": 0.003105590062111801,
+            "median": 0.0,
+            "p90": 0.001428571428571428
+          }
+        },
+        "post_latch_force_samples_total": 16130,
+        "schema": "shakebench_spike.stage2b.condition_summary.v1",
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "success_count": 10,
+        "success_rate": 1.0,
+        "versions": {
+          "mujoco": "3.3.7",
+          "numpy": "1.26.4",
+          "python": "3.11.14",
+          "robosuite": "1.5.2"
+        }
+      },
+      "final_summary": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2710
+            },
+            "descend": {
+              "airborne_fraction": 0.0016483516483516484,
+              "airborne_sample_count": 6,
+              "sample_count": 3640
+            },
+            "finished": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.725,
+              "airborne_sample_count": 522,
+              "sample_count": 720
+            },
+            "lift": {
+              "airborne_fraction": 0.9947058823529412,
+              "airborne_sample_count": 1691,
+              "sample_count": 1700
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3730,
+              "sample_count": 3730
+            },
+            "release": {
+              "airborne_fraction": 0.7226666666666667,
+              "airborne_sample_count": 1084,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.007692307692307693,
+            "median": 0.0,
+            "p90": 0.0007692307692307665
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0007643312101910828,
+            "airborne_sample_count": 6,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7850
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.0019857032130653745,
+          "median": 0.0015619439657463927,
+          "p90": 0.0017779840415119395
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0004126050688125999,
+          "median": 0.00011910799065005756,
+          "p90": 0.0004099758566646056
+        }
+      }
+    },
+    "0.3": {
+      "condition_summary": {
+        "condition": {
+          "cube_table_sliding_mu": 1.5,
+          "cube_table_solref_timeconst_s": 0.0006,
+          "diagnostic_frequency_hz": 200,
+          "episode_limit_s": 16.0,
+          "gamma": 0.3,
+          "grip_mode": "force_limited_close",
+          "gripper_force_limit_n": 3.0,
+          "move_action_gain": 4.0,
+          "osc_kp": 150.0,
+          "pad_solref_dampratio": 0.5,
+          "physics_timestep_s": 0.0002,
+          "policy_frequency_hz": 20
+        },
+        "created_utc": "2026-08-22T05:56:58.821356+00:00",
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.002521953892735954,
+          "median": 0.0017945637951273393,
+          "p90": 0.0024324406016518418
+        },
+        "mujoco_warning_count": 0,
+        "post_latch_contact_loss_fraction_distributions": {
+          "both_below_threshold_fraction": {
+            "max": 0.0012422360248447205,
+            "median": 0.0,
+            "p90": 0.0006763708417482756
+          },
+          "both_zero_fraction": {
+            "max": 0.0012422360248447205,
+            "median": 0.0,
+            "p90": 0.0006763708417482756
+          },
+          "exactly_one_below_threshold_fraction": {
+            "max": 0.008074534161490683,
+            "median": 0.00031055900621118014,
+            "p90": 0.005224631330259497
+          },
+          "left_below_threshold_fraction": {
+            "max": 0.003105590062111801,
+            "median": 0.00031055900621118014,
+            "p90": 0.0030712952025301987
+          },
+          "right_below_threshold_fraction": {
+            "max": 0.004968944099378882,
+            "median": 0.0,
+            "p90": 0.003257630606256906
+          }
+        },
+        "post_latch_force_samples_total": 16140,
+        "schema": "shakebench_spike.stage2b.condition_summary.v1",
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "success_count": 10,
+        "success_rate": 1.0,
+        "versions": {
+          "mujoco": "3.3.7",
+          "numpy": "1.26.4",
+          "python": "3.11.14",
+          "robosuite": "1.5.2"
+        }
+      },
+      "final_summary": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2720
+            },
+            "descend": {
+              "airborne_fraction": 0.0002747252747252747,
+              "airborne_sample_count": 1,
+              "sample_count": 3640
+            },
+            "finished": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.7338028169014085,
+              "airborne_sample_count": 521,
+              "sample_count": 710
+            },
+            "lift": {
+              "airborne_fraction": 0.9982456140350877,
+              "airborne_sample_count": 1707,
+              "sample_count": 1710
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3730,
+              "sample_count": 3730
+            },
+            "release": {
+              "airborne_fraction": 0.7153333333333334,
+              "airborne_sample_count": 1073,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.0011494252873563218,
+            "median": 0.0,
+            "p90": 0.00011494252873563177
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0001272264631043257,
+            "airborne_sample_count": 1,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7860
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.002521953892735954,
+          "median": 0.0017945637951273393,
+          "p90": 0.0024324406016518418
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0004694539818485658,
+          "median": 0.00023470517945611133,
+          "p90": 0.000411762794183075
+        }
+      }
+    },
+    "0.75": {
+      "condition_summary": {
+        "condition": {
+          "cube_table_sliding_mu": 1.5,
+          "cube_table_solref_timeconst_s": 0.0006,
+          "diagnostic_frequency_hz": 200,
+          "episode_limit_s": 16.0,
+          "gamma": 0.75,
+          "grip_mode": "force_limited_close",
+          "gripper_force_limit_n": 3.0,
+          "move_action_gain": 4.0,
+          "osc_kp": 150.0,
+          "pad_solref_dampratio": 0.5,
+          "physics_timestep_s": 0.0002,
+          "policy_frequency_hz": 20
+        },
+        "created_utc": "2026-08-22T05:56:58.853812+00:00",
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.005544932910093495,
+          "median": 0.003257835113975989,
+          "p90": 0.005383012202023009
+        },
+        "mujoco_warning_count": 0,
+        "post_latch_contact_loss_fraction_distributions": {
+          "both_below_threshold_fraction": {
+            "max": 0.0037267080745341614,
+            "median": 0.0,
+            "p90": 0.0037060041407867496
+          },
+          "both_zero_fraction": {
+            "max": 0.0037267080745341614,
+            "median": 0.0,
+            "p90": 0.0037060041407867496
+          },
+          "exactly_one_below_threshold_fraction": {
+            "max": 0.008695652173913044,
+            "median": 0.001851851851851852,
+            "p90": 0.005341614906832297
+          },
+          "left_below_threshold_fraction": {
+            "max": 0.009937888198757764,
+            "median": 0.0024691358024691358,
+            "p90": 0.005438233264320219
+          },
+          "right_below_threshold_fraction": {
+            "max": 0.006211180124223602,
+            "median": 0.0006172839506172839,
+            "p90": 0.003954451345755693
+          }
+        },
+        "post_latch_force_samples_total": 16190,
+        "schema": "shakebench_spike.stage2b.condition_summary.v1",
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "success_count": 10,
+        "success_rate": 1.0,
+        "versions": {
+          "mujoco": "3.3.7",
+          "numpy": "1.26.4",
+          "python": "3.11.14",
+          "robosuite": "1.5.2"
+        }
+      },
+      "final_summary": {
+        "cube_table_airborne_200hz": {
+          "airborne_definition": "cube-table normal force is exactly 0 N",
+          "available": true,
+          "by_phase_pooled": {
+            "approach": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 2770
+            },
+            "descend": {
+              "airborne_fraction": 0.0036312849162011174,
+              "airborne_sample_count": 13,
+              "sample_count": 3580
+            },
+            "finished": {
+              "airborne_fraction": 0.01,
+              "airborne_sample_count": 1,
+              "sample_count": 100
+            },
+            "grasp": {
+              "airborne_fraction": 0.7177215189873418,
+              "airborne_sample_count": 567,
+              "sample_count": 790
+            },
+            "lift": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 1720,
+              "sample_count": 1720
+            },
+            "place": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 3770,
+              "sample_count": 3770
+            },
+            "release": {
+              "airborne_fraction": 0.588,
+              "airborne_sample_count": 882,
+              "sample_count": 1500
+            },
+            "settle": {
+              "airborne_fraction": 0.0,
+              "airborne_sample_count": 0,
+              "sample_count": 1500
+            },
+            "transfer_hold": {
+              "airborne_fraction": 1.0,
+              "airborne_sample_count": 10100,
+              "sample_count": 10100
+            }
+          },
+          "diagnostic_frequency_hz": 200,
+          "pre_grasp_episode_fraction_distribution": {
+            "max": 0.009333333333333334,
+            "median": 0.0,
+            "p90": 0.00507126436781609
+          },
+          "pre_grasp_pooled": {
+            "airborne_fraction": 0.0016560509554140127,
+            "airborne_sample_count": 13,
+            "phases": [
+              "settle",
+              "approach",
+              "descend"
+            ],
+            "sample_count": 7850
+          }
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {},
+        "max_grasp_slip_distribution_m": {
+          "max": 0.005544932910093495,
+          "median": 0.003257835113975989,
+          "p90": 0.005383012202023009
+        },
+        "mujoco_warning_count": 0,
+        "success_count": 10,
+        "success_rate": 1.0,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.0017366110331277563,
+          "median": 0.0007954914516447855,
+          "p90": 0.0016256935080767006
+        }
+      }
+    }
+  },
+  "schema": "shakebench_spike.final.w1.v1",
+  "seed_count_per_gamma": 10
+}

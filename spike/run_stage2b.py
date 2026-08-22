@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import json
@@ -26,6 +26,38 @@ DIAGNOSTIC_HZ = 200
 DEFAULT_TIMESTEP_S = 2.0e-4
 DEFAULT_EPISODE_S = 16.0
 DEFAULT_FORCE_N = 3.0
+
+
+def airborne_summary(
+    phase_counts: dict[str, list[int]],
+    *,
+    diagnostic_frequency_hz: int,
+) -> dict:
+    """Summarize exact zero-force cube/table samples collected at diagnostic rate."""
+
+    phases = {}
+    for phase, (sample_count, airborne_count) in sorted(phase_counts.items()):
+        phases[phase] = {
+            "sample_count": sample_count,
+            "airborne_sample_count": airborne_count,
+            "airborne_fraction": airborne_count / sample_count if sample_count else None,
+        }
+    pre_latch_names = ("settle", "approach", "descend", "grasp")
+    pre_latch_samples = sum(phase_counts[name][0] for name in pre_latch_names)
+    pre_latch_airborne = sum(phase_counts[name][1] for name in pre_latch_names)
+    return {
+        "diagnostic_frequency_hz": diagnostic_frequency_hz,
+        "airborne_definition": "cube-table normal force is exactly 0 N",
+        "pre_latch": {
+            "phases": list(pre_latch_names),
+            "sample_count": pre_latch_samples,
+            "airborne_sample_count": pre_latch_airborne,
+            "airborne_fraction": (
+                pre_latch_airborne / pre_latch_samples if pre_latch_samples else None
+            ),
+        },
+        "by_phase": phases,
+    }
 
 
 @dataclass(frozen=True)
@@ -119,6 +151,7 @@ def run_reactive_episode(
         decimation = physics_hz // condition.diagnostic_frequency_hz
         physics_steps = 0
         acquisition_trace: list[dict] = []
+        airborne_phase_counts: dict[str, list[int]] = defaultdict(lambda: [0, 0])
         actuator_ids = env._gripper_actuator_ids()
         actuator_names = [env.sim.model.actuator_id2name(index) for index in actuator_ids]
         finger_joints = list(env.robots[0].gripper["right"].joints)
@@ -127,6 +160,10 @@ def run_reactive_episode(
             nonlocal physics_steps
             physics_steps += 1
             if physics_steps % decimation == 0:
+                contacts = contact_snapshot(stepped_env)
+                counts = airborne_phase_counts[policy.phase]
+                counts[0] += 1
+                counts[1] += int(contacts.cube_table_n == 0.0)
                 if stepped_env.gripper_force_phase == "acquisition":
                     acquisition_trace.append(
                         {
@@ -155,7 +192,7 @@ def run_reactive_episode(
                             },
                         }
                     )
-                metrics.update(stepped_env, policy, contact_snapshot(stepped_env))
+                metrics.update(stepped_env, policy, contacts)
 
         env.physics_step_callback = sample
         actions: list[list[float]] = []
@@ -187,6 +224,10 @@ def run_reactive_episode(
                 "gripper_force_switch_history": env.gripper_force_switch_history,
                 "gripper_force_validation_history": env.gripper_force_validation_history,
                 "acquisition_trace_200hz": acquisition_trace,
+                "cube_table_airborne_200hz": airborne_summary(
+                    airborne_phase_counts,
+                    diagnostic_frequency_hz=condition.diagnostic_frequency_hz,
+                ),
                 "phase_by_policy_step": phase_by_policy_step,
                 "hold_completed_policy_step_index": hold_completed_policy_step_index,
                 "object_mass_kg": float(

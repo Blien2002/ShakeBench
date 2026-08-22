@@ -70,6 +70,7 @@ class ContactSnapshot:
     left_cube_n: float
     right_cube_n: float
     finger_table_n: float
+    cube_table_n: float
     max_penetration_m: float
 
     @property
@@ -95,6 +96,7 @@ def contact_snapshot(env: ShakeDeckLift) -> ContactSnapshot:
     left_force = 0.0
     right_force = 0.0
     table_force = 0.0
+    cube_table_force = 0.0
     max_penetration = 0.0
     wrench = np.zeros(6, dtype=np.float64)
     for index, contact in enumerate(env.sim.data.contact[: env.sim.data.ncon]):
@@ -111,7 +113,15 @@ def contact_snapshot(env: ShakeDeckLift) -> ContactSnapshot:
                 right_force += normal_n
         if table in pair and any(geom in all_fingers for geom in pair):
             table_force += normal_n
-    return ContactSnapshot(left_force, right_force, table_force, max_penetration)
+        if pair == {cube, table}:
+            cube_table_force += normal_n
+    return ContactSnapshot(
+        left_force,
+        right_force,
+        table_force,
+        cube_table_force,
+        max_penetration,
+    )
 
 
 @dataclass

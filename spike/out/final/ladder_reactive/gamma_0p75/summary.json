@@ -1,0 +1,74 @@
+{
+  "condition": {
+    "cube_table_sliding_mu": 1.5,
+    "cube_table_solref_timeconst_s": 0.0006,
+    "diagnostic_frequency_hz": 200,
+    "episode_limit_s": 16.0,
+    "gamma": 0.75,
+    "grip_mode": "force_limited_close",
+    "gripper_force_limit_n": 3.0,
+    "move_action_gain": 4.0,
+    "osc_kp": 150.0,
+    "pad_solref_dampratio": 0.5,
+    "physics_timestep_s": 0.0002,
+    "policy_frequency_hz": 20
+  },
+  "created_utc": "2026-08-22T05:56:58.853812+00:00",
+  "episode_count": 10,
+  "failure_reason_histogram": {},
+  "max_grasp_slip_distribution_m": {
+    "max": 0.005544932910093495,
+    "median": 0.003257835113975989,
+    "p90": 0.005383012202023009
+  },
+  "mujoco_warning_count": 0,
+  "post_latch_contact_loss_fraction_distributions": {
+    "both_below_threshold_fraction": {
+      "max": 0.0037267080745341614,
+      "median": 0.0,
+      "p90": 0.0037060041407867496
+    },
+    "both_zero_fraction": {
+      "max": 0.0037267080745341614,
+      "median": 0.0,
+      "p90": 0.0037060041407867496
+    },
+    "exactly_one_below_threshold_fraction": {
+      "max": 0.008695652173913044,
+      "median": 0.001851851851851852,
+      "p90": 0.005341614906832297
+    },
+    "left_below_threshold_fraction": {
+      "max": 0.009937888198757764,
+      "median": 0.0024691358024691358,
+      "p90": 0.005438233264320219
+    },
+    "right_below_threshold_fraction": {
+      "max": 0.006211180124223602,
+      "median": 0.0006172839506172839,
+      "p90": 0.003954451345755693
+    }
+  },
+  "post_latch_force_samples_total": 16190,
+  "schema": "shakebench_spike.stage2b.condition_summary.v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "success_count": 10,
+  "success_rate": 1.0,
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  }
+}
