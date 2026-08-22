@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -26,6 +27,7 @@ CUBE_TABLE_PAIR_FRICTION = (1.5, 1.5, 5.0e-3, 1.0e-4, 1.0e-4)
 DEFAULT_MOCAP_COMMAND_LEAD_STEPS = 1
 
 MotionSampler = Callable[[float], tuple[np.ndarray, np.ndarray, np.ndarray]]
+PhysicsStepCallback = Callable[["ShakeDeckLift"], None]
 
 
 @register_gripper
@@ -56,7 +58,11 @@ def _quat_wxyz_from_euler_xyz(euler: np.ndarray) -> np.ndarray:
     return quat / np.linalg.norm(quat)
 
 
-def shake_deck_xml(xml_str: str) -> str:
+def shake_deck_xml(
+    xml_str: str,
+    *,
+    gripper_force_limit_n: float | None = None,
+) -> str:
     """Move Lift's table and Panda base under a welded dynamic deck."""
 
     root = ET.fromstring(xml_str)
@@ -128,6 +134,22 @@ def shake_deck_xml(xml_str: str) -> str:
         friction=_numbers(CUBE_TABLE_PAIR_FRICTION),
     )
 
+    if gripper_force_limit_n is not None:
+        if not 0.0 < gripper_force_limit_n <= 20.0:
+            raise ValueError("gripper force limit must be in (0, 20] N")
+        configured = 0
+        for actuator in root.iter("position"):
+            name = actuator.get("name", "")
+            if name.endswith(("gripper_finger_joint1", "gripper_finger_joint2")):
+                actuator.set("forcelimited", "true")
+                actuator.set(
+                    "forcerange",
+                    _numbers((-gripper_force_limit_n, gripper_force_limit_n)),
+                )
+                configured += 1
+        if configured != 2:
+            raise ValueError(f"expected two Panda finger actuators, configured {configured}")
+
     return ET.tostring(root, encoding="unicode")
 
 
@@ -137,20 +159,26 @@ class ShakeDeckLift(Lift):
     motion_sampler: MotionSampler | None = None
     write_zero_motion: bool = True
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS
+    gripper_force_limit_n: float | None = None
+    physics_step_callback: PhysicsStepCallback | None = None
 
     def configure_shakedeck(
         self,
         motion_sampler: MotionSampler | None,
         mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
+        gripper_force_limit_n: float | None = None,
     ) -> None:
         self.motion_sampler = motion_sampler
         self.write_zero_motion = motion_sampler is None
         self.mocap_command_lead_steps = mocap_command_lead_steps
+        self.gripper_force_limit_n = gripper_force_limit_n
         # Lift intentionally drops its cube from 10 mm. The spike measures
         # table-relative slip, so start in static contact instead of folding
         # that unrelated free-fall distance into the diagnostic.
         self.placement_initializer.z_offset = 0.0
-        self.set_xml_processor(shake_deck_xml)
+        self.set_xml_processor(
+            partial(shake_deck_xml, gripper_force_limit_n=gripper_force_limit_n)
+        )
         self.reset()
         self.deck_body_id = self.sim.model.body_name2id("deck")
         self.deck_site_id = self.sim.model.site_name2id("deck_anchor")
@@ -173,6 +201,12 @@ class ShakeDeckLift(Lift):
     def _pre_action(self, action, policy_step=False):
         super()._pre_action(action, policy_step=policy_step)
         self._write_deck_target(float(self.sim.data.time))
+
+    def _update_observables(self, *args, **kwargs):
+        super()._update_observables(*args, **kwargs)
+        callback = getattr(self, "physics_step_callback", None)
+        if callback is not None:
+            callback(self)
 
     def commanded_deck_pose(self) -> tuple[np.ndarray, np.ndarray]:
         if self.motion_sampler is None:
@@ -218,6 +252,22 @@ class ShakeDeckLift(Lift):
             "right_finger_pad": geom_parameters("gripper0_right_finger2_pad_collision"),
         }
 
+    def gripper_actuator_configuration(self) -> dict:
+        result = {}
+        for actuator_id in range(self.sim.model.nu):
+            name = self.sim.model.actuator_id2name(actuator_id) or ""
+            if name.endswith(("gripper_finger_joint1", "gripper_finger_joint2")):
+                result[name] = {
+                    "force_limited": bool(self.sim.model.actuator_forcelimited[actuator_id]),
+                    "force_range_n": np.asarray(
+                        self.sim.model.actuator_forcerange[actuator_id]
+                    ).tolist(),
+                    "gain_parameters": np.asarray(
+                        self.sim.model.actuator_gainprm[actuator_id]
+                    ).tolist(),
+                }
+        return result
+
     def validate_contact_configuration(self) -> None:
         configuration = self.contact_configuration()
         pair = configuration["cube_table_pair"]
@@ -237,6 +287,20 @@ class ShakeDeckLift(Lift):
                 and np.array_equal(pad["friction"], np.asarray(PANDA_PAD_FRICTION))
             ):
                 raise RuntimeError(f"{side} no longer has Panda stock contact parameters: {pad}")
+        if self.gripper_force_limit_n is not None:
+            limits = []
+            for actuator_id in range(self.sim.model.nu):
+                name = self.sim.model.actuator_id2name(actuator_id) or ""
+                if name.endswith(("gripper_finger_joint1", "gripper_finger_joint2")):
+                    limits.append(np.asarray(self.sim.model.actuator_forcerange[actuator_id]))
+            expected = np.asarray(
+                (-self.gripper_force_limit_n, self.gripper_force_limit_n),
+                dtype=np.float64,
+            )
+            if len(limits) != 2 or any(not np.array_equal(limit, expected) for limit in limits):
+                raise RuntimeError(
+                    f"Panda finger actuator force limits are not {expected.tolist()}: {limits}"
+                )
 
 
 def make_env(
@@ -248,6 +312,7 @@ def make_env(
     horizon: int = 1000,
     direct_gripper: bool = False,
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
+    gripper_force_limit_n: float | None = None,
 ) -> ShakeDeckLift:
     """Build a headless deterministic Lift and then install the XML processor."""
 
@@ -270,6 +335,10 @@ def make_env(
         lite_physics=True,
         seed=seed,
     )
-    env.configure_shakedeck(motion_sampler, mocap_command_lead_steps)
+    env.configure_shakedeck(
+        motion_sampler,
+        mocap_command_lead_steps,
+        gripper_force_limit_n,
+    )
     env.validate_contact_configuration()
     return env

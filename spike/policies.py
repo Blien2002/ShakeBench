@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -24,6 +25,7 @@ class ReactiveConfig:
     gripper_closing_speed_m_s: float = 0.010
     gripper_opening_speed_m_s: float = 0.040
     gripper_contact_preload_m: float = 0.0009
+    grip_mode: Literal["position_latch", "force_limited_close"] = "position_latch"
     descend_timeout_s: float = 2.0
     grasp_timeout_s: float = 6.0
     grasp_settle_s: float = 0.30
@@ -46,6 +48,8 @@ class ReactiveScriptedPolicy:
         self.config = config or ReactiveConfig(control_freq_hz=int(env.control_freq))
         if env.action_dim != 8:
             raise ValueError("reactive policy requires SpikeDirectPandaGripper (8D action)")
+        if self.config.grip_mode == "force_limited_close" and env.gripper_force_limit_n is None:
+            raise ValueError("force_limited_close requires a finite gripper actuator force limit")
         self.phase_index = 0
         self.phase_time_s = 0.0
         self.failure_reason: str | None = None
@@ -241,10 +245,17 @@ class ReactiveScriptedPolicy:
                 )
                 if contacts.bilateral:
                     current = self._finger_half_opening_m()
-                    self.latched_finger_target_m = max(
-                        0.0,
-                        current - self.config.gripper_contact_preload_m,
-                    )
+                    if self.config.grip_mode == "force_limited_close":
+                        # Full-close position command deliberately saturates at
+                        # the actuator forcerange configured by the environment.
+                        # Unlike a frozen opening, force then remains available
+                        # when relative lateral motion unloads either pad.
+                        self.latched_finger_target_m = 0.0
+                    else:
+                        self.latched_finger_target_m = max(
+                            0.0,
+                            current - self.config.gripper_contact_preload_m,
+                        )
                     self.finger_target_m = self.latched_finger_target_m
                     self.hand_minus_object_b_at_grasp = (hand_b - object_b).copy()
             else:

@@ -1,0 +1,277 @@
+{
+  "configuration": {
+    "diagnostic_sample_frequency_hz": 200,
+    "gamma_values": [
+      0.15,
+      0.3,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "measurement_window_s": 6.0,
+    "physics_hz": 5000,
+    "physics_timestep_s": 0.0002,
+    "policy_frequency_hz": 20,
+    "seed": 17
+  },
+  "created_utc": "2026-08-22T01:42:20.036611+00:00",
+  "rows": [
+    {
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.15,
+        "gamma_target": 0.15,
+        "level_scale": 0.4067019168591669,
+        "peak_deck_displacement_m": 0.0006479176758694965,
+        "peak_deck_velocity_m_s": 0.028750310694800905,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.49820747620583306,
+          "ry": 0.4528541624178961,
+          "rz": 0.24453047926904614,
+          "tx": 0.5497411852422759,
+          "ty": 0.44559328771667606,
+          "tz": 1.3093192892869336
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.17572540552937618,
+          "ry": 0.17933841650403926,
+          "rz": 0.09299015855637166,
+          "tx": 0.18444527799127683,
+          "ty": 0.1427000127758545,
+          "tz": 0.39797002623850586
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0004997414867514502,
+          "ry": 0.00029003914233197766,
+          "rz": 0.0003856059565949842,
+          "tx": 0.000198121623198886,
+          "ty": 8.765199712800693e-05,
+          "tz": 0.00016134114169065532
+        },
+        "workpiece_az_peak_m_s2": 1.4709975,
+        "workpiece_az_rms_m_s2": 0.41466248349887025
+      },
+      "command_displacement_peak_m": 0.0005500499872450628,
+      "diagnostic_sample_frequency_hz": 200,
+      "ee_wobble_base_m": 0.0003574356590062912,
+      "gamma": 0.15,
+      "measured_over_reference": 1.0831383606251248,
+      "measurement_window_s": 6.0,
+      "mujoco_warning_count": 0,
+      "object_motion_base_m": 2.467315644580615e-07,
+      "policy_frequency_hz": 20,
+      "reference_ee_wobble_m": 0.00033,
+      "sample_count": 1200,
+      "seed": 17,
+      "weld_tracking_error_peak_m": 2.3648105951599942e-05
+    },
+    {
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.3,
+        "gamma_target": 0.3,
+        "level_scale": 0.8134038337183338,
+        "peak_deck_displacement_m": 0.001295835351738993,
+        "peak_deck_velocity_m_s": 0.05750062138960181,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 0.9964149524116661,
+          "ry": 0.9057083248357922,
+          "rz": 0.4890609585380923,
+          "tx": 1.0994823704845518,
+          "ty": 0.8911865754333521,
+          "tz": 2.6186385785738673
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.35145081105875237,
+          "ry": 0.3586768330080785,
+          "rz": 0.18598031711274332,
+          "tx": 0.36889055598255366,
+          "ty": 0.285400025551709,
+          "tz": 0.7959400524770117
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0009994829735029004,
+          "ry": 0.0005800782846639553,
+          "rz": 0.0007712119131899684,
+          "tx": 0.000396243246397772,
+          "ty": 0.00017530399425601386,
+          "tz": 0.00032268228338131063
+        },
+        "workpiece_az_peak_m_s2": 2.941995,
+        "workpiece_az_rms_m_s2": 0.8293249669977405
+      },
+      "command_displacement_peak_m": 0.0011000999744900787,
+      "diagnostic_sample_frequency_hz": 200,
+      "ee_wobble_base_m": 0.000769240889617276,
+      "gamma": 0.3,
+      "measured_over_reference": 1.0989155565961086,
+      "measurement_window_s": 6.0,
+      "mujoco_warning_count": 0,
+      "object_motion_base_m": 2.46731257843488e-07,
+      "policy_frequency_hz": 20,
+      "reference_ee_wobble_m": 0.0007,
+      "sample_count": 1200,
+      "seed": 17,
+      "weld_tracking_error_peak_m": 4.7512307533950645e-05
+    },
+    {
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.5,
+        "gamma_target": 0.5,
+        "level_scale": 1.355673056197223,
+        "peak_deck_displacement_m": 0.002159725586231655,
+        "peak_deck_velocity_m_s": 0.09583436898266968,
+        "peak_factor_kappa": 3.547457410634082,
+        "per_axis_accel_peak_abs": {
+          "rx": 1.6606915873527766,
+          "ry": 1.5095138747263206,
+          "rz": 0.8151015975634872,
+          "tx": 1.832470617474253,
+          "ty": 1.485310959055587,
+          "tz": 4.364397630956445
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.5857513517645873,
+          "ry": 0.5977947216801308,
+          "rz": 0.30996719518790555,
+          "tx": 0.6148175933042561,
+          "ty": 0.4756667092528484,
+          "tz": 1.3265667541283528
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0016658049558381676,
+          "ry": 0.0009667971411065922,
+          "rz": 0.0012853531886499472,
+          "tx": 0.0006604054106629533,
+          "ty": 0.00029217332376002314,
+          "tz": 0.0005378038056355177
+        },
+        "workpiece_az_peak_m_s2": 4.903325,
+        "workpiece_az_rms_m_s2": 1.3822082783295675
+      },
+      "command_displacement_peak_m": 0.0018334999574834963,
+      "diagnostic_sample_frequency_hz": 200,
+      "ee_wobble_base_m": 0.001276593830987667,
+      "gamma": 0.5,
+      "measured_over_reference": 1.0638281924897226,
+      "measurement_window_s": 6.0,
+      "mujoco_warning_count": 0,
+      "object_motion_base_m": 2.7294668562145114e-07,
+      "policy_frequency_hz": 20,
+      "reference_ee_wobble_m": 0.0012,
+      "sample_count": 1200,
+      "seed": 17,
+      "weld_tracking_error_peak_m": 7.931593262369065e-05
+    },
+    {
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.7500000000000001,
+        "gamma_target": 0.75,
+        "level_scale": 2.033509584295835,
+        "peak_deck_displacement_m": 0.003239588379347483,
+        "peak_deck_velocity_m_s": 0.14375155347400456,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 2.491037381029166,
+          "ry": 2.2642708120894808,
+          "rz": 1.222652396345231,
+          "tx": 2.7487059262113807,
+          "ty": 2.227966438583381,
+          "tz": 6.54659644643467
+        },
+        "per_axis_accel_rms": {
+          "rx": 0.878627027646881,
+          "ry": 0.8966920825201963,
+          "rz": 0.46495079278185836,
+          "tx": 0.9222263899563844,
+          "ty": 0.7135000638792727,
+          "tz": 1.98985013119253
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.0024987074337572517,
+          "ry": 0.0014501957116598884,
+          "rz": 0.0019280297829749212,
+          "tx": 0.0009906081159944305,
+          "ty": 0.00043825998564003474,
+          "tz": 0.0008067057084532768
+        },
+        "workpiece_az_peak_m_s2": 7.354987500000001,
+        "workpiece_az_rms_m_s2": 2.073312417494352
+      },
+      "command_displacement_peak_m": 0.0027502499362252212,
+      "diagnostic_sample_frequency_hz": 200,
+      "ee_wobble_base_m": 0.001905715085508534,
+      "gamma": 0.75,
+      "measured_over_reference": 1.0587306030602968,
+      "measurement_window_s": 6.0,
+      "mujoco_warning_count": 0,
+      "object_motion_base_m": 3.1861011802582897e-07,
+      "policy_frequency_hz": 20,
+      "reference_ee_wobble_m": 0.0018,
+      "sample_count": 1200,
+      "seed": 17,
+      "weld_tracking_error_peak_m": 0.00011902999855206009
+    },
+    {
+      "calibration": {
+        "airborne_fraction": 0.0,
+        "gamma_realized": 0.95,
+        "gamma_target": 0.95,
+        "level_scale": 2.5757788067747236,
+        "peak_deck_displacement_m": 0.004103478613840144,
+        "peak_deck_velocity_m_s": 0.18208530106707238,
+        "peak_factor_kappa": 3.547457410634081,
+        "per_axis_accel_peak_abs": {
+          "rx": 3.155314015970276,
+          "ry": 2.8680763619800085,
+          "rz": 1.5486930353706254,
+          "tx": 3.481694173201081,
+          "ty": 2.822090822205616,
+          "tz": 8.292355498817246
+        },
+        "per_axis_accel_rms": {
+          "rx": 1.1129275683527156,
+          "ry": 1.1358099711922485,
+          "rz": 0.5889376708570204,
+          "tx": 1.1681534272780865,
+          "ty": 0.9037667475804119,
+          "tz": 2.5204768328438703
+        },
+        "per_axis_disp_rms": {
+          "rx": 0.003165029416092518,
+          "ry": 0.0018369145681025251,
+          "rz": 0.0024421710584348996,
+          "tx": 0.0012547702802596114,
+          "ty": 0.000555129315144044,
+          "tz": 0.0010218272307074836
+        },
+        "workpiece_az_peak_m_s2": 9.316317499999998,
+        "workpiece_az_rms_m_s2": 2.6261957288261786
+      },
+      "command_displacement_peak_m": 0.003483649919218591,
+      "diagnostic_sample_frequency_hz": 200,
+      "ee_wobble_base_m": 0.002384451742334646,
+      "gamma": 0.95,
+      "measured_over_reference": 1.0504192697509456,
+      "measurement_window_s": 6.0,
+      "mujoco_warning_count": 0,
+      "object_motion_base_m": 3.626492593621119e-07,
+      "policy_frequency_hz": 20,
+      "reference_ee_wobble_m": 0.00227,
+      "sample_count": 1200,
+      "seed": 17,
+      "weld_tracking_error_peak_m": 0.00015075532382881034
+    }
+  ],
+  "schema": "shakebench_spike.stage2.ee_wobble_ladder.v1",
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  }
+}
