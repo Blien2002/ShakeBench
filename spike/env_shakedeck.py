@@ -25,6 +25,7 @@ PANDA_PAD_SOLREF = (1.0e-2, 0.5)
 PANDA_PAD_FRICTION = (2.0, 5.0e-2, 1.0e-4)
 CUBE_TABLE_PAIR_FRICTION = (1.5, 1.5, 5.0e-3, 1.0e-4, 1.0e-4)
 DEFAULT_MOCAP_COMMAND_LEAD_STEPS = 1
+PANDA_STOCK_GRIPPER_FORCE_LIMIT_N = 20.0
 
 MotionSampler = Callable[[float], tuple[np.ndarray, np.ndarray, np.ndarray]]
 PhysicsStepCallback = Callable[["ShakeDeckLift"], None]
@@ -62,6 +63,7 @@ def shake_deck_xml(
     xml_str: str,
     *,
     gripper_force_limit_n: float | None = None,
+    gripper_acquisition_force_limit_n: float = PANDA_STOCK_GRIPPER_FORCE_LIMIT_N,
     pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
     cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
     cube_table_sliding_mu: float = MATERIAL_MU,
@@ -193,8 +195,10 @@ def shake_deck_xml(
         raise ValueError(f"expected two Panda finger pads, configured {configured_pads}")
 
     if gripper_force_limit_n is not None:
-        if not 0.0 < gripper_force_limit_n <= 20.0:
-            raise ValueError("gripper force limit must be in (0, 20] N")
+        if not 0.0 < gripper_force_limit_n <= PANDA_STOCK_GRIPPER_FORCE_LIMIT_N:
+            raise ValueError("gripper hold force limit must be in (0, 20] N")
+        if not 0.0 < gripper_acquisition_force_limit_n <= PANDA_STOCK_GRIPPER_FORCE_LIMIT_N:
+            raise ValueError("gripper acquisition force limit must be in (0, 20] N")
         configured = 0
         for actuator in root.iter("position"):
             name = actuator.get("name", "")
@@ -202,7 +206,12 @@ def shake_deck_xml(
                 actuator.set("forcelimited", "true")
                 actuator.set(
                     "forcerange",
-                    _numbers((-gripper_force_limit_n, gripper_force_limit_n)),
+                    _numbers(
+                        (
+                            -gripper_acquisition_force_limit_n,
+                            gripper_acquisition_force_limit_n,
+                        )
+                    ),
                 )
                 configured += 1
         if configured != 2:
@@ -218,6 +227,7 @@ class ShakeDeckLift(Lift):
     write_zero_motion: bool = True
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS
     gripper_force_limit_n: float | None = None
+    gripper_acquisition_force_limit_n: float = PANDA_STOCK_GRIPPER_FORCE_LIMIT_N
     pad_solref_dampratio: float = PANDA_PAD_SOLREF[1]
     cube_table_solref: tuple[float, float] = CONTACT_SOLREF
     cube_table_sliding_mu: float = MATERIAL_MU
@@ -230,6 +240,7 @@ class ShakeDeckLift(Lift):
         motion_sampler: MotionSampler | None,
         mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
         gripper_force_limit_n: float | None = None,
+        gripper_acquisition_force_limit_n: float = PANDA_STOCK_GRIPPER_FORCE_LIMIT_N,
         pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
         cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
         cube_table_sliding_mu: float = MATERIAL_MU,
@@ -239,6 +250,10 @@ class ShakeDeckLift(Lift):
         self.write_zero_motion = motion_sampler is None
         self.mocap_command_lead_steps = mocap_command_lead_steps
         self.gripper_force_limit_n = gripper_force_limit_n
+        self.gripper_acquisition_force_limit_n = gripper_acquisition_force_limit_n
+        self.gripper_force_phase = "acquisition"
+        self.gripper_force_switch_history: list[dict] = []
+        self.gripper_force_validation_history: list[dict] = []
         self.pad_solref_dampratio = pad_solref_dampratio
         self.cube_table_solref = cube_table_solref
         self.cube_table_sliding_mu = cube_table_sliding_mu
@@ -252,6 +267,7 @@ class ShakeDeckLift(Lift):
             partial(
                 shake_deck_xml,
                 gripper_force_limit_n=gripper_force_limit_n,
+                gripper_acquisition_force_limit_n=gripper_acquisition_force_limit_n,
                 pad_solref_dampratio=pad_solref_dampratio,
                 cube_table_solref=cube_table_solref,
                 cube_table_sliding_mu=cube_table_sliding_mu,
@@ -368,6 +384,85 @@ class ShakeDeckLift(Lift):
                 }
         return result
 
+    def _gripper_actuator_ids(self) -> list[int]:
+        return [
+            actuator_id
+            for actuator_id in range(self.sim.model.nu)
+            if (self.sim.model.actuator_id2name(actuator_id) or "").endswith(
+                ("gripper_finger_joint1", "gripper_finger_joint2")
+            )
+        ]
+
+    def validate_gripper_force_configuration(
+        self,
+        expected_limit_n: float,
+        *,
+        phase: str,
+    ) -> dict:
+        expected = np.asarray((-expected_limit_n, expected_limit_n), dtype=np.float64)
+        actuator_ids = self._gripper_actuator_ids()
+        actual = [
+            np.asarray(self.sim.model.actuator_forcerange[actuator_id]).copy()
+            for actuator_id in actuator_ids
+        ]
+        passed = len(actual) == 2 and all(
+            bool(self.sim.model.actuator_forcelimited[actuator_id])
+            and np.array_equal(force_range, expected)
+            for actuator_id, force_range in zip(actuator_ids, actual, strict=True)
+        )
+        result = {
+            "phase": phase,
+            "time_s": float(self.sim.data.time),
+            "model_step_index": int(
+                round(float(self.sim.data.time) / float(self.sim.model.opt.timestep))
+            ),
+            "expected_force_range_n": expected.tolist(),
+            "actual_force_ranges_n": [force_range.tolist() for force_range in actual],
+            "passed": passed,
+        }
+        self.gripper_force_validation_history.append(result)
+        if not passed:
+            raise RuntimeError(
+                f"Panda finger actuator force limits are not {expected.tolist()}: {actual}"
+            )
+        return result
+
+    def activate_hold_force_limit(
+        self,
+        *,
+        policy_step_index: int,
+        trigger: str,
+    ) -> dict:
+        if self.gripper_force_limit_n is None:
+            raise RuntimeError("no gripper hold force limit is configured")
+        if self.gripper_force_phase != "acquisition":
+            raise RuntimeError(f"hold force limit already active: {self.gripper_force_phase}")
+        before = self.gripper_actuator_configuration()
+        target = np.asarray(
+            (-self.gripper_force_limit_n, self.gripper_force_limit_n), dtype=np.float64
+        )
+        for actuator_id in self._gripper_actuator_ids():
+            self.sim.model.actuator_forcerange[actuator_id] = target
+        self.gripper_force_phase = "hold"
+        validation = self.validate_gripper_force_configuration(
+            self.gripper_force_limit_n,
+            phase="hold",
+        )
+        event = {
+            "event": "gripper_force_limit_switch",
+            "trigger": trigger,
+            "time_s": float(self.sim.data.time),
+            "model_step_index": validation["model_step_index"],
+            "policy_step_index": int(policy_step_index),
+            "from_limit_n_per_finger": self.gripper_acquisition_force_limit_n,
+            "to_limit_n_per_finger": self.gripper_force_limit_n,
+            "before": before,
+            "after": self.gripper_actuator_configuration(),
+            "post_switch_validation": validation,
+        }
+        self.gripper_force_switch_history.append(event)
+        return event
+
     def validate_contact_configuration(self) -> None:
         configuration = self.contact_configuration()
         pair = configuration["cube_table_pair"]
@@ -400,19 +495,10 @@ class ShakeDeckLift(Lift):
             ):
                 raise RuntimeError(f"{side} no longer has Panda stock contact parameters: {pad}")
         if self.gripper_force_limit_n is not None:
-            limits = []
-            for actuator_id in range(self.sim.model.nu):
-                name = self.sim.model.actuator_id2name(actuator_id) or ""
-                if name.endswith(("gripper_finger_joint1", "gripper_finger_joint2")):
-                    limits.append(np.asarray(self.sim.model.actuator_forcerange[actuator_id]))
-            expected = np.asarray(
-                (-self.gripper_force_limit_n, self.gripper_force_limit_n),
-                dtype=np.float64,
+            self.validate_gripper_force_configuration(
+                self.gripper_acquisition_force_limit_n,
+                phase="acquisition",
             )
-            if len(limits) != 2 or any(not np.array_equal(limit, expected) for limit in limits):
-                raise RuntimeError(
-                    f"Panda finger actuator force limits are not {expected.tolist()}: {limits}"
-                )
 
 
 def make_env(
@@ -425,6 +511,7 @@ def make_env(
     direct_gripper: bool = False,
     mocap_command_lead_steps: int = DEFAULT_MOCAP_COMMAND_LEAD_STEPS,
     gripper_force_limit_n: float | None = None,
+    gripper_acquisition_force_limit_n: float = PANDA_STOCK_GRIPPER_FORCE_LIMIT_N,
     pad_solref_dampratio: float = PANDA_PAD_SOLREF[1],
     cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
     cube_table_sliding_mu: float = MATERIAL_MU,
@@ -457,6 +544,7 @@ def make_env(
         motion_sampler,
         mocap_command_lead_steps,
         gripper_force_limit_n,
+        gripper_acquisition_force_limit_n,
         pad_solref_dampratio,
         cube_table_solref,
         cube_table_sliding_mu,

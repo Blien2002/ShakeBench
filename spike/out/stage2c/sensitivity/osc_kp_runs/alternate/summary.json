@@ -1,0 +1,86 @@
+{
+  "condition": {
+    "cube_table_sliding_mu": 1.5,
+    "cube_table_solref_timeconst_s": 0.0006,
+    "diagnostic_frequency_hz": 200,
+    "episode_limit_s": 16.0,
+    "gamma": 0.95,
+    "grip_mode": "force_limited_close",
+    "gripper_force_limit_n": 3.0,
+    "move_action_gain": 4.0,
+    "osc_kp": 300.0,
+    "pad_solref_dampratio": 0.5,
+    "physics_timestep_s": 0.0002,
+    "policy_frequency_hz": 20
+  },
+  "created_utc": "2026-08-22T04:06:21.081393+00:00",
+  "episode_count": 20,
+  "failure_reason_histogram": {
+    "descend_contact_timeout": 8
+  },
+  "max_grasp_slip_distribution_m": {
+    "max": 0.00703142115227448,
+    "median": 0.003261792667220386,
+    "p90": 0.00593591743666513
+  },
+  "mujoco_warning_count": 0,
+  "post_latch_contact_loss_fraction_distributions": {
+    "both_below_threshold_fraction": {
+      "max": 0.007692307692307693,
+      "median": 0.002413793103448276,
+      "p90": 0.00740582191780822
+    },
+    "both_zero_fraction": {
+      "max": 0.007692307692307693,
+      "median": 0.002413793103448276,
+      "p90": 0.00740582191780822
+    },
+    "exactly_one_below_threshold_fraction": {
+      "max": 0.013888888888888888,
+      "median": 0.006207191780821918,
+      "p90": 0.009528816011574633
+    },
+    "left_below_threshold_fraction": {
+      "max": 0.012328767123287671,
+      "median": 0.005572552447552448,
+      "p90": 0.009644522144522145
+    },
+    "right_below_threshold_fraction": {
+      "max": 0.013986013986013986,
+      "median": 0.006206896551724138,
+      "p90": 0.010972222222222223
+    }
+  },
+  "post_latch_force_samples_total": 17290,
+  "schema": "shakebench_spike.stage2b.condition_summary.v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "success_count": 12,
+  "success_rate": 0.6,
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  }
+}

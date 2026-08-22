@@ -56,6 +56,7 @@ class ReactiveScriptedPolicy:
         self.failure_reason: str | None = None
         self.finished = False
         self.phase_history: list[dict] = [{"phase": self.phase, "time_s": 0.0}]
+        self.policy_command_count = 0
         self.hold_started = False
         self.hold_completed = False
         self.hold_time_s = 0.0
@@ -174,6 +175,8 @@ class ReactiveScriptedPolicy:
                 self._fail("grasp_contact_lost")
 
     def command(self, contacts: ContactSnapshot) -> np.ndarray:
+        policy_step_index = self.policy_command_count
+        self.policy_command_count += 1
         action = np.zeros(self.env.action_dim, dtype=np.float64)
         if self.finished:
             if self.latched_finger_target_m is not None:
@@ -252,6 +255,11 @@ class ReactiveScriptedPolicy:
                         # Unlike a frozen opening, force then remains available
                         # when relative lateral motion unloads either pad.
                         self.latched_finger_target_m = 0.0
+                        switch_event = self.env.activate_hold_force_limit(
+                            policy_step_index=policy_step_index,
+                            trigger="bilateral_latch",
+                        )
+                        self.phase_history.append(switch_event)
                     else:
                         self.latched_finger_target_m = max(
                             0.0,

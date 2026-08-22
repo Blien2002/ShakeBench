@@ -1,0 +1,47 @@
+{
+  "created_utc": "2026-08-22T04:32:44.252948+00:00",
+  "prominent_observation": "The Stage2B pi/2 decoupled diagnostic table motion is the first measured quantity above a task tolerance. It is diagnostic-only: if D2 is later reached, the free phase choice must be replaced by a physically explicit transfer function before policy rollout.",
+  "rows": [
+    {
+      "config_source": "src/shakebench/config.py:439 descend_clearance_m",
+      "fraction_of_tolerance": 0.5950000000000001,
+      "gamma_0p95_value_m": 0.00238,
+      "measured_quantity": "hard-mounted EE wobble",
+      "measurement_source": "Stage2B B3 validated instrument",
+      "task_tolerance_m": 0.004
+    },
+    {
+      "config_source": "src/shakebench/config.py:456 grasp_slip_tolerance_m",
+      "fraction_of_tolerance": 0.8808975480661955,
+      "gamma_0p95_value_m": 0.008808975480661955,
+      "measured_quantity": "hard-mounted maximum grasp slip",
+      "measurement_source": "Stage2C B1' reactive_scripted, n=20; C gated off",
+      "task_tolerance_m": 0.01
+    },
+    {
+      "config_source": null,
+      "fraction_of_tolerance": null,
+      "gamma_0p95_value_m": 7e-07,
+      "measured_quantity": "table-frame object slip",
+      "measurement_source": "Stage2B B3 validated instrument",
+      "task_tolerance_m": null
+    },
+    {
+      "config_source": "src/shakebench/config.py:439 descend_clearance_m",
+      "fraction_of_tolerance": 1.276951725708086,
+      "gamma_0p95_value_m": 0.005107806902832344,
+      "measured_quantity": "decoupled base-frame table motion (pi/2 diagnostic)",
+      "measurement_source": "Stage2B B3 validated instrument; diagnostic phase model only",
+      "task_tolerance_m": 0.004
+    },
+    {
+      "config_source": "src/shakebench/config.py:440 finger_table_clearance_m",
+      "fraction_of_tolerance": 0.19833333333333333,
+      "gamma_0p95_value_m": 0.00238,
+      "measured_quantity": "hard-mounted EE wobble",
+      "measurement_source": "Stage2B B3 validated instrument",
+      "task_tolerance_m": 0.012
+    }
+  ],
+  "schema": "shakebench_spike.stage2c.tolerance_matrix.v1"
+}

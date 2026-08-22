@@ -1,0 +1,345 @@
+{
+  "alternate": {
+    "condition": {
+      "cube_table_sliding_mu": 1.5,
+      "cube_table_solref_timeconst_s": 0.0006,
+      "diagnostic_frequency_hz": 200,
+      "episode_limit_s": 16.0,
+      "gamma": 0.95,
+      "grip_mode": "force_limited_close",
+      "gripper_force_limit_n": 3.0,
+      "move_action_gain": 4.0,
+      "osc_kp": 300.0,
+      "pad_solref_dampratio": 0.5,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20
+    },
+    "created_utc": "2026-08-22T04:06:21.081393+00:00",
+    "episode_count": 20,
+    "failure_reason_histogram": {
+      "descend_contact_timeout": 8
+    },
+    "max_grasp_slip_distribution_m": {
+      "max": 0.00703142115227448,
+      "median": 0.003261792667220386,
+      "p90": 0.00593591743666513
+    },
+    "mujoco_warning_count": 0,
+    "post_latch_contact_loss_fraction_distributions": {
+      "both_below_threshold_fraction": {
+        "max": 0.007692307692307693,
+        "median": 0.002413793103448276,
+        "p90": 0.00740582191780822
+      },
+      "both_zero_fraction": {
+        "max": 0.007692307692307693,
+        "median": 0.002413793103448276,
+        "p90": 0.00740582191780822
+      },
+      "exactly_one_below_threshold_fraction": {
+        "max": 0.013888888888888888,
+        "median": 0.006207191780821918,
+        "p90": 0.009528816011574633
+      },
+      "left_below_threshold_fraction": {
+        "max": 0.012328767123287671,
+        "median": 0.005572552447552448,
+        "p90": 0.009644522144522145
+      },
+      "right_below_threshold_fraction": {
+        "max": 0.013986013986013986,
+        "median": 0.006206896551724138,
+        "p90": 0.010972222222222223
+      }
+    },
+    "post_latch_force_samples_total": 17290,
+    "schema": "shakebench_spike.stage2b.condition_summary.v1",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "success_count": 12,
+    "success_rate": 0.6,
+    "versions": {
+      "mujoco": "3.3.7",
+      "numpy": "1.26.4",
+      "python": "3.11.14",
+      "robosuite": "1.5.2"
+    }
+  },
+  "alternate_value": 300.0,
+  "baseline": {
+    "condition": {
+      "cube_table_sliding_mu": 1.5,
+      "cube_table_solref_timeconst_s": 0.0006,
+      "diagnostic_frequency_hz": 200,
+      "episode_limit_s": 16.0,
+      "gamma": 0.95,
+      "grip_mode": "force_limited_close",
+      "gripper_force_limit_n": 3.0,
+      "move_action_gain": 4.0,
+      "osc_kp": 150.0,
+      "pad_solref_dampratio": 0.5,
+      "physics_timestep_s": 0.0002,
+      "policy_frequency_hz": 20
+    },
+    "created_utc": "2026-08-22T03:39:23.798267+00:00",
+    "episode_count": 20,
+    "failure_reason_histogram": {},
+    "max_grasp_slip_distribution_m": {
+      "max": 0.008808975480661955,
+      "median": 0.004600828626236868,
+      "p90": 0.006672340701215023
+    },
+    "mujoco_warning_count": 0,
+    "post_latch_contact_loss_fraction_distributions": {
+      "both_below_threshold_fraction": {
+        "max": 0.006790123456790123,
+        "median": 0.0021586708836642153,
+        "p90": 0.006172839506172839
+      },
+      "both_zero_fraction": {
+        "max": 0.006790123456790123,
+        "median": 0.0021586708836642153,
+        "p90": 0.006172839506172839
+      },
+      "exactly_one_below_threshold_fraction": {
+        "max": 0.011728395061728396,
+        "median": 0.004347826086956522,
+        "p90": 0.009986449864498646
+      },
+      "left_below_threshold_fraction": {
+        "max": 0.011728395061728396,
+        "median": 0.004631711313493122,
+        "p90": 0.011158536585365855
+      },
+      "right_below_threshold_fraction": {
+        "max": 0.012962962962962963,
+        "median": 0.004294478527607362,
+        "p90": 0.010679012345679015
+      }
+    },
+    "post_latch_force_samples_total": 32430,
+    "schema": "shakebench_spike.stage2b.condition_summary.v1",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "success_count": 20,
+    "success_rate": 1.0,
+    "versions": {
+      "mujoco": "3.3.7",
+      "numpy": "1.26.4",
+      "python": "3.11.14",
+      "robosuite": "1.5.2"
+    }
+  },
+  "baseline_value": 150.0,
+  "created_utc": "2026-08-22T04:06:21.081700+00:00",
+  "flip_count": 8,
+  "flip_denominator": 20,
+  "flip_fraction": 0.4,
+  "gamma": 0.95,
+  "gate_parameter_passed": true,
+  "paired_results": [
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 0
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 1
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 2
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 3
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 4
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 5
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 6
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 7
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 8
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 9
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 10
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 11
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 12
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 13
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 14
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 15
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 16
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 17
+    },
+    {
+      "alternate_failure_reason": null,
+      "alternate_success": true,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": false,
+      "seed": 18
+    },
+    {
+      "alternate_failure_reason": "descend_contact_timeout",
+      "alternate_success": false,
+      "baseline_failure_reason": null,
+      "baseline_success": true,
+      "flipped": true,
+      "seed": 19
+    }
+  ],
+  "parameter": "osc_kp",
+  "schema": "shakebench_spike.stage2c.sensitivity_flip.v1",
+  "seed_selection_rule": "all 20 seeds because B1' gamma=0.95 failure set is empty"
+}

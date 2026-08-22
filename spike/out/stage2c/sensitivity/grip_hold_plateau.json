@@ -1,0 +1,88 @@
+{
+  "acquisition_force_limit_n_per_finger": 20.0,
+  "adjacent_success_rate_deltas": {
+    "vs_1p5_percentage_points": 30.000000000000004,
+    "vs_6p0_percentage_points": 0.0
+  },
+  "created_utc": "2026-08-22T04:01:17.032250+00:00",
+  "curve": [
+    {
+      "both_below_threshold_fraction_distribution": {
+        "max": 0.7111111111111111,
+        "median": 0.3838888888888889,
+        "p90": 0.6250000000000001
+      },
+      "episode_count": 20,
+      "failure_reason_histogram": {
+        "grasp_slip_exceeded": 17
+      },
+      "hold_force_limit_n_per_finger": 1.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.02272242327666105,
+        "median": 0.015736138835299496,
+        "p90": 0.02110008891581147
+      },
+      "success_count": 3,
+      "success_rate": 0.15
+    },
+    {
+      "both_below_threshold_fraction_distribution": {
+        "max": 0.52,
+        "median": 0.015079906081951071,
+        "p90": 0.5111111111111111
+      },
+      "episode_count": 20,
+      "failure_reason_histogram": {
+        "grasp_slip_exceeded": 6
+      },
+      "hold_force_limit_n_per_finger": 1.5,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.01802518063885047,
+        "median": 0.005850569958473836,
+        "p90": 0.013273615335210638
+      },
+      "success_count": 14,
+      "success_rate": 0.7
+    },
+    {
+      "both_below_threshold_fraction_distribution": {
+        "max": 0.006790123456790123,
+        "median": 0.0021586708836642153,
+        "p90": 0.006172839506172839
+      },
+      "episode_count": 20,
+      "failure_reason_histogram": {},
+      "hold_force_limit_n_per_finger": 3.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.008808975480661955,
+        "median": 0.004600828626236868,
+        "p90": 0.006672340701215023
+      },
+      "success_count": 20,
+      "success_rate": 1.0
+    },
+    {
+      "both_below_threshold_fraction_distribution": {
+        "max": 0.0049382716049382715,
+        "median": 0.0,
+        "p90": 0.0024691358024691358
+      },
+      "episode_count": 20,
+      "failure_reason_histogram": {},
+      "hold_force_limit_n_per_finger": 6.0,
+      "max_grasp_slip_distribution_m": {
+        "max": 0.006790273673479758,
+        "median": 0.004305470166435174,
+        "p90": 0.006230224359143061
+      },
+      "success_count": 20,
+      "success_rate": 1.0
+    }
+  ],
+  "gamma": 0.95,
+  "plateau_criterion": "3 N differs from 1.5 N and 6 N by <5 percentage points",
+  "prediction_before_run": "all four hold-force points succeed 100%",
+  "schema": "shakebench_spike.stage2c.grip_hold_plateau.v1",
+  "seed_selection_rule": "all 20 seeds because B1' gamma=0.95 failure set is empty",
+  "three_newton_on_platform": false
+}

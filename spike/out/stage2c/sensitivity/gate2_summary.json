@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-08-22T04:29:15.612460+00:00",
+  "gamma": 0.95,
+  "grip_hold_three_newton_on_platform": false,
+  "move_action_gain_diagnostic": {
+    "excluded_from_gate": true,
+    "flip_fraction": 1.0
+  },
+  "passed": false,
+  "regular_parameter_passes": {
+    "cube_table_solref_timeconst_s": true,
+    "osc_kp": true,
+    "pad_solref_dampratio": true,
+    "physics_timestep_s": true
+  },
+  "schema": "shakebench_spike.stage2c.gate2.v1"
+}

@@ -75,7 +75,13 @@ def _vibration(gamma: float, seed: int, physics_hz: int, episode_s: float):
     return vibration, calibration
 
 
-def run_reactive_episode(seed: int, condition: Condition) -> dict:
+def run_reactive_episode(
+    seed: int,
+    condition: Condition,
+    *,
+    table_motion_sampler=None,
+    environment_variant: str = "hard_mounted",
+) -> dict:
     physics_hz = int(round(1.0 / condition.physics_timestep_s))
     if physics_hz % condition.diagnostic_frequency_hz:
         raise ValueError("physics frequency must divide diagnostic frequency exactly")
@@ -98,6 +104,7 @@ def run_reactive_episode(seed: int, condition: Condition) -> dict:
         cube_table_solref=(condition.cube_table_solref_timeconst_s, CONTACT_SOLREF[1]),
         cube_table_sliding_mu=condition.cube_table_sliding_mu,
         osc_kp=condition.osc_kp,
+        table_motion_sampler=table_motion_sampler,
     )
     try:
         policy = ReactiveScriptedPolicy(
@@ -111,17 +118,55 @@ def run_reactive_episode(seed: int, condition: Condition) -> dict:
         metrics = EpisodeMetrics.start(env)
         decimation = physics_hz // condition.diagnostic_frequency_hz
         physics_steps = 0
+        acquisition_trace: list[dict] = []
+        actuator_ids = env._gripper_actuator_ids()
+        actuator_names = [env.sim.model.actuator_id2name(index) for index in actuator_ids]
+        finger_joints = list(env.robots[0].gripper["right"].joints)
 
         def sample(stepped_env) -> None:
             nonlocal physics_steps
             physics_steps += 1
             if physics_steps % decimation == 0:
+                if stepped_env.gripper_force_phase == "acquisition":
+                    acquisition_trace.append(
+                        {
+                            "time_s": float(stepped_env.sim.data.time),
+                            "model_step_index": int(
+                                round(
+                                    float(stepped_env.sim.data.time)
+                                    / condition.physics_timestep_s
+                                )
+                            ),
+                            "policy_step_index": policy.policy_command_count - 1,
+                            "policy_phase": policy.phase,
+                            "actuator_force_n": {
+                                name: float(stepped_env.sim.data.actuator_force[index])
+                                for name, index in zip(
+                                    actuator_names, actuator_ids, strict=True
+                                )
+                            },
+                            "finger_joint_velocity_m_s": {
+                                joint: float(stepped_env.sim.data.get_joint_qvel(joint))
+                                for joint in finger_joints
+                            },
+                            "finger_joint_position_m": {
+                                joint: float(stepped_env.sim.data.get_joint_qpos(joint))
+                                for joint in finger_joints
+                            },
+                        }
+                    )
                 metrics.update(stepped_env, policy, contact_snapshot(stepped_env))
 
         env.physics_step_callback = sample
         actions: list[list[float]] = []
-        for _ in range(max_policy_steps):
+        phase_by_policy_step: list[str] = []
+        hold_completed_policy_step_index = None
+        for policy_step_index in range(max_policy_steps):
+            phase_by_policy_step.append(policy.phase)
+            hold_completed_before = policy.hold_completed
             action = policy.command(contact_snapshot(env))
+            if not hold_completed_before and policy.hold_completed:
+                hold_completed_policy_step_index = policy_step_index
             actions.append(action.tolist())
             env.step(action)
             if policy.finished:
@@ -129,14 +174,21 @@ def run_reactive_episode(seed: int, condition: Condition) -> dict:
         result = metrics.result(policy, _warning_count(env))
         result.update(
             {
-                "schema": "shakebench_spike.stage2b.reactive_episode.v1",
+                "schema": "shakebench_spike.stage2c.reactive_episode.v1",
                 "seed": seed,
+                "strategy": "reactive_scripted",
+                "environment_variant": environment_variant,
                 "condition": asdict(condition),
                 "elapsed_s": float(env.sim.data.time),
                 "policy_steps": len(actions),
                 "calibration": calibration,
                 "compiled_contact_configuration": env.contact_configuration(),
                 "compiled_gripper_actuators": env.gripper_actuator_configuration(),
+                "gripper_force_switch_history": env.gripper_force_switch_history,
+                "gripper_force_validation_history": env.gripper_force_validation_history,
+                "acquisition_trace_200hz": acquisition_trace,
+                "phase_by_policy_step": phase_by_policy_step,
+                "hold_completed_policy_step_index": hold_completed_policy_step_index,
                 "object_mass_kg": float(
                     env.sim.model.body_subtreemass[env.sim.model.body_name2id("cube_main")]
                 ),

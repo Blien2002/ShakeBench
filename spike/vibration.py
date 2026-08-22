@@ -67,6 +67,55 @@ class NumpyVibration:
         )
 
 
+class SecondOrderSupportedVibration(NumpyVibration):
+    """Absolute table motion for a base-excited linear second-order support.
+
+    For base displacement Y and table displacement X, the frequency response is
+    X/Y = (wn**2 + 2j*zeta*wn*w) / (wn**2 - w**2 + 2j*zeta*wn*w).
+    The same exploratory isotropic response is applied to all six authored axes.
+    """
+
+    def __init__(
+        self,
+        config: VibrationConfig,
+        *,
+        natural_frequency_hz: float,
+        damping_ratio: float,
+    ):
+        if natural_frequency_hz <= 0.0:
+            raise ValueError("natural frequency must be positive")
+        if damping_ratio <= 0.0:
+            raise ValueError("damping ratio must be positive")
+        super().__init__(config)
+        self.natural_frequency_hz = float(natural_frequency_hz)
+        self.damping_ratio = float(damping_ratio)
+        wn = 2.0 * np.pi * self.natural_frequency_hz
+        filtered = {}
+        for coordinate, bands in self._lines.items():
+            filtered[coordinate] = []
+            for accel_amp, omega, phase in bands:
+                response = (wn**2 + 2j * self.damping_ratio * wn * omega) / (
+                    wn**2 - omega**2 + 2j * self.damping_ratio * wn * omega
+                )
+                filtered[coordinate].append(
+                    (
+                        accel_amp * np.abs(response),
+                        omega,
+                        phase + np.angle(response),
+                    )
+                )
+        self._lines = filtered
+
+
+class ZeroVibration:
+    """Zero sampler used to retain the two-support topology at Gamma=0."""
+
+    @staticmethod
+    def sample(_time_s: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        zeros = np.zeros(6, dtype=np.float64)
+        return zeros.copy(), zeros.copy(), zeros.copy()
+
+
 def calibrated_vibration(
     gamma: float,
     *,

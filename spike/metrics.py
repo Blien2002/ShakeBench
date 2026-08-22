@@ -37,6 +37,34 @@ def object_position_b(env: ShakeDeckLift) -> np.ndarray:
     return point_in_body_frame(env, base_id, np.asarray(env.sim.data.body_xpos[cube_id]))
 
 
+def table_position_b(env: ShakeDeckLift) -> np.ndarray:
+    """Return the table support origin in the robot-base frame."""
+
+    base_id = env.sim.model.body_name2id("robot0_base")
+    table_support_id = (
+        env.table_deck_body_id if env.decoupled_table else env.deck_body_id
+    )
+    return point_in_body_frame(
+        env,
+        base_id,
+        np.asarray(env.sim.data.body_xpos[table_support_id]),
+    )
+
+
+def object_position_t(env: ShakeDeckLift) -> np.ndarray:
+    """Return the cube position in the physical table-support frame."""
+
+    table_support_id = (
+        env.table_deck_body_id if env.decoupled_table else env.deck_body_id
+    )
+    cube_id = env.sim.model.body_name2id("cube_main")
+    return point_in_body_frame(
+        env,
+        table_support_id,
+        np.asarray(env.sim.data.body_xpos[cube_id]),
+    )
+
+
 @dataclass(frozen=True)
 class ContactSnapshot:
     left_cube_n: float
@@ -89,10 +117,13 @@ def contact_snapshot(env: ShakeDeckLift) -> ContactSnapshot:
 @dataclass
 class EpisodeMetrics:
     initial_object_b: np.ndarray
+    initial_object_t: np.ndarray
+    initial_table_b: np.ndarray
     max_grasp_slip_m: float = 0.0
     max_penetration_m: float = 0.0
     ee_wobble_base_m: float = 0.0
     obj_slip_on_table_m: float = 0.0
+    base_frame_table_motion_m: float = 0.0
     max_object_lift_m: float = 0.0
     _hold_reference_b: np.ndarray | None = None
     _left_force_n: list[float] = field(default_factory=list)
@@ -100,7 +131,11 @@ class EpisodeMetrics:
 
     @classmethod
     def start(cls, env: ShakeDeckLift) -> "EpisodeMetrics":
-        return cls(initial_object_b=object_position_b(env).copy())
+        return cls(
+            initial_object_b=object_position_b(env).copy(),
+            initial_object_t=object_position_t(env).copy(),
+            initial_table_b=table_position_b(env).copy(),
+        )
 
     def update(
         self,
@@ -110,6 +145,8 @@ class EpisodeMetrics:
     ) -> None:
         hand_b = eef_position_b(env)
         object_b = object_position_b(env)
+        object_t = object_position_t(env)
+        table_b = table_position_b(env)
         self.max_penetration_m = max(self.max_penetration_m, contacts.max_penetration_m)
         self.max_object_lift_m = max(
             self.max_object_lift_m,
@@ -118,7 +155,7 @@ class EpisodeMetrics:
         if policy.hand_minus_object_b_at_grasp is None:
             self.obj_slip_on_table_m = max(
                 self.obj_slip_on_table_m,
-                float(np.linalg.norm(object_b - self.initial_object_b)),
+                float(np.linalg.norm(object_t - self.initial_object_t)),
             )
         else:
             # Release intentionally removes both contacts, so force diagnostics
@@ -139,6 +176,10 @@ class EpisodeMetrics:
                 self.ee_wobble_base_m,
                 float(np.linalg.norm(hand_b - self._hold_reference_b)),
             )
+        self.base_frame_table_motion_m = max(
+            self.base_frame_table_motion_m,
+            float(np.linalg.norm(table_b - self.initial_table_b)),
+        )
 
     def result(self, policy: ReactiveScriptedPolicy, warning_count: int) -> dict:
         slip_exceeded = self.max_grasp_slip_m > SLIP_TOLERANCE_M
@@ -186,6 +227,7 @@ class EpisodeMetrics:
             "max_penetration_m": self.max_penetration_m,
             "ee_wobble_base_m": self.ee_wobble_base_m,
             "obj_slip_on_table_m": self.obj_slip_on_table_m,
+            "base_frame_table_motion_m": self.base_frame_table_motion_m,
             "max_object_lift_m": self.max_object_lift_m,
             "transfer_hold_s": policy.hold_time_s,
             "post_latch_finger_force_n": {
