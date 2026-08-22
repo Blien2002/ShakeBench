@@ -1,0 +1,99 @@
+{
+  "created_utc": "2026-08-22T11:33:25.263445+00:00",
+  "excluded_over_12_mm_at_gamma_0p5": [],
+  "points": {
+    "MILD": {
+      "allowed_interval_m": [
+        0.0008,
+        0.002
+      ],
+      "base_frame_table_motion_m": 0.0005955044932713328,
+      "configuration_name": "fn15_zeta0p10",
+      "deviation_from_interval_m": 0.00020449550672866723,
+      "gamma_selection": 0.5,
+      "isolator": {
+        "damping_ratio": 0.1,
+        "natural_frequency_hz": 15.0,
+        "omega_n_rad_s": 94.24777960769379,
+        "payload_mass_kg": 0.07011,
+        "rotational_damping_n_m_s_rad": [
+          32.28928929359589,
+          32.28928929359589,
+          64.33353436021177
+        ],
+        "rotational_stiffness_n_m_rad": [
+          15215.96910515946,
+          15215.96910515946,
+          30316.463838826174
+        ],
+        "table_inertia_kg_m2": [
+          1.713,
+          1.713,
+          3.413
+        ],
+        "table_mass_kg": 32.0,
+        "translational_damping_n_s_m": 603.1857894892403,
+        "translational_stiffness_n_m": 284244.60675137345,
+        "vertical_springref_m": 0.0011068205750520536
+      },
+      "label": "MILD",
+      "target_m": 0.0015,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": false
+    },
+    "RIGID": {
+      "allowed_interval_m": null,
+      "base_frame_table_motion_m": 1.3767772727540345e-14,
+      "configuration_name": "RIGID",
+      "deviation_from_interval_m": 0.0,
+      "gamma_selection": 0.5,
+      "isolator": null,
+      "label": "RIGID",
+      "target_m": null,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": true
+    },
+    "STRONG": {
+      "allowed_interval_m": [
+        0.0035,
+        0.008
+      ],
+      "base_frame_table_motion_m": 0.004142142587978833,
+      "configuration_name": "fn5_zeta0p20",
+      "deviation_from_interval_m": 0.0,
+      "gamma_selection": 0.5,
+      "isolator": {
+        "damping_ratio": 0.2,
+        "natural_frequency_hz": 5.0,
+        "omega_n_rad_s": 31.41592653589793,
+        "payload_mass_kg": 0.07011,
+        "rotational_damping_n_m_s_rad": [
+          21.526192862397263,
+          21.526192862397263,
+          42.88902290680785
+        ],
+        "rotational_stiffness_n_m_rad": [
+          1690.663233906607,
+          1690.663233906607,
+          3368.495982091798
+        ],
+        "table_inertia_kg_m2": [
+          1.713,
+          1.713,
+          3.413
+        ],
+        "table_mass_kg": 32.0,
+        "translational_damping_n_s_m": 402.1238596594935,
+        "translational_stiffness_n_m": 31582.734083485946,
+        "vertical_springref_m": 0.009961385175468481
+      },
+      "label": "STRONG",
+      "target_m": 0.005,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": true
+    }
+  },
+  "schema": "shakebench_spike.iso.operating_points.v1",
+  "selection_metric": "Gamma=0.50 base-frame table motion peak about mean",
+  "selection_was_predeclared": true
+}

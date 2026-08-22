@@ -37,30 +37,41 @@ def object_position_b(env: ShakeDeckLift) -> np.ndarray:
     return point_in_body_frame(env, base_id, np.asarray(env.sim.data.body_xpos[cube_id]))
 
 
+def _rotation_in_base(env: ShakeDeckLift, rotation_w: np.ndarray) -> np.ndarray:
+    base_id = env.sim.model.body_name2id("robot0_base")
+    rotation_w_b = np.asarray(env.sim.data.body_xmat[base_id]).reshape(3, 3)
+    return rotation_w_b.T @ np.asarray(rotation_w).reshape(3, 3)
+
+
+def eef_rotation_b(env: ShakeDeckLift) -> np.ndarray:
+    site_ids = env.robots[0].eef_site_id
+    site_id = int(site_ids.get("right", next(iter(site_ids.values()))))
+    return _rotation_in_base(env, env.sim.data.site_xmat[site_id])
+
+
+def object_rotation_b(env: ShakeDeckLift) -> np.ndarray:
+    cube_id = env.sim.model.body_name2id("cube_main")
+    return _rotation_in_base(env, env.sim.data.body_xmat[cube_id])
+
+
 def table_position_b(env: ShakeDeckLift) -> np.ndarray:
     """Return the table support origin in the robot-base frame."""
 
     base_id = env.sim.model.body_name2id("robot0_base")
-    table_support_id = (
-        env.table_deck_body_id if env.decoupled_table else env.deck_body_id
-    )
     return point_in_body_frame(
         env,
         base_id,
-        np.asarray(env.sim.data.body_xpos[table_support_id]),
+        np.asarray(env.sim.data.body_xpos[env.table_support_body_id]),
     )
 
 
 def object_position_t(env: ShakeDeckLift) -> np.ndarray:
     """Return the cube position in the physical table-support frame."""
 
-    table_support_id = (
-        env.table_deck_body_id if env.decoupled_table else env.deck_body_id
-    )
     cube_id = env.sim.model.body_name2id("cube_main")
     return point_in_body_frame(
         env,
-        table_support_id,
+        env.table_support_body_id,
         np.asarray(env.sim.data.body_xpos[cube_id]),
     )
 
@@ -138,6 +149,11 @@ class EpisodeMetrics:
     _hold_reference_b: np.ndarray | None = None
     _left_force_n: list[float] = field(default_factory=list)
     _right_force_n: list[float] = field(default_factory=list)
+    _tracking_error_m: list[float] = field(default_factory=list)
+    _translational_slip_m: list[float] = field(default_factory=list)
+    _rotational_slip_rad: list[float] = field(default_factory=list)
+    _grasp_relative_rotation: np.ndarray | None = None
+    _final_object_b: np.ndarray | None = None
 
     @classmethod
     def start(cls, env: ShakeDeckLift) -> "EpisodeMetrics":
@@ -157,6 +173,12 @@ class EpisodeMetrics:
         object_b = object_position_b(env)
         object_t = object_position_t(env)
         table_b = table_position_b(env)
+        self._final_object_b = object_b.copy()
+        target_b = getattr(policy, "last_target_b", None)
+        if target_b is not None:
+            self._tracking_error_m.append(
+                float(np.linalg.norm(hand_b - np.asarray(target_b)))
+            )
         self.max_penetration_m = max(self.max_penetration_m, contacts.max_penetration_m)
         self.max_object_lift_m = max(
             self.max_object_lift_m,
@@ -179,6 +201,13 @@ class EpisodeMetrics:
                 )
             )
             self.max_grasp_slip_m = max(self.max_grasp_slip_m, slip)
+            self._translational_slip_m.append(slip)
+            relative_rotation = eef_rotation_b(env).T @ object_rotation_b(env)
+            if self._grasp_relative_rotation is None:
+                self._grasp_relative_rotation = relative_rotation.copy()
+            rotation_delta = self._grasp_relative_rotation.T @ relative_rotation
+            cosine = np.clip((np.trace(rotation_delta) - 1.0) * 0.5, -1.0, 1.0)
+            self._rotational_slip_rad.append(float(np.arccos(cosine)))
         if policy.hold_started:
             if self._hold_reference_b is None:
                 self._hold_reference_b = hand_b.copy()
@@ -229,6 +258,24 @@ class EpisodeMetrics:
                 "max": float(np.max(array)),
             }
 
+        def distribution(values: list[float]) -> dict:
+            if not values:
+                return {"median": None, "p90": None, "max": None}
+            array = np.asarray(values, dtype=np.float64)
+            return {
+                "median": float(np.median(array)),
+                "p90": float(np.percentile(array, 90)),
+                "max": float(np.max(array)),
+            }
+
+        final_object_b = (
+            self._final_object_b
+            if self._final_object_b is not None
+            else self.initial_object_b
+        )
+        placement_target_b = self.initial_object_b + np.array((0.0, 0.15, 0.0))
+        placement_error_m = float(np.linalg.norm(final_object_b - placement_target_b))
+
         return {
             "success": success,
             "failure_reason": None if success else failure_reason or "episode_timeout",
@@ -240,6 +287,37 @@ class EpisodeMetrics:
             "base_frame_table_motion_m": self.base_frame_table_motion_m,
             "max_object_lift_m": self.max_object_lift_m,
             "transfer_hold_s": policy.hold_time_s,
+            "placement": {
+                "final_object_position_b_m": final_object_b.tolist(),
+                "target_object_position_b_m": placement_target_b.tolist(),
+                "translation_error_m": placement_error_m,
+                "tolerance_m": 0.070,
+                "within_tolerance": placement_error_m <= 0.070,
+            },
+            "eef_command_tracking_error_m": distribution(self._tracking_error_m),
+            "grasp_slip_decomposition": {
+                "translation_m": distribution(self._translational_slip_m),
+                "rotation_rad": distribution(self._rotational_slip_rad),
+                "contact_loss": {
+                    "sample_count": force_samples,
+                    "any_finger_below_threshold_fraction": (
+                        sum(
+                            left <= CONTACT_THRESHOLD_N or right <= CONTACT_THRESHOLD_N
+                            for left, right in zip(
+                                self._left_force_n,
+                                self._right_force_n,
+                                strict=True,
+                            )
+                        )
+                        / force_samples
+                        if force_samples
+                        else None
+                    ),
+                    "both_fingers_below_threshold_fraction": (
+                        bilateral_below / force_samples if force_samples else None
+                    ),
+                },
+            },
             "post_latch_finger_force_n": {
                 "sample_count": force_samples,
                 "left": force_summary(self._left_force_n),

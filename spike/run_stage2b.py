@@ -112,6 +112,7 @@ def run_reactive_episode(
     condition: Condition,
     *,
     table_motion_sampler=None,
+    table_isolator=None,
     environment_variant: str = "hard_mounted",
 ) -> dict:
     physics_hz = int(round(1.0 / condition.physics_timestep_s))
@@ -137,6 +138,7 @@ def run_reactive_episode(
         cube_table_sliding_mu=condition.cube_table_sliding_mu,
         osc_kp=condition.osc_kp,
         table_motion_sampler=table_motion_sampler,
+        table_isolator=table_isolator,
     )
     try:
         policy = ReactiveScriptedPolicy(
@@ -196,12 +198,14 @@ def run_reactive_episode(
 
         env.physics_step_callback = sample
         actions: list[list[float]] = []
+        target_position_b_by_policy_step: list[list[float]] = []
         phase_by_policy_step: list[str] = []
         hold_completed_policy_step_index = None
         for policy_step_index in range(max_policy_steps):
             phase_by_policy_step.append(policy.phase)
             hold_completed_before = policy.hold_completed
             action = policy.command(contact_snapshot(env))
+            target_position_b_by_policy_step.append(policy.last_target_b.tolist())
             if not hold_completed_before and policy.hold_completed:
                 hold_completed_policy_step_index = policy_step_index
             actions.append(action.tolist())
@@ -234,6 +238,10 @@ def run_reactive_episode(
                     env.sim.model.body_subtreemass[env.sim.model.body_name2id("cube_main")]
                 ),
                 "actions": actions,
+                "target_position_b_by_policy_step": target_position_b_by_policy_step,
+                "table_isolator": (
+                    table_isolator.as_dict() if table_isolator is not None else None
+                ),
             }
         )
         return result
@@ -300,6 +308,8 @@ def run_condition(
     output_dir: Path,
     *,
     resume: bool = True,
+    table_isolator=None,
+    environment_variant: str = "hard_mounted",
 ) -> tuple[dict, list[dict]]:
     output_dir.mkdir(parents=True, exist_ok=True)
     episodes = []
@@ -307,11 +317,23 @@ def run_condition(
         episode_path = output_dir / f"seed_{seed:03d}.json"
         if resume and episode_path.exists():
             cached = json.loads(episode_path.read_text(encoding="utf-8"))
-            if cached.get("condition") == asdict(condition):
+            expected_isolator = (
+                table_isolator.as_dict() if table_isolator is not None else None
+            )
+            if (
+                cached.get("condition") == asdict(condition)
+                and cached.get("environment_variant") == environment_variant
+                and cached.get("table_isolator") == expected_isolator
+            ):
                 episodes.append(cached)
                 print(f"resume seed={seed:03d} success={cached['success']}", flush=True)
                 continue
-        episode = run_reactive_episode(seed, condition)
+        episode = run_reactive_episode(
+            seed,
+            condition,
+            table_isolator=table_isolator,
+            environment_variant=environment_variant,
+        )
         episode_path.write_text(
             json.dumps(episode, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",

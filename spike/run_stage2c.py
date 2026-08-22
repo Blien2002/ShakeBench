@@ -55,6 +55,7 @@ class ReplayState:
         self.finished = False
         self.failure_reason = None
         self.phase_history = [{"phase": "settle", "time_s": 0.0}]
+        self.last_target_b = None
 
 
 def _force_switch_event(episode: dict) -> dict:
@@ -109,6 +110,7 @@ def run_frozen_episode(
     tape: dict,
     *,
     table_motion_sampler=None,
+    table_isolator=None,
     environment_variant: str = "hard_mounted",
 ) -> dict:
     source_condition = tape["condition"]
@@ -144,6 +146,7 @@ def run_frozen_episode(
         cube_table_sliding_mu=condition.cube_table_sliding_mu,
         osc_kp=condition.osc_kp,
         table_motion_sampler=table_motion_sampler,
+        table_isolator=table_isolator,
     )
     try:
         state = ReplayState()
@@ -167,11 +170,19 @@ def run_frozen_episode(
         contact_loss_time_s = 0.0
         actions = np.asarray(tape["actions"], dtype=np.float64)
         phases = tape["phase_by_policy_step"]
+        targets = tape.get("target_position_b_by_policy_step")
         if len(actions) != len(phases):
             raise RuntimeError("action and phase tapes have different lengths")
+        if targets is not None and len(targets) != len(actions):
+            raise RuntimeError("target and action tapes have different lengths")
         executed_steps = 0
         for policy_step_index, action in enumerate(actions):
             state.phase = phases[policy_step_index]
+            state.last_target_b = (
+                np.asarray(targets[policy_step_index], dtype=np.float64)
+                if targets is not None
+                else None
+            )
             if policy_step_index == switch_step:
                 state.hand_minus_object_b_at_grasp = (
                     eef_position_b(env) - object_position_b(env)
@@ -249,6 +260,9 @@ def run_frozen_episode(
                     diagnostic_frequency_hz=condition.diagnostic_frequency_hz,
                 ),
                 "calibration": calibration,
+                "table_isolator": (
+                    table_isolator.as_dict() if table_isolator is not None else None
+                ),
             }
         )
         return result

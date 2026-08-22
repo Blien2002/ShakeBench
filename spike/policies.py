@@ -73,6 +73,7 @@ class ReactiveScriptedPolicy:
         self.hold_target_b: np.ndarray | None = None
         self.place_target_b: np.ndarray | None = None
         self.finger_target_m = self._finger_half_opening_m()
+        self.last_target_b = self.initial_hand_b.copy()
 
     @property
     def phase(self) -> str:
@@ -318,6 +319,7 @@ class ReactiveScriptedPolicy:
                 self._advance()
 
         if not self.finished:
+            self.last_target_b = target_b.copy()
             action[:3] = self._move_action(hand_b, target_b, arm_speed)
             target_rotation = self.initial_eef_rotation_b if phase == "settle" else self.grasp_rotation_b
             action[3:6] = self._orientation_action(target_rotation)

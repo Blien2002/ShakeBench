@@ -1,0 +1,2915 @@
+{
+  "created_utc": "2026-08-22T13:29:21.463752+00:00",
+  "gammas": [
+    0.0,
+    0.3,
+    0.5,
+    0.75,
+    0.95
+  ],
+  "hold_force_n_per_finger": 3.0,
+  "mujoco_warning_count": 0,
+  "operating_points": {
+    "MILD": {
+      "allowed_interval_m": [
+        0.0008,
+        0.002
+      ],
+      "base_frame_table_motion_m": 0.0005955044932713328,
+      "configuration_name": "fn15_zeta0p10",
+      "deviation_from_interval_m": 0.00020449550672866723,
+      "gamma_selection": 0.5,
+      "isolator": {
+        "damping_ratio": 0.1,
+        "natural_frequency_hz": 15.0,
+        "omega_n_rad_s": 94.24777960769379,
+        "payload_mass_kg": 0.07011,
+        "rotational_damping_n_m_s_rad": [
+          32.28928929359589,
+          32.28928929359589,
+          64.33353436021177
+        ],
+        "rotational_stiffness_n_m_rad": [
+          15215.96910515946,
+          15215.96910515946,
+          30316.463838826174
+        ],
+        "table_inertia_kg_m2": [
+          1.713,
+          1.713,
+          3.413
+        ],
+        "table_mass_kg": 32.0,
+        "translational_damping_n_s_m": 603.1857894892403,
+        "translational_stiffness_n_m": 284244.60675137345,
+        "vertical_springref_m": 0.0011068205750520536
+      },
+      "label": "MILD",
+      "target_m": 0.0015,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": false
+    },
+    "RIGID": {
+      "allowed_interval_m": null,
+      "base_frame_table_motion_m": 1.3767772727540345e-14,
+      "configuration_name": "RIGID",
+      "deviation_from_interval_m": 0.0,
+      "gamma_selection": 0.5,
+      "isolator": null,
+      "label": "RIGID",
+      "target_m": null,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": true
+    },
+    "STRONG": {
+      "allowed_interval_m": [
+        0.0035,
+        0.008
+      ],
+      "base_frame_table_motion_m": 0.004142142587978833,
+      "configuration_name": "fn5_zeta0p20",
+      "deviation_from_interval_m": 0.0,
+      "gamma_selection": 0.5,
+      "isolator": {
+        "damping_ratio": 0.2,
+        "natural_frequency_hz": 5.0,
+        "omega_n_rad_s": 31.41592653589793,
+        "payload_mass_kg": 0.07011,
+        "rotational_damping_n_m_s_rad": [
+          21.526192862397263,
+          21.526192862397263,
+          42.88902290680785
+        ],
+        "rotational_stiffness_n_m_rad": [
+          1690.663233906607,
+          1690.663233906607,
+          3368.495982091798
+        ],
+        "table_inertia_kg_m2": [
+          1.713,
+          1.713,
+          3.413
+        ],
+        "table_mass_kg": 32.0,
+        "translational_damping_n_s_m": 402.1238596594935,
+        "translational_stiffness_n_m": 31582.734083485946,
+        "vertical_springref_m": 0.009961385175468481
+      },
+      "label": "STRONG",
+      "target_m": 0.005,
+      "under_12_mm_limit": true,
+      "within_predeclared_interval": true
+    }
+  },
+  "physics_timestep_s": 0.0002,
+  "policy_frequency_hz": 20,
+  "prediction_comparison": {
+    "prediction_1": {
+      "observed": false,
+      "text": "RIGID is flat and frozen slip <= reactive slip"
+    },
+    "prediction_2": {
+      "frozen_first_decline_gamma": 0.5,
+      "observed": true,
+      "reactive_first_decline_gamma": 0.75,
+      "text": "STRONG frozen degrades before reactive"
+    },
+    "prediction_3": {
+      "dominant_failure": "grasp_slip_exceeded",
+      "failure_histogram": {
+        "grasp_slip_exceeded": 6
+      },
+      "observed": false,
+      "text": "STRONG frozen dominant failure is descend_table_contact"
+    },
+    "written_before_stage3_rollouts": true
+  },
+  "rows": {
+    "MILD": {
+      "0.0": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1618310991245505,
+            "median": 0.15006465081512788,
+            "p90": 0.16107809435767845
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006301516942990102,
+            "median": 0.004218894734709192,
+            "p90": 0.005730950070436015
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11005276499199579,
+            "median": 0.1018916946604734,
+            "p90": 0.10915071468056937
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0018452763337458125,
+            "median": 0.001562109978179932,
+            "p90": 0.0016809703802204323
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0007239557346145138,
+            "median": 0.00018018713931149333,
+            "p90": 0.0005048041206031502
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0012202603621128236
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0006714798743079453
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.006328531502700562,
+              "median": 0.0032080125793275847,
+              "p90": 0.0059751948376577544
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0018452763337458125,
+              "median": 0.001562109978179932,
+              "p90": 0.0016809703802204323
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0007261477935022434,
+            "median": 0.00019546269125257773,
+            "p90": 0.0006938009015911695
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1618310991245505,
+            "median": 0.15006465081512788,
+            "p90": 0.16107809435767845
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006301516942990102,
+            "median": 0.004218894734709192,
+            "p90": 0.005730950070436015
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11005276499199579,
+            "median": 0.1018916946604734,
+            "p90": 0.10915071468056937
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0018452763337458125,
+            "median": 0.001562109978179932,
+            "p90": 0.0016809703802204323
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0007239557346145138,
+            "median": 0.00018018713931149333,
+            "p90": 0.0005048041206031502
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.006328531502700562,
+              "median": 0.0032080125793275847,
+              "p90": 0.0059751948376577544
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0018452763337458125,
+              "median": 0.001562109978179932,
+              "p90": 0.0016809703802204323
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0007261477935022434,
+            "median": 0.00019546269125257773,
+            "p90": 0.0006938009015911695
+          }
+        }
+      },
+      "0.3": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1620351865034355,
+            "median": 0.1500726462186846,
+            "p90": 0.16109994015085677
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006770077848433552,
+            "median": 0.004645266434769505,
+            "p90": 0.006386802143052194
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11071967658857991,
+            "median": 0.10250967577273042,
+            "p90": 0.10962640677815852
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0029574167085340227,
+            "median": 0.002201593095652825,
+            "p90": 0.0026996661336533426
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0038737243197708485,
+            "median": 0.002700970343572759,
+            "p90": 0.003553646172281338
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.006172839506172839,
+              "median": 0.0,
+              "p90": 0.0033950617283950604
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.003703703703703704,
+              "median": 0.0,
+              "p90": 0.0009259259259259249
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.0391067875406944,
+              "median": 0.020525731925780492,
+              "p90": 0.034061410888807916
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0029574167085340227,
+              "median": 0.002201593095652825,
+              "p90": 0.0026996661336533426
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0007996567449800917,
+            "median": 0.00045928110027017386,
+            "p90": 0.000746791990227863
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0011818767557142092,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0012385079067452403,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0008831317814681232,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001997535841699336,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0012484874449089976,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0019015193818269329,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0014710540848885292,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003514290992090248,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0003974702764649924,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001958816236484584,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16202701570601794,
+            "median": 0.14985574991416994,
+            "p90": 0.16125700260999248
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.005785231234395944,
+            "median": 0.004241678000930466,
+            "p90": 0.005643174853247951
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.10986905210259969,
+            "median": 0.10194947452245418,
+            "p90": 0.10972796619511882
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0034146177810083626,
+            "median": 0.0021257252034064334,
+            "p90": 0.003344663033650577
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0024899919491045215,
+            "median": 0.0009381104542279873,
+            "p90": 0.0023006158191439894
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.007453416149068323,
+              "median": 0.002160493827160494,
+              "p90": 0.004099378881987577
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.00245398773006135,
+              "median": 0.000927842956828464,
+              "p90": 0.0019224174065465074
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.03577370970288297,
+              "median": 0.008216080415925302,
+              "p90": 0.02138652009038932
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0034146177810083626,
+              "median": 0.0021257252034064334,
+              "p90": 0.003344663033650577
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0007250034728766329,
+            "median": 0.00038951127110391193,
+            "p90": 0.0005140263833273207
+          }
+        }
+      },
+      "0.5": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16216760216194276,
+            "median": 0.15016378413978201,
+            "p90": 0.1611115767806324
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006813157701345809,
+            "median": 0.005176739452723426,
+            "p90": 0.006776446484483517
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11102928867595709,
+            "median": 0.10279378941806823,
+            "p90": 0.10983153321452178
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.003500403762569932,
+            "median": 0.002668508342228562,
+            "p90": 0.0031979953101076036
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.004468731068255393,
+            "median": 0.00333558068084596,
+            "p90": 0.00408071268919815
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.009876543209876543,
+              "median": 0.0015432098765432098,
+              "p90": 0.004876543209876541
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.004320987654320987,
+              "median": 0.0,
+              "p90": 0.0026543209876543203
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.03667177658914613,
+              "median": 0.019652845399438935,
+              "p90": 0.028950448471350764
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.003500403762569932,
+              "median": 0.002668508342228562,
+              "p90": 0.0031979953101076036
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.001462732280502019,
+            "median": 0.0006254790862996423,
+            "p90": 0.0014098501648589295
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0014822742713110001,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0017371459815622358,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0008774303175510443,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0028389322900359737,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0013222401845935,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0010535724635190574,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0017972862985427525,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003956003464728115,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0024622409443949018,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0025348188297470943,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16216391724567034,
+            "median": 0.14969246974888872,
+            "p90": 0.1614158014642185
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006105913806427184,
+            "median": 0.00429460203939705,
+            "p90": 0.005878749241842896
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.10973118915264315,
+            "median": 0.10227091837481592,
+            "p90": 0.10965970280394693
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.003340224328767362,
+            "median": 0.0027484618323887202,
+            "p90": 0.003241631540908127
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.002682139456514672,
+            "median": 0.0013338465826741495,
+            "p90": 0.0016375427558607567
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.009316770186335404,
+              "median": 0.0037267080745341614,
+              "p90": 0.006521739130434781
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.004347826086956522,
+              "median": 0.0006211180124223603,
+              "p90": 0.004323671497584541
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.04597387215283608,
+              "median": 0.011414412537693076,
+              "p90": 0.02167338785701342
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.003340224328767362,
+              "median": 0.0027484618323887202,
+              "p90": 0.003241631540908127
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.002089702481449756,
+            "median": 0.0010571023237367662,
+            "p90": 0.0014345299702752745
+          }
+        }
+      },
+      "0.75": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16233887457938592,
+            "median": 0.1502513420396578,
+            "p90": 0.1611205469270022
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007722493141532973,
+            "median": 0.005509724771989305,
+            "p90": 0.007102961628740389
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.1113145722904359,
+            "median": 0.10302360901619802,
+            "p90": 0.10984911380319592
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.004448317256621597,
+            "median": 0.0037930280154924974,
+            "p90": 0.004136538952694616
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.006116473847573047,
+            "median": 0.0038546348359599406,
+            "p90": 0.0058556627777484
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.016049382716049384,
+              "median": 0.001851851851851852,
+              "p90": 0.006604938271604935
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.003703703703703704,
+              "median": 0.00030864197530864197,
+              "p90": 0.003703703703703704
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.051428775702107285,
+              "median": 0.024989578265373256,
+              "p90": 0.042650088641392886
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.004448317256621597,
+              "median": 0.0037930280154924974,
+              "p90": 0.004136538952694616
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.002833889346563505,
+            "median": 0.0019740793325201877,
+            "p90": 0.0026394149493059234
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0007982023250092517,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0017308421534186686,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.00048558908770690275,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.004353209715863109,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.00026815943799459547,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0048622616208709975,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002607545330333746,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002775215269565322,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002525864621495845,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.004185202777512682,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16242408638145928,
+            "median": 0.15006230919112568,
+            "p90": 0.161621832004618
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006173226751231215,
+            "median": 0.004874881519492664,
+            "p90": 0.006152777296200365
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11294153047658899,
+            "median": 0.10241709342015481,
+            "p90": 0.11100629751033503
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.004924290218393019,
+            "median": 0.003647860417508784,
+            "p90": 0.003993510933069403
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0033008191484942607,
+            "median": 0.0014362943045626445,
+            "p90": 0.0026878538475156406
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.02298136645962733,
+              "median": 0.006188175753393145,
+              "p90": 0.01467313664596273
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.008695652173913044,
+              "median": 0.0024787209569818265,
+              "p90": 0.007057065217391304
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.052661131514556016,
+              "median": 0.028243330051180824,
+              "p90": 0.04657589758817392
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.004924290218393019,
+              "median": 0.003647860417508784,
+              "p90": 0.003993510933069403
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.003974479002914378,
+            "median": 0.0023133466133934237,
+            "p90": 0.003076694030891511
+          }
+        }
+      },
+      "0.95": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16247626589614933,
+            "median": 0.1503273922091772,
+            "p90": 0.16112707768444964
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.008250426353751065,
+            "median": 0.006052526069230482,
+            "p90": 0.007749284028372779
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11143431974718757,
+            "median": 0.10322152185902064,
+            "p90": 0.11000915306124427
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.007371837710349838,
+            "median": 0.004838623518390794,
+            "p90": 0.005842655994488936
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.011768376160109187,
+            "median": 0.005670373076515274,
+            "p90": 0.009015848797707667
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.01728395061728395,
+              "median": 0.0037037037037037034,
+              "p90": 0.010061728395061725
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.004320987654320987,
+              "median": 0.0012345679012345679,
+              "p90": 0.004320987654320987
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.07421148133084249,
+              "median": 0.032304283897386765,
+              "p90": 0.06206092211274841
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.007371837710349838,
+              "median": 0.004838623518390794,
+              "p90": 0.005842655994488936
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.006139218036769747,
+            "median": 0.0035257229719514007,
+            "p90": 0.005974677896661774
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001127293827543278,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 9.05400344940869e-05,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.00040346165333993416,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0022430459559729414,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0036900156420459,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.005498134487999032,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003003751072037858,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0052905556293523035,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.010148562282130572,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0018549473625935013,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1629076092368375,
+            "median": 0.150257124483946,
+            "p90": 0.1618541034861375
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007138923885471091,
+            "median": 0.005180174316211121,
+            "p90": 0.006845933097895422
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11359723842720902,
+            "median": 0.10210520699894789,
+            "p90": 0.11079372781598187
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.006147167584766419,
+            "median": 0.004764274627351806,
+            "p90": 0.006107503669571168
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.003929306426918781,
+            "median": 0.0026417085585828002,
+            "p90": 0.003563082960052919
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.027950310559006212,
+              "median": 0.00588145080898704,
+              "p90": 0.015494417558968101
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.013043478260869565,
+              "median": 0.0024768039260792884,
+              "p90": 0.007930114697252598
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.08871797030716375,
+              "median": 0.048412112186602026,
+              "p90": 0.08862478785949332
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.006147167584766419,
+              "median": 0.004764274627351806,
+              "p90": 0.006107503669571168
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.006134898797174647,
+            "median": 0.0034960572497719587,
+            "p90": 0.005972369014611062
+          }
+        }
+      }
+    },
+    "RIGID": {
+      "0.0": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16183092106460345,
+            "median": 0.15006459292124386,
+            "p90": 0.1610777804350087
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006302306820507287,
+            "median": 0.004190599698468584,
+            "p90": 0.005734349453882248
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.10992652550335606,
+            "median": 0.10189313524627136,
+            "p90": 0.10920702980457328
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0017900197491852192,
+            "median": 0.0015001990060985724,
+            "p90": 0.001648541397973407
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0007626252889467949,
+            "median": 0.0002432625159967503,
+            "p90": 0.000558750985404504
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0012202603621128236
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0012202603621128236
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.006538661264133051,
+              "median": 0.0034541536468197503,
+              "p90": 0.005491425945683789
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0017900197491852192,
+              "median": 0.0015001990060985724,
+              "p90": 0.001648541397973407
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0010020566200529483,
+            "median": 0.0002016962016344056,
+            "p90": 0.0005694414109135166
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16183092106460345,
+            "median": 0.15006459292124386,
+            "p90": 0.1610777804350087
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006302306820507287,
+            "median": 0.004190599698468584,
+            "p90": 0.005734349453882248
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.10992652550335606,
+            "median": 0.10189313524627136,
+            "p90": 0.10920702980457328
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0017900197491852192,
+            "median": 0.0015001990060985724,
+            "p90": 0.001648541397973407
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0007626252889467949,
+            "median": 0.0002432625159967503,
+            "p90": 0.000558750985404504
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.0006211180124223603,
+              "median": 0.0,
+              "p90": 6.211180124223581e-05
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.006538661264133051,
+              "median": 0.0034541536468197503,
+              "p90": 0.005491425945683789
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0017900197491852192,
+              "median": 0.0015001990060985724,
+              "p90": 0.001648541397973407
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0010020566200529483,
+            "median": 0.0002016962016344056,
+            "p90": 0.0005694414109135166
+          }
+        }
+      },
+      "0.3": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1620349196722879,
+            "median": 0.1500419857528208,
+            "p90": 0.16109954417615197
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006771170770637073,
+            "median": 0.004489147446019652,
+            "p90": 0.00638880619079527
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11014967944892884,
+            "median": 0.10250558410945655,
+            "p90": 0.1097057770161396
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0026564721700597753,
+            "median": 0.0018058663225370883,
+            "p90": 0.0022560243362265476
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.003784334739928911,
+            "median": 0.0022375316252976523,
+            "p90": 0.003513808336039192
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.008641975308641974,
+              "median": 0.0,
+              "p90": 0.005864197530864196
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0030864197530864196,
+              "median": 0.0,
+              "p90": 0.002530864197530864
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.02287350028509361,
+              "median": 0.014818326237805783,
+              "p90": 0.021313939917923255
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0026564721700597753,
+              "median": 0.0018058663225370883,
+              "p90": 0.0022560243362265476
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0007624193424326986,
+            "median": 0.0004346275912774046,
+            "p90": 0.000754716377175527
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0016805480610751914,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0027799848514557008,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0009093749124651904,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001915236013291013,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0012319178551136655,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0012580859984224182,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0012221472203002347,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003448176316141105,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001058510919922908,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0010669534081597714,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16182258009547806,
+            "median": 0.14985833520876424,
+            "p90": 0.16123739889301184
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.005787709215216149,
+            "median": 0.003998865796047062,
+            "p90": 0.005596973174633678
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.10988794840325952,
+            "median": 0.1019397027613127,
+            "p90": 0.1097280791381317
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.002419680645771151,
+            "median": 0.0019041337311329564,
+            "p90": 0.0023737731817484926
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0015685138334270991,
+            "median": 0.0005191386223923494,
+            "p90": 0.0015303298388500684
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.0036809815950920245,
+              "median": 0.0009316770186335404,
+              "p90": 0.003163129215409823
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0018404907975460123,
+              "median": 0.0,
+              "p90": 0.00018404907975460056
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.01848554228346877,
+              "median": 0.009110225660129527,
+              "p90": 0.0176462167947386
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.002419680645771151,
+              "median": 0.0019041337311329564,
+              "p90": 0.0023737731817484926
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0010296779633629188,
+            "median": 0.00033785728915143386,
+            "p90": 0.000536199130964764
+          }
+        }
+      },
+      "0.5": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16216732588518132,
+            "median": 0.150207753208918,
+            "p90": 0.1611111648406161
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006986371632787886,
+            "median": 0.004795206310103401,
+            "p90": 0.006814743818000494
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11010801248630185,
+            "median": 0.1028136887504616,
+            "p90": 0.11001347935373962
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0034108151715859752,
+            "median": 0.0026209187331486805,
+            "p90": 0.003366717122870303
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.005025274716596723,
+            "median": 0.0034213930518877467,
+            "p90": 0.00442159223684315
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.013580246913580247,
+              "median": 0.00030864197530864197,
+              "p90": 0.009691358024691355
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.006790123456790123,
+              "median": 0.0,
+              "p90": 0.002901234567901233
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.04354544735731465,
+              "median": 0.02062523525634937,
+              "p90": 0.032749252955394464
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0034108151715859752,
+              "median": 0.0026209187331486805,
+              "p90": 0.003366717122870303
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0012375666239700263,
+            "median": 0.0006851089182489162,
+            "p90": 0.0011203217452098433
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0018124370714724782,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0025959259729481897,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0011685448021159582,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001944574672086333,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.00416465511776087,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0031760533436064795,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0014118957716227351,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003516840793220357,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002378937565084567,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0018279649007063481,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16182293544752543,
+            "median": 0.1500967450003402,
+            "p90": 0.16138319794357137
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006121367123040627,
+            "median": 0.00449345353134445,
+            "p90": 0.005872513263145079
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11146412576269014,
+            "median": 0.10199052244798343,
+            "p90": 0.11058099909942959
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0029718702276589582,
+            "median": 0.002217929562812108,
+            "p90": 0.002876598589108161
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.002409941733673087,
+            "median": 0.0008564826453198034,
+            "p90": 0.0015015477066396292
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.006211180124223602,
+              "median": 0.0009240324168749527,
+              "p90": 0.006142590405060397
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.004347826086956522,
+              "median": 0.0,
+              "p90": 0.0037681159420289855
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.04301345203697073,
+              "median": 0.010013920912229392,
+              "p90": 0.037492134663697524
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0029718702276589582,
+              "median": 0.002217929562812108,
+              "p90": 0.002876598589108161
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0013556944437533819,
+            "median": 0.0006858421435196203,
+            "p90": 0.0008928753930030601
+          }
+        }
+      },
+      "0.75": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16233858811864393,
+            "median": 0.150474526633104,
+            "p90": 0.1611201272155565
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007725511471934997,
+            "median": 0.0054025983103364395,
+            "p90": 0.007307622166909209
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11040000654426978,
+            "median": 0.10300185807771432,
+            "p90": 0.10996487110703974
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0039748692538335035,
+            "median": 0.003180905908580168,
+            "p90": 0.003746987094239254
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0060328976994652025,
+            "median": 0.003966776965441637,
+            "p90": 0.005081012396212107
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.014197530864197531,
+              "median": 0.00030864197530864197,
+              "p90": 0.011975308641975308
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.009259259259259259,
+              "median": 0.0,
+              "p90": 0.008148148148148147
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.053501827691705764,
+              "median": 0.020767710324652487,
+              "p90": 0.05027321541020434
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0039748692538335035,
+              "median": 0.003180905908580168,
+              "p90": 0.003746987094239254
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0022338152738184515,
+            "median": 0.0012623222990426916,
+            "p90": 0.0020198426623386197
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002270404018908123,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0007118890401343362,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0019077653327809747,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.004479180592103941,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002097889391515212,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0049645747830650185,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0029124882172199724,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0019811560727358273,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003086991344285632,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002290413397364843,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16182264250844366,
+            "median": 0.14970159882017942,
+            "p90": 0.16156387130828517
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006558657042346699,
+            "median": 0.005008575574504142,
+            "p90": 0.006554005242261924
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11212263518648864,
+            "median": 0.10211889397339297,
+            "p90": 0.11151917449618956
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.003934222289204634,
+            "median": 0.003346638386618397,
+            "p90": 0.0037013094531077586
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0021215721034594437,
+            "median": 0.0013881355431406522,
+            "p90": 0.00169075852828044
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.014906832298136646,
+              "median": 0.0037267080745341614,
+              "p90": 0.009316770186335402
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.006211180124223602,
+              "median": 0.0009297599877310023,
+              "p90": 0.006142590405060397
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.08337170850131785,
+              "median": 0.014425937168502552,
+              "p90": 0.05464586472373367
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.003934222289204634,
+              "median": 0.003346638386618397,
+              "p90": 0.0037013094531077586
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.006718038163510524,
+            "median": 0.0010720333160593389,
+            "p90": 0.0033119824904168337
+          }
+        }
+      },
+      "0.95": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16247597739627626,
+            "median": 0.15062566202276323,
+            "p90": 0.1611266552135357
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007902517217342156,
+            "median": 0.005775456293671286,
+            "p90": 0.007597018010639929
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11059069307703587,
+            "median": 0.10319705888077388,
+            "p90": 0.10977093475237464
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.004558896737814595,
+            "median": 0.0031668910193246285,
+            "p90": 0.004280530486297788
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0054116998933546635,
+            "median": 0.004557966074798131,
+            "p90": 0.0050039413888685194
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.012962962962962963,
+              "median": 0.0027777777777777775,
+              "p90": 0.012407407407407407
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.008641975308641974,
+              "median": 0.00030864197530864197,
+              "p90": 0.006419753086419752
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.0742543139582701,
+              "median": 0.02415676321967513,
+              "p90": 0.06753948155729796
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.004558896737814595,
+              "median": 0.0031668910193246285,
+              "p90": 0.004280530486297788
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0036416266459162426,
+            "median": 0.0022689705136901966,
+            "p90": 0.0027895482995411868
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 9.759159100021638e-05,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002491294852118677,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0017628357402485544,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0038127353413104463,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002865779048977125,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0027890998667235867,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0031013958460518,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.004333276945002438,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0030548906652490392,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0029790691694643566,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16186257480781444,
+            "median": 0.1497084805128161,
+            "p90": 0.16170751219902255
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007309944373854831,
+            "median": 0.005054378167100285,
+            "p90": 0.007248444972059008
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.1127368581300017,
+            "median": 0.10203096739794948,
+            "p90": 0.11174424216019825
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.005169427540055116,
+            "median": 0.00336711661251634,
+            "p90": 0.004528763575433185
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.002748544761067834,
+            "median": 0.0014650586356353711,
+            "p90": 0.0022274359955886083
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.01625,
+              "median": 0.005246913580246914,
+              "p90": 0.012051829268292681
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.009202453987730062,
+              "median": 0.002145438121047877,
+              "p90": 0.005420245398773005
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.06253209231492302,
+              "median": 0.02245418686861947,
+              "p90": 0.05650781633712365
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.005169427540055116,
+              "median": 0.00336711661251634,
+              "p90": 0.004528763575433185
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.007821246065620095,
+            "median": 0.002256225793111767,
+            "p90": 0.00401972667947625
+          }
+        }
+      }
+    },
+    "STRONG": {
+      "0.0": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16183257127831446,
+            "median": 0.15006401032002467,
+            "p90": 0.16108064794528323
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006301262905105251,
+            "median": 0.004082258103875998,
+            "p90": 0.0057346268975853034
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11005386729573939,
+            "median": 0.1018959386799567,
+            "p90": 0.10915750620909627
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0014515274889399152,
+            "median": 0.0011602152308033712,
+            "p90": 0.0013272761708922574
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0006246627526816228,
+            "median": 0.0002236254547571603,
+            "p90": 0.00039060546727512764
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0012202603621128236
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.001226993865030675,
+              "median": 0.0,
+              "p90": 0.0006714798743079453
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.004606455594531113,
+              "median": 0.0032353717871418594,
+              "p90": 0.004446912253946208
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0014515274889399152,
+              "median": 0.0011602152308033712,
+              "p90": 0.0013272761708922574
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0008366555735761789,
+            "median": 0.00017257000567212527,
+            "p90": 0.0007152539187717515
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16183257127831446,
+            "median": 0.15006401032002467,
+            "p90": 0.16108064794528323
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006301262905105251,
+            "median": 0.004082258103875998,
+            "p90": 0.0057346268975853034
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11005386729573939,
+            "median": 0.1018959386799567,
+            "p90": 0.10915750620909627
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.0014515274889399152,
+            "median": 0.0011602152308033712,
+            "p90": 0.0013272761708922574
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.0006246627526816228,
+            "median": 0.0002236254547571603,
+            "p90": 0.00039060546727512764
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0,
+              "median": 0.0,
+              "p90": 0.0
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.004606455594531113,
+              "median": 0.0032353717871418594,
+              "p90": 0.004446912253946208
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.0014515274889399152,
+              "median": 0.0011602152308033712,
+              "p90": 0.0013272761708922574
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0008366555735761789,
+            "median": 0.00017257000567212527,
+            "p90": 0.0007152539187717515
+          }
+        }
+      },
+      "0.3": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16203667604392422,
+            "median": 0.1502693246933291,
+            "p90": 0.1611024990109143
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.006610788966030675,
+            "median": 0.004549780531926826,
+            "p90": 0.006255601953436143
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11087769627581108,
+            "median": 0.10250552366222893,
+            "p90": 0.10955833877213135
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.005007811815870012,
+            "median": 0.002947112514887106,
+            "p90": 0.0038739861686012253
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.004875576754735384,
+            "median": 0.002563084018254359,
+            "p90": 0.00419654377636861
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.020987654320987655,
+              "median": 0.003989762119843421,
+              "p90": 0.0081723850640006
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0024691358024691358,
+              "median": 0.0009221389078239795,
+              "p90": 0.00191358024691358
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.055597871424689534,
+              "median": 0.022143655097276053,
+              "p90": 0.03658315108884445
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.005007811815870012,
+              "median": 0.002947112514887106,
+              "p90": 0.0038739861686012253
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0025209465904233457,
+            "median": 0.0015174931002299116,
+            "p90": 0.0020473566776838827
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0006631368758845369,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0018185772074809131,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0009200000969578894,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002727793764683039,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0007760108504215135,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0005217661773546582,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0019410953676406812,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0010428065194422853,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002035212050277385,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.002321307971425628,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1623121800563982,
+            "median": 0.149848233775963,
+            "p90": 0.16134562817390796
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.0061053338285611295,
+            "median": 0.004214653699005994,
+            "p90": 0.005859401970467847
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.110427517805064,
+            "median": 0.102257132106316,
+            "p90": 0.11005298148595044
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.004695303763942297,
+            "median": 0.0025264296180271336,
+            "p90": 0.004544584889593204
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.002415485241866376,
+            "median": 0.0018519902128453691,
+            "p90": 0.002217475415335969
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.007361963190184049,
+              "median": 0.003703703703703704,
+              "p90": 0.00629175187457396
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.003105590062111801,
+              "median": 0.00030674846625766873,
+              "p90": 0.0030883367839889576
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.04073491329058659,
+              "median": 0.013182203412776417,
+              "p90": 0.03350595830209099
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.004695303763942297,
+              "median": 0.0025264296180271336,
+              "p90": 0.004544584889593204
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0030274625721341463,
+            "median": 0.0017606863336235257,
+            "p90": 0.0026481645791924515
+          }
+        }
+      },
+      "0.5": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16216909504627286,
+            "median": 0.1503910583914756,
+            "p90": 0.16111413373314545
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007514105991677619,
+            "median": 0.004519378246342032,
+            "p90": 0.006821092645834112
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11120637912747265,
+            "median": 0.10280820330974386,
+            "p90": 0.1098377756720974
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.007006877546614044,
+            "median": 0.0043277961247091285,
+            "p90": 0.0066353921740547215
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.009209637486142027,
+            "median": 0.005087260428163737,
+            "p90": 0.007255880952677859
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.025925925925925925,
+              "median": 0.0058227943390545015,
+              "p90": 0.010925925925925919
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.0049079754601227,
+              "median": 0.0006172839506172839,
+              "p90": 0.004379686434901158
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.09521405650868021,
+              "median": 0.03685178924868452,
+              "p90": 0.05681048473794073
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.007006877546614044,
+              "median": 0.0043277961247091285,
+              "p90": 0.0066353921740547215
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.0049333279073241745,
+            "median": 0.002838534543180812,
+            "p90": 0.004193063488016084
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0004701445345869984,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0005903978900744199,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0036363548296451487,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001544526194276051,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.00024127563132741612,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0021264585364610595,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.003763341036876518,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0021567166630127622,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.007659469423759419,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0037448548240243927,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16323326278150246,
+            "median": 0.149553034924211,
+            "p90": 0.16108842259102885
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.00667226229178472,
+            "median": 0.004540952703969078,
+            "p90": 0.006156888020165752
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11068715270984925,
+            "median": 0.10256703286349297,
+            "p90": 0.10952517669241048
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.006954570262084243,
+            "median": 0.004903036144633027,
+            "p90": 0.0053445502788911975
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.005239138332339071,
+            "median": 0.002548756051514027,
+            "p90": 0.00358611169061693
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.018404907975460124,
+              "median": 0.005572808833678399,
+              "p90": 0.009062713019768232
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.004320987654320987,
+              "median": 0.002484472049689441,
+              "p90": 0.004297129440278725
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.11372085404231674,
+              "median": 0.025159190889435978,
+              "p90": 0.0938487392713801
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.006954570262084243,
+              "median": 0.004903036144633027,
+              "p90": 0.0053445502788911975
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.006885963300976579,
+            "median": 0.0029288638005800123,
+            "p90": 0.006781555104956044
+          }
+        }
+      },
+      "0.75": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1623403465312195,
+            "median": 0.1505377283802174,
+            "p90": 0.16112310262827462
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.009302151208394364,
+            "median": 0.005877055741258408,
+            "p90": 0.00724884956699301
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11148250160829447,
+            "median": 0.10293713134120433,
+            "p90": 0.11011632270618187
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {
+            "grasp_slip_exceeded": 2
+          },
+          "max_grasp_slip_distribution_m": {
+            "max": 0.012251755530346865,
+            "median": 0.007174477532848658,
+            "p90": 0.010482116661139301
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.019174049774242648,
+            "median": 0.007027604777733268,
+            "p90": 0.011611222836489682
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.024691358024691357,
+              "median": 0.010094643124345354,
+              "p90": 0.02080246913580247
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.006790123456790123,
+              "median": 0.002446552243300211,
+              "p90": 0.0051234567901234564
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.1510043926401322,
+              "median": 0.062430335784101745,
+              "p90": 0.11370793935931116
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.012251755530346865,
+              "median": 0.007174477532848658,
+              "p90": 0.010482116661139301
+            }
+          },
+          "success_count": 8,
+          "success_rate": 0.8,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.010257175262250744,
+            "median": 0.006848379509104292,
+            "p90": 0.009707510070188951
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0015063397781548953,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0023074125023653386,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.00858727152428167,
+            "reactive_success": true,
+            "seed": 2
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.017613158785366137,
+            "reactive_success": true,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.00023792487827693212,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0021650857966200874,
+            "reactive_success": true,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.004135740632384744,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001025484934336822,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0004344374428094516,
+            "reactive_success": true,
+            "seed": 8
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0016889373495223257,
+            "reactive_success": true,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16486616937683052,
+            "median": 0.1498338369932307,
+            "p90": 0.1610956262251598
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.007113807091237172,
+            "median": 0.0046584850764088935,
+            "p90": 0.0061443468508857926
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11230169398622354,
+            "median": 0.10256695508023202,
+            "p90": 0.11143044479360681
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {},
+          "max_grasp_slip_distribution_m": {
+            "max": 0.009356751012529828,
+            "median": 0.0064681015913010745,
+            "p90": 0.009100098458935451
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.009512719170287332,
+            "median": 0.004382424442734789,
+            "p90": 0.008505851133258982
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.02147239263803681,
+              "median": 0.008364005827773944,
+              "p90": 0.020480572597137016
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.010429447852760737,
+              "median": 0.002777777777777778,
+              "p90": 0.007668711656441717
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.1885140303321049,
+              "median": 0.06669040566929742,
+              "p90": 0.11602390799983583
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.009356751012529828,
+              "median": 0.0064681015913010745,
+              "p90": 0.009100098458935451
+            }
+          },
+          "success_count": 10,
+          "success_rate": 1.0,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.010078515568957802,
+            "median": 0.005844719460544544,
+            "p90": 0.009025517223631247
+          }
+        }
+      },
+      "0.95": {
+        "frozen_replay": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.16247773634529789,
+            "median": 0.15068073862289394,
+            "p90": 0.161129633953914
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.010915082999971298,
+            "median": 0.006142368130624228,
+            "p90": 0.010674217359119392
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11169312876014614,
+            "median": 0.10314908838683813,
+            "p90": 0.11013924407378564
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {
+            "grasp_slip_exceeded": 4
+          },
+          "max_grasp_slip_distribution_m": {
+            "max": 0.026069710089469574,
+            "median": 0.009515031469414086,
+            "p90": 0.023883399470034036
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.039330931464370666,
+            "median": 0.00810533671431249,
+            "p90": 0.03383642029260934
+          },
+          "placement_within_70mm_count": 10,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.028395061728395062,
+              "median": 0.017178560674495635,
+              "p90": 0.025617283950617284
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.010493827160493827,
+              "median": 0.005555555555555556,
+              "p90": 0.009331591305006439
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.2138205298331331,
+              "median": 0.10318382264278744,
+              "p90": 0.18339759985096066
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.026069710089469574,
+              "median": 0.009515031469414086,
+              "p90": 0.023883399470034036
+            }
+          },
+          "success_count": 6,
+          "success_rate": 0.6,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.020316939481254865,
+            "median": 0.010590293284241147,
+            "p90": 0.019203327569972343
+          }
+        },
+        "paired": [
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0002977273443671366,
+            "reactive_success": true,
+            "seed": 0
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.001019620722606556,
+            "reactive_success": true,
+            "seed": 1
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0031954885167664307,
+            "reactive_success": false,
+            "seed": 2
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.012359025658363654,
+            "reactive_success": false,
+            "seed": 3
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.0024277343954800714,
+            "reactive_success": true,
+            "seed": 4
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": -0.1290798305041158,
+            "reactive_success": false,
+            "seed": 5
+          },
+          {
+            "frozen_success": true,
+            "placement_error_delta_frozen_minus_reactive_m": 0.004319742124436221,
+            "reactive_success": true,
+            "seed": 6
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.00616734799764683,
+            "reactive_success": true,
+            "seed": 7
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.023558949927913207,
+            "reactive_success": false,
+            "seed": 8
+          },
+          {
+            "frozen_success": false,
+            "placement_error_delta_frozen_minus_reactive_m": 0.0076956957556326925,
+            "reactive_success": false,
+            "seed": 9
+          }
+        ],
+        "reactive_scripted": {
+          "eef_command_tracking_episode_max_distribution_m": {
+            "max": 0.1662631763631439,
+            "median": 0.14934542495813952,
+            "p90": 0.16146903059769413
+          },
+          "eef_command_tracking_episode_median_distribution_m": {
+            "max": 0.023091841933776364,
+            "median": 0.00548513670969201,
+            "p90": 0.008940008802859037
+          },
+          "eef_command_tracking_episode_p90_distribution_m": {
+            "max": 0.11192098585197818,
+            "median": 0.10264382275952054,
+            "p90": 0.10903127186989232
+          },
+          "episode_count": 10,
+          "failure_reason_histogram": {
+            "grasp_slip_exceeded": 5
+          },
+          "max_grasp_slip_distribution_m": {
+            "max": 0.031935825936633196,
+            "median": 0.010055594451423537,
+            "p90": 0.017156180371828113
+          },
+          "mujoco_warning_count": 0,
+          "placement_error_distribution_m": {
+            "max": 0.13734472455120117,
+            "median": 0.007665688788932024,
+            "p90": 0.038009187680526385
+          },
+          "placement_within_70mm_count": 9,
+          "slip_decomposition": {
+            "any_contact_loss_fraction_distribution": {
+              "max": 0.6571428571428571,
+              "median": 0.009340062111801242,
+              "p90": 0.0929365079365077
+            },
+            "bilateral_contact_loss_fraction_distribution": {
+              "max": 0.11428571428571428,
+              "median": 0.0009297599877310023,
+              "p90": 0.02350174216027871
+            },
+            "rotation_episode_max_distribution_rad": {
+              "max": 0.16951452955613297,
+              "median": 0.10072809306607432,
+              "p90": 0.16676826965719485
+            },
+            "translation_episode_max_distribution_m": {
+              "max": 0.031935825936633196,
+              "median": 0.010055594451423537,
+              "p90": 0.017156180371828113
+            }
+          },
+          "success_count": 5,
+          "success_rate": 0.5,
+          "table_frame_object_slip_distribution_m": {
+            "max": 0.013631323133610061,
+            "median": 0.010105598003739003,
+            "p90": 0.013248362422082233
+          }
+        }
+      }
+    }
+  },
+  "schema": "shakebench_spike.iso.ladder_summary.v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "selected_mu": 0.3
+}

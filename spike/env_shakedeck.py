@@ -14,6 +14,11 @@ from robosuite.environments.manipulation.lift import Lift
 from robosuite.models.grippers import register_gripper
 from robosuite.models.grippers.panda_gripper import PandaGripperBase
 
+try:
+    from .isolator import IsolatorParameters, add_isolator_joints
+except ImportError:  # Direct execution from the spike directory.
+    from isolator import IsolatorParameters, add_isolator_joints
+
 
 ANCHOR = np.array((0.0, 0.0, 0.8), dtype=np.float64)
 CONTACT_MARGIN_M = 1.0e-3
@@ -68,6 +73,7 @@ def shake_deck_xml(
     cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
     cube_table_sliding_mu: float = MATERIAL_MU,
     decoupled_table: bool = False,
+    table_isolator: IsolatorParameters | None = None,
 ) -> str:
     """Move Lift's table and Panda base under a welded dynamic deck."""
 
@@ -103,11 +109,15 @@ def shake_deck_xml(
         rgba="0 0 0 0",
     )
     ET.SubElement(deck, "site", name="deck_anchor", pos="0 0 0", size="0.002")
+    if decoupled_table and table_isolator is not None:
+        raise ValueError("decoupled table and compliant table are mutually exclusive")
     deck_members = ("robot0_base",) if decoupled_table else ("table", "robot0_base")
     for name in deck_members:
         body = movable[name]
         original = np.fromstring(body.get("pos", "0 0 0"), sep=" ")
         body.set("pos", _numbers(original - ANCHOR))
+        if name == "table" and table_isolator is not None:
+            add_isolator_joints(body, table_isolator)
         deck.append(body)
     worldbody.append(deck)
 
@@ -233,6 +243,7 @@ class ShakeDeckLift(Lift):
     cube_table_sliding_mu: float = MATERIAL_MU
     table_motion_sampler: MotionSampler | None = None
     decoupled_table: bool = False
+    table_isolator: IsolatorParameters | None = None
     physics_step_callback: PhysicsStepCallback | None = None
 
     def configure_shakedeck(
@@ -245,6 +256,7 @@ class ShakeDeckLift(Lift):
         cube_table_solref: tuple[float, float] = CONTACT_SOLREF,
         cube_table_sliding_mu: float = MATERIAL_MU,
         table_motion_sampler: MotionSampler | None = None,
+        table_isolator: IsolatorParameters | None = None,
     ) -> None:
         self.motion_sampler = motion_sampler
         self.write_zero_motion = motion_sampler is None
@@ -259,6 +271,7 @@ class ShakeDeckLift(Lift):
         self.cube_table_sliding_mu = cube_table_sliding_mu
         self.table_motion_sampler = table_motion_sampler
         self.decoupled_table = table_motion_sampler is not None
+        self.table_isolator = table_isolator
         # Lift intentionally drops its cube from 10 mm. The spike measures
         # table-relative slip, so start in static contact instead of folding
         # that unrelated free-fall distance into the diagnostic.
@@ -272,6 +285,7 @@ class ShakeDeckLift(Lift):
                 cube_table_solref=cube_table_solref,
                 cube_table_sliding_mu=cube_table_sliding_mu,
                 decoupled_table=self.decoupled_table,
+                table_isolator=table_isolator,
             )
         )
         self.reset()
@@ -290,6 +304,12 @@ class ShakeDeckLift(Lift):
             )
             if self.table_deck_mocap_id < 0:
                 raise RuntimeError("table_deck_drv did not compile as a mocap body")
+        if self.decoupled_table:
+            self.table_support_body_id = self.table_deck_body_id
+        elif self.table_isolator is not None:
+            self.table_support_body_id = self.sim.model.body_name2id("table")
+        else:
+            self.table_support_body_id = self.deck_body_id
         self._write_deck_target(0.0)
         self.sim.forward()
 
@@ -517,6 +537,7 @@ def make_env(
     cube_table_sliding_mu: float = MATERIAL_MU,
     osc_kp: float = 150.0,
     table_motion_sampler: MotionSampler | None = None,
+    table_isolator: IsolatorParameters | None = None,
 ) -> ShakeDeckLift:
     """Build a headless deterministic Lift and then install the XML processor."""
 
@@ -549,6 +570,7 @@ def make_env(
         cube_table_solref,
         cube_table_sliding_mu,
         table_motion_sampler,
+        table_isolator,
     )
     env.validate_contact_configuration()
     return env

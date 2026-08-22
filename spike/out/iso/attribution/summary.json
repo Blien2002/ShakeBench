@@ -1,0 +1,749 @@
+{
+  "any_parameter_bound": true,
+  "created_utc": "2026-08-22T13:29:29.071622+00:00",
+  "effect_condition": {
+    "baseline_success_rate": 0.5,
+    "gamma": 0.95,
+    "ladder_prediction_comparison": {
+      "prediction_1": {
+        "observed": false,
+        "text": "RIGID is flat and frozen slip <= reactive slip"
+      },
+      "prediction_2": {
+        "frozen_first_decline_gamma": 0.5,
+        "observed": true,
+        "reactive_first_decline_gamma": 0.75,
+        "text": "STRONG frozen degrades before reactive"
+      },
+      "prediction_3": {
+        "dominant_failure": "grasp_slip_exceeded",
+        "failure_histogram": {
+          "grasp_slip_exceeded": 6
+        },
+        "observed": false,
+        "text": "STRONG frozen dominant failure is descend_table_contact"
+      },
+      "written_before_stage3_rollouts": true
+    },
+    "operating_point": "STRONG",
+    "reason": "first observed reactive success-rate decline",
+    "strategy": "reactive_scripted"
+  },
+  "mujoco_warning_count": 0,
+  "schema": "shakebench_spike.iso.attribution.v1",
+  "seed_count_per_check": 10,
+  "single_parameter_checks": {
+    "hold_force_3_to_6_n": {
+      "all_seed_success_flip_count": 5,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.14947980999075594,
+          "p90": 0.16146903059769413
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.007367583517453591,
+          "median": 0.00525527742282207,
+          "p90": 0.006998988606705197
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11193700256323331,
+          "median": 0.10264166682403575,
+          "p90": 0.10904861290404447
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 4
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.019118732794864757,
+          "median": 0.00788929967552917,
+          "p90": 0.0161514693099895
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.013844655464193063,
+          "median": 0.006325669938419556,
+          "p90": 0.01320938419064024
+        },
+        "placement_within_70mm_count": 10,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.01707317073170732,
+            "median": 0.003376242095754291,
+            "p90": 0.01170731707317073
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.004968944099378882,
+            "median": 0.0006192009815198221,
+            "p90": 0.004941338854382332
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.18483947081142238,
+            "median": 0.07700737364652765,
+            "p90": 0.16179679435055974
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.019118732794864757,
+            "median": 0.00788929967552917,
+            "p90": 0.0161514693099895
+          }
+        },
+        "success_count": 6,
+        "success_rate": 0.6,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.013631323133610061,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      },
+      "alternate_value": 6.0,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.14934542495813952,
+          "p90": 0.16146903059769413
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.023091841933776364,
+          "median": 0.00548513670969201,
+          "p90": 0.008940008802859037
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11192098585197818,
+          "median": 0.10264382275952054,
+          "p90": 0.10903127186989232
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 5
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.031935825936633196,
+          "median": 0.010055594451423537,
+          "p90": 0.017156180371828113
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.13734472455120117,
+          "median": 0.007665688788932024,
+          "p90": 0.038009187680526385
+        },
+        "placement_within_70mm_count": 9,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.6571428571428571,
+            "median": 0.009340062111801242,
+            "p90": 0.0929365079365077
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.11428571428571428,
+            "median": 0.0009297599877310023,
+            "p90": 0.02350174216027871
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.16951452955613297,
+            "median": 0.10072809306607432,
+            "p90": 0.16676826965719485
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.031935825936633196,
+            "median": 0.010055594451423537,
+            "p90": 0.017156180371828113
+          }
+        },
+        "success_count": 5,
+        "success_rate": 0.5,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.013631323133610061,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      },
+      "baseline_failure_count": 5,
+      "baseline_failure_rescue_fraction": 0.6,
+      "baseline_failures_rescued_count": 3,
+      "baseline_value": 3.0,
+      "effect_parameter_bound": true,
+      "paired_results": [
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.006391430156563362,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.007648052037172476,
+          "baseline_success": true,
+          "seed": 0,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.013138798493578817,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.005570622699069439,
+          "baseline_success": true,
+          "seed": 1,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.006654128845987221,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.010607848503358155,
+          "baseline_success": false,
+          "seed": 2,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.013844655464193063,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.026971905806007012,
+          "baseline_success": false,
+          "seed": 3,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.006019828796912952,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0076833255406915735,
+          "baseline_success": true,
+          "seed": 4,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0017054495719611088,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.13734472455120117,
+          "baseline_success": false,
+          "seed": 5,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.012850863280000874,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.003349333432627469,
+          "baseline_success": true,
+          "seed": 6,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.002299578332511491,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0024582603430037472,
+          "baseline_success": true,
+          "seed": 7,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.006259909720275751,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009666969123389317,
+          "baseline_success": false,
+          "seed": 8,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.00466301389118361,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.0036321520701296794,
+          "baseline_success": false,
+          "seed": 9,
+          "success_flipped": false
+        }
+      ],
+      "parameter": "gripper_force_limit_n_per_finger"
+    },
+    "move_gain_4_to_3": {
+      "all_seed_success_flip_count": 5,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.16596319583779567,
+          "median": 0.15067799616125754,
+          "p90": 0.16297588027336934
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.05477099123651109,
+          "median": 0.021051798215795635,
+          "p90": 0.04617353873127278
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.13444857855816209,
+          "median": 0.11067648666376223,
+          "p90": 0.12193489698612398
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "descend_contact_timeout": 1,
+          "grasp_contact_lost": 1,
+          "grasp_contact_timeout": 2,
+          "grasp_slip_exceeded": 2
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.021563892867255945,
+          "median": 0.0050960055165913554,
+          "p90": 0.01898840858296738
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.16301026620657888,
+          "median": 0.07692398441611537,
+          "p90": 0.1560147810006298
+        },
+        "placement_within_70mm_count": 5,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.68,
+            "median": 0.0005319148936170213,
+            "p90": 0.5480000000000002
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.51,
+            "median": 0.0,
+            "p90": 0.45
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.2446325722699493,
+            "median": 0.0441527248625587,
+            "p90": 0.15786513683444037
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.021563892867255945,
+            "median": 0.0067454046406862575,
+            "p90": 0.019846903344396906
+          }
+        },
+        "success_count": 4,
+        "success_rate": 0.4,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.041245754504523786,
+          "median": 0.010155198179186597,
+          "p90": 0.024787180315276686
+        }
+      },
+      "alternate_value": 3.0,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.14934542495813952,
+          "p90": 0.16146903059769413
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.023091841933776364,
+          "median": 0.00548513670969201,
+          "p90": 0.008940008802859037
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11192098585197818,
+          "median": 0.10264382275952054,
+          "p90": 0.10903127186989232
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 5
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.031935825936633196,
+          "median": 0.010055594451423537,
+          "p90": 0.017156180371828113
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.13734472455120117,
+          "median": 0.007665688788932024,
+          "p90": 0.038009187680526385
+        },
+        "placement_within_70mm_count": 9,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.6571428571428571,
+            "median": 0.009340062111801242,
+            "p90": 0.0929365079365077
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.11428571428571428,
+            "median": 0.0009297599877310023,
+            "p90": 0.02350174216027871
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.16951452955613297,
+            "median": 0.10072809306607432,
+            "p90": 0.16676826965719485
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.031935825936633196,
+            "median": 0.010055594451423537,
+            "p90": 0.017156180371828113
+          }
+        },
+        "success_count": 5,
+        "success_rate": 0.5,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.013631323133610061,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      },
+      "baseline_failure_count": 5,
+      "baseline_failure_rescue_fraction": 0.4,
+      "baseline_failures_rescued_count": 2,
+      "baseline_value": 4.0,
+      "effect_parameter_bound": false,
+      "paired_results": [
+        {
+          "alternate_failure_reason": "grasp_contact_timeout",
+          "alternate_placement_error_m": 0.16301026620657888,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.007648052037172476,
+          "baseline_success": true,
+          "seed": 0,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.01960074435043403,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.005570622699069439,
+          "baseline_success": true,
+          "seed": 1,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_contact_timeout",
+          "alternate_placement_error_m": 0.1342472244817967,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.010607848503358155,
+          "baseline_success": false,
+          "seed": 2,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.004262725793664499,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.026971905806007012,
+          "baseline_success": false,
+          "seed": 3,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.14991554136301544,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0076833255406915735,
+          "baseline_success": true,
+          "seed": 4,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_contact_lost",
+          "alternate_placement_error_m": 0.14873869674688545,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.13734472455120117,
+          "baseline_success": false,
+          "seed": 5,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.007664130849753132,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.003349333432627469,
+          "baseline_success": true,
+          "seed": 6,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0031253183440736135,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0024582603430037472,
+          "baseline_success": true,
+          "seed": 7,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.00429021581496465,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009666969123389317,
+          "baseline_success": false,
+          "seed": 8,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.15523750486663546,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.0036321520701296794,
+          "baseline_success": false,
+          "seed": 9,
+          "success_flipped": false
+        }
+      ],
+      "parameter": "move_action_gain"
+    },
+    "osc_kp_150_to_300": {
+      "all_seed_success_flip_count": 6,
+      "alternate": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.24559467131437693,
+          "median": 0.18981833409842208,
+          "p90": 0.2257798576695791
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.0922639567768638,
+          "median": 0.043596244444842384,
+          "p90": 0.07644151185104935
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.20234092379502566,
+          "median": 0.15156198615576455,
+          "p90": 0.1968494209426656
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "descend_contact_timeout": 5,
+          "grasp_slip_exceeded": 2
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.018429794571948606,
+          "median": 0.002389330363792912,
+          "p90": 0.012167794239068297
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.15457294955306078,
+          "median": 0.14725461795603972,
+          "p90": 0.15166229938494272
+        },
+        "placement_within_70mm_count": 4,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.4666666666666667,
+            "median": 0.011564625850340135,
+            "p90": 0.2888888888888889
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.2222222222222222,
+            "median": 0.004166666666666667,
+            "p90": 0.13611111111111113
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.1614717660984132,
+            "median": 0.11082959821063887,
+            "p90": 0.1454536047368099
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.018429794571948606,
+            "median": 0.009853024846295825,
+            "p90": 0.015646683312890694
+          }
+        },
+        "success_count": 3,
+        "success_rate": 0.3,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.01293321410040254,
+          "median": 0.009079121346494655,
+          "p90": 0.012429185513038772
+        }
+      },
+      "alternate_value": 300.0,
+      "baseline": {
+        "eef_command_tracking_episode_max_distribution_m": {
+          "max": 0.1662631763631439,
+          "median": 0.14934542495813952,
+          "p90": 0.16146903059769413
+        },
+        "eef_command_tracking_episode_median_distribution_m": {
+          "max": 0.023091841933776364,
+          "median": 0.00548513670969201,
+          "p90": 0.008940008802859037
+        },
+        "eef_command_tracking_episode_p90_distribution_m": {
+          "max": 0.11192098585197818,
+          "median": 0.10264382275952054,
+          "p90": 0.10903127186989232
+        },
+        "episode_count": 10,
+        "failure_reason_histogram": {
+          "grasp_slip_exceeded": 5
+        },
+        "max_grasp_slip_distribution_m": {
+          "max": 0.031935825936633196,
+          "median": 0.010055594451423537,
+          "p90": 0.017156180371828113
+        },
+        "mujoco_warning_count": 0,
+        "placement_error_distribution_m": {
+          "max": 0.13734472455120117,
+          "median": 0.007665688788932024,
+          "p90": 0.038009187680526385
+        },
+        "placement_within_70mm_count": 9,
+        "slip_decomposition": {
+          "any_contact_loss_fraction_distribution": {
+            "max": 0.6571428571428571,
+            "median": 0.009340062111801242,
+            "p90": 0.0929365079365077
+          },
+          "bilateral_contact_loss_fraction_distribution": {
+            "max": 0.11428571428571428,
+            "median": 0.0009297599877310023,
+            "p90": 0.02350174216027871
+          },
+          "rotation_episode_max_distribution_rad": {
+            "max": 0.16951452955613297,
+            "median": 0.10072809306607432,
+            "p90": 0.16676826965719485
+          },
+          "translation_episode_max_distribution_m": {
+            "max": 0.031935825936633196,
+            "median": 0.010055594451423537,
+            "p90": 0.017156180371828113
+          }
+        },
+        "success_count": 5,
+        "success_rate": 0.5,
+        "table_frame_object_slip_distribution_m": {
+          "max": 0.013631323133610061,
+          "median": 0.010105598003739003,
+          "p90": 0.013248362422082233
+        }
+      },
+      "baseline_failure_count": 5,
+      "baseline_failure_rescue_fraction": 0.4,
+      "baseline_failures_rescued_count": 2,
+      "baseline_value": 150.0,
+      "effect_parameter_bound": false,
+      "paired_results": [
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.007324224752574284,
+          "alternate_success": true,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.007648052037172476,
+          "baseline_success": true,
+          "seed": 0,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.1513388938107074,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.005570622699069439,
+          "baseline_success": true,
+          "seed": 1,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.003934564865419282,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.010607848503358155,
+          "baseline_success": false,
+          "seed": 2,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14914073382581705,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.026971905806007012,
+          "baseline_success": false,
+          "seed": 3,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14536850208626237,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0076833255406915735,
+          "baseline_success": true,
+          "seed": 4,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.15457294955306078,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.13734472455120117,
+          "baseline_success": false,
+          "seed": 5,
+          "success_flipped": false
+        },
+        {
+          "alternate_failure_reason": "grasp_slip_exceeded",
+          "alternate_placement_error_m": 0.018276245701861774,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.003349333432627469,
+          "baseline_success": true,
+          "seed": 6,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14924769823327017,
+          "alternate_success": false,
+          "baseline_failure_reason": null,
+          "baseline_placement_error_m": 0.0024582603430037472,
+          "baseline_success": true,
+          "seed": 7,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": null,
+          "alternate_placement_error_m": 0.0013256640759689827,
+          "alternate_success": true,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.009666969123389317,
+          "baseline_success": false,
+          "seed": 8,
+          "success_flipped": true
+        },
+        {
+          "alternate_failure_reason": "descend_contact_timeout",
+          "alternate_placement_error_m": 0.14917291283183895,
+          "alternate_success": false,
+          "baseline_failure_reason": "grasp_slip_exceeded",
+          "baseline_placement_error_m": 0.0036321520701296794,
+          "baseline_success": false,
+          "seed": 9,
+          "success_flipped": false
+        }
+      ],
+      "parameter": "osc_kp"
+    }
+  }
+}

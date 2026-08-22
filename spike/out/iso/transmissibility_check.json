@@ -1,0 +1,1038 @@
+{
+  "all_passed": true,
+  "checks": {
+    "determinism": {
+      "expected": 0.0,
+      "max_abs_qpos_difference": 0.0,
+      "pass": true
+    },
+    "fn30_degenerates_to_rigid": {
+      "fn30": {
+        "base_frame_ee_wobble_peak_about_mean_m": 0.0012100053244521417,
+        "base_frame_table_motion_peak_about_mean_m": 0.00011422580891277347,
+        "calibration": {
+          "airborne_fraction": 0.0,
+          "gamma_realized": 0.5,
+          "gamma_target": 0.5,
+          "level_scale": 1.355673056197223,
+          "peak_deck_displacement_m": 0.002159725586231655,
+          "peak_deck_velocity_m_s": 0.09583436898266968,
+          "peak_factor_kappa": 3.547457410634082,
+          "per_axis_accel_peak_abs": {
+            "rx": 1.6606915873527766,
+            "ry": 1.5095138747263206,
+            "rz": 0.8151015975634872,
+            "tx": 1.832470617474253,
+            "ty": 1.485310959055587,
+            "tz": 4.364397630956445
+          },
+          "per_axis_accel_rms": {
+            "rx": 0.5857513517645873,
+            "ry": 0.5977947216801308,
+            "rz": 0.30996719518790555,
+            "tx": 0.6148175933042561,
+            "ty": 0.4756667092528484,
+            "tz": 1.3265667541283528
+          },
+          "per_axis_disp_rms": {
+            "rx": 0.0016658049558381676,
+            "ry": 0.0009667971411065922,
+            "rz": 0.0012853531886499472,
+            "tx": 0.0006604054106629533,
+            "ty": 0.00029217332376002314,
+            "tz": 0.0005378038056355177
+          },
+          "workpiece_az_peak_m_s2": 4.903325,
+          "workpiece_az_rms_m_s2": 1.3822082783295675
+        },
+        "deck_actual_peak_about_mean_m": 0.0018319024990194395,
+        "deck_command_peak_about_mean_m": 0.001834798343672038,
+        "diagnostic_frequency_hz": 200,
+        "gamma": 0.5,
+        "isolator": {
+          "damping_ratio": 0.1,
+          "natural_frequency_hz": 30.0,
+          "omega_n_rad_s": 188.49555921538757,
+          "payload_mass_kg": 0.07011,
+          "rotational_damping_n_m_s_rad": [
+            64.57857858719179,
+            64.57857858719179,
+            128.66706872042354
+          ],
+          "rotational_stiffness_n_m_rad": [
+            60863.87642063784,
+            60863.87642063784,
+            121265.8553553047
+          ],
+          "table_inertia_kg_m2": [
+            1.713,
+            1.713,
+            3.413
+          ],
+          "table_mass_kg": 32.0,
+          "translational_damping_n_s_m": 1206.3715789784806,
+          "translational_stiffness_n_m": 1136978.4270054938,
+          "vertical_springref_m": 0.0002767051437630134
+        },
+        "measurement_window_s": 6.0,
+        "mujoco_warning_count": 0,
+        "physics_frequency_hz": 5000,
+        "physics_timestep_s": 0.0002,
+        "sample_count": 1200,
+        "seed": 17,
+        "table_absolute_motion_peak_about_mean_m": 0.0019471316449897343,
+        "table_frame_object_slip_max_m": 2.7735295784175933e-07
+      },
+      "metric_comparisons": {
+        "base_frame_ee_wobble_peak_about_mean_m": {
+          "fn30": 0.0012100053244521417,
+          "limit_relative_difference_lt": 0.1,
+          "pass": true,
+          "relative_difference": 2.18386026288865e-06,
+          "rigid": 0.0012100026819753665
+        },
+        "deck_actual_peak_about_mean_m": {
+          "fn30": 0.0018319024990194395,
+          "limit_relative_difference_lt": 0.1,
+          "pass": true,
+          "relative_difference": 1.879068531142777e-06,
+          "rigid": 0.0018318990567555698
+        },
+        "deck_command_peak_about_mean_m": {
+          "fn30": 0.001834798343672038,
+          "limit_relative_difference_lt": 0.1,
+          "pass": true,
+          "relative_difference": 0.0,
+          "rigid": 0.001834798343672038
+        },
+        "table_absolute_motion_peak_about_mean_m": {
+          "fn30": 0.0019471316449897343,
+          "limit_relative_difference_lt": 0.1,
+          "pass": true,
+          "relative_difference": 0.03661597546146852,
+          "rigid": 0.0018783538852205448
+        },
+        "table_frame_object_slip_max_m": {
+          "fn30": 2.7735295784175933e-07,
+          "limit_relative_difference_lt": 0.1,
+          "pass": true,
+          "relative_difference": 0.01614334404491465,
+          "rigid": 2.729466855903551e-07
+        }
+      },
+      "pass": true,
+      "relative_table_motion": {
+        "deck_command_peak_m": 0.001834798343672038,
+        "fn30_base_frame_table_motion_m": 0.00011422580891277347,
+        "limit_ratio_lt": 0.1,
+        "pass": true,
+        "ratio": 0.06225523873330399
+      },
+      "rigid": {
+        "base_frame_ee_wobble_peak_about_mean_m": 0.0012100026819753665,
+        "base_frame_table_motion_peak_about_mean_m": 1.3767772727540345e-14,
+        "calibration": {
+          "airborne_fraction": 0.0,
+          "gamma_realized": 0.5,
+          "gamma_target": 0.5,
+          "level_scale": 1.355673056197223,
+          "peak_deck_displacement_m": 0.002159725586231655,
+          "peak_deck_velocity_m_s": 0.09583436898266968,
+          "peak_factor_kappa": 3.547457410634082,
+          "per_axis_accel_peak_abs": {
+            "rx": 1.6606915873527766,
+            "ry": 1.5095138747263206,
+            "rz": 0.8151015975634872,
+            "tx": 1.832470617474253,
+            "ty": 1.485310959055587,
+            "tz": 4.364397630956445
+          },
+          "per_axis_accel_rms": {
+            "rx": 0.5857513517645873,
+            "ry": 0.5977947216801308,
+            "rz": 0.30996719518790555,
+            "tx": 0.6148175933042561,
+            "ty": 0.4756667092528484,
+            "tz": 1.3265667541283528
+          },
+          "per_axis_disp_rms": {
+            "rx": 0.0016658049558381676,
+            "ry": 0.0009667971411065922,
+            "rz": 0.0012853531886499472,
+            "tx": 0.0006604054106629533,
+            "ty": 0.00029217332376002314,
+            "tz": 0.0005378038056355177
+          },
+          "workpiece_az_peak_m_s2": 4.903325,
+          "workpiece_az_rms_m_s2": 1.3822082783295675
+        },
+        "deck_actual_peak_about_mean_m": 0.0018318990567555698,
+        "deck_command_peak_about_mean_m": 0.001834798343672038,
+        "diagnostic_frequency_hz": 200,
+        "gamma": 0.5,
+        "isolator": null,
+        "measurement_window_s": 6.0,
+        "mujoco_warning_count": 0,
+        "physics_frequency_hz": 5000,
+        "physics_timestep_s": 0.0002,
+        "sample_count": 1200,
+        "seed": 17,
+        "table_absolute_motion_peak_about_mean_m": 0.0018783538852205448,
+        "table_frame_object_slip_max_m": 2.729466855903551e-07
+      }
+    },
+    "static_table_height": {
+      "pass": true,
+      "rigid": {
+        "analysis_sample_count": 100,
+        "compiled_table_inertia_kg_m2": [
+          1.7133333333333338,
+          1.7133333333333338,
+          3.4133333333333344
+        ],
+        "compiled_table_mass_kg": 32.00000000000001,
+        "height_median_m": 0.7749997711213421,
+        "height_peak_to_peak_m": 0.0,
+        "mujoco_warning_count": 0
+      },
+      "rows": [
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 64.57857858719179,
+              "springref": 0.0,
+              "stiffness": 60863.87642063784
+            },
+            "table_iso_ry": {
+              "damping": 64.57857858719179,
+              "springref": 0.0,
+              "stiffness": 60863.87642063784
+            },
+            "table_iso_rz": {
+              "damping": 128.66706872042354,
+              "springref": 0.0,
+              "stiffness": 121265.8553553047
+            },
+            "table_iso_tx": {
+              "damping": 1206.3715789784806,
+              "springref": 0.0,
+              "stiffness": 1136978.4270054938
+            },
+            "table_iso_ty": {
+              "damping": 1206.3715789784806,
+              "springref": 0.0,
+              "stiffness": 1136978.4270054938
+            },
+            "table_iso_tz": {
+              "damping": 1206.3715789784806,
+              "springref": 0.0002767051437630134,
+              "stiffness": 1136978.4270054938
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn30_zeta0p10",
+          "height_error_vs_rigid_m": 4.49808248426109e-08,
+          "height_median_m": 0.7749997261405173,
+          "height_peak_to_peak_m": 0.0,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 30.0,
+            "omega_n_rad_s": 188.49555921538757,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              64.57857858719179,
+              64.57857858719179,
+              128.66706872042354
+            ],
+            "rotational_stiffness_n_m_rad": [
+              60863.87642063784,
+              60863.87642063784,
+              121265.8553553047
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 1206.3715789784806,
+            "translational_stiffness_n_m": 1136978.4270054938,
+            "vertical_springref_m": 0.0002767051437630134
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 32.28928929359589,
+              "springref": 0.0,
+              "stiffness": 15215.96910515946
+            },
+            "table_iso_ry": {
+              "damping": 32.28928929359589,
+              "springref": 0.0,
+              "stiffness": 15215.96910515946
+            },
+            "table_iso_rz": {
+              "damping": 64.33353436021177,
+              "springref": 0.0,
+              "stiffness": 30316.463838826174
+            },
+            "table_iso_tx": {
+              "damping": 603.1857894892403,
+              "springref": 0.0,
+              "stiffness": 284244.60675137345
+            },
+            "table_iso_ty": {
+              "damping": 603.1857894892403,
+              "springref": 0.0,
+              "stiffness": 284244.60675137345
+            },
+            "table_iso_tz": {
+              "damping": 603.1857894892403,
+              "springref": 0.0011068205750520536,
+              "stiffness": 284244.60675137345
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn15_zeta0p10",
+          "height_error_vs_rigid_m": 1.3353228023316177e-07,
+          "height_median_m": 0.7749996375890619,
+          "height_peak_to_peak_m": 0.0,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 15.0,
+            "omega_n_rad_s": 94.24777960769379,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              32.28928929359589,
+              32.28928929359589,
+              64.33353436021177
+            ],
+            "rotational_stiffness_n_m_rad": [
+              15215.96910515946,
+              15215.96910515946,
+              30316.463838826174
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 603.1857894892403,
+            "translational_stiffness_n_m": 284244.60675137345,
+            "vertical_springref_m": 0.0011068205750520536
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 17.22095428991781,
+              "springref": 0.0,
+              "stiffness": 4328.097878800914
+            },
+            "table_iso_ry": {
+              "damping": 17.22095428991781,
+              "springref": 0.0,
+              "stiffness": 4328.097878800914
+            },
+            "table_iso_rz": {
+              "damping": 34.31121832544628,
+              "springref": 0.0,
+              "stiffness": 8623.349714155001
+            },
+            "table_iso_tx": {
+              "damping": 321.6990877275948,
+              "springref": 0.0,
+              "stiffness": 80851.79925372402
+            },
+            "table_iso_ty": {
+              "damping": 321.6990877275948,
+              "springref": 0.0,
+              "stiffness": 80851.79925372402
+            },
+            "table_iso_tz": {
+              "damping": 321.6990877275948,
+              "springref": 0.0038911660841673755,
+              "stiffness": 80851.79925372402
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn8_zeta0p10",
+          "height_error_vs_rigid_m": 4.305486136502168e-07,
+          "height_median_m": 0.7749993405727285,
+          "height_peak_to_peak_m": 3.8269387658829146e-12,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 8.0,
+            "omega_n_rad_s": 50.26548245743669,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              17.22095428991781,
+              17.22095428991781,
+              34.31121832544628
+            ],
+            "rotational_stiffness_n_m_rad": [
+              4328.097878800914,
+              4328.097878800914,
+              8623.349714155001
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 321.6990877275948,
+            "translational_stiffness_n_m": 80851.79925372402,
+            "vertical_springref_m": 0.0038911660841673755
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 10.763096431198631,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_ry": {
+              "damping": 10.763096431198631,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_rz": {
+              "damping": 21.444511453403926,
+              "springref": 0.0,
+              "stiffness": 3368.495982091798
+            },
+            "table_iso_tx": {
+              "damping": 201.06192982974676,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_ty": {
+              "damping": 201.06192982974676,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_tz": {
+              "damping": 201.06192982974676,
+              "springref": 0.009961385175468481,
+              "stiffness": 31582.734083485946
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn5_zeta0p10",
+          "height_error_vs_rigid_m": 1.0781033954465613e-06,
+          "height_median_m": 0.7749986930179467,
+          "height_peak_to_peak_m": 8.561688025210401e-10,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              10.763096431198631,
+              10.763096431198631,
+              21.444511453403926
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 201.06192982974676,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 6.457857858719179,
+              "springref": 0.0,
+              "stiffness": 608.6387642063786
+            },
+            "table_iso_ry": {
+              "damping": 6.457857858719179,
+              "springref": 0.0,
+              "stiffness": 608.6387642063786
+            },
+            "table_iso_rz": {
+              "damping": 12.866706872042357,
+              "springref": 0.0,
+              "stiffness": 1212.658553553047
+            },
+            "table_iso_tx": {
+              "damping": 120.63715789784806,
+              "springref": 0.0,
+              "stiffness": 11369.78427005494
+            },
+            "table_iso_ty": {
+              "damping": 120.63715789784806,
+              "springref": 0.0,
+              "stiffness": 11369.78427005494
+            },
+            "table_iso_tz": {
+              "damping": 120.63715789784806,
+              "springref": 0.027670514376301334,
+              "stiffness": 11369.78427005494
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn3_zeta0p10",
+          "height_error_vs_rigid_m": 2.9695132204299313e-06,
+          "height_median_m": 0.7749968016081217,
+          "height_peak_to_peak_m": 4.892133542711008e-08,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 3.0,
+            "omega_n_rad_s": 18.84955592153876,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              6.457857858719179,
+              6.457857858719179,
+              12.866706872042357
+            ],
+            "rotational_stiffness_n_m_rad": [
+              608.6387642063786,
+              608.6387642063786,
+              1212.658553553047
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 120.63715789784806,
+            "translational_stiffness_n_m": 11369.78427005494,
+            "vertical_springref_m": 0.027670514376301334
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 5.381548215599316,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_ry": {
+              "damping": 5.381548215599316,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_rz": {
+              "damping": 10.722255726701963,
+              "springref": 0.0,
+              "stiffness": 3368.495982091798
+            },
+            "table_iso_tx": {
+              "damping": 100.53096491487338,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_ty": {
+              "damping": 100.53096491487338,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_tz": {
+              "damping": 100.53096491487338,
+              "springref": 0.009961385175468481,
+              "stiffness": 31582.734083485946
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn5_zeta0p05",
+          "height_error_vs_rigid_m": 1.0785477024821688e-06,
+          "height_median_m": 0.7749986925736396,
+          "height_peak_to_peak_m": 4.781042917123557e-08,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.05,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              5.381548215599316,
+              5.381548215599316,
+              10.722255726701963
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 100.53096491487338,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true
+        },
+        {
+          "analysis_sample_count": 100,
+          "compiled_joints": {
+            "table_iso_rx": {
+              "damping": 21.526192862397263,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_ry": {
+              "damping": 21.526192862397263,
+              "springref": 0.0,
+              "stiffness": 1690.663233906607
+            },
+            "table_iso_rz": {
+              "damping": 42.88902290680785,
+              "springref": 0.0,
+              "stiffness": 3368.495982091798
+            },
+            "table_iso_tx": {
+              "damping": 402.1238596594935,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_ty": {
+              "damping": 402.1238596594935,
+              "springref": 0.0,
+              "stiffness": 31582.734083485946
+            },
+            "table_iso_tz": {
+              "damping": 402.1238596594935,
+              "springref": 0.009961385175468481,
+              "stiffness": 31582.734083485946
+            }
+          },
+          "compiled_table_inertia_kg_m2": [
+            1.7133333333333338,
+            1.7133333333333338,
+            3.4133333333333344
+          ],
+          "compiled_table_mass_kg": 32.00000000000001,
+          "configuration_name": "fn5_zeta0p20",
+          "height_error_vs_rigid_m": 1.0780811426913672e-06,
+          "height_median_m": 0.7749986930401994,
+          "height_peak_to_peak_m": 2.2570834090629432e-13,
+          "limit_abs_error_m_lt": 5e-05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.2,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              21.526192862397263,
+              21.526192862397263,
+              42.88902290680785
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 402.1238596594935,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true
+        }
+      ]
+    },
+    "transmissibility_vs_analytic": {
+      "pass": true,
+      "rows": [
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn30_zeta0p10",
+          "deck_amplitude_measured_m": 0.0004996048881115362,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 30.0,
+            "omega_n_rad_s": 188.49555921538757,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              64.57857858719179,
+              64.57857858719179,
+              128.66706872042354
+            ],
+            "rotational_stiffness_n_m_rad": [
+              60863.87642063784,
+              60863.87642063784,
+              121265.8553553047
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 1206.3715789784806,
+            "translational_stiffness_n_m": 1136978.4270054938,
+            "vertical_springref_m": 0.0002767051437630134
+          },
+          "pass": true,
+          "relative_error": 3.868550499957283e-05,
+          "table_absolute_amplitude_measured_m": 0.000513882665008858,
+          "transmissibility_analytic": 1.0285383473925562,
+          "transmissibility_measured": 1.0285781369179365
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn15_zeta0p10",
+          "deck_amplitude_measured_m": 0.0004996049388987751,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 15.0,
+            "omega_n_rad_s": 94.24777960769379,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              32.28928929359589,
+              32.28928929359589,
+              64.33353436021177
+            ],
+            "rotational_stiffness_n_m_rad": [
+              15215.96910515946,
+              15215.96910515946,
+              30316.463838826174
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 603.1857894892403,
+            "translational_stiffness_n_m": 284244.60675137345,
+            "vertical_springref_m": 0.0011068205750520536
+          },
+          "pass": true,
+          "relative_error": 4.943158946253165e-06,
+          "table_absolute_amplitude_measured_m": 0.0005617283229340439,
+          "transmissibility_analytic": 1.124339458039657,
+          "transmissibility_measured": 1.1243450158283077
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn8_zeta0p10",
+          "deck_amplitude_measured_m": 0.0004996051993881936,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 8.0,
+            "omega_n_rad_s": 50.26548245743669,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              17.22095428991781,
+              17.22095428991781,
+              34.31121832544628
+            ],
+            "rotational_stiffness_n_m_rad": [
+              4328.097878800914,
+              4328.097878800914,
+              8623.349714155001
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 321.6990877275948,
+            "translational_stiffness_n_m": 80851.79925372402,
+            "vertical_springref_m": 0.0038911660841673755
+          },
+          "pass": true,
+          "relative_error": 0.0011305174721508385,
+          "table_absolute_amplitude_measured_m": 0.0008103071697469096,
+          "transmissibility_analytic": 1.6200634796925208,
+          "transmissibility_measured": 1.6218949897623067
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn5_zeta0p10",
+          "deck_amplitude_measured_m": 0.0004996046742947278,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              10.763096431198631,
+              10.763096431198631,
+              21.444511453403926
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 201.06192982974676,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true,
+          "relative_error": 0.00020411169609649973,
+          "table_absolute_amplitude_measured_m": 0.002546974009993255,
+          "transmissibility_analytic": 5.0990195135927845,
+          "transmissibility_measured": 5.097978744071436
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn3_zeta0p10",
+          "deck_amplitude_measured_m": 0.0004996040521267756,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.1,
+            "natural_frequency_hz": 3.0,
+            "omega_n_rad_s": 18.84955592153876,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              6.457857858719179,
+              6.457857858719179,
+              12.866706872042357
+            ],
+            "rotational_stiffness_n_m_rad": [
+              608.6387642063786,
+              608.6387642063786,
+              1212.658553553047
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 120.63715789784806,
+            "translational_stiffness_n_m": 11369.78427005494,
+            "vertical_springref_m": 0.027670514376301334
+          },
+          "pass": true,
+          "relative_error": 0.00441144723271071,
+          "table_absolute_amplitude_measured_m": 0.00028987059659422814,
+          "transmissibility_analytic": 0.5827715174143584,
+          "transmissibility_measured": 0.5802006516165582
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn5_zeta0p05",
+          "deck_amplitude_measured_m": 0.0004996044115744981,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.05,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              5.381548215599316,
+              5.381548215599316,
+              10.722255726701963
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 100.53096491487338,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true,
+          "relative_error": 0.0009970267770931043,
+          "table_absolute_amplitude_measured_m": 0.005015956162330725,
+          "transmissibility_analytic": 10.04987562112089,
+          "transmissibility_measured": 10.039855626020177
+        },
+        {
+          "analysis_sample_count": 401,
+          "analysis_window_s": 2.0,
+          "command_amplitude_measured_m": 0.0005,
+          "configuration_name": "fn5_zeta0p20",
+          "deck_amplitude_measured_m": 0.0004996047824508117,
+          "diagnostic_frequency_hz": 200,
+          "duration_s": 8.0,
+          "excitation_amplitude_m": 0.0005,
+          "excitation_frequency_hz": 5.0,
+          "limit_relative_error_lt": 0.05,
+          "mujoco_warning_count": 0,
+          "parameters": {
+            "damping_ratio": 0.2,
+            "natural_frequency_hz": 5.0,
+            "omega_n_rad_s": 31.41592653589793,
+            "payload_mass_kg": 0.07011,
+            "rotational_damping_n_m_s_rad": [
+              21.526192862397263,
+              21.526192862397263,
+              42.88902290680785
+            ],
+            "rotational_stiffness_n_m_rad": [
+              1690.663233906607,
+              1690.663233906607,
+              3368.495982091798
+            ],
+            "table_inertia_kg_m2": [
+              1.713,
+              1.713,
+              3.413
+            ],
+            "table_mass_kg": 32.0,
+            "translational_damping_n_s_m": 402.1238596594935,
+            "translational_stiffness_n_m": 31582.734083485946,
+            "vertical_springref_m": 0.009961385175468481
+          },
+          "pass": true,
+          "relative_error": 0.0008960738454905919,
+          "table_absolute_amplitude_measured_m": 0.0013440216231929646,
+          "transmissibility_analytic": 2.692582403567252,
+          "transmissibility_measured": 2.690169650898587
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "diagnostic_frequency_hz": 200,
+    "gravity_compensation": "table_iso_tz springref = +(M_table + M_payload) g / k",
+    "physics_timestep_s": 0.0002,
+    "seed": 17
+  },
+  "created_utc": "2026-08-22T07:40:47.168192+00:00",
+  "mujoco_warnings": {
+    "diagnostic_only": true,
+    "total_count": 0
+  },
+  "policy_rollouts_run": false,
+  "schema": "shakebench_spike.iso.transmissibility_check.v1",
+  "versions": {
+    "mujoco": "3.3.7",
+    "numpy": "1.26.4",
+    "python": "3.11.14",
+    "robosuite": "1.5.2"
+  }
+}
