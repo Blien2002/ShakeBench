@@ -144,7 +144,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q \
 
 ## 8. Current checkpoint after Phase 01/01R
 
-- Phase 01R 开始前的当前基线为 `5e5829ee`；remediation 完成后的终点 commit 将记录在 `docs/phase_01_remediation_report.md`。
+- Phase 01R 开始前的当前基线为 `5e5829ee`；remediation implementation checkpoint 为 `b4ee4808`。
 - Phase 01 authored spectrum 已明确为 new authored candidate；不能称为旧 ShakeBench exact reuse 或 official-ready。
 - 当前配置 schema 已升级到 version `2`，scoreable gate 仍因后续 freeze authority 缺失而 fail closed。
 

@@ -7,7 +7,7 @@
 - implementation repo：`/home/miracle04/Desktop/ShakeBench`。
 - 起始 commit：`5e5829ee80c544125c47eba5bc760ce90ebf70ad`。
 - 目标 remote：`https://github.com/Blien2002/ShakeBench.git`。
-- 本报告对应的 implementation checkpoint commit 将在提交后记录；若报告随后单独更新，将另列 evidence/report commit。
+- implementation checkpoint commit：`b4ee4808` (`fix(shakebench): close phase 01 review findings`)；本报告随该 commit 提交。
 - 没有读取、运行或引用仓库外的旧 ShakeBench 备份目录；所有 runtime 和测试输入来自当前仓库。
 
 ## 2. Blocked evidence：exact reuse
