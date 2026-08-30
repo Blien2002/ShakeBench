@@ -3,7 +3,7 @@
 日期：2026-08-29  
 仓库：`/home/miracle04/Desktop/ShakeBench`  
 起始 commit：`5ce6643f3092639d08f7b0f90ed1c6a84f50552c`  
-状态：Phase 00 additive bootstrap 完成；后续 benchmark physics/task 未实现。
+状态：Phase 00 additive bootstrap 已完成；本报告中的历史 baseline 与当前仓库状态分开记录。
 
 ## 1. 改名验证
 
@@ -13,7 +13,7 @@
 - `/home/miracle04/Desktop/robosuite` 不存在；
 - `/home/miracle04/Desktop/ShakeBench_backyp` 是原来的 ShakeBench 备份目录；
 - Desktop 上没有第二个精确名称为 `ShakeBench` 的目录；本阶段没有再次执行 `mv`，也没有读取或引用备份目录；
-- 当前仓库 `.git` 保留，`origin` 仍为 `https://github.com/ARISE-Initiative/robosuite.git`（fetch/push）；没有重写历史，也没有伪装为上游 release。
+- 当前仓库 `.git` 保留；Phase 00 审计开始时 `origin` 为 `https://github.com/ARISE-Initiative/robosuite.git`，当前发布 remote 为 `https://github.com/Blien2002/ShakeBench.git`；没有重写历史或 force push。
 
 初始 git 状态为 `master...origin/master`，既有权威资料均为工作树未跟踪文件；本阶段保留这些用户已有修改。
 
@@ -23,8 +23,8 @@
 
 | 文件 | 实际 SHA-256 | 结果 |
 | --- | --- | --- |
-| `docs/robosuite_benchmark_design_tree.md` | `ad2c5f947b16fd26575aadc4d9aa72801859c3087a7c3e5faead0cabfbea1094` | match |
-| `docs/robosuite_benchmark_v0_spec.md` | `6adcf97a3b98a83fb62f1419f1246b0ad0a4a17485adae1cb23549dac27798a8` | match |
+| `docs/robosuite_benchmark_design_tree.md` | `47ad5a9200dbca708ca1577756435a866f8b7d340c7ac747fcfc17bf7c49af10` | current match |
+| `docs/robosuite_benchmark_v0_spec.md` | `a8eb3e568851199386c1e0c89120d3811bbb08029c57a1209dbffc675904f346` | current match |
 | `docs/spike_implementation_formal_review.md` | `fe59f27b0a35d3fc96276292a586114fa352de426544962d6185e67ad2e8ec9f` | match |
 | `docs/canonical_imu_profile_validation.md` | `a81a0bd5e27bdea4f4363c8475edd0faa4be3256c89d600cad24ac68e2d3f833` | match |
 | `docs/repro_weld_sag_20260828.md` | `7af3fe4963470c98079d5e1ba6f2fbfc7b01d4701bca63404207767c8684b0de` | match |
@@ -115,7 +115,7 @@ python -m robosuite.scripts.shakebench_cli version
 python -m robosuite.scripts.shakebench_cli print-schema
 ```
 
-`version` 报告 extension `shakebench`、schema `1`、Python package `robosuite`、package version `1.5.2`；`print-schema` 输出严格 top-level schema。draft config（`scoreable=false`）验证成功；将 `scoreable=true` 且保留默认 `UNFROZEN` 字段时以 exit status `2` 拒绝。
+`version` 报告 extension `shakebench`、schema `1`（Phase 00 historical result；当前 config schema 为 `2`）、Python package `robosuite`、package version `1.5.2`；`print-schema` 输出严格 top-level schema。draft config（`scoreable=false`）验证成功；将 `scoreable=true` 且保留默认 `UNFROZEN` 字段时以 exit status `2` 拒绝。
 
 ### 6.4 不依赖主机 EGL 的上游回归集合
 
@@ -142,4 +142,10 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q \
 | 后续模块 integration map 明确落点 | PASS |
 | 不新建 shakebench 子目录、不实现后续 physics/task/controller、不引用外部目录 | PASS |
 
-Phase 00 到此停止，等待下一阶段 prompt。
+## 8. Current checkpoint after Phase 01/01R
+
+- Phase 01R 开始前的当前基线为 `5e5829ee`；remediation 完成后的终点 commit 将记录在 `docs/phase_01_remediation_report.md`。
+- Phase 01 authored spectrum 已明确为 new authored candidate；不能称为旧 ShakeBench exact reuse 或 official-ready。
+- 当前配置 schema 已升级到 version `2`，scoreable gate 仍因后续 freeze authority 缺失而 fail closed。
+
+Phase 00 的历史测试结果仍有效；Phase 01/01R 的最新测试和修复证据见 `docs/phase_01_remediation_report.md`。

@@ -1,9 +1,10 @@
 {
-  "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+  "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
   "error_tolerances": {
     "analytic_derivative_abs": 1e-07,
     "common_t0_shift_abs": 1e-12,
     "exact_replay_abs": 0.0,
+    "gamma_manual_abs": 1e-12,
     "max_frequency_excess_hz": 0.0,
     "safety_failure": 0.0
   },
@@ -58,8 +59,9 @@
     "six_axis_seed_7.safety_failure": 0.0
   },
   "fixture": "golden_shakebench_excitation_v0.json",
+  "fixture_sha256": "3111107a8db4e91ba38b684a354c2826b3dc197b901df9c35718c183add753d5",
   "generator_script": "robosuite/scripts/shakebench_generate_excitation_golden.py",
   "max_error": 1.7642198812950483e-10,
   "schema_id": "shakebench.excitation.golden.errors",
-  "schema_version": 1
+  "schema_version": 2
 }

@@ -1,5 +1,7 @@
 # M0.5 驱动甲板提示词审查与隔离验证报告
 
+> 状态：exploratory evidence only。报告依赖 `/tmp/shakebench_m05_spike` 中未提交的临时脚本和结果；不构成 Phase 02 的可审计输入、official physics profile 或 release evidence。正式 Phase 02 必须重新提交最小可复现脚本、输入和结果到允许的仓库路径。
+
 日期：2026-08-30  
 仓库提交：`d1db196e061e8795cbdde8064ddb9cf71b1d492c`  
 运行时：MuJoCo `3.9.0`，robosuite `1.5.2`

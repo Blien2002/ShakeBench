@@ -113,6 +113,7 @@ MUJOCO_LOG.TXT
 .mujocomanip_temp_model.xml
 
 *.jpg
+!robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.jpg
 .idea
 
 .pytest_cache/

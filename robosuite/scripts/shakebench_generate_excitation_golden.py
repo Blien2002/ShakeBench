@@ -1,50 +1,106 @@
-"""Generate self-contained Phase 01 excitation golden fixtures.
+"""Maintain the Phase 01 authored-excitation golden fixture.
 
-Run from the repository root with::
+The default invocation only validates the checked-in fixture.  Replacing a
+fixture requires ``--update`` (or ``--accept-reference-change``) and a human
+reason; this prevents a production-generator change from silently rewriting
+its own acceptance input.
 
-    python -m robosuite.scripts.shakebench_generate_excitation_golden
-
-The output is intentionally flat in ``tests/``.  No simulator is created and
-the generated provenance points back to this script rather than to any
-external implementation.
+No simulator is created.  The fixture is a candidate authored profile, not
+evidence that the old ShakeBench implementation was exactly reproduced.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from robosuite.utils.shakebench_calibration import calibrate_gamma
-from robosuite.utils.shakebench_config import ShakeBenchConfig, config_hash
+from robosuite.utils.shakebench_config import (
+    ShakeBenchConfig,
+    config_hash,
+)
 from robosuite.utils.shakebench_excitation import (
+    AUTHORED_DECISION_ID,
+    AUTHORED_PROFILE_ID,
+    AUTHORED_SPECTRUM_VERSION,
     AXES,
     DEFAULT_EXCITATION_CONFIG,
     ExcitationConfig,
+    axis_schema,
     build_excitation_program,
+    excitation_profile_hash,
     quintic_ramp,
 )
-from robosuite.utils.shakebench_safety import SafetyLimits, check_safety
+from robosuite.utils.shakebench_safety import (
+    DEFAULT_SAFETY_LIMITS,
+    SAFETY_PROFILE_ID,
+    SafetyLimits,
+    check_safety,
+    safety_profile_hash,
+)
 
 SCRIPT_RELPATH = "robosuite/scripts/shakebench_generate_excitation_golden.py"
 FIXTURE_NAME = "golden_shakebench_excitation_v0.json"
 ERROR_SUMMARY_NAME = "golden_shakebench_excitation_error_summary.json"
+DEFAULT_GENERATED_AT_UTC = "2026-08-30T00:00:00Z"
 
 
-def _config_hash_for(config: ExcitationConfig) -> str:
-    envelope = ShakeBenchConfig(options={"excitation": config.to_dict()})
+def _candidate_provenance(
+    config: ExcitationConfig,
+    limits: SafetyLimits = DEFAULT_SAFETY_LIMITS,
+) -> dict[str, Any]:
+    """Build explicit draft provenance for the candidate authored profile."""
+
+    return {
+        "excitation_profile_id": AUTHORED_PROFILE_ID,
+        "excitation_profile_hash": excitation_profile_hash(config),
+        "authored_spectrum_version": AUTHORED_SPECTRUM_VERSION,
+        "gravity_m_s2": config.gravity_m_s2,
+        "ramp_duration_s": config.ramp_duration_s,
+        "frequency_scale": config.frequency_scale,
+        "gamma_point_offset_m": list(config.workpiece_point_offset_m),
+        "safety_profile_id": SAFETY_PROFILE_ID,
+        "safety_profile_hash": safety_profile_hash(limits),
+        "safety_profile_limits": limits.to_dict(),
+        "official_state_manifest_hash": "UNFROZEN",
+        "freeze_status": "candidate",
+    }
+
+
+def _config_hash_for(config: ExcitationConfig, limits: SafetyLimits = DEFAULT_SAFETY_LIMITS) -> str:
+    """Hash the explicit draft envelope used by a fixture."""
+
+    envelope = ShakeBenchConfig(
+        provenance=_candidate_provenance(config, limits),
+        options={},
+    )
     return config_hash(envelope)
 
 
-def _json_float(value: Any) -> float:
-    return float(np.asarray(value, dtype=float))
+def _canonical_json(value: Any) -> str:
+    """Serialize a fixture value for deterministic content hashing."""
+
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
-def _invariant_errors(program: Any, sample_times: np.ndarray, calibration: Any) -> dict[str, float]:
+def _fixture_sha256(fixture: dict[str, Any]) -> str:
+    """Hash fixture content after removing its self-referential hash field."""
+
+    payload = copy.deepcopy(fixture)
+    provenance = payload.get("provenance", {})
+    provenance.pop("fixture_sha256", None)
+    provenance.pop("update_reason", None)
+    provenance.pop("previous_fixture_sha256", None)
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _invariant_errors(program: Any, calibration: Any, safety: Any) -> dict[str, float]:
     """Calculate machine-readable residuals for the authored contracts."""
 
     line_amplitude_error = 0.0
@@ -95,8 +151,9 @@ def _invariant_errors(program: Any, sample_times: np.ndarray, calibration: Any) 
             float(np.max(np.abs(shifted.qdd - translated.qdd))),
         )
 
-    ramp_zero = quintic_ramp(0.0, program.config.ramp_duration_s)
-    ramp_end = quintic_ramp(program.config.ramp_duration_s, program.config.ramp_duration_s)
+    ramp_duration = program.config.ramp_duration_s
+    ramp_zero = quintic_ramp(0.0, ramp_duration)
+    ramp_end = quintic_ramp(ramp_duration, ramp_duration)
     ramp_c2_error = max(
         abs(float(ramp_zero[0])),
         abs(float(ramp_zero[1])),
@@ -105,14 +162,18 @@ def _invariant_errors(program: Any, sample_times: np.ndarray, calibration: Any) 
         abs(float(ramp_end[1])),
         abs(float(ramp_end[2])),
     )
+
     calibration_times = np.asarray(calibration.unit_replay["time_grid_s"], dtype=float)
     calibration_motion = program.evaluate(calibration_times)
     point = np.asarray(calibration.point_offset_m, dtype=float)
-    manual_point_acceleration = calibration_motion.qdd[..., :3] + np.cross(
-        calibration_motion.qdd[..., 3:],
-        point,
+    point_acceleration = calibration_motion.qdd[..., :3] + np.cross(calibration_motion.qdd[..., 3:], point)
+    angular_velocity = calibration_motion.qdot[..., 3:]
+    if calibration.include_centripetal:
+        point_acceleration += np.cross(angular_velocity, np.cross(angular_velocity, point))
+    normal = np.asarray(calibration.support_normal, dtype=float)
+    manual_gamma = (
+        float(np.max(np.abs(np.einsum("...i,i->...", point_acceleration, normal)))) / calibration.gravity_m_s2
     )
-    manual_gamma = float(np.max(np.abs(manual_point_acceleration[..., 2]))) / calibration.gravity_m_s2
     return {
         "line_accel_amplitude_abs_error": line_amplitude_error,
         "line_q_amplitude_abs_error": q_amplitude_error,
@@ -122,7 +183,7 @@ def _invariant_errors(program: Any, sample_times: np.ndarray, calibration: Any) 
         "ramp_c2_boundary_abs_error": ramp_c2_error,
         "gamma_manual_abs_error": abs(calibration.gamma_commanded - manual_gamma),
         "max_frequency_excess_hz": max(0.0, program.max_frequency_hz - 8.87),
-        "safety_failure": 0.0,
+        "safety_failure": 0.0 if safety.passed else 1.0,
     }
 
 
@@ -134,6 +195,7 @@ def _make_case(
     level_scale: float,
     active_axes: list[str],
     config: ExcitationConfig,
+    limits: SafetyLimits,
     sample_times: np.ndarray,
 ) -> tuple[dict[str, Any], dict[str, float]]:
     """Build one replay case and calculate its invariant residuals."""
@@ -148,27 +210,22 @@ def _make_case(
     motion = program.evaluate(sample_times)
     calibration_times = np.linspace(0.0, config.episode_duration_s, 4001, dtype=float)
     calibration = calibrate_gamma(program, time=calibration_times)
-    safety = check_safety(
-        program,
-        limits=SafetyLimits(),
-        timestep_s=0.001,
-        time=calibration_times,
-    )
+    safety = check_safety(program, limits=limits, timestep_s=0.001, time=calibration_times)
     case = {
         "name": name,
         "seed": seed,
         "t0": t0,
         "level_scale": level_scale,
         "active_axes": active_axes,
-        "config_hash": _config_hash_for(config),
+        "config_hash": _config_hash_for(config, limits),
         "sample_time_s": sample_times.tolist(),
         "program": program.to_dict(),
         "motion": motion.to_dict(),
         "gamma": calibration.to_dict(),
         "safety": safety.to_dict(),
     }
-    invariant_errors = _invariant_errors(program, sample_times, calibration)
-    invariant_errors["safety_failure"] = 0.0 if safety.passed else 1.0
+    invariant_errors = _invariant_errors(program, calibration, safety)
+    case["invariant_errors"] = invariant_errors
     errors = {
         f"{name}.finite_program": (
             0.0
@@ -184,7 +241,6 @@ def _make_case(
         ),
         **{f"{name}.{key}": value for key, value in invariant_errors.items()},
     }
-    case["invariant_errors"] = invariant_errors
     return case, errors
 
 
@@ -193,28 +249,35 @@ def _make_rejection_case(
     *,
     program: Any,
     config: ExcitationConfig,
+    limits: SafetyLimits,
     timestep_s: float,
     expected_gate: str,
 ) -> dict[str, Any]:
-    """Build one deliberately unsafe case and record the rejected gate."""
+    """Build one unsafe case and preserve its authored program for audit."""
 
-    report = check_safety(program, limits=SafetyLimits(), timestep_s=timestep_s, sample_count=2001)
+    report = check_safety(program, limits=limits, timestep_s=timestep_s, sample_count=2001)
     return {
         "name": name,
-        "config_hash": _config_hash_for(config),
+        "seed": program.seed,
+        "t0": program.t0,
+        "level_scale": program.level_scale,
+        "active_axes": list(program.active_axes),
+        "config_hash": _config_hash_for(config, limits),
+        "program": program.to_dict(),
         "expected_gate": expected_gate,
         "passed": report.passed,
         "report": report.to_dict(),
     }
 
 
-def build_fixture(*, generated_at_utc: str | None = None) -> tuple[dict[str, Any], dict[str, float]]:
-    """Build the deterministic Phase 01 fixture and error map."""
+def build_fixture(*, generated_at_utc: str = DEFAULT_GENERATED_AT_UTC) -> tuple[dict[str, Any], dict[str, float]]:
+    """Build the candidate fixture and machine-readable invariant errors."""
 
     config = DEFAULT_EXCITATION_CONFIG
+    limits = DEFAULT_SAFETY_LIMITS
     sample_times = np.array([-0.10, 0.0, 0.25, 0.50, 1.25, 2.0], dtype=float)
-    cases: list[dict[str, Any]] = []
-    errors: dict[str, float] = {}
+    cases = []
+    errors = {}
     case_specs = (
         ("six_axis_seed_7", 7, 0.0, 0.20, list(AXES)),
         ("six_axis_seed_19_t0", 19, 0.137, 0.35, list(AXES)),
@@ -229,6 +292,7 @@ def build_fixture(*, generated_at_utc: str | None = None) -> tuple[dict[str, Any
             level_scale=level_scale,
             active_axes=active_axes,
             config=config,
+            limits=limits,
             sample_times=sample_times,
         )
         cases.append(case)
@@ -239,71 +303,63 @@ def build_fixture(*, generated_at_utc: str | None = None) -> tuple[dict[str, Any
     high_solver_travel = build_excitation_program(seed=3, level_scale=20.0, config=config)
     high_frequency_config = ExcitationConfig(frequency_scale=1.02)
     high_frequency = build_excitation_program(seed=3, config=high_frequency_config)
-    rejection_cases = [
-        _make_rejection_case(
-            "reject_displacement",
-            program=high_displacement,
-            config=config,
-            timestep_s=0.001,
-            expected_gate="displacement",
-        ),
-        _make_rejection_case(
-            "reject_non_ballistic",
-            program=high_ballistic,
-            config=config,
-            timestep_s=0.001,
-            expected_gate="non_ballistic",
-        ),
-        _make_rejection_case(
-            "reject_frequency",
-            program=high_frequency,
-            config=high_frequency_config,
-            timestep_s=0.001,
-            expected_gate="frequency",
-        ),
-        _make_rejection_case(
-            "reject_solver_travel",
-            program=high_solver_travel,
-            config=config,
-            timestep_s=1.0,
-            expected_gate="solver_travel",
-        ),
-    ]
-    for rejection in rejection_cases:
-        errors[f"{rejection['name']}.unexpected_pass"] = 1.0 if rejection["passed"] else 0.0
-        errors[f"{rejection['name']}.expected_gate_missing"] = (
-            0.0 if rejection["expected_gate"] in rejection["report"]["violations"] else 1.0
+    rejection_specs = (
+        ("reject_displacement", high_displacement, config, 0.001, "displacement"),
+        ("reject_non_ballistic", high_ballistic, config, 0.001, "non_ballistic"),
+        ("reject_frequency", high_frequency, high_frequency_config, 0.001, "frequency"),
+        ("reject_solver_travel", high_solver_travel, config, 1.0, "solver_travel"),
+    )
+    rejection_cases = []
+    for name, program, case_config, timestep_s, expected_gate in rejection_specs:
+        rejection = _make_rejection_case(
+            name,
+            program=program,
+            config=case_config,
+            limits=limits,
+            timestep_s=timestep_s,
+            expected_gate=expected_gate,
         )
+        rejection_cases.append(rejection)
+        errors[f"{name}.unexpected_pass"] = 1.0 if rejection["passed"] else 0.0
+        errors[f"{name}.expected_gate_missing"] = 0.0 if expected_gate in rejection["report"]["violations"] else 1.0
 
     fixture = {
         "schema_id": "shakebench.excitation.golden",
-        "schema_version": 1,
+        "schema_version": 2,
         "provenance": {
             "generator_script": SCRIPT_RELPATH,
-            "config_hash": _config_hash_for(config),
-            "generated_at_utc": generated_at_utc
-            or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "source_profile_id": AUTHORED_PROFILE_ID,
+            "authored_spectrum_version": AUTHORED_SPECTRUM_VERSION,
+            "authored_decision_id": AUTHORED_DECISION_ID,
+            "config_hash": _config_hash_for(config, limits),
+            "generated_at_utc": generated_at_utc,
         },
         "config": config.to_dict(),
-        "axis_schema": build_excitation_program(config=config).to_dict()["bands"],
+        "configuration_envelope": ShakeBenchConfig(
+            provenance=_candidate_provenance(config, limits),
+            options={},
+        ).to_dict(),
+        "axis_schema": axis_schema(config),
+        "safety_profile": {
+            "profile_id": SAFETY_PROFILE_ID,
+            "profile_hash": safety_profile_hash(limits),
+            "limits": limits.to_dict(),
+        },
         "cases": cases,
         "rejection_cases": rejection_cases,
     }
+    fixture["provenance"]["fixture_sha256"] = _fixture_sha256(fixture)
     return fixture, errors
 
 
-def write_fixture(output_dir: Path, *, generated_at_utc: str | None = None) -> tuple[Path, Path]:
-    """Write the flat golden fixture and machine-readable error summary."""
+def _error_summary(fixture: dict[str, Any], errors: dict[str, float]) -> dict[str, Any]:
+    """Build the machine-readable error summary for a fixture."""
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    fixture, errors = build_fixture(generated_at_utc=generated_at_utc)
-    fixture_path = output_dir / FIXTURE_NAME
-    error_path = output_dir / ERROR_SUMMARY_NAME
-    fixture_path.write_text(json.dumps(fixture, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    error_summary = {
+    return {
         "schema_id": "shakebench.excitation.golden.errors",
-        "schema_version": 1,
+        "schema_version": 2,
         "fixture": FIXTURE_NAME,
+        "fixture_sha256": fixture["provenance"]["fixture_sha256"],
         "generator_script": SCRIPT_RELPATH,
         "config_hash": fixture["provenance"]["config_hash"],
         "errors": errors,
@@ -312,34 +368,123 @@ def write_fixture(output_dir: Path, *, generated_at_utc: str | None = None) -> t
             "exact_replay_abs": 0.0,
             "analytic_derivative_abs": 1e-7,
             "common_t0_shift_abs": 1e-12,
+            "gamma_manual_abs": 1e-12,
             "max_frequency_excess_hz": 0.0,
             "safety_failure": 0.0,
         },
     }
-    error_path.write_text(
-        json.dumps(error_summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    return fixture_path, error_path
+
+
+def _write_payload(path: Path, payload: dict[str, Any]) -> None:
+    """Write stable pretty JSON to an existing output directory."""
+
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_fixture(
+    output_dir: Path,
+    *,
+    generated_at_utc: str = DEFAULT_GENERATED_AT_UTC,
+    reason: str,
+) -> tuple[Path, Path, str | None, str]:
+    """Explicitly replace fixture files and return old/new content hashes."""
+
+    if not reason.strip():
+        raise ValueError("fixture update requires a non-empty reason")
+    fixture_path = output_dir / FIXTURE_NAME
+    error_path = output_dir / ERROR_SUMMARY_NAME
+    old_hash = None
+    if fixture_path.exists():
+        old_fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        old_hash = old_fixture.get("provenance", {}).get("fixture_sha256") or _fixture_sha256(old_fixture)
+    fixture, errors = build_fixture(generated_at_utc=generated_at_utc)
+    new_hash = fixture["provenance"]["fixture_sha256"]
+    fixture["provenance"]["update_reason"] = reason
+    fixture["provenance"]["previous_fixture_sha256"] = old_hash
+    # History fields are excluded from the content hash because they describe
+    # why a reference was accepted, not the reference payload itself.
+    content_hash_payload = copy.deepcopy(fixture)
+    content_hash_payload["provenance"].pop("update_reason", None)
+    content_hash_payload["provenance"].pop("previous_fixture_sha256", None)
+    fixture["provenance"]["fixture_sha256"] = _fixture_sha256(content_hash_payload)
+    new_hash = fixture["provenance"]["fixture_sha256"]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _write_payload(fixture_path, fixture)
+    _write_payload(error_path, _error_summary(fixture, errors))
+    return fixture_path, error_path, old_hash, new_hash
+
+
+def validate_fixture(output_dir: Path) -> dict[str, Any]:
+    """Validate an existing fixture without changing either golden file."""
+
+    fixture_path = output_dir / FIXTURE_NAME
+    error_path = output_dir / ERROR_SUMMARY_NAME
+    if not fixture_path.is_file() or not error_path.is_file():
+        raise ValueError(f"missing fixture or error summary in {output_dir}")
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    stored_hash = fixture.get("provenance", {}).get("fixture_sha256")
+    if stored_hash != _fixture_sha256(fixture):
+        raise ValueError("fixture_sha256 does not match canonical fixture content")
+    stored_generated_at = fixture.get("provenance", {}).get("generated_at_utc", DEFAULT_GENERATED_AT_UTC)
+    expected, errors = build_fixture(generated_at_utc=stored_generated_at)
+    expected["provenance"].pop("fixture_sha256", None)
+    expected_hash = _fixture_sha256(expected)
+    expected["provenance"]["fixture_sha256"] = expected_hash
+    actual_for_compare = copy.deepcopy(fixture)
+    for payload in (actual_for_compare, expected):
+        payload.get("provenance", {}).pop("update_reason", None)
+        payload.get("provenance", {}).pop("previous_fixture_sha256", None)
+    if actual_for_compare != expected:
+        raise ValueError("checked-in fixture differs from the current production candidate; use --update with a reason")
+    summary = json.loads(error_path.read_text(encoding="utf-8"))
+    if summary.get("fixture_sha256") != stored_hash:
+        raise ValueError("error summary fixture_sha256 does not match fixture")
+    if summary.get("errors") != errors:
+        raise ValueError("error summary does not match current invariant calculations")
+    return {
+        "fixture": str(fixture_path),
+        "fixture_sha256": stored_hash,
+        "max_error": summary.get("max_error"),
+        "updated": False,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Generate golden files from command-line options and return a status."""
+    """Validate or explicitly update the flat golden fixture."""
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("tests"),
-        help="directory for flat golden files (default: tests)",
+    parser.add_argument("--output-dir", type=Path, default=Path("tests"))
+    parser.add_argument("--generated-at-utc", default=DEFAULT_GENERATED_AT_UTC)
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--update", action="store_true", help="replace fixture; requires --reason")
+    action.add_argument(
+        "--accept-reference-change",
+        action="store_true",
+        help="explicitly accept and replace fixture; requires --reason",
     )
-    parser.add_argument(
-        "--generated-at-utc",
-        default=None,
-        help="optional fixed ISO-8601 timestamp for reproducible fixture generation",
-    )
+    parser.add_argument("--reason", default="", help="human reason required for fixture replacement")
     args = parser.parse_args(argv)
-    fixture_path, error_path = write_fixture(args.output_dir, generated_at_utc=args.generated_at_utc)
-    print(json.dumps({"fixture": str(fixture_path), "error_summary": str(error_path)}, sort_keys=True))
+    try:
+        if args.update or args.accept_reference_change:
+            if not args.reason.strip():
+                parser.error("--update/--accept-reference-change requires --reason")
+            fixture_path, error_path, old_hash, new_hash = write_fixture(
+                args.output_dir,
+                generated_at_utc=args.generated_at_utc,
+                reason=args.reason,
+            )
+            result = {
+                "fixture": str(fixture_path),
+                "error_summary": str(error_path),
+                "old_fixture_sha256": old_hash,
+                "new_fixture_sha256": new_hash,
+                "updated": True,
+            }
+        else:
+            result = validate_fixture(args.output_dir)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.error(str(exc))
+    print(json.dumps(result, sort_keys=True))
     return 0
 
 

@@ -1,6 +1,6 @@
 # ShakeBench integration map
 
-状态：Phase 00 骨架与 Phase 01 simulator-independent excitation 完成；后续 physics/task 尚未实现。  
+状态：Phase 00 骨架与 Phase 01/01R simulator-independent candidate excitation 完成；后续 physics/task 尚未实现。
 审计路径：`/home/miracle04/Desktop/ShakeBench`。  
 审计基线 commit：`5ce6643f3092639d08f7b0f90ed1c6a84f50552c`。
 
@@ -10,7 +10,7 @@
 
 | 路径 | 职责 | 默认行为 |
 | --- | --- | --- |
-| `robosuite/utils/shakebench_config.py` | typed configuration envelope、JSON schema、canonical JSON、SHA-256 config hash、extension identity、official-field `UNFROZEN` gate | 只在显式导入/调用时运行；不导入环境、不触碰 `robosuite.macros` |
+| `robosuite/utils/shakebench_config.py` | typed configuration envelope、JSON schema、canonical JSON、SHA-256 config hash、深度不可变 payload、official-field/provenance validators、`UNFROZEN` gate | 只在显式导入/调用时运行；不导入环境、不触碰 `robosuite.macros` |
 | `robosuite/scripts/shakebench_cli.py` | `version`、`validate-config`、`print-schema` 命令行入口 | 不创建环境，不修改 registry 或 simulation globals |
 | `tests/test_shakebench_config.py` | import/registry、schema round-trip、稳定 hash、unknown field、scoreability gate 的 bootstrap tests | 只验证既有环境注册表，不加入环境 |
 | `docs/integration_map.md` | 直接集成落点、seam 和后续模块地图 | 文档 |
@@ -20,13 +20,13 @@
 
 | 路径 | 职责 | 默认行为 |
 | --- | --- | --- |
-| `robosuite/utils/shakebench_excitation.py` | 六轴 authored band table、确定性 line jitter/phase、quintic ramp 和解析 `q/qdot/qdd` | 仅显式调用时生成 NumPy program；不创建 simulator |
-| `robosuite/utils/shakebench_calibration.py` | workpiece-point `Gamma_commanded`、self-contained unit replay、peak factor 和 per-axis RMS/peak | 仅对显式 program 做 authored-command 计算 |
-| `robosuite/utils/shakebench_safety.py` | displacement、non-ballistic、frequency、solver-travel 和可选 angle gate | fail-closed report；不裁剪输入 |
+| `robosuite/utils/shakebench_excitation.py` | 六轴 authored candidate band table、确定性 line jitter/phase、quintic ramp 和解析 `q/qdot/qdd` | 仅显式调用时生成 NumPy program；不创建 simulator |
+| `robosuite/utils/shakebench_calibration.py` | workpiece-point `Gamma_commanded`、self-contained unit replay、peak factor 和 per-axis RMS/peak | 仅对显式 candidate program 做 authored-command 计算 |
+| `robosuite/utils/shakebench_safety.py` | 六自由度 displacement、non-ballistic、frequency、feature solver-travel 和可选 angle gate | candidate fail-closed report；不裁剪输入 |
 | `robosuite/scripts/shakebench_generate_excitation_golden.py` | 生成平铺 golden fixture 和机器可读误差摘要 | 不创建环境；输出到 `tests/` |
-| `tests/test_shakebench_excitation.py`、`tests/test_shakebench_calibration.py` | golden replay、解析导数、Gamma、t0、ramp 和全部 Phase 01 gates | 纯 NumPy 测试 |
+| `tests/test_shakebench_excitation.py`、`tests/test_shakebench_calibration.py`、`tests/test_shakebench_config.py` | golden 独立 evaluator、解析导数、Gamma、t0、ramp、六自由度 safety 和 configuration closure | 纯 NumPy/stdlib 测试 |
 
-本阶段没有修改上游核心源码、`setup.py`、`pyproject.toml`、`MANIFEST.in`、`robosuite/__init__.py` 或任何既有环境/模型文件。
+本阶段没有修改上游核心源码、`robosuite/__init__.py` 或任何既有环境/模型文件；为使新增代码的 Python 最低版本声明与语法一致，更新了 `setup.py`/`pyproject.toml`，并为已存在的 candidate texture 添加了最小 `.gitignore` 例外。
 
 ## 2. 已审计的真实上游入口
 
@@ -57,11 +57,11 @@
 
 | 阶段 | 最终路径 | 职责与接入 seam |
 | --- | --- | --- |
-| 01 | `robosuite/utils/shakebench_excitation.py` | **已实现**：simulator-independent 六轴谱、seed/`t0`、quintic ramp；只依赖 NumPy/stdlib |
+| 01 | `robosuite/utils/shakebench_excitation.py` | **已实现 candidate**：simulator-independent 六轴谱、seed/`t0`、quintic ramp；exact reuse 未证明 |
 | 01 | `robosuite/utils/shakebench_calibration.py` | **已实现**：Γ/频谱校准与可审计 authored-command 解析；不读取 task SR |
-| 01 | `robosuite/utils/shakebench_safety.py` | **已实现**：位移、non-ballistic、频率、solver travel 和 safety rejection |
+| 01 | `robosuite/utils/shakebench_safety.py` | **已实现 candidate gate**：六自由度位移、non-ballistic、频率、feature solver travel 和 safety rejection |
 | 01 | `robosuite/scripts/shakebench_generate_excitation_golden.py` | **已实现**：生成 tests 根目录的平铺 golden fixture 和误差摘要 |
-| 01 | `tests/test_shakebench_excitation.py`、`tests/test_shakebench_calibration.py` | **已实现**：excitation/calibration/safety 纯工具测试 |
+| 01 | `tests/test_shakebench_excitation.py`、`tests/test_shakebench_calibration.py`、`tests/test_shakebench_config.py` | **已实现**：excitation/calibration/config/safety 纯工具测试；golden 用独立 evaluator 验收 |
 | 02 | `robosuite/utils/shakebench_deck.py` | dynamic deck model、mocap driver、weld XML processor；挂接 `MujocoEnv.set_xml_processor` 和经过测试的 step timing |
 | 02 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/test_shakebench_deck_driver.py` | zero/six-axis/spectrum/Gamma、empty/load、多 dt 和 weld conformance |
 | 02 | `robosuite/environments/base.py`（仅在测试锁定后） | 可选 environment-owned timestep / pre-step hook 的最小向后兼容 seam；旧 env 未传参数时完全走现有 `macros.SIMULATION_TIMESTEP` |
@@ -156,3 +156,5 @@ python -m robosuite.scripts.shakebench_cli validate-config <config.json>
 本阶段没有实现 excitation、deck、isolator、arena、Can task、target box、contact/friction、IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。
 
 Phase 01 已实现 authored excitation，但仍未实现 deck、isolator、arena、task、contact、IMU 或任何 MuJoCo model/environment；这些继续由后续 phases 负责。
+
+Phase 01R 将该 excitation 明确标记为 `new authored v0 candidate`；没有可审计的旧 ShakeBench algorithm/reference，因此不宣称 exact reuse。`scoreable=True` 仍需后续 freeze authority。

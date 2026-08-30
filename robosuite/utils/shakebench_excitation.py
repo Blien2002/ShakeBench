@@ -18,38 +18,43 @@ The ramp remains episode-relative, as required by the protocol.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+import hashlib
+import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from math import pi
-from typing import Any, Final
+from typing import Any
 
 import numpy as np
 
-AXES: Final[tuple[str, ...]] = ("tx", "ty", "tz", "rx", "ry", "rz")
-AXIS_NAMES: Final[tuple[str, ...]] = AXES
-TRANSLATION_AXES: Final[tuple[str, ...]] = AXES[:3]
-ROTATION_AXES: Final[tuple[str, ...]] = AXES[3:]
-AXIS_INDEX: Final[dict[str, int]] = {axis: index for index, axis in enumerate(AXES)}
+AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
+AXIS_NAMES = AXES
+TRANSLATION_AXES = AXES[:3]
+ROTATION_AXES = AXES[3:]
+AXIS_INDEX = {axis: index for index, axis in enumerate(AXES)}
 
-TRANSLATION_COORDINATE_UNIT: Final[str] = "m"
-ROTATION_COORDINATE_UNIT: Final[str] = "rad"
-TRANSLATION_ACCELERATION_UNIT: Final[str] = "m/s^2"
-ROTATION_ACCELERATION_UNIT: Final[str] = "rad/s^2"
+TRANSLATION_COORDINATE_UNIT = "m"
+ROTATION_COORDINATE_UNIT = "rad"
+TRANSLATION_ACCELERATION_UNIT = "m/s^2"
+ROTATION_ACCELERATION_UNIT = "rad/s^2"
 
-DEFAULT_REFERENCE_ACCEL_RMS_M_S2: Final[float] = 1.0
-DEFAULT_KAPPA_ROT: Final[float] = 0.30
-DEFAULT_REFERENCE_LEVER_M: Final[float] = 0.65
-DEFAULT_FREQUENCY_SCALE: Final[float] = 1.0
-DEFAULT_JITTER_FRACTION: Final[float] = 0.10
-DEFAULT_RAMP_DURATION_S: Final[float] = 0.50
-DEFAULT_EPISODE_DURATION_S: Final[float] = 2.0
-DEFAULT_GRAVITY_M_S2: Final[float] = 9.81
-CONSERVATIVE_MAX_LINE_FREQUENCY_HZ: Final[float] = 8.87
-DEFAULT_MAX_LINES: Final[int] = 12
+DEFAULT_REFERENCE_ACCEL_RMS_M_S2 = 1.0
+DEFAULT_KAPPA_ROT = 0.30
+DEFAULT_REFERENCE_LEVER_M = 0.65
+DEFAULT_FREQUENCY_SCALE = 1.0
+DEFAULT_JITTER_FRACTION = 0.10
+DEFAULT_RAMP_DURATION_S = 0.50
+DEFAULT_EPISODE_DURATION_S = 2.0
+DEFAULT_GRAVITY_M_S2 = 9.81
+CONSERVATIVE_MAX_LINE_FREQUENCY_HZ = 8.87
+DEFAULT_MAX_LINES = 12
 
-EXCITATION_SCHEMA_ID: Final[str] = "shakebench.excitation"
-EXCITATION_SCHEMA_VERSION: Final[int] = 1
-PROGRAM_SCHEMA_ID: Final[str] = "shakebench.excitation.program"
+EXCITATION_SCHEMA_ID = "shakebench.excitation"
+EXCITATION_SCHEMA_VERSION = 2
+PROGRAM_SCHEMA_ID = "shakebench.excitation.program"
+AUTHORED_PROFILE_ID = "shakebench.authored_v0_candidate"
+AUTHORED_SPECTRUM_VERSION = "candidate-2026-08-30"
+AUTHORED_DECISION_ID = "phase-01-remediation-B-20260830"
 
 
 class ExcitationError(ValueError):
@@ -270,6 +275,8 @@ class ExcitationConfig:
         return {
             "schema_id": EXCITATION_SCHEMA_ID,
             "schema_version": EXCITATION_SCHEMA_VERSION,
+            "profile_id": AUTHORED_PROFILE_ID,
+            "authored_spectrum_version": AUTHORED_SPECTRUM_VERSION,
             "frequency_scale": self.frequency_scale,
             "reference_accel_rms_m_s2": self.reference_accel_rms_m_s2,
             "kappa_rot": self.kappa_rot,
@@ -291,6 +298,8 @@ class ExcitationConfig:
         allowed = {
             "schema_id",
             "schema_version",
+            "profile_id",
+            "authored_spectrum_version",
             "frequency_scale",
             "reference_accel_rms_m_s2",
             "kappa_rot",
@@ -309,9 +318,15 @@ class ExcitationConfig:
             raise ExcitationError(f"schema_id must be {EXCITATION_SCHEMA_ID!r}")
         if "schema_version" in payload and payload["schema_version"] != EXCITATION_SCHEMA_VERSION:
             raise ExcitationError(f"schema_version must be {EXCITATION_SCHEMA_VERSION}")
+        if "profile_id" in payload and payload["profile_id"] != AUTHORED_PROFILE_ID:
+            raise ExcitationError(f"profile_id must be {AUTHORED_PROFILE_ID!r}")
+        if "authored_spectrum_version" in payload and payload["authored_spectrum_version"] != AUTHORED_SPECTRUM_VERSION:
+            raise ExcitationError(f"authored_spectrum_version must be {AUTHORED_SPECTRUM_VERSION!r}")
         values = dict(payload)
         values.pop("schema_id", None)
         values.pop("schema_version", None)
+        values.pop("profile_id", None)
+        values.pop("authored_spectrum_version", None)
         return cls(**values)
 
 
@@ -399,10 +414,10 @@ def build_band_table(config: ExcitationConfig | Mapping[str, Any] | None = None)
     return tuple(rows)
 
 
-DEFAULT_EXCITATION_CONFIG: Final[ExcitationConfig] = ExcitationConfig()
-BAND_TABLE: Final[tuple[AxisBand, ...]] = build_band_table(DEFAULT_EXCITATION_CONFIG)
-DEFAULT_BAND_TABLE: Final[tuple[AxisBand, ...]] = BAND_TABLE
-AXIS_BANDS: Final[dict[str, AxisBand]] = {band.axis: band for band in BAND_TABLE}
+DEFAULT_EXCITATION_CONFIG = ExcitationConfig()
+BAND_TABLE = build_band_table(DEFAULT_EXCITATION_CONFIG)
+DEFAULT_BAND_TABLE = BAND_TABLE
+AXIS_BANDS = {band.axis: band for band in BAND_TABLE}
 
 
 def band_table_dict(config: ExcitationConfig | Mapping[str, Any] | None = None) -> dict[str, dict[str, Any]]:
@@ -418,6 +433,8 @@ def axis_schema(config: ExcitationConfig | Mapping[str, Any] | None = None) -> d
     return {
         "schema_id": EXCITATION_SCHEMA_ID,
         "schema_version": EXCITATION_SCHEMA_VERSION,
+        "profile_id": AUTHORED_PROFILE_ID,
+        "authored_spectrum_version": AUTHORED_SPECTRUM_VERSION,
         "axis_order": list(AXES),
         "translation_axes": list(TRANSLATION_AXES),
         "rotation_axes": list(ROTATION_AXES),
@@ -436,6 +453,20 @@ def axis_schema(config: ExcitationConfig | Mapping[str, Any] | None = None) -> d
         "ramp_duration_s": cfg.ramp_duration_s,
         "program_frame": "deck",
     }
+
+
+def excitation_profile_hash(config: ExcitationConfig | Mapping[str, Any] | None = None) -> str:
+    """Hash the authored candidate profile independently of seed and time."""
+
+    cfg = _coerce_config(config)
+    payload = {
+        "profile_id": AUTHORED_PROFILE_ID,
+        "authored_spectrum_version": AUTHORED_SPECTRUM_VERSION,
+        "config": cfg.to_dict(),
+        "axis_schema": axis_schema(cfg),
+    }
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def _normalise_active_axes(active_axes: Iterable[str | int] | str | np.ndarray | None) -> tuple[str, ...]:
@@ -806,13 +837,20 @@ class ExcitationProgram:
             "line_omega_rad_s": self.line_omega_rad_s.tolist(),
             "line_phase_at_episode_zero": self.line_phase_at_episode_zero.tolist(),
             "line_mask": self.line_mask.tolist(),
-            "episode_time_s": self.t0,
             "ramp_type": "quintic_smoothstep",
             "ramp_duration_s": self.config.ramp_duration_s,
             "program_frame": "deck",
             "config": self.config.to_dict(),
             "bands": [band.to_dict() for band in self.bands],
         }
+
+    def to_runtime_payload(self, episode_time_s: float) -> dict[str, Any]:
+        """Add an explicit finite non-negative current episode time."""
+
+        current_time = _finite_float("episode_time_s", episode_time_s, minimum=0.0)
+        payload = self.to_dict()
+        payload["episode_time_s"] = current_time
+        return payload
 
 
 def build_excitation_program(
@@ -939,6 +977,9 @@ __all__ = [
     "AXIS_BANDS",
     "AXIS_INDEX",
     "AXIS_NAMES",
+    "AUTHORED_DECISION_ID",
+    "AUTHORED_PROFILE_ID",
+    "AUTHORED_SPECTRUM_VERSION",
     "BAND_TABLE",
     "CONSERVATIVE_MAX_LINE_FREQUENCY_HZ",
     "DEFAULT_BAND_TABLE",
@@ -967,6 +1008,7 @@ __all__ = [
     "build_band_table",
     "build_excitation_program",
     "derive_rotation_accel_rms",
+    "excitation_profile_hash",
     "evaluate_excitation",
     "expected_line_accel_amplitude",
     "expected_line_q_amplitude",

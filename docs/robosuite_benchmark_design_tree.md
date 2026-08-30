@@ -161,7 +161,7 @@ static_offset_compensated = realized empty/payload equilibrium offset
 
 ### 3.1 v0 — DECIDED
 
-快速验证原样复用当前 ShakeBench 数值：
+Phase 01 remediation 选择 **B：new authored v0 candidate**。当前仓库没有可审计的旧 ShakeBench 激励算法、commit 或 reference dataset，因而不能声称 exact reuse；以下数值是依据本设计树写入的 candidate authored profile，等待 bench-author 批准：
 
 - 六轴解析多频谱；
 - 确定性 `seed/t0`；
@@ -192,7 +192,7 @@ positive solref time constant >= 2 * dt
 
 ### 3.2 v1 — DECIDED / `Gamma_star` 数值 OPEN
 
-- 保留 ShakeBench 的谱生成算法、确定性和校准协议。
+- 保留本仓库 candidate 的谱生成接口、确定性和校准协议作为待批准草案；旧 ShakeBench 算法未在当前仓库内取得 exact-reuse 证据，因此不得把 candidate 描述为旧实现的复用。
 - 根据固定隔振器和 State-V0 knee calibration 冻结单一主计分 `Gamma_star`。
 - 不默认 `0.15/0.30/0.50/0.75/0.95` 在新后端仍具有合理难度；这些值只作为初始扫描候选。
 - `Gamma_star` 必须在 official states 运行前冻结；完整跨 Γ 曲线只属于后续消融。

@@ -12,6 +12,7 @@ from robosuite.utils.shakebench_calibration import (
     workpiece_point_acceleration,
 )
 from robosuite.utils.shakebench_excitation import build_excitation_program
+from robosuite.utils.shakebench_safety import SafetyGeometry, check_displacement, check_solver_travel
 
 
 def test_alpha_cross_r_is_included_in_workpiece_point_acceleration() -> None:
@@ -71,3 +72,36 @@ def test_gamma_zero_for_no_active_axes() -> None:
     assert result.gamma_commanded == 0.0
     assert result.unit_peak_factor == 0.0
     assert all(value == 0.0 for value in result.per_axis_peak.values())
+
+
+def test_displacement_gate_checks_combined_translation_norm():
+    program = build_excitation_program(seed=3, level_scale=0.5)
+    axis_bound = float(np.max(program.axis_displacement_bound[:3]))
+    vector_bound = float(np.linalg.norm(program.axis_displacement_bound[:3]))
+    limit = (axis_bound + vector_bound) / 2.0
+    assert axis_bound < limit < vector_bound
+    assert not check_displacement(program, max_displacement_m=limit).passed
+
+
+def test_rotation_only_feature_displacement_is_not_invisible():
+    program = build_excitation_program(seed=4, active_axes=["rz"], level_scale=5.0)
+    geometry = SafetyGeometry(feature_offsets_m={"table_corner": (0.5, 0.0, 0.0)})
+    report = check_displacement(program, max_displacement_m=0.001, geometry=geometry)
+    assert not report.passed
+    assert "table_corner" in report.details["feature_bounds_m"]
+
+
+def test_solver_travel_rejects_rotation_induced_feature_motion():
+    program = build_excitation_program(seed=5, active_axes=["rx"], level_scale=5.0)
+    geometry = SafetyGeometry(feature_offsets_m={"table_corner": (0.0, 0.5, 0.0)})
+    check = check_solver_travel(
+        program,
+        timestep_s=0.1,
+        solver_travel_m=0.008,
+        solver_step_fraction=0.25,
+        geometry=geometry,
+    )
+    assert not check.passed
+    assert check.details["feature_speed_bound_m_s"] > 0.0
+    assert check.details["translation_step_displacement_m"] <= check.limit
+    assert check.details["feature_step_displacement_m"] > check.limit

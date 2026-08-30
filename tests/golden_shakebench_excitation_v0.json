@@ -1,114 +1,163 @@
 {
-  "axis_schema": [
-    {
-      "accel_rms": 0.5,
-      "acceleration_unit": "m/s^2",
-      "axis": "tx",
-      "bandwidth_ratio": 0.1,
-      "center_hz": 5.0,
-      "coordinate_unit": "m",
-      "derived_from_axis": null,
-      "kappa_rot": null,
-      "nominal_band_hz": [
-        4.5,
-        5.5
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": null,
-      "relative_accel_rms": 0.5,
-      "tones": 12
+  "axis_schema": {
+    "acceleration_units": {
+      "rx": "rad/s^2",
+      "ry": "rad/s^2",
+      "rz": "rad/s^2",
+      "tx": "m/s^2",
+      "ty": "m/s^2",
+      "tz": "m/s^2"
     },
-    {
-      "accel_rms": 0.35,
-      "acceleration_unit": "m/s^2",
-      "axis": "ty",
-      "bandwidth_ratio": 0.1,
-      "center_hz": 6.5,
-      "coordinate_unit": "m",
-      "derived_from_axis": null,
-      "kappa_rot": null,
-      "nominal_band_hz": [
-        5.85,
-        7.15
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": null,
-      "relative_accel_rms": 0.35,
-      "tones": 10
+    "authored_spectrum_version": "candidate-2026-08-30",
+    "axis_order": [
+      "tx",
+      "ty",
+      "tz",
+      "rx",
+      "ry",
+      "rz"
+    ],
+    "bands": {
+      "rx": {
+        "accel_rms": 0.4615384615384615,
+        "acceleration_unit": "rad/s^2",
+        "axis": "rx",
+        "bandwidth_ratio": 0.12,
+        "center_hz": 3.0,
+        "coordinate_unit": "rad",
+        "derived_from_axis": "tz",
+        "kappa_rot": 0.3,
+        "nominal_band_hz": [
+          2.64,
+          3.36
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": 0.65,
+        "relative_accel_rms": 0.4615384615384615,
+        "tones": 12
+      },
+      "ry": {
+        "accel_rms": 0.4615384615384615,
+        "acceleration_unit": "rad/s^2",
+        "axis": "ry",
+        "bandwidth_ratio": 0.12,
+        "center_hz": 4.0,
+        "coordinate_unit": "rad",
+        "derived_from_axis": "tz",
+        "kappa_rot": 0.3,
+        "nominal_band_hz": [
+          3.52,
+          4.48
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": 0.65,
+        "relative_accel_rms": 0.4615384615384615,
+        "tones": 10
+      },
+      "rz": {
+        "accel_rms": 0.23076923076923075,
+        "acceleration_unit": "rad/s^2",
+        "axis": "rz",
+        "bandwidth_ratio": 0.12,
+        "center_hz": 2.5,
+        "coordinate_unit": "rad",
+        "derived_from_axis": "tx",
+        "kappa_rot": 0.3,
+        "nominal_band_hz": [
+          2.2,
+          2.8
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": 0.65,
+        "relative_accel_rms": 0.23076923076923075,
+        "tones": 8
+      },
+      "tx": {
+        "accel_rms": 0.5,
+        "acceleration_unit": "m/s^2",
+        "axis": "tx",
+        "bandwidth_ratio": 0.1,
+        "center_hz": 5.0,
+        "coordinate_unit": "m",
+        "derived_from_axis": null,
+        "kappa_rot": null,
+        "nominal_band_hz": [
+          4.5,
+          5.5
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": null,
+        "relative_accel_rms": 0.5,
+        "tones": 12
+      },
+      "ty": {
+        "accel_rms": 0.35,
+        "acceleration_unit": "m/s^2",
+        "axis": "ty",
+        "bandwidth_ratio": 0.1,
+        "center_hz": 6.5,
+        "coordinate_unit": "m",
+        "derived_from_axis": null,
+        "kappa_rot": null,
+        "nominal_band_hz": [
+          5.85,
+          7.15
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": null,
+        "relative_accel_rms": 0.35,
+        "tones": 10
+      },
+      "tz": {
+        "accel_rms": 1.0,
+        "acceleration_unit": "m/s^2",
+        "axis": "tz",
+        "bandwidth_ratio": 0.1,
+        "center_hz": 8.0,
+        "coordinate_unit": "m",
+        "derived_from_axis": null,
+        "kappa_rot": null,
+        "nominal_band_hz": [
+          7.2,
+          8.8
+        ],
+        "reference_accel_rms_m_s2": 1.0,
+        "reference_lever_m": null,
+        "relative_accel_rms": 1.0,
+        "tones": 12
+      }
     },
-    {
-      "accel_rms": 1.0,
-      "acceleration_unit": "m/s^2",
-      "axis": "tz",
-      "bandwidth_ratio": 0.1,
-      "center_hz": 8.0,
-      "coordinate_unit": "m",
-      "derived_from_axis": null,
-      "kappa_rot": null,
-      "nominal_band_hz": [
-        7.2,
-        8.8
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": null,
-      "relative_accel_rms": 1.0,
-      "tones": 12
+    "coordinate_units": {
+      "rx": "rad",
+      "ry": "rad",
+      "rz": "rad",
+      "tx": "m",
+      "ty": "m",
+      "tz": "m"
     },
-    {
-      "accel_rms": 0.4615384615384615,
-      "acceleration_unit": "rad/s^2",
-      "axis": "rx",
-      "bandwidth_ratio": 0.12,
-      "center_hz": 3.0,
-      "coordinate_unit": "rad",
-      "derived_from_axis": "tz",
-      "kappa_rot": 0.3,
-      "nominal_band_hz": [
-        2.64,
-        3.36
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": 0.65,
-      "relative_accel_rms": 0.4615384615384615,
-      "tones": 12
-    },
-    {
-      "accel_rms": 0.4615384615384615,
-      "acceleration_unit": "rad/s^2",
-      "axis": "ry",
-      "bandwidth_ratio": 0.12,
-      "center_hz": 4.0,
-      "coordinate_unit": "rad",
-      "derived_from_axis": "tz",
-      "kappa_rot": 0.3,
-      "nominal_band_hz": [
-        3.52,
-        4.48
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": 0.65,
-      "relative_accel_rms": 0.4615384615384615,
-      "tones": 10
-    },
-    {
-      "accel_rms": 0.23076923076923075,
-      "acceleration_unit": "rad/s^2",
-      "axis": "rz",
-      "bandwidth_ratio": 0.12,
-      "center_hz": 2.5,
-      "coordinate_unit": "rad",
-      "derived_from_axis": "tx",
-      "kappa_rot": 0.3,
-      "nominal_band_hz": [
-        2.2,
-        2.8
-      ],
-      "reference_accel_rms_m_s2": 1.0,
-      "reference_lever_m": 0.65,
-      "relative_accel_rms": 0.23076923076923075,
-      "tones": 8
-    }
-  ],
+    "frequency_scale": 1.0,
+    "profile_id": "shakebench.authored_v0_candidate",
+    "program_frame": "deck",
+    "ramp_duration_s": 0.5,
+    "ramp_type": "quintic_smoothstep",
+    "rotation_axes": [
+      "rx",
+      "ry",
+      "rz"
+    ],
+    "schema_id": "shakebench.excitation",
+    "schema_version": 2,
+    "translation_axes": [
+      "tx",
+      "ty",
+      "tz"
+    ],
+    "workpiece_point_offset_m": [
+      0.65,
+      0.0,
+      0.0
+    ]
+  },
   "cases": [
     {
       "active_axes": [
@@ -119,7 +168,7 @@
         "ry",
         "rz"
       ],
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "gamma": {
         "Gamma_commanded": 0.052900861318669674,
         "duration_s": 2.0,
@@ -153,6 +202,11 @@
         ],
         "sample_count": 4001,
         "seed": 7,
+        "support_normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
         "t0": 0.0,
         "unit_peak_acceleration_m_s2": 2.594787247680748,
         "unit_peak_factor": 0.2645043065933484,
@@ -166,24 +220,26 @@
             "rz"
           ],
           "config": {
+            "authored_spectrum_version": "candidate-2026-08-30",
             "conservative_max_line_frequency_hz": 8.87,
             "episode_duration_s": 2.0,
             "frequency_scale": 1.0,
             "gravity_m_s2": 9.81,
             "jitter_fraction": 0.1,
             "kappa_rot": 0.3,
+            "profile_id": "shakebench.authored_v0_candidate",
             "ramp_duration_s": 0.5,
             "reference_accel_rms_m_s2": 1.0,
             "reference_lever_m": 0.65,
             "schema_id": "shakebench.excitation",
-            "schema_version": 1,
+            "schema_version": 2,
             "workpiece_point_offset_m": [
               0.65,
               0.0,
               0.0
             ]
           },
-          "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+          "config_hash": "14c6ad8a9e63a7c4bf8efe2d5d785e866fb6810089310d373c81969cea028817",
           "include_centripetal": false,
           "level_scale": 1.0,
           "point_offset_m": [
@@ -319,24 +375,25 @@
               }
             ],
             "config": {
+              "authored_spectrum_version": "candidate-2026-08-30",
               "conservative_max_line_frequency_hz": 8.87,
               "episode_duration_s": 2.0,
               "frequency_scale": 1.0,
               "gravity_m_s2": 9.81,
               "jitter_fraction": 0.1,
               "kappa_rot": 0.3,
+              "profile_id": "shakebench.authored_v0_candidate",
               "ramp_duration_s": 0.5,
               "reference_accel_rms_m_s2": 1.0,
               "reference_lever_m": 0.65,
               "schema_id": "shakebench.excitation",
-              "schema_version": 1,
+              "schema_version": 2,
               "workpiece_point_offset_m": [
                 0.65,
                 0.0,
                 0.0
               ]
             },
-            "episode_time_s": 0.0,
             "level_scale": 1.0,
             "line_accel_amplitude": [
               [
@@ -686,7 +743,7 @@
             "ramp_duration_s": 0.5,
             "ramp_type": "quintic_smoothstep",
             "schema_id": "shakebench.excitation.program",
-            "schema_version": 1,
+            "schema_version": 2,
             "seed": 7,
             "t0_s": 0.0
           },
@@ -694,6 +751,11 @@
           "schema_id": "shakebench.excitation.unit_replay",
           "schema_version": 1,
           "seed": 7,
+          "support_normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
           "t0": 0.0,
           "time_grid_s": [
             0.0,
@@ -4994,24 +5056,25 @@
           }
         ],
         "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
           "conservative_max_line_frequency_hz": 8.87,
           "episode_duration_s": 2.0,
           "frequency_scale": 1.0,
           "gravity_m_s2": 9.81,
           "jitter_fraction": 0.1,
           "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
           "ramp_duration_s": 0.5,
           "reference_accel_rms_m_s2": 1.0,
           "reference_lever_m": 0.65,
           "schema_id": "shakebench.excitation",
-          "schema_version": 1,
+          "schema_version": 2,
           "workpiece_point_offset_m": [
             0.65,
             0.0,
             0.0
           ]
         },
-        "episode_time_s": 0.0,
         "level_scale": 0.2,
         "line_accel_amplitude": [
           [
@@ -5361,7 +5424,7 @@
         "ramp_duration_s": 0.5,
         "ramp_type": "quintic_smoothstep",
         "schema_id": "shakebench.excitation.program",
-        "schema_version": 1,
+        "schema_version": 2,
         "seed": 7,
         "t0_s": 0.0
       },
@@ -5369,13 +5432,45 @@
         "checks": [
           {
             "details": {
-              "tx": 0.000502128116595008,
-              "ty": 0.0001900479921300089,
-              "tz": 0.0003925409862038418
+              "feature_bounds_m": {
+                "table_corner_ne": 0.0013113568902743704,
+                "table_corner_nw": 0.0013113568902743704,
+                "target_wall_top_edge": 0.00104582929488789,
+                "workpiece_support_point": 0.0011845376808506845
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.000502128116595008,
+                0.0001900479921300089,
+                0.0003925409862038418
+              ],
+              "translation_vector_norm_bound_m": 0.0006650859422945147
             },
             "limit": 0.025,
-            "measured": 0.000502128116595008,
-            "message": "displacement bound 0.000502128117 m is within limit 0.025 m",
+            "measured": 0.0013113568902743704,
+            "message": "six-DoF displacement bound 0.00131135689 m is within limit 0.025 m",
             "name": "displacement",
             "passed": true
           },
@@ -5395,40 +5490,76 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 0.5189574495361495,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 0.5189602284440805,
               "peak_time_s": 0.405,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 0.052900861318669674,
-            "message": "Gamma_commanded 0.0529008613 is below non-ballistic limit 1",
+            "measured": 0.052901144591649386,
+            "message": "effective-normal Gamma_commanded 0.0529011446 is below limit 1",
             "name": "non_ballistic",
             "passed": true
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.019573083695984515,
-              "max_velocity_m_s": 0.019573083695984515,
-              "sampled_max_velocity_m_s": 0.009965520014790905,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 22.20830230897162,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 22.20830230897162,
+                "table_corner_nw": 22.20830230897162,
+                "target_wall_top_edge": 18.75478063791229,
+                "workpiece_support_point": 21.160751967852395
+              },
+              "feature_speed_bound_m_s": 0.3537655491256633,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 0.3537655491256633,
+                "table_corner_nw": 0.3537655491256633,
+                "target_wall_top_edge": 0.2839878802019582,
+                "workpiece_support_point": 0.32103914008145334
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.0003648697002801491,
+                "table_corner_nw": 0.0003648697002801491,
+                "target_wall_top_edge": 0.0002933652705209144,
+                "workpiece_support_point": 0.0003316195160653795
+              },
+              "feature_step_displacement_m": 0.0003648697002801491,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 4097,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": true,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 14.634620387376888,
+              "translation_speed_bound_m_s": 0.18528112776426475,
+              "translation_step_displacement_m": 0.0001925984379579532
             },
-            "limit": 0.008,
-            "measured": 1.9573083695984514e-05,
-            "message": "solver travel bound 1.95730837e-05 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.0003648697002801491,
+            "message": "required feature travel 0.0003648697 m is within allowed 0.002 m",
             "name": "solver_travel",
             "passed": true
           }
         ],
         "metrics": {
-          "displacement": 0.000502128116595008,
+          "displacement": 0.0013113568902743704,
           "frequency": 8.789823992118414,
-          "non_ballistic": 0.052900861318669674,
-          "solver_travel": 1.9573083695984514e-05
+          "non_ballistic": 0.052901144591649386,
+          "solver_travel": 0.0003648697002801491
         },
         "passed": true,
         "violations": []
@@ -5453,7 +5584,7 @@
         "ry",
         "rz"
       ],
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "gamma": {
         "Gamma_commanded": 0.062060423780710305,
         "duration_s": 2.0,
@@ -5487,6 +5618,11 @@
         ],
         "sample_count": 4001,
         "seed": 19,
+        "support_normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
         "t0": 0.137,
         "unit_peak_acceleration_m_s2": 1.7394650208250526,
         "unit_peak_factor": 0.17731549651631523,
@@ -5500,24 +5636,26 @@
             "rz"
           ],
           "config": {
+            "authored_spectrum_version": "candidate-2026-08-30",
             "conservative_max_line_frequency_hz": 8.87,
             "episode_duration_s": 2.0,
             "frequency_scale": 1.0,
             "gravity_m_s2": 9.81,
             "jitter_fraction": 0.1,
             "kappa_rot": 0.3,
+            "profile_id": "shakebench.authored_v0_candidate",
             "ramp_duration_s": 0.5,
             "reference_accel_rms_m_s2": 1.0,
             "reference_lever_m": 0.65,
             "schema_id": "shakebench.excitation",
-            "schema_version": 1,
+            "schema_version": 2,
             "workpiece_point_offset_m": [
               0.65,
               0.0,
               0.0
             ]
           },
-          "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+          "config_hash": "14c6ad8a9e63a7c4bf8efe2d5d785e866fb6810089310d373c81969cea028817",
           "include_centripetal": false,
           "level_scale": 1.0,
           "point_offset_m": [
@@ -5653,24 +5791,25 @@
               }
             ],
             "config": {
+              "authored_spectrum_version": "candidate-2026-08-30",
               "conservative_max_line_frequency_hz": 8.87,
               "episode_duration_s": 2.0,
               "frequency_scale": 1.0,
               "gravity_m_s2": 9.81,
               "jitter_fraction": 0.1,
               "kappa_rot": 0.3,
+              "profile_id": "shakebench.authored_v0_candidate",
               "ramp_duration_s": 0.5,
               "reference_accel_rms_m_s2": 1.0,
               "reference_lever_m": 0.65,
               "schema_id": "shakebench.excitation",
-              "schema_version": 1,
+              "schema_version": 2,
               "workpiece_point_offset_m": [
                 0.65,
                 0.0,
                 0.0
               ]
             },
-            "episode_time_s": 0.137,
             "level_scale": 1.0,
             "line_accel_amplitude": [
               [
@@ -6020,7 +6159,7 @@
             "ramp_duration_s": 0.5,
             "ramp_type": "quintic_smoothstep",
             "schema_id": "shakebench.excitation.program",
-            "schema_version": 1,
+            "schema_version": 2,
             "seed": 19,
             "t0_s": 0.137
           },
@@ -6028,6 +6167,11 @@
           "schema_id": "shakebench.excitation.unit_replay",
           "schema_version": 1,
           "seed": 19,
+          "support_normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
           "t0": 0.137,
           "time_grid_s": [
             0.0,
@@ -10328,24 +10472,25 @@
           }
         ],
         "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
           "conservative_max_line_frequency_hz": 8.87,
           "episode_duration_s": 2.0,
           "frequency_scale": 1.0,
           "gravity_m_s2": 9.81,
           "jitter_fraction": 0.1,
           "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
           "ramp_duration_s": 0.5,
           "reference_accel_rms_m_s2": 1.0,
           "reference_lever_m": 0.65,
           "schema_id": "shakebench.excitation",
-          "schema_version": 1,
+          "schema_version": 2,
           "workpiece_point_offset_m": [
             0.65,
             0.0,
             0.0
           ]
         },
-        "episode_time_s": 0.137,
         "level_scale": 0.35,
         "line_accel_amplitude": [
           [
@@ -10695,7 +10840,7 @@
         "ramp_duration_s": 0.5,
         "ramp_type": "quintic_smoothstep",
         "schema_id": "shakebench.excitation.program",
-        "schema_version": 1,
+        "schema_version": 2,
         "seed": 19,
         "t0_s": 0.137
       },
@@ -10703,13 +10848,45 @@
         "checks": [
           {
             "details": {
-              "tx": 0.0008787395465430826,
-              "ty": 0.0003324125552683121,
-              "tz": 0.0006874122333427013
+              "feature_bounds_m": {
+                "table_corner_ne": 0.0022943826179534768,
+                "table_corner_nw": 0.0022943826179534768,
+                "target_wall_top_edge": 0.0018301763527287106,
+                "workpiece_support_point": 0.002072029940882716
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.0008787395465430826,
+                0.0003324125552683121,
+                0.0006874122333427013
+              ],
+              "translation_vector_norm_bound_m": 0.0011641378252200002
             },
             "limit": 0.025,
-            "measured": 0.0008787395465430826,
-            "message": "displacement bound 0.000878739547 m is within limit 0.025 m",
+            "measured": 0.0022943826179534768,
+            "message": "six-DoF displacement bound 0.00229438262 m is within limit 0.025 m",
             "name": "displacement",
             "passed": true
           },
@@ -10729,40 +10906,76 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 0.6088127572887682,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 0.6088729371286206,
               "peak_time_s": 1.446,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 0.062060423780710305,
-            "message": "Gamma_commanded 0.0620604238 is below non-ballistic limit 1",
+            "measured": 0.0620665583209603,
+            "message": "effective-normal Gamma_commanded 0.0620665583 is below limit 1",
             "name": "non_ballistic",
             "passed": true
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.03426322136330533,
-              "max_velocity_m_s": 0.03426322136330533,
-              "sampled_max_velocity_m_s": 0.011558797829593927,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 39.002118523383686,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 39.002118523383686,
+                "table_corner_nw": 39.002118523383686,
+                "target_wall_top_edge": 32.873793971415665,
+                "workpiece_support_point": 37.198229351102306
+              },
+              "feature_speed_bound_m_s": 0.6189704947929678,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 0.6189704947929678,
+                "table_corner_nw": 0.6189704947929678,
+                "target_wall_top_edge": 0.49697760065188706,
+                "workpiece_support_point": 0.5615943015675149
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.0006384715540546596,
+                "table_corner_nw": 0.0006384715540546596,
+                "target_wall_top_edge": 0.0005134144976375949,
+                "workpiece_support_point": 0.0005801934162430661
+              },
+              "feature_step_displacement_m": 0.0006384715540546596,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 4097,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": true,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 25.614036079680517,
+              "translation_speed_bound_m_s": 0.3243062731911504,
+              "translation_step_displacement_m": 0.0003371132912309907
             },
-            "limit": 0.008,
-            "measured": 3.4263221363305325e-05,
-            "message": "solver travel bound 3.42632214e-05 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.0006384715540546596,
+            "message": "required feature travel 0.000638471554 m is within allowed 0.002 m",
             "name": "solver_travel",
             "passed": true
           }
         ],
         "metrics": {
-          "displacement": 0.0008787395465430826,
+          "displacement": 0.0022943826179534768,
           "frequency": 8.790318931017794,
-          "non_ballistic": 0.062060423780710305,
-          "solver_travel": 3.4263221363305325e-05
+          "non_ballistic": 0.0620665583209603,
+          "solver_travel": 0.0006384715540546596
         },
         "passed": true,
         "violations": []
@@ -10782,7 +10995,7 @@
       "active_axes": [
         "tz"
       ],
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "gamma": {
         "Gamma_commanded": 0.047342911023115844,
         "duration_s": 2.0,
@@ -10816,6 +11029,11 @@
         ],
         "sample_count": 4001,
         "seed": 7,
+        "support_normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
         "t0": 0.137,
         "unit_peak_acceleration_m_s2": 2.3221697856838324,
         "unit_peak_factor": 0.23671455511557923,
@@ -10824,24 +11042,26 @@
             "tz"
           ],
           "config": {
+            "authored_spectrum_version": "candidate-2026-08-30",
             "conservative_max_line_frequency_hz": 8.87,
             "episode_duration_s": 2.0,
             "frequency_scale": 1.0,
             "gravity_m_s2": 9.81,
             "jitter_fraction": 0.1,
             "kappa_rot": 0.3,
+            "profile_id": "shakebench.authored_v0_candidate",
             "ramp_duration_s": 0.5,
             "reference_accel_rms_m_s2": 1.0,
             "reference_lever_m": 0.65,
             "schema_id": "shakebench.excitation",
-            "schema_version": 1,
+            "schema_version": 2,
             "workpiece_point_offset_m": [
               0.65,
               0.0,
               0.0
             ]
           },
-          "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+          "config_hash": "14c6ad8a9e63a7c4bf8efe2d5d785e866fb6810089310d373c81969cea028817",
           "include_centripetal": false,
           "level_scale": 1.0,
           "point_offset_m": [
@@ -10972,24 +11192,25 @@
               }
             ],
             "config": {
+              "authored_spectrum_version": "candidate-2026-08-30",
               "conservative_max_line_frequency_hz": 8.87,
               "episode_duration_s": 2.0,
               "frequency_scale": 1.0,
               "gravity_m_s2": 9.81,
               "jitter_fraction": 0.1,
               "kappa_rot": 0.3,
+              "profile_id": "shakebench.authored_v0_candidate",
               "ramp_duration_s": 0.5,
               "reference_accel_rms_m_s2": 1.0,
               "reference_lever_m": 0.65,
               "schema_id": "shakebench.excitation",
-              "schema_version": 1,
+              "schema_version": 2,
               "workpiece_point_offset_m": [
                 0.65,
                 0.0,
                 0.0
               ]
             },
-            "episode_time_s": 0.137,
             "level_scale": 1.0,
             "line_accel_amplitude": [
               [
@@ -11339,7 +11560,7 @@
             "ramp_duration_s": 0.5,
             "ramp_type": "quintic_smoothstep",
             "schema_id": "shakebench.excitation.program",
-            "schema_version": 1,
+            "schema_version": 2,
             "seed": 7,
             "t0_s": 0.137
           },
@@ -11347,6 +11568,11 @@
           "schema_id": "shakebench.excitation.unit_replay",
           "schema_version": 1,
           "seed": 7,
+          "support_normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
           "t0": 0.137,
           "time_grid_s": [
             0.0,
@@ -15642,24 +15868,25 @@
           }
         ],
         "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
           "conservative_max_line_frequency_hz": 8.87,
           "episode_duration_s": 2.0,
           "frequency_scale": 1.0,
           "gravity_m_s2": 9.81,
           "jitter_fraction": 0.1,
           "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
           "ramp_duration_s": 0.5,
           "reference_accel_rms_m_s2": 1.0,
           "reference_lever_m": 0.65,
           "schema_id": "shakebench.excitation",
-          "schema_version": 1,
+          "schema_version": 2,
           "workpiece_point_offset_m": [
             0.65,
             0.0,
             0.0
           ]
         },
-        "episode_time_s": 0.137,
         "level_scale": 0.2,
         "line_accel_amplitude": [
           [
@@ -16009,7 +16236,7 @@
         "ramp_duration_s": 0.5,
         "ramp_type": "quintic_smoothstep",
         "schema_id": "shakebench.excitation.program",
-        "schema_version": 1,
+        "schema_version": 2,
         "seed": 7,
         "t0_s": 0.137
       },
@@ -16017,13 +16244,45 @@
         "checks": [
           {
             "details": {
-              "tx": 0.0,
-              "ty": 0.0,
-              "tz": 0.0003925409862038418
+              "feature_bounds_m": {
+                "table_corner_ne": 0.0003925409862038418,
+                "table_corner_nw": 0.0003925409862038418,
+                "target_wall_top_edge": 0.0003925409862038418,
+                "workpiece_support_point": 0.0003925409862038418
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.0,
+                0.0,
+                0.0003925409862038418
+              ],
+              "translation_vector_norm_bound_m": 0.0003925409862038418
             },
             "limit": 0.025,
             "measured": 0.0003925409862038418,
-            "message": "displacement bound 0.000392540986 m is within limit 0.025 m",
+            "message": "six-DoF displacement bound 0.000392540986 m is within limit 0.025 m",
             "name": "displacement",
             "passed": true
           },
@@ -16043,31 +16302,67 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
               "peak_acceleration_m_s2": 0.46443395713676644,
               "peak_time_s": 0.449,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
             "measured": 0.047342911023115844,
-            "message": "Gamma_commanded 0.047342911 is below non-ballistic limit 1",
+            "message": "effective-normal Gamma_commanded 0.047342911 is below limit 1",
             "name": "non_ballistic",
             "passed": true
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.019573083695984515,
-              "max_velocity_m_s": 0.019573083695984515,
-              "sampled_max_velocity_m_s": 0.009064247599477153,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 10.94013509131937,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 10.94013509131937,
+                "table_corner_nw": 10.94013509131937,
+                "target_wall_top_edge": 10.94013509131937,
+                "workpiece_support_point": 10.94013509131937
+              },
+              "feature_speed_bound_m_s": 0.11378292038490655,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 0.11378292038490655,
+                "table_corner_nw": 0.11378292038490655,
+                "target_wall_top_edge": 0.11378292038490655,
+                "workpiece_support_point": 0.11378292038490655
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.00011925298793056623,
+                "table_corner_nw": 0.00011925298793056623,
+                "target_wall_top_edge": 0.00011925298793056623,
+                "workpiece_support_point": 0.00011925298793056623
+              },
+              "feature_step_displacement_m": 0.00011925298793056623,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 4097,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": true,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 10.94013509131937,
+              "translation_speed_bound_m_s": 0.11378292038490655,
+              "translation_step_displacement_m": 0.00011925298793056623
             },
-            "limit": 0.008,
-            "measured": 1.9573083695984514e-05,
-            "message": "solver travel bound 1.95730837e-05 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.00011925298793056623,
+            "message": "required feature travel 0.000119252988 m is within allowed 0.002 m",
             "name": "solver_travel",
             "passed": true
           }
@@ -16076,7 +16371,7 @@
           "displacement": 0.0003925409862038418,
           "frequency": 8.789823992118414,
           "non_ballistic": 0.047342911023115844,
-          "solver_travel": 1.9573083695984514e-05
+          "solver_travel": 0.00011925298793056623
         },
         "passed": true,
         "violations": []
@@ -16096,7 +16391,7 @@
       "active_axes": [
         "ry"
       ],
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "gamma": {
         "Gamma_commanded": 0.006604014585317456,
         "duration_s": 2.0,
@@ -16130,6 +16425,11 @@
         ],
         "sample_count": 4001,
         "seed": 23,
+        "support_normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
         "t0": 0.271,
         "unit_peak_acceleration_m_s2": 0.43190255387976173,
         "unit_peak_factor": 0.044026763902116385,
@@ -16138,24 +16438,26 @@
             "ry"
           ],
           "config": {
+            "authored_spectrum_version": "candidate-2026-08-30",
             "conservative_max_line_frequency_hz": 8.87,
             "episode_duration_s": 2.0,
             "frequency_scale": 1.0,
             "gravity_m_s2": 9.81,
             "jitter_fraction": 0.1,
             "kappa_rot": 0.3,
+            "profile_id": "shakebench.authored_v0_candidate",
             "ramp_duration_s": 0.5,
             "reference_accel_rms_m_s2": 1.0,
             "reference_lever_m": 0.65,
             "schema_id": "shakebench.excitation",
-            "schema_version": 1,
+            "schema_version": 2,
             "workpiece_point_offset_m": [
               0.65,
               0.0,
               0.0
             ]
           },
-          "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+          "config_hash": "14c6ad8a9e63a7c4bf8efe2d5d785e866fb6810089310d373c81969cea028817",
           "include_centripetal": false,
           "level_scale": 1.0,
           "point_offset_m": [
@@ -16286,24 +16588,25 @@
               }
             ],
             "config": {
+              "authored_spectrum_version": "candidate-2026-08-30",
               "conservative_max_line_frequency_hz": 8.87,
               "episode_duration_s": 2.0,
               "frequency_scale": 1.0,
               "gravity_m_s2": 9.81,
               "jitter_fraction": 0.1,
               "kappa_rot": 0.3,
+              "profile_id": "shakebench.authored_v0_candidate",
               "ramp_duration_s": 0.5,
               "reference_accel_rms_m_s2": 1.0,
               "reference_lever_m": 0.65,
               "schema_id": "shakebench.excitation",
-              "schema_version": 1,
+              "schema_version": 2,
               "workpiece_point_offset_m": [
                 0.65,
                 0.0,
                 0.0
               ]
             },
-            "episode_time_s": 0.271,
             "level_scale": 1.0,
             "line_accel_amplitude": [
               [
@@ -16653,7 +16956,7 @@
             "ramp_duration_s": 0.5,
             "ramp_type": "quintic_smoothstep",
             "schema_id": "shakebench.excitation.program",
-            "schema_version": 1,
+            "schema_version": 2,
             "seed": 23,
             "t0_s": 0.271
           },
@@ -16661,6 +16964,11 @@
           "schema_id": "shakebench.excitation.unit_replay",
           "schema_version": 1,
           "seed": 23,
+          "support_normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
           "t0": 0.271,
           "time_grid_s": [
             0.0,
@@ -20956,24 +21264,25 @@
           }
         ],
         "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
           "conservative_max_line_frequency_hz": 8.87,
           "episode_duration_s": 2.0,
           "frequency_scale": 1.0,
           "gravity_m_s2": 9.81,
           "jitter_fraction": 0.1,
           "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
           "ramp_duration_s": 0.5,
           "reference_accel_rms_m_s2": 1.0,
           "reference_lever_m": 0.65,
           "schema_id": "shakebench.excitation",
-          "schema_version": 1,
+          "schema_version": 2,
           "workpiece_point_offset_m": [
             0.65,
             0.0,
             0.0
           ]
         },
-        "episode_time_s": 0.271,
         "level_scale": 0.15,
         "line_accel_amplitude": [
           [
@@ -21323,7 +21632,7 @@
         "ramp_duration_s": 0.5,
         "ramp_type": "quintic_smoothstep",
         "schema_id": "shakebench.excitation.program",
-        "schema_version": 1,
+        "schema_version": 2,
         "seed": 23,
         "t0_s": 0.271
       },
@@ -21331,13 +21640,45 @@
         "checks": [
           {
             "details": {
-              "tx": 0.0,
-              "ty": 0.0,
-              "tz": 0.0
+              "feature_bounds_m": {
+                "table_corner_ne": 0.00016201984781488344,
+                "table_corner_nw": 0.00016201984781488344,
+                "target_wall_top_edge": 1.8146496866720885e-05,
+                "workpiece_support_point": 0.0003240396956297669
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "translation_vector_norm_bound_m": 0.0
             },
             "limit": 0.025,
-            "measured": 0.0,
-            "message": "displacement bound 0 m is within limit 0.025 m",
+            "measured": 0.0003240396956297669,
+            "message": "six-DoF displacement bound 0.000324039696 m is within limit 0.025 m",
             "name": "displacement",
             "passed": true
           },
@@ -21357,40 +21698,76 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
               "peak_acceleration_m_s2": 0.06478538308196424,
               "peak_time_s": 1.305,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
             "measured": 0.006604014585317456,
-            "message": "Gamma_commanded 0.00660401459 is below non-ballistic limit 1",
+            "message": "effective-normal Gamma_commanded 0.00660401459 is below limit 1",
             "name": "non_ballistic",
             "passed": true
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.0,
-              "max_velocity_m_s": 0.0,
-              "sampled_max_velocity_m_s": 0.0,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 4.5325585949618645,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 2.266303434104896,
+                "table_corner_nw": 2.266303434104896,
+                "target_wall_top_edge": 0.254311540058015,
+                "workpiece_support_point": 4.5325585949618645
+              },
+              "feature_speed_bound_m_s": 0.0858209460171387,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 0.04291047300856935,
+                "table_corner_nw": 0.04291047300856935,
+                "target_wall_top_edge": 0.004806045521590623,
+                "workpiece_support_point": 0.0858209460171387
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 4.40436247256218e-05,
+                "table_corner_nw": 4.40436247256218e-05,
+                "target_wall_top_edge": 4.93320129161963e-06,
+                "workpiece_support_point": 8.808722531461964e-05
+              },
+              "feature_step_displacement_m": 8.808722531461964e-05,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 4097,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": true,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 0.0,
+              "translation_speed_bound_m_s": 0.0,
+              "translation_step_displacement_m": 0.0
             },
-            "limit": 0.008,
-            "measured": 0.0,
-            "message": "solver travel bound 0 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 8.808722531461964e-05,
+            "message": "required feature travel 8.80872253e-05 m is within allowed 0.002 m",
             "name": "solver_travel",
             "passed": true
           }
         ],
         "metrics": {
-          "displacement": 0.0,
+          "displacement": 0.0003240396956297669,
           "frequency": 4.48,
           "non_ballistic": 0.006604014585317456,
-          "solver_travel": 0.0
+          "solver_travel": 8.808722531461964e-05
         },
         "passed": true,
         "violations": []
@@ -21408,45 +21785,679 @@
     }
   ],
   "config": {
+    "authored_spectrum_version": "candidate-2026-08-30",
     "conservative_max_line_frequency_hz": 8.87,
     "episode_duration_s": 2.0,
     "frequency_scale": 1.0,
     "gravity_m_s2": 9.81,
     "jitter_fraction": 0.1,
     "kappa_rot": 0.3,
+    "profile_id": "shakebench.authored_v0_candidate",
     "ramp_duration_s": 0.5,
     "reference_accel_rms_m_s2": 1.0,
     "reference_lever_m": 0.65,
     "schema_id": "shakebench.excitation",
-    "schema_version": 1,
+    "schema_version": 2,
     "workpiece_point_offset_m": [
       0.65,
       0.0,
       0.0
     ]
   },
+  "configuration_envelope": {
+    "extension": {
+      "id": "shakebench",
+      "python_package": "robosuite",
+      "version": "0"
+    },
+    "official_fields": {
+      "contact_condim": "UNFROZEN",
+      "contact_solimp": "UNFROZEN",
+      "contact_solref": "UNFROZEN",
+      "deck_eq_solimp": "UNFROZEN",
+      "deck_eq_solref": "UNFROZEN",
+      "deck_inertia_kg_m2": "UNFROZEN",
+      "deck_mass_kg": "UNFROZEN",
+      "gamma_star": "UNFROZEN",
+      "gripper_actuator_force": "UNFROZEN",
+      "isolator_c": "UNFROZEN",
+      "isolator_fn_hz": "UNFROZEN",
+      "isolator_k": "UNFROZEN",
+      "isolator_zeta": "UNFROZEN",
+      "official_state_ids": "UNFROZEN",
+      "osc_profile_id": "UNFROZEN",
+      "physics_timestep_s": "UNFROZEN"
+    },
+    "options": {},
+    "provenance": {
+      "authored_spectrum_version": "candidate-2026-08-30",
+      "excitation_profile_hash": "01bdf47ac1a04a2db43a18d79f29bf23bb5439adfc3695d9ec2204815b8c59f9",
+      "excitation_profile_id": "shakebench.authored_v0_candidate",
+      "freeze_status": "candidate",
+      "frequency_scale": 1.0,
+      "gamma_point_offset_m": [
+        0.65,
+        0.0,
+        0.0
+      ],
+      "gravity_m_s2": 9.81,
+      "official_state_manifest_hash": "UNFROZEN",
+      "ramp_duration_s": 0.5,
+      "safety_profile_hash": "e04395ab50798aef2c0ad7760a739152bf623caf4dc3ce96b6cc5b2417c5b5a4",
+      "safety_profile_id": "shakebench.safety.candidate.v1",
+      "safety_profile_limits": {
+        "allowed_solver_step_m": 0.002,
+        "geometry": {
+          "feature_offsets_m": {
+            "table_corner_ne": [
+              0.325,
+              0.3,
+              0.0
+            ],
+            "table_corner_nw": [
+              -0.325,
+              0.3,
+              0.0
+            ],
+            "target_wall_top_edge": [
+              -0.01,
+              0.25,
+              0.035
+            ],
+            "workpiece_support_point": [
+              0.65,
+              0.0,
+              0.0
+            ]
+          },
+          "workpiece_support_normal": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "max_angle_rad": null,
+        "max_displacement_m": 0.025,
+        "max_frequency_hz": 8.87,
+        "max_gamma": 1.0,
+        "min_samples_per_cycle": 20,
+        "solver_clearance_m": 0.008,
+        "solver_step_fraction": 0.25
+      }
+    },
+    "schema_version": 2,
+    "scoreable": false,
+    "track": "state_oracle_control"
+  },
   "provenance": {
-    "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+    "authored_decision_id": "phase-01-remediation-B-20260830",
+    "authored_spectrum_version": "candidate-2026-08-30",
+    "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
+    "fixture_sha256": "3111107a8db4e91ba38b684a354c2826b3dc197b901df9c35718c183add753d5",
     "generated_at_utc": "2026-08-30T00:00:00Z",
-    "generator_script": "robosuite/scripts/shakebench_generate_excitation_golden.py"
+    "generator_script": "robosuite/scripts/shakebench_generate_excitation_golden.py",
+    "previous_fixture_sha256": "2daa4ae340ac9276d64981592eb16f48ef08a7752c053c99270db0e09c583b14",
+    "source_profile_id": "shakebench.authored_v0_candidate",
+    "update_reason": "Phase 01 remediation: close configuration, independent provenance, six-DoF safety, and static time semantics"
   },
   "rejection_cases": [
     {
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "active_axes": [
+        "tx",
+        "ty",
+        "tz",
+        "rx",
+        "ry",
+        "rz"
+      ],
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "expected_gate": "displacement",
+      "level_scale": 20.0,
       "name": "reject_displacement",
       "passed": false,
+      "program": {
+        "active_axes": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "axis_order": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "bands": [
+          {
+            "accel_rms": 0.5,
+            "acceleration_unit": "m/s^2",
+            "axis": "tx",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 5.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              4.5,
+              5.5
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.5,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.35,
+            "acceleration_unit": "m/s^2",
+            "axis": "ty",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 6.5,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              5.85,
+              7.15
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.35,
+            "tones": 10
+          },
+          {
+            "accel_rms": 1.0,
+            "acceleration_unit": "m/s^2",
+            "axis": "tz",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 8.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              7.2,
+              8.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 1.0,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rx",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 3.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.64,
+              3.36
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "ry",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 4.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              3.52,
+              4.48
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 10
+          },
+          {
+            "accel_rms": 0.23076923076923075,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rz",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 2.5,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tx",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.2,
+              2.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.23076923076923075,
+            "tones": 8
+          }
+        ],
+        "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
+          "conservative_max_line_frequency_hz": 8.87,
+          "episode_duration_s": 2.0,
+          "frequency_scale": 1.0,
+          "gravity_m_s2": 9.81,
+          "jitter_fraction": 0.1,
+          "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
+          "ramp_duration_s": 0.5,
+          "reference_accel_rms_m_s2": 1.0,
+          "reference_lever_m": 0.65,
+          "schema_id": "shakebench.excitation",
+          "schema_version": 2,
+          "workpiece_point_offset_m": [
+            0.65,
+            0.0,
+            0.0
+          ]
+        },
+        "level_scale": 20.0,
+        "line_accel_amplitude": [
+          [
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863
+          ],
+          [
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            0.0,
+            0.0
+          ],
+          [
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726
+          ],
+          [
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966
+          ],
+          [
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            0.0,
+            0.0
+          ],
+          [
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_mask": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        ],
+        "line_omega_rad_s": [
+          [
+            28.274333882308138,
+            28.81546584917975,
+            29.451148725308304,
+            29.997316044226345,
+            30.512761903979253,
+            31.12268764327064,
+            31.699132693938346,
+            32.23385319683774,
+            32.870721227732105,
+            33.37098785566994,
+            33.973894462738436,
+            34.55751918948772
+          ],
+          [
+            36.82773518511668,
+            37.67966354453608,
+            38.56656876469148,
+            39.52895134943085,
+            40.301670002629955,
+            41.332057214687154,
+            42.17923477795382,
+            43.03536646460044,
+            44.0463367834104,
+            44.92477494633405,
+            0.0,
+            0.0
+          ],
+          [
+            45.23893421169302,
+            46.20013918298942,
+            47.13594989771919,
+            47.90799841486849,
+            48.958537569437766,
+            49.78913518491169,
+            50.718727943826856,
+            51.57171502089544,
+            52.586546190814836,
+            53.42617208571417,
+            54.445950980038674,
+            55.250972829307614
+          ],
+          [
+            16.62580384438361,
+            17.009046298677244,
+            17.418926757810492,
+            17.860103011142268,
+            18.25627055329875,
+            18.6677708708085,
+            19.01851048949689,
+            19.45569893679064,
+            19.843570029817354,
+            20.263768399947573,
+            20.6767044076828,
+            21.111502632123408
+          ],
+          [
+            22.128835823116216,
+            22.809743173155773,
+            23.479895213978704,
+            24.13052120113586,
+            24.804975088205673,
+            25.427384044367578,
+            26.137405789636812,
+            26.75804671441565,
+            27.475883046766892,
+            28.14867017616455,
+            0.0,
+            0.0
+          ],
+          [
+            13.823007675795091,
+            14.345196356425715,
+            14.898053382979016,
+            15.394876679699433,
+            15.982277883286717,
+            16.561194067514787,
+            17.06113756509116,
+            17.59291886010284,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_phase_at_episode_zero": [
+          [
+            -0.4358770028636001,
+            0.5453715087443034,
+            1.494378890606205,
+            2.8668117117333383,
+            -1.355904077240047,
+            0.9333496289465204,
+            1.232861467311519,
+            -1.3023739442879307,
+            -3.132230182780603,
+            2.974838641945534,
+            -1.266682473485741,
+            -1.1687604189475884
+          ],
+          [
+            -1.83977215052587,
+            0.8173808318993241,
+            -1.268178703227807,
+            1.519002020124132,
+            1.3959026582909244,
+            -1.7673631114855353,
+            2.0727403614717588,
+            0.9905580550031399,
+            1.1485594120366276,
+            2.0110952506559894,
+            0.0,
+            0.0
+          ],
+          [
+            0.3883619165708305,
+            -0.6304785570600169,
+            0.7094312605625182,
+            -1.9060718714386216,
+            -2.008812625896918,
+            1.5510695480397478,
+            1.5847664764244538,
+            0.4208343966686572,
+            2.645721641456027,
+            -1.8486698939730513,
+            2.204776790307058,
+            -2.0798140619596626
+          ],
+          [
+            -2.34516762741189,
+            -1.2770086034538017,
+            -0.044943756924579414,
+            2.195724521027035,
+            2.92313522784368,
+            1.3078121649483414,
+            -1.798956256131713,
+            0.28263452321447113,
+            1.294078832775977,
+            -2.8156051176785244,
+            1.1302455564965213,
+            -0.8276096381427842
+          ],
+          [
+            1.7222513544681526,
+            -0.6681238102948313,
+            -3.0184395917317497,
+            0.1743579726422988,
+            -1.8520788724715556,
+            1.5158657249813965,
+            -0.6993359264939545,
+            -0.7510092589344417,
+            2.5726789995638386,
+            -0.6724865339745851,
+            0.0,
+            0.0
+          ],
+          [
+            2.8094676450451193,
+            2.149574373579954,
+            1.5331370730445544,
+            1.9676658048486848,
+            2.011492922605048,
+            -1.5472017422404916,
+            -0.11332951689224613,
+            -0.9882398013278815,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "program_frame": "deck",
+        "ramp_duration_s": 0.5,
+        "ramp_type": "quintic_smoothstep",
+        "schema_id": "shakebench.excitation.program",
+        "schema_version": 2,
+        "seed": 3,
+        "t0_s": 0.0
+      },
       "report": {
         "checks": [
           {
             "details": {
-              "tx": 0.050258524325155075,
-              "ty": 0.018995721348457884,
-              "tz": 0.03923366053642946
+              "feature_bounds_m": {
+                "table_corner_ne": 0.13115111382938935,
+                "table_corner_nw": 0.13115111382938935,
+                "target_wall_top_edge": 0.10461295825658556,
+                "workpiece_support_point": 0.1184428584146731
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.050258524325155075,
+                0.018995721348457884,
+                0.03923366053642946
+              ],
+              "translation_vector_norm_bound_m": 0.06652846620791919
             },
             "limit": 0.025,
-            "measured": 0.050258524325155075,
-            "message": "displacement bound 0.0502585243 m exceeds limit 0.025 m",
+            "measured": 0.13115111382938935,
+            "message": "six-DoF displacement bound 0.131151114 m exceeds limit 0.025 m",
             "name": "displacement",
             "passed": false
           },
@@ -21466,66 +22477,646 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 48.56641030568278,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 48.41039706398146,
               "peak_time_s": 1.121,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 4.950704414442689,
-            "message": "Gamma_commanded 4.95070441 reaches/exceeds non-ballistic limit 1",
+            "measured": 4.934800923953258,
+            "message": "effective-normal Gamma_commanded 4.93480092 reaches/exceeds limit 1",
             "name": "non_ballistic",
             "passed": false
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 1.9567776862833826,
-              "max_velocity_m_s": 1.9567776862833826,
-              "sampled_max_velocity_m_s": 0.9823824626421932,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 3717.1752875068996,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 3407.837734438215,
+                "table_corner_nw": 3407.837734438215,
+                "target_wall_top_edge": 2307.1851376055783,
+                "workpiece_support_point": 3717.1752875068996
+              },
+              "feature_speed_bound_m_s": 35.38005212543886,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 35.38005212543886,
+                "table_corner_nw": 35.38005212543886,
+                "target_wall_top_edge": 28.405994081239296,
+                "workpiece_support_point": 32.100569342362135
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.037083970992657964,
+                "table_corner_nw": 0.037083970992657964,
+                "target_wall_top_edge": 0.029559586650042085,
+                "workpiece_support_point": 0.03395915698611558
+              },
+              "feature_step_displacement_m": 0.037083970992657964,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 2001,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": false,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 1463.45560139115,
+              "translation_speed_bound_m_s": 18.53266583535181,
+              "translation_step_displacement_m": 0.019264393636047386
             },
-            "limit": 0.008,
-            "measured": 0.001956777686283383,
-            "message": "solver travel bound 0.00195677769 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.037083970992657964,
+            "message": "required feature travel 0.037083971 m exceeds allowed 0.002 m",
             "name": "solver_travel",
-            "passed": true
+            "passed": false
           }
         ],
         "metrics": {
-          "displacement": 0.050258524325155075,
+          "displacement": 0.13115111382938935,
           "frequency": 8.793465436420309,
-          "non_ballistic": 4.950704414442689,
-          "solver_travel": 0.001956777686283383
+          "non_ballistic": 4.934800923953258,
+          "solver_travel": 0.037083970992657964
         },
         "passed": false,
         "violations": [
           "displacement",
-          "non_ballistic"
+          "non_ballistic",
+          "solver_travel"
         ]
-      }
+      },
+      "seed": 3,
+      "t0": 0.0
     },
     {
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "active_axes": [
+        "tx",
+        "ty",
+        "tz",
+        "rx",
+        "ry",
+        "rz"
+      ],
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "expected_gate": "non_ballistic",
+      "level_scale": 5.0,
       "name": "reject_non_ballistic",
       "passed": false,
+      "program": {
+        "active_axes": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "axis_order": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "bands": [
+          {
+            "accel_rms": 0.5,
+            "acceleration_unit": "m/s^2",
+            "axis": "tx",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 5.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              4.5,
+              5.5
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.5,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.35,
+            "acceleration_unit": "m/s^2",
+            "axis": "ty",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 6.5,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              5.85,
+              7.15
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.35,
+            "tones": 10
+          },
+          {
+            "accel_rms": 1.0,
+            "acceleration_unit": "m/s^2",
+            "axis": "tz",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 8.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              7.2,
+              8.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 1.0,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rx",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 3.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.64,
+              3.36
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "ry",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 4.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              3.52,
+              4.48
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 10
+          },
+          {
+            "accel_rms": 0.23076923076923075,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rz",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 2.5,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tx",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.2,
+              2.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.23076923076923075,
+            "tones": 8
+          }
+        ],
+        "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
+          "conservative_max_line_frequency_hz": 8.87,
+          "episode_duration_s": 2.0,
+          "frequency_scale": 1.0,
+          "gravity_m_s2": 9.81,
+          "jitter_fraction": 0.1,
+          "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
+          "ramp_duration_s": 0.5,
+          "reference_accel_rms_m_s2": 1.0,
+          "reference_lever_m": 0.65,
+          "schema_id": "shakebench.excitation",
+          "schema_version": 2,
+          "workpiece_point_offset_m": [
+            0.65,
+            0.0,
+            0.0
+          ]
+        },
+        "level_scale": 5.0,
+        "line_accel_amplitude": [
+          [
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576,
+            1.0206207261596576
+          ],
+          [
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.7826237921249264,
+            0.0,
+            0.0
+          ],
+          [
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315,
+            2.041241452319315
+          ],
+          [
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915,
+            0.9421114395319915
+          ],
+          [
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            1.0320313742306721,
+            0.0,
+            0.0
+          ],
+          [
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.5769230769230769,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_mask": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        ],
+        "line_omega_rad_s": [
+          [
+            28.274333882308138,
+            28.81546584917975,
+            29.451148725308304,
+            29.997316044226345,
+            30.512761903979253,
+            31.12268764327064,
+            31.699132693938346,
+            32.23385319683774,
+            32.870721227732105,
+            33.37098785566994,
+            33.973894462738436,
+            34.55751918948772
+          ],
+          [
+            36.82773518511668,
+            37.67966354453608,
+            38.56656876469148,
+            39.52895134943085,
+            40.301670002629955,
+            41.332057214687154,
+            42.17923477795382,
+            43.03536646460044,
+            44.0463367834104,
+            44.92477494633405,
+            0.0,
+            0.0
+          ],
+          [
+            45.23893421169302,
+            46.20013918298942,
+            47.13594989771919,
+            47.90799841486849,
+            48.958537569437766,
+            49.78913518491169,
+            50.718727943826856,
+            51.57171502089544,
+            52.586546190814836,
+            53.42617208571417,
+            54.445950980038674,
+            55.250972829307614
+          ],
+          [
+            16.62580384438361,
+            17.009046298677244,
+            17.418926757810492,
+            17.860103011142268,
+            18.25627055329875,
+            18.6677708708085,
+            19.01851048949689,
+            19.45569893679064,
+            19.843570029817354,
+            20.263768399947573,
+            20.6767044076828,
+            21.111502632123408
+          ],
+          [
+            22.128835823116216,
+            22.809743173155773,
+            23.479895213978704,
+            24.13052120113586,
+            24.804975088205673,
+            25.427384044367578,
+            26.137405789636812,
+            26.75804671441565,
+            27.475883046766892,
+            28.14867017616455,
+            0.0,
+            0.0
+          ],
+          [
+            13.823007675795091,
+            14.345196356425715,
+            14.898053382979016,
+            15.394876679699433,
+            15.982277883286717,
+            16.561194067514787,
+            17.06113756509116,
+            17.59291886010284,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_phase_at_episode_zero": [
+          [
+            -0.4358770028636001,
+            0.5453715087443034,
+            1.494378890606205,
+            2.8668117117333383,
+            -1.355904077240047,
+            0.9333496289465204,
+            1.232861467311519,
+            -1.3023739442879307,
+            -3.132230182780603,
+            2.974838641945534,
+            -1.266682473485741,
+            -1.1687604189475884
+          ],
+          [
+            -1.83977215052587,
+            0.8173808318993241,
+            -1.268178703227807,
+            1.519002020124132,
+            1.3959026582909244,
+            -1.7673631114855353,
+            2.0727403614717588,
+            0.9905580550031399,
+            1.1485594120366276,
+            2.0110952506559894,
+            0.0,
+            0.0
+          ],
+          [
+            0.3883619165708305,
+            -0.6304785570600169,
+            0.7094312605625182,
+            -1.9060718714386216,
+            -2.008812625896918,
+            1.5510695480397478,
+            1.5847664764244538,
+            0.4208343966686572,
+            2.645721641456027,
+            -1.8486698939730513,
+            2.204776790307058,
+            -2.0798140619596626
+          ],
+          [
+            -2.34516762741189,
+            -1.2770086034538017,
+            -0.044943756924579414,
+            2.195724521027035,
+            2.92313522784368,
+            1.3078121649483414,
+            -1.798956256131713,
+            0.28263452321447113,
+            1.294078832775977,
+            -2.8156051176785244,
+            1.1302455564965213,
+            -0.8276096381427842
+          ],
+          [
+            1.7222513544681526,
+            -0.6681238102948313,
+            -3.0184395917317497,
+            0.1743579726422988,
+            -1.8520788724715556,
+            1.5158657249813965,
+            -0.6993359264939545,
+            -0.7510092589344417,
+            2.5726789995638386,
+            -0.6724865339745851,
+            0.0,
+            0.0
+          ],
+          [
+            2.8094676450451193,
+            2.149574373579954,
+            1.5331370730445544,
+            1.9676658048486848,
+            2.011492922605048,
+            -1.5472017422404916,
+            -0.11332951689224613,
+            -0.9882398013278815,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "program_frame": "deck",
+        "ramp_duration_s": 0.5,
+        "ramp_type": "quintic_smoothstep",
+        "schema_id": "shakebench.excitation.program",
+        "schema_version": 2,
+        "seed": 3,
+        "t0_s": 0.0
+      },
       "report": {
         "checks": [
           {
             "details": {
-              "tx": 0.012564631081288769,
-              "ty": 0.004748930337114471,
-              "tz": 0.009808415134107365
+              "feature_bounds_m": {
+                "table_corner_ne": 0.03278777845734734,
+                "table_corner_nw": 0.03278777845734734,
+                "target_wall_top_edge": 0.02615323956414639,
+                "workpiece_support_point": 0.029610714603668275
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.012564631081288769,
+                0.004748930337114471,
+                0.009808415134107365
+              ],
+              "translation_vector_norm_bound_m": 0.016632116551979798
             },
             "limit": 0.025,
-            "measured": 0.012564631081288769,
-            "message": "displacement bound 0.0125646311 m is within limit 0.025 m",
+            "measured": 0.03278777845734734,
+            "message": "six-DoF displacement bound 0.0327877785 m exceeds limit 0.025 m",
             "name": "displacement",
-            "passed": true
+            "passed": false
           },
           {
             "details": {
@@ -21543,63 +23134,644 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 12.141602576420695,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 12.131851748814363,
               "peak_time_s": 1.121,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 1.2376761036106723,
-            "message": "Gamma_commanded 1.2376761 reaches/exceeds non-ballistic limit 1",
+            "measured": 1.2366821354550828,
+            "message": "effective-normal Gamma_commanded 1.23668214 reaches/exceeds limit 1",
             "name": "non_ballistic",
             "passed": false
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.48919442157084564,
-              "max_velocity_m_s": 0.48919442157084564,
-              "sampled_max_velocity_m_s": 0.2455956156605483,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 621.5348610623811,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 621.5348610623811,
+                "table_corner_nw": 621.5348610623811,
+                "target_wall_top_edge": 493.01319860609436,
+                "workpiece_support_point": 613.8600368540452
+              },
+              "feature_speed_bound_m_s": 8.845013031359715,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 8.845013031359715,
+                "table_corner_nw": 8.845013031359715,
+                "target_wall_top_edge": 7.101498520309824,
+                "workpiece_support_point": 8.025142335590534
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.009155780461890905,
+                "table_corner_nw": 0.009155780461890905,
+                "target_wall_top_edge": 0.007348005119612871,
+                "workpiece_support_point": 0.008332072354017556
+              },
+              "feature_step_displacement_m": 0.009155780461890905,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 2001,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": false,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 365.8639003477875,
+              "translation_speed_bound_m_s": 4.633166458837953,
+              "translation_step_displacement_m": 0.0048160984090118465
             },
-            "limit": 0.008,
-            "measured": 0.0004891944215708457,
-            "message": "solver travel bound 0.000489194422 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.009155780461890905,
+            "message": "required feature travel 0.00915578046 m exceeds allowed 0.002 m",
             "name": "solver_travel",
-            "passed": true
+            "passed": false
           }
         ],
         "metrics": {
-          "displacement": 0.012564631081288769,
+          "displacement": 0.03278777845734734,
           "frequency": 8.793465436420309,
-          "non_ballistic": 1.2376761036106723,
-          "solver_travel": 0.0004891944215708457
+          "non_ballistic": 1.2366821354550828,
+          "solver_travel": 0.009155780461890905
         },
         "passed": false,
         "violations": [
-          "non_ballistic"
+          "displacement",
+          "non_ballistic",
+          "solver_travel"
         ]
-      }
+      },
+      "seed": 3,
+      "t0": 0.0
     },
     {
-      "config_hash": "2d3bf604871d24a59ac38ee6b641dd9f7480c88859ac4408216c9820897c8d6f",
+      "active_axes": [
+        "tx",
+        "ty",
+        "tz",
+        "rx",
+        "ry",
+        "rz"
+      ],
+      "config_hash": "468a6bca70612451929e3bf272bb4256ad62e44eeb3ba46c516ad7745fffb684",
       "expected_gate": "frequency",
+      "level_scale": 1.0,
       "name": "reject_frequency",
       "passed": false,
+      "program": {
+        "active_axes": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "axis_order": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "bands": [
+          {
+            "accel_rms": 0.5,
+            "acceleration_unit": "m/s^2",
+            "axis": "tx",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 5.1,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              4.59,
+              5.609999999999999
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.5,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.35,
+            "acceleration_unit": "m/s^2",
+            "axis": "ty",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 6.63,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              5.967,
+              7.293
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.35,
+            "tones": 10
+          },
+          {
+            "accel_rms": 1.0,
+            "acceleration_unit": "m/s^2",
+            "axis": "tz",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 8.16,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              7.344,
+              8.976
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 1.0,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rx",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 3.06,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.6928,
+              3.4272
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "ry",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 4.08,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              3.5904000000000003,
+              4.5696
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 10
+          },
+          {
+            "accel_rms": 0.23076923076923075,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rz",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 2.55,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tx",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.2439999999999998,
+              2.856
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.23076923076923075,
+            "tones": 8
+          }
+        ],
+        "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
+          "conservative_max_line_frequency_hz": 8.87,
+          "episode_duration_s": 2.0,
+          "frequency_scale": 1.02,
+          "gravity_m_s2": 9.81,
+          "jitter_fraction": 0.1,
+          "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
+          "ramp_duration_s": 0.5,
+          "reference_accel_rms_m_s2": 1.0,
+          "reference_lever_m": 0.65,
+          "schema_id": "shakebench.excitation",
+          "schema_version": 2,
+          "workpiece_point_offset_m": [
+            0.65,
+            0.0,
+            0.0
+          ]
+        },
+        "level_scale": 1.0,
+        "line_accel_amplitude": [
+          [
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315,
+            0.2041241452319315
+          ],
+          [
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.15652475842498526,
+            0.0,
+            0.0
+          ],
+          [
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863,
+            0.408248290463863
+          ],
+          [
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983,
+            0.1884222879063983
+          ],
+          [
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.2064062748461344,
+            0.0,
+            0.0
+          ],
+          [
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.11538461538461538,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_mask": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        ],
+        "line_omega_rad_s": [
+          [
+            28.8398205599543,
+            29.391775166163345,
+            30.04017169981447,
+            30.597262365110872,
+            31.123017142058842,
+            31.74514139613604,
+            32.33311534781712,
+            32.87853026077449,
+            33.528135652286736,
+            34.03840761278334,
+            34.6533723519932,
+            35.248669573277475
+          ],
+          [
+            37.56428988881902,
+            38.4332568154268,
+            39.337900139985315,
+            40.319530376419465,
+            41.10770340268255,
+            42.1586983589809,
+            43.022819473512904,
+            43.896073793892455,
+            44.927263519078615,
+            45.823270445260725,
+            0.0,
+            0.0
+          ],
+          [
+            46.14371289592688,
+            47.124141966649205,
+            48.07866889567357,
+            48.86615838316586,
+            49.93770832082652,
+            50.78491788860993,
+            51.73310250270339,
+            52.60314932131335,
+            53.63827711463114,
+            54.49469552742846,
+            55.534869999639454,
+            56.35599228589376
+          ],
+          [
+            16.958319921271286,
+            17.34922722465079,
+            17.7673052929667,
+            18.217305071365114,
+            18.621395964364726,
+            19.04112628822467,
+            19.39888069928683,
+            19.844812915526454,
+            20.2404414304137,
+            20.669043767946526,
+            21.090238495836452,
+            21.533732684765877
+          ],
+          [
+            22.571412539578542,
+            23.26593803661889,
+            23.94949311825828,
+            24.613131625158577,
+            25.301074589969787,
+            25.935931725254928,
+            26.660153905429542,
+            27.293207648703955,
+            28.025400707702232,
+            28.711643579687838,
+            0.0,
+            0.0
+          ],
+          [
+            14.09946782931099,
+            14.632100283554225,
+            15.196014450638595,
+            15.702774213293422,
+            16.30192344095245,
+            16.89241794886508,
+            17.402360316392983,
+            17.944777237304898,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_phase_at_episode_zero": [
+          [
+            -0.4358770028636001,
+            0.5453715087443034,
+            1.494378890606205,
+            2.8668117117333383,
+            -1.355904077240047,
+            0.9333496289465204,
+            1.232861467311519,
+            -1.3023739442879307,
+            -3.132230182780603,
+            2.974838641945534,
+            -1.266682473485741,
+            -1.1687604189475884
+          ],
+          [
+            -1.83977215052587,
+            0.8173808318993241,
+            -1.268178703227807,
+            1.519002020124132,
+            1.3959026582909244,
+            -1.7673631114855353,
+            2.0727403614717588,
+            0.9905580550031399,
+            1.1485594120366276,
+            2.0110952506559894,
+            0.0,
+            0.0
+          ],
+          [
+            0.3883619165708305,
+            -0.6304785570600169,
+            0.7094312605625182,
+            -1.9060718714386216,
+            -2.008812625896918,
+            1.5510695480397478,
+            1.5847664764244538,
+            0.4208343966686572,
+            2.645721641456027,
+            -1.8486698939730513,
+            2.204776790307058,
+            -2.0798140619596626
+          ],
+          [
+            -2.34516762741189,
+            -1.2770086034538017,
+            -0.044943756924579414,
+            2.195724521027035,
+            2.92313522784368,
+            1.3078121649483414,
+            -1.798956256131713,
+            0.28263452321447113,
+            1.294078832775977,
+            -2.8156051176785244,
+            1.1302455564965213,
+            -0.8276096381427842
+          ],
+          [
+            1.7222513544681526,
+            -0.6681238102948313,
+            -3.0184395917317497,
+            0.1743579726422988,
+            -1.8520788724715556,
+            1.5158657249813965,
+            -0.6993359264939545,
+            -0.7510092589344417,
+            2.5726789995638386,
+            -0.6724865339745851,
+            0.0,
+            0.0
+          ],
+          [
+            2.8094676450451193,
+            2.149574373579954,
+            1.5331370730445544,
+            1.9676658048486848,
+            2.011492922605048,
+            -1.5472017422404916,
+            -0.11332951689224613,
+            -0.9882398013278815,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "program_frame": "deck",
+        "ramp_duration_s": 0.5,
+        "ramp_type": "quintic_smoothstep",
+        "schema_id": "shakebench.excitation.program",
+        "schema_version": 2,
+        "seed": 3,
+        "t0_s": 0.0
+      },
       "report": {
         "checks": [
           {
             "details": {
-              "tx": 0.002415346228621448,
-              "ty": 0.000912904716861682,
-              "tz": 0.0018855084840652375
+              "feature_bounds_m": {
+                "table_corner_ne": 0.006302917811869923,
+                "table_corner_nw": 0.006302917811869923,
+                "target_wall_top_edge": 0.005027535479459129,
+                "workpiece_support_point": 0.005692178893438731
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.002415346228621448,
+                0.000912904716861682,
+                0.0018855084840652375
+              ],
+              "translation_vector_norm_bound_m": 0.0031972542391349094
             },
             "limit": 0.025,
-            "measured": 0.002415346228621448,
-            "message": "displacement bound 0.00241534623 m is within limit 0.025 m",
+            "measured": 0.006302917811869923,
+            "message": "six-DoF displacement bound 0.00630291781 m is within limit 0.025 m",
             "name": "displacement",
             "passed": true
           },
@@ -21619,63 +23791,642 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 2.428316817360047,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 2.427941625398991,
               "peak_time_s": 1.099,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 0.24753484376758886,
-            "message": "Gamma_commanded 0.247534844 is below non-ballistic limit 1",
+            "measured": 0.24749659789999906,
+            "message": "effective-normal Gamma_commanded 0.247496598 is below limit 1",
             "name": "non_ballistic",
             "passed": true
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 0.09592047481781285,
-              "max_velocity_m_s": 0.09592047481781285,
-              "sampled_max_velocity_m_s": 0.04816188191213716,
-              "timestep_s": 0.001
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 110.76899750278889,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 110.76899750278889,
+                "table_corner_nw": 110.76899750278889,
+                "target_wall_top_edge": 92.63238840357585,
+                "workpiece_support_point": 106.10853559434346
+              },
+              "feature_speed_bound_m_s": 1.7040641275594353,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 1.7040641275594353,
+                "table_corner_nw": 1.7040641275594353,
+                "target_wall_top_edge": 1.3683217818992088,
+                "workpiece_support_point": 1.546242546039111
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 0.0017594486263108298,
+                "table_corner_nw": 0.0017594486263108298,
+                "target_wall_top_edge": 0.0014146379761009967,
+                "workpiece_support_point": 0.0015992968138362827
+              },
+              "feature_step_displacement_m": 0.0017594486263108298,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 2001,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": false,
+              "timestep_s": 0.001,
+              "translation_acceleration_bound_m_s2": 71.75768017229059,
+              "translation_speed_bound_m_s": 0.8931248450801127,
+              "translation_step_displacement_m": 0.000929003685166258
             },
-            "limit": 0.008,
-            "measured": 9.592047481781285e-05,
-            "message": "solver travel bound 9.59204748e-05 m is within limit 0.008 m",
+            "limit": 0.002,
+            "measured": 0.0017594486263108298,
+            "message": "required feature travel 0.00175944863 m is within allowed 0.002 m",
             "name": "solver_travel",
             "passed": true
           }
         ],
         "metrics": {
-          "displacement": 0.002415346228621448,
+          "displacement": 0.006302917811869923,
           "frequency": 8.969334745148714,
-          "non_ballistic": 0.24753484376758886,
-          "solver_travel": 9.592047481781285e-05
+          "non_ballistic": 0.24749659789999906,
+          "solver_travel": 0.0017594486263108298
         },
         "passed": false,
         "violations": [
           "frequency"
         ]
-      }
+      },
+      "seed": 3,
+      "t0": 0.0
     },
     {
-      "config_hash": "431f5d509822303a0d016c7ca29529fb092bb91c180aff6641bbdc9acec5fb0b",
+      "active_axes": [
+        "tx",
+        "ty",
+        "tz",
+        "rx",
+        "ry",
+        "rz"
+      ],
+      "config_hash": "91c0f38575eccb429d18948c0d8f47050407e837ccd2b65c803cf7560eef7661",
       "expected_gate": "solver_travel",
+      "level_scale": 20.0,
       "name": "reject_solver_travel",
       "passed": false,
+      "program": {
+        "active_axes": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "axis_order": [
+          "tx",
+          "ty",
+          "tz",
+          "rx",
+          "ry",
+          "rz"
+        ],
+        "bands": [
+          {
+            "accel_rms": 0.5,
+            "acceleration_unit": "m/s^2",
+            "axis": "tx",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 5.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              4.5,
+              5.5
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.5,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.35,
+            "acceleration_unit": "m/s^2",
+            "axis": "ty",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 6.5,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              5.85,
+              7.15
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 0.35,
+            "tones": 10
+          },
+          {
+            "accel_rms": 1.0,
+            "acceleration_unit": "m/s^2",
+            "axis": "tz",
+            "bandwidth_ratio": 0.1,
+            "center_hz": 8.0,
+            "coordinate_unit": "m",
+            "derived_from_axis": null,
+            "kappa_rot": null,
+            "nominal_band_hz": [
+              7.2,
+              8.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": null,
+            "relative_accel_rms": 1.0,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rx",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 3.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.64,
+              3.36
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 12
+          },
+          {
+            "accel_rms": 0.4615384615384615,
+            "acceleration_unit": "rad/s^2",
+            "axis": "ry",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 4.0,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tz",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              3.52,
+              4.48
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.4615384615384615,
+            "tones": 10
+          },
+          {
+            "accel_rms": 0.23076923076923075,
+            "acceleration_unit": "rad/s^2",
+            "axis": "rz",
+            "bandwidth_ratio": 0.12,
+            "center_hz": 2.5,
+            "coordinate_unit": "rad",
+            "derived_from_axis": "tx",
+            "kappa_rot": 0.3,
+            "nominal_band_hz": [
+              2.2,
+              2.8
+            ],
+            "reference_accel_rms_m_s2": 1.0,
+            "reference_lever_m": 0.65,
+            "relative_accel_rms": 0.23076923076923075,
+            "tones": 8
+          }
+        ],
+        "config": {
+          "authored_spectrum_version": "candidate-2026-08-30",
+          "conservative_max_line_frequency_hz": 8.87,
+          "episode_duration_s": 2.0,
+          "frequency_scale": 1.0,
+          "gravity_m_s2": 9.81,
+          "jitter_fraction": 0.1,
+          "kappa_rot": 0.3,
+          "profile_id": "shakebench.authored_v0_candidate",
+          "ramp_duration_s": 0.5,
+          "reference_accel_rms_m_s2": 1.0,
+          "reference_lever_m": 0.65,
+          "schema_id": "shakebench.excitation",
+          "schema_version": 2,
+          "workpiece_point_offset_m": [
+            0.65,
+            0.0,
+            0.0
+          ]
+        },
+        "level_scale": 20.0,
+        "line_accel_amplitude": [
+          [
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863,
+            4.08248290463863
+          ],
+          [
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            3.1304951684997055,
+            0.0,
+            0.0
+          ],
+          [
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726,
+            8.16496580927726
+          ],
+          [
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966,
+            3.768445758127966
+          ],
+          [
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            4.128125496922689,
+            0.0,
+            0.0
+          ],
+          [
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            2.3076923076923075,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_mask": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        ],
+        "line_omega_rad_s": [
+          [
+            28.274333882308138,
+            28.81546584917975,
+            29.451148725308304,
+            29.997316044226345,
+            30.512761903979253,
+            31.12268764327064,
+            31.699132693938346,
+            32.23385319683774,
+            32.870721227732105,
+            33.37098785566994,
+            33.973894462738436,
+            34.55751918948772
+          ],
+          [
+            36.82773518511668,
+            37.67966354453608,
+            38.56656876469148,
+            39.52895134943085,
+            40.301670002629955,
+            41.332057214687154,
+            42.17923477795382,
+            43.03536646460044,
+            44.0463367834104,
+            44.92477494633405,
+            0.0,
+            0.0
+          ],
+          [
+            45.23893421169302,
+            46.20013918298942,
+            47.13594989771919,
+            47.90799841486849,
+            48.958537569437766,
+            49.78913518491169,
+            50.718727943826856,
+            51.57171502089544,
+            52.586546190814836,
+            53.42617208571417,
+            54.445950980038674,
+            55.250972829307614
+          ],
+          [
+            16.62580384438361,
+            17.009046298677244,
+            17.418926757810492,
+            17.860103011142268,
+            18.25627055329875,
+            18.6677708708085,
+            19.01851048949689,
+            19.45569893679064,
+            19.843570029817354,
+            20.263768399947573,
+            20.6767044076828,
+            21.111502632123408
+          ],
+          [
+            22.128835823116216,
+            22.809743173155773,
+            23.479895213978704,
+            24.13052120113586,
+            24.804975088205673,
+            25.427384044367578,
+            26.137405789636812,
+            26.75804671441565,
+            27.475883046766892,
+            28.14867017616455,
+            0.0,
+            0.0
+          ],
+          [
+            13.823007675795091,
+            14.345196356425715,
+            14.898053382979016,
+            15.394876679699433,
+            15.982277883286717,
+            16.561194067514787,
+            17.06113756509116,
+            17.59291886010284,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "line_phase_at_episode_zero": [
+          [
+            -0.4358770028636001,
+            0.5453715087443034,
+            1.494378890606205,
+            2.8668117117333383,
+            -1.355904077240047,
+            0.9333496289465204,
+            1.232861467311519,
+            -1.3023739442879307,
+            -3.132230182780603,
+            2.974838641945534,
+            -1.266682473485741,
+            -1.1687604189475884
+          ],
+          [
+            -1.83977215052587,
+            0.8173808318993241,
+            -1.268178703227807,
+            1.519002020124132,
+            1.3959026582909244,
+            -1.7673631114855353,
+            2.0727403614717588,
+            0.9905580550031399,
+            1.1485594120366276,
+            2.0110952506559894,
+            0.0,
+            0.0
+          ],
+          [
+            0.3883619165708305,
+            -0.6304785570600169,
+            0.7094312605625182,
+            -1.9060718714386216,
+            -2.008812625896918,
+            1.5510695480397478,
+            1.5847664764244538,
+            0.4208343966686572,
+            2.645721641456027,
+            -1.8486698939730513,
+            2.204776790307058,
+            -2.0798140619596626
+          ],
+          [
+            -2.34516762741189,
+            -1.2770086034538017,
+            -0.044943756924579414,
+            2.195724521027035,
+            2.92313522784368,
+            1.3078121649483414,
+            -1.798956256131713,
+            0.28263452321447113,
+            1.294078832775977,
+            -2.8156051176785244,
+            1.1302455564965213,
+            -0.8276096381427842
+          ],
+          [
+            1.7222513544681526,
+            -0.6681238102948313,
+            -3.0184395917317497,
+            0.1743579726422988,
+            -1.8520788724715556,
+            1.5158657249813965,
+            -0.6993359264939545,
+            -0.7510092589344417,
+            2.5726789995638386,
+            -0.6724865339745851,
+            0.0,
+            0.0
+          ],
+          [
+            2.8094676450451193,
+            2.149574373579954,
+            1.5331370730445544,
+            1.9676658048486848,
+            2.011492922605048,
+            -1.5472017422404916,
+            -0.11332951689224613,
+            -0.9882398013278815,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "program_frame": "deck",
+        "ramp_duration_s": 0.5,
+        "ramp_type": "quintic_smoothstep",
+        "schema_id": "shakebench.excitation.program",
+        "schema_version": 2,
+        "seed": 3,
+        "t0_s": 0.0
+      },
       "report": {
         "checks": [
           {
             "details": {
-              "tx": 0.050258524325155075,
-              "ty": 0.018995721348457884,
-              "tz": 0.03923366053642946
+              "feature_bounds_m": {
+                "table_corner_ne": 0.13115111382938935,
+                "table_corner_nw": 0.13115111382938935,
+                "target_wall_top_edge": 0.10461295825658556,
+                "workpiece_support_point": 0.1184428584146731
+              },
+              "feature_offsets_m": {
+                "table_corner_ne": [
+                  0.325,
+                  0.3,
+                  0.0
+                ],
+                "table_corner_nw": [
+                  -0.325,
+                  0.3,
+                  0.0
+                ],
+                "target_wall_top_edge": [
+                  -0.01,
+                  0.25,
+                  0.035
+                ],
+                "workpiece_support_point": [
+                  0.65,
+                  0.0,
+                  0.0
+                ]
+              },
+              "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+              "translation_component_bound_m": [
+                0.050258524325155075,
+                0.018995721348457884,
+                0.03923366053642946
+              ],
+              "translation_vector_norm_bound_m": 0.06652846620791919
             },
             "limit": 0.025,
-            "measured": 0.050258524325155075,
-            "message": "displacement bound 0.0502585243 m exceeds limit 0.025 m",
+            "measured": 0.13115111382938935,
+            "message": "six-DoF displacement bound 0.131151114 m exceeds limit 0.025 m",
             "name": "displacement",
             "passed": false
           },
@@ -21695,40 +24446,76 @@
           },
           {
             "details": {
+              "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
               "gravity_m_s2": 9.81,
-              "peak_acceleration_m_s2": 48.56641030568278,
+              "includes_centripetal": true,
+              "includes_translation_and_alpha_cross_r": true,
+              "peak_acceleration_m_s2": 48.41039706398146,
               "peak_time_s": 1.121,
               "point_offset_m": [
                 0.65,
                 0.0,
                 0.0
+              ],
+              "support_normal": [
+                0.0,
+                0.0,
+                1.0
               ]
             },
             "limit": 1.0,
-            "measured": 4.950704414442689,
-            "message": "Gamma_commanded 4.95070441 reaches/exceeds non-ballistic limit 1",
+            "measured": 4.934800923953258,
+            "message": "effective-normal Gamma_commanded 4.93480092 reaches/exceeds limit 1",
             "name": "non_ballistic",
             "passed": false
           },
           {
             "details": {
-              "carrier_velocity_bound_m_s": 1.9567776862833826,
-              "max_velocity_m_s": 1.9567776862833826,
-              "sampled_max_velocity_m_s": 0.9823824626421932,
-              "timestep_s": 1.0
+              "allowed_step_displacement_m": 0.002,
+              "clearance_m": 0.008,
+              "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
+              "feature_acceleration_bound_m_s2": 3717.1752875068996,
+              "feature_acceleration_bounds_m_s2": {
+                "table_corner_ne": 3407.837734438215,
+                "table_corner_nw": 3407.837734438215,
+                "target_wall_top_edge": 2307.1851376055783,
+                "workpiece_support_point": 3717.1752875068996
+              },
+              "feature_speed_bound_m_s": 35.38005212543886,
+              "feature_speed_bounds_m_s": {
+                "table_corner_ne": 35.38005212543886,
+                "table_corner_nw": 35.38005212543886,
+                "target_wall_top_edge": 28.405994081239296,
+                "workpiece_support_point": 32.100569342362135
+              },
+              "feature_step_displacement_bounds_m": {
+                "table_corner_ne": 1739.2989193445464,
+                "table_corner_nw": 1739.2989193445464,
+                "target_wall_top_edge": 1181.9985628840284,
+                "workpiece_support_point": 1890.688213095812
+              },
+              "feature_step_displacement_m": 1890.688213095812,
+              "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+              "sample_count_argument": 2001,
+              "solver_step_fraction": 0.25,
+              "time_grid_argument_used": false,
+              "timestep_s": 1.0,
+              "translation_acceleration_bound_m_s2": 1463.45560139115,
+              "translation_speed_bound_m_s": 18.53266583535181,
+              "translation_step_displacement_m": 750.2604665309268
             },
-            "limit": 0.008,
-            "measured": 1.9567776862833826,
-            "message": "solver travel bound 1.95677769 m exceeds limit 0.008 m",
+            "limit": 0.002,
+            "measured": 1890.688213095812,
+            "message": "required feature travel 1890.68821 m exceeds allowed 0.002 m",
             "name": "solver_travel",
             "passed": false
           }
         ],
         "metrics": {
-          "displacement": 0.050258524325155075,
+          "displacement": 0.13115111382938935,
           "frequency": 8.793465436420309,
-          "non_ballistic": 4.950704414442689,
-          "solver_travel": 1.9567776862833826
+          "non_ballistic": 4.934800923953258,
+          "solver_travel": 1890.688213095812
         },
         "passed": false,
         "violations": [
@@ -21737,9 +24524,54 @@
           "non_ballistic",
           "solver_travel"
         ]
-      }
+      },
+      "seed": 3,
+      "t0": 0.0
     }
   ],
+  "safety_profile": {
+    "limits": {
+      "allowed_solver_step_m": 0.002,
+      "geometry": {
+        "feature_offsets_m": {
+          "table_corner_ne": [
+            0.325,
+            0.3,
+            0.0
+          ],
+          "table_corner_nw": [
+            -0.325,
+            0.3,
+            0.0
+          ],
+          "target_wall_top_edge": [
+            -0.01,
+            0.25,
+            0.035
+          ],
+          "workpiece_support_point": [
+            0.65,
+            0.0,
+            0.0
+          ]
+        },
+        "workpiece_support_normal": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "max_angle_rad": null,
+      "max_displacement_m": 0.025,
+      "max_frequency_hz": 8.87,
+      "max_gamma": 1.0,
+      "min_samples_per_cycle": 20,
+      "solver_clearance_m": 0.008,
+      "solver_step_fraction": 0.25
+    },
+    "profile_hash": "e04395ab50798aef2c0ad7760a739152bf623caf4dc3ce96b6cc5b2417c5b5a4",
+    "profile_id": "shakebench.safety.candidate.v1"
+  },
   "schema_id": "shakebench.excitation.golden",
-  "schema_version": 1
+  "schema_version": 2
 }

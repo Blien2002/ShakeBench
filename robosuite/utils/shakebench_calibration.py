@@ -82,6 +82,23 @@ def _point_offset(config: ExcitationConfig, point_offset_m: Iterable[float] | No
     return point
 
 
+def _support_normal(support_normal: Iterable[float] | None) -> np.ndarray:
+    """Validate and normalize a support normal for effective acceleration."""
+
+    if support_normal is None:
+        support_normal = (0.0, 0.0, 1.0)
+    try:
+        normal = np.asarray(tuple(support_normal), dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise CalibrationError("support_normal must contain three finite values") from exc
+    if normal.shape != (3,) or not np.all(np.isfinite(normal)):
+        raise CalibrationError("support_normal must contain three finite values")
+    norm = float(np.linalg.norm(normal))
+    if norm <= 0.0:
+        raise CalibrationError("support_normal must not be the zero vector")
+    return normal / norm
+
+
 def workpiece_point_acceleration(
     motion: MotionSample,
     point_offset_m: Iterable[float],
@@ -128,6 +145,24 @@ def authored_point_vertical_acceleration(
     )[..., 2]
 
 
+def authored_point_normal_acceleration(
+    motion: MotionSample,
+    point_offset_m: Iterable[float],
+    support_normal: Iterable[float],
+    *,
+    include_centripetal: bool = False,
+) -> np.ndarray:
+    """Return rigid-point acceleration projected onto a support normal."""
+
+    normal = _support_normal(support_normal)
+    acceleration = workpiece_point_acceleration(
+        motion,
+        point_offset_m,
+        include_centripetal=include_centripetal,
+    )
+    return np.einsum("...i,i->...", acceleration, normal)
+
+
 def _axis_statistics(motion: MotionSample) -> tuple[dict[str, float], dict[str, float]]:
     values = motion.qdd
     rms = np.sqrt(np.mean(values**2, axis=0))
@@ -148,6 +183,7 @@ class GammaCalibration:
         level_scale: Scale used for the authored command.
         gravity_m_s2: Gravity used for Gamma normalization.
         point_offset_m: Configured workpiece point relative to deck origin.
+        support_normal: Unit normal used for the effective acceleration peak.
         duration_s: Span of the evaluated time grid.
         sample_count: Number of evaluated time samples.
         peak_time_s: Time at the observed authored vertical peak.
@@ -166,6 +202,7 @@ class GammaCalibration:
     level_scale: float
     gravity_m_s2: float
     point_offset_m: tuple[float, float, float]
+    support_normal: tuple[float, float, float]
     duration_s: float
     sample_count: int
     peak_time_s: float
@@ -199,6 +236,7 @@ class GammaCalibration:
             "level_scale": self.level_scale,
             "gravity_m_s2": self.gravity_m_s2,
             "point_offset_m": list(self.point_offset_m),
+            "support_normal": list(self.support_normal),
             "duration_s": self.duration_s,
             "sample_count": self.sample_count,
             "peak_time_s": self.peak_time_s,
@@ -227,6 +265,7 @@ def calibrate_gamma(
     duration_s: float | None = None,
     sample_count: int = 20001,
     point_offset_m: Iterable[float] | None = None,
+    support_normal: Iterable[float] | None = None,
     include_centripetal: bool = False,
 ) -> GammaCalibration:
     """Calibrate ``Gamma_commanded`` from an authored deck command.
@@ -270,6 +309,7 @@ def calibrate_gamma(
         sample_count=sample_count,
     )
     point = _point_offset(cfg, point_offset_m)
+    normal = _support_normal(support_normal)
     unit_program = build_excitation_program(
         seed=authored_program.seed,
         t0=authored_program.t0,
@@ -279,14 +319,16 @@ def calibrate_gamma(
     )
     authored_motion = authored_program.evaluate(times)
     unit_motion = unit_program.evaluate(times)
-    authored_vertical = authored_point_vertical_acceleration(
+    authored_vertical = authored_point_normal_acceleration(
         authored_motion,
         point,
+        normal,
         include_centripetal=include_centripetal,
     )
-    unit_vertical = authored_point_vertical_acceleration(
+    unit_vertical = authored_point_normal_acceleration(
         unit_motion,
         point,
+        normal,
         include_centripetal=include_centripetal,
     )
     gravity = cfg.gravity_m_s2
@@ -304,6 +346,7 @@ def calibrate_gamma(
         "level_scale": 1.0,
         "active_axes": list(unit_program.active_axes),
         "point_offset_m": list(point),
+        "support_normal": list(normal),
         "sample_count": int(times.size),
         "time_grid_s": times.tolist(),
         "config_hash": excitation_config_hash,
@@ -318,6 +361,7 @@ def calibrate_gamma(
         level_scale=authored_program.level_scale,
         gravity_m_s2=gravity,
         point_offset_m=tuple(float(value) for value in point),
+        support_normal=tuple(float(value) for value in normal),
         duration_s=float(times[-1] - times[0]),
         sample_count=int(times.size),
         peak_time_s=float(times[authored_peak_index]),
@@ -392,6 +436,7 @@ compute_gamma = gamma_commanded
 __all__ = [
     "CalibrationError",
     "GammaCalibration",
+    "authored_point_normal_acceleration",
     "authored_point_vertical_acceleration",
     "calibrate_gamma",
     "calibrate_gamma_command",

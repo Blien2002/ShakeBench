@@ -1,15 +1,20 @@
-"""Fail-closed safety gates for the authored ShakeBench excitation.
+"""Fail-closed six-degree-of-freedom safety gates for authored excitation.
 
-These checks are simulator-independent input gates.  They intentionally use
-conservative analytic displacement and carrier-velocity bounds where
-possible, and sampled analytic motion only for the ramped response and
-workpiece-point Gamma.  No gate changes a program or silently clips it.
+The checks in this module are command-level preflight gates.  They do not
+claim to know the realized deck/table state that only a later dynamic-deck
+phase can measure.  Geometry, units, and conservative formulas are serialized
+as a candidate safety profile so a future physics phase can freeze or replace
+them with evidence.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Iterable, Mapping
+import hashlib
+import json
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Any
 
 import numpy as np
 
@@ -17,10 +22,11 @@ from .shakebench_calibration import CalibrationError, calibrate_gamma
 from .shakebench_excitation import (
     AXES,
     CONSERVATIVE_MAX_LINE_FREQUENCY_HZ,
-    ExcitationConfig,
-    ExcitationError,
     ExcitationProgram,
 )
+
+SAFETY_PROFILE_ID = "shakebench.safety.candidate.v1"
+SAFETY_PROFILE_VERSION = 1
 
 
 class SafetyError(ValueError):
@@ -39,43 +45,140 @@ class SafetyViolation(SafetyError):
         self.report = report
 
 
+def _finite_vector(value: Iterable[float], name: str) -> tuple[float, float, float]:
+    try:
+        vector = tuple(float(item) for item in value)
+    except (TypeError, ValueError) as exc:
+        raise SafetyError(f"{name} must contain three finite numbers") from exc
+    if len(vector) != 3 or not np.all(np.isfinite(vector)):
+        raise SafetyError(f"{name} must contain three finite numbers")
+    return vector
+
+
+def _abs_cross_bound(first: np.ndarray, second: np.ndarray) -> np.ndarray:
+    """Return a componentwise upper bound for ``abs(cross(first, second))``."""
+
+    return np.array(
+        [
+            first[1] * second[2] + first[2] * second[1],
+            first[2] * second[0] + first[0] * second[2],
+            first[0] * second[1] + first[1] * second[0],
+        ],
+        dtype=float,
+    )
+
+
+def _abs_centripetal_bound(angular_velocity: np.ndarray, offset: np.ndarray) -> np.ndarray:
+    """Bound ``abs(omega x (omega x r))`` from componentwise magnitudes."""
+
+    omega_squared = float(np.sum(angular_velocity**2))
+    dot_bound = float(np.sum(angular_velocity * np.abs(offset)))
+    return angular_velocity * dot_bound + np.abs(offset) * omega_squared
+
+
 @dataclass(frozen=True)
-class SafetyLimits:
-    """Default v0 safety limits from the design contract.
+class SafetyGeometry:
+    """Named contact/clearance features used by six-DoF safety gates.
 
     Attributes:
-        max_displacement_m: Strict translational displacement limit.
+        feature_offsets_m: Feature points relative to the authored deck origin.
+            Rotation-induced motion is computed as ``alpha x r`` and bounded
+            componentwise for preflight.
+        workpiece_support_normal: Unit normal used by the non-ballistic gate.
+    """
+
+    feature_offsets_m: Mapping[str, Iterable[float]] = field(
+        default_factory=lambda: {
+            "table_corner_ne": (0.325, 0.30, 0.0),
+            "table_corner_nw": (-0.325, 0.30, 0.0),
+            "target_wall_top_edge": (-0.01, 0.25, 0.035),
+            "workpiece_support_point": (0.65, 0.0, 0.0),
+        }
+    )
+    workpiece_support_normal: Iterable[float] = (0.0, 0.0, 1.0)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.feature_offsets_m, Mapping) or not self.feature_offsets_m:
+            raise SafetyError("feature_offsets_m must be a non-empty mapping")
+        frozen_features = {}
+        for name, offset in self.feature_offsets_m.items():
+            if not isinstance(name, str) or not name.strip():
+                raise SafetyError("feature names must be non-empty strings")
+            frozen_features[name] = _finite_vector(offset, f"feature_offsets_m[{name!r}]")
+        normal = np.asarray(_finite_vector(self.workpiece_support_normal, "workpiece_support_normal"), dtype=float)
+        norm = float(np.linalg.norm(normal))
+        if norm <= 0.0:
+            raise SafetyError("workpiece_support_normal must not be the zero vector")
+        normal = tuple(float(item) for item in normal / norm)
+        object.__setattr__(self, "feature_offsets_m", MappingProxyType(frozen_features))
+        object.__setattr__(self, "workpiece_support_normal", normal)
+
+    @property
+    def workpiece_support_point_m(self) -> tuple[float, float, float]:
+        """Return the named workpiece support point."""
+
+        if "workpiece_support_point" not in self.feature_offsets_m:
+            raise SafetyError("feature_offsets_m must define workpiece_support_point")
+        return self.feature_offsets_m["workpiece_support_point"]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize feature offsets and the normalized support normal."""
+
+        return {
+            "feature_offsets_m": {name: list(offset) for name, offset in self.feature_offsets_m.items()},
+            "workpiece_support_normal": list(self.workpiece_support_normal),
+        }
+
+
+@dataclass(frozen=True)
+class SafetyLimits:
+    """Candidate safety limits and geometry for authored-command preflight.
+
+    Attributes:
+        max_displacement_m: Strict maximum for translation and feature travel.
         max_frequency_hz: Strict authored line-frequency limit.
-        max_gamma: Strict non-ballistic Gamma limit.
-        solver_travel_m: Maximum travel allowed in one solver step.
+        max_gamma: Strict non-ballistic effective-normal Gamma limit.
+        solver_travel_m: Geometric clearance envelope; it is not automatically
+            the allowed per-step displacement.
+        solver_step_fraction: Fraction of clearance allowed in one solver step.
         min_samples_per_cycle: Required frequency samples per cycle.
         max_angle_rad: Optional rotational coordinate limit.
+        geometry: Named table/wall/workpiece features used by the gates.
     """
 
     max_displacement_m: float = 0.025
     max_frequency_hz: float = CONSERVATIVE_MAX_LINE_FREQUENCY_HZ
     max_gamma: float = 1.0
     solver_travel_m: float = 0.008
+    solver_step_fraction: float = 0.25
     min_samples_per_cycle: int = 20
     max_angle_rad: float | None = None
+    geometry: SafetyGeometry = field(default_factory=SafetyGeometry)
 
     def __post_init__(self) -> None:
-        values = {
-            "max_displacement_m": self.max_displacement_m,
-            "max_frequency_hz": self.max_frequency_hz,
-            "max_gamma": self.max_gamma,
-            "solver_travel_m": self.solver_travel_m,
-        }
-        for name, value in values.items():
+        for name in (
+            "max_displacement_m",
+            "max_frequency_hz",
+            "max_gamma",
+            "solver_travel_m",
+            "solver_step_fraction",
+        ):
+            value = getattr(self, name)
             if isinstance(value, (bool, np.bool_)):
-                raise SafetyError(f"{name} must be a non-negative real number")
+                raise SafetyError(f"{name} must be a finite non-negative number")
             try:
                 number = float(value)
             except (TypeError, ValueError) as exc:
-                raise SafetyError(f"{name} must be a non-negative real number") from exc
+                raise SafetyError(f"{name} must be a finite non-negative number") from exc
             if not np.isfinite(number) or number < 0.0:
                 raise SafetyError(f"{name} must be a finite non-negative number")
             object.__setattr__(self, name, number)
+        if self.max_frequency_hz <= 0.0:
+            raise SafetyError("max_frequency_hz must be positive")
+        if self.solver_travel_m <= 0.0:
+            raise SafetyError("solver_travel_m must be positive")
+        if not 0.0 < self.solver_step_fraction <= 1.0:
+            raise SafetyError("solver_step_fraction must be in (0, 1]")
         if isinstance(self.min_samples_per_cycle, (bool, np.bool_)):
             raise SafetyError("min_samples_per_cycle must be a positive integer")
         if int(self.min_samples_per_cycle) != self.min_samples_per_cycle or int(self.min_samples_per_cycle) < 1:
@@ -86,21 +189,63 @@ class SafetyLimits:
             if not np.isfinite(angle) or angle < 0.0:
                 raise SafetyError("max_angle_rad must be finite and non-negative")
             object.__setattr__(self, "max_angle_rad", angle)
+        if not isinstance(self.geometry, SafetyGeometry):
+            raise SafetyError("geometry must be a SafetyGeometry instance")
+
+    @property
+    def solver_clearance_m(self) -> float:
+        """Return the geometric clearance envelope in meters."""
+
+        return self.solver_travel_m
+
+    @property
+    def allowed_solver_step_m(self) -> float:
+        """Return the fraction of clearance allowed per solver step."""
+
+        return self.solver_clearance_m * self.solver_step_fraction
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize the configured safety limits."""
+        """Serialize limits, formulas' inputs, and named geometry."""
 
         return {
             "max_displacement_m": self.max_displacement_m,
             "max_frequency_hz": self.max_frequency_hz,
             "max_gamma": self.max_gamma,
-            "solver_travel_m": self.solver_travel_m,
+            "solver_clearance_m": self.solver_clearance_m,
+            "solver_step_fraction": self.solver_step_fraction,
+            "allowed_solver_step_m": self.allowed_solver_step_m,
             "min_samples_per_cycle": self.min_samples_per_cycle,
             "max_angle_rad": self.max_angle_rad,
+            "geometry": self.geometry.to_dict(),
         }
 
 
 DEFAULT_SAFETY_LIMITS = SafetyLimits()
+
+
+def safety_profile_payload(limits: SafetyLimits = DEFAULT_SAFETY_LIMITS) -> dict[str, Any]:
+    """Return the candidate safety profile payload used for hashing."""
+
+    if not isinstance(limits, SafetyLimits):
+        raise SafetyError("limits must be a SafetyLimits instance")
+    return {
+        "profile_id": SAFETY_PROFILE_ID,
+        "profile_version": SAFETY_PROFILE_VERSION,
+        "limits": limits.to_dict(),
+    }
+
+
+def safety_profile_hash(limits: SafetyLimits = DEFAULT_SAFETY_LIMITS) -> str:
+    """Return the deterministic hash of the candidate safety profile."""
+
+    encoded = json.dumps(
+        safety_profile_payload(limits),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -195,42 +340,104 @@ def _require_program(program: ExcitationProgram) -> ExcitationProgram:
     return program
 
 
-def _sample_times(program: ExcitationProgram, time: Any | None, sample_count: int = 4097) -> np.ndarray:
-    """Validate explicit safety times or create the default episode grid."""
+def _bound_motion_components(program: ExcitationProgram) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return conservative position, velocity, and acceleration component bounds."""
 
-    if time is not None:
-        values = np.asarray(time, dtype=float)
-        if values.ndim == 0:
-            values = values.reshape(1)
-        if values.ndim != 1 or values.size == 0 or not np.all(np.isfinite(values)):
-            raise SafetyError("time must be a non-empty finite one-dimensional array")
-        return values
-    if isinstance(sample_count, (bool, np.bool_)) or int(sample_count) != sample_count or int(sample_count) < 2:
-        raise SafetyError("sample_count must be an integer >= 2")
-    return np.linspace(0.0, program.config.episode_duration_s, int(sample_count), dtype=float)
+    position_bound = np.asarray(program.axis_displacement_bound, dtype=float)
+    carrier_velocity_bound = np.asarray(program.carrier_velocity_bound, dtype=float)
+    carrier_acceleration_bound = np.sum(np.abs(program.line_accel_amplitude), axis=1)
+    duration = program.config.ramp_duration_s
+    if duration == 0.0:
+        ramp_first_bound = 0.0
+        ramp_second_bound = 0.0
+    else:
+        # Safe coefficient-sum bounds for the quintic smoothstep derivatives.
+        ramp_first_bound = 120.0 / duration
+        ramp_second_bound = 360.0 / duration**2
+    velocity_bound = carrier_velocity_bound + position_bound * ramp_first_bound
+    acceleration_bound = (
+        carrier_acceleration_bound
+        + 2.0 * carrier_velocity_bound * ramp_first_bound
+        + position_bound * ramp_second_bound
+    )
+    return position_bound, velocity_bound, acceleration_bound, carrier_velocity_bound
+
+
+def _point_displacement_bound(position_bound: np.ndarray, offset: np.ndarray) -> np.ndarray:
+    translation = position_bound[:3]
+    rotation = position_bound[3:]
+    rotation_term = _abs_cross_bound(rotation, np.abs(offset))
+    return translation + rotation_term
+
+
+def _point_velocity_bound(velocity_bound: np.ndarray, offset: np.ndarray) -> np.ndarray:
+    translation = velocity_bound[:3]
+    rotation = velocity_bound[3:]
+    return translation + _abs_cross_bound(rotation, np.abs(offset))
+
+
+def _point_acceleration_bound(
+    acceleration_bound: np.ndarray, velocity_bound: np.ndarray, offset: np.ndarray
+) -> np.ndarray:
+    translation = acceleration_bound[:3]
+    rotation_acceleration = acceleration_bound[3:]
+    rotation_velocity = velocity_bound[3:]
+    return (
+        translation
+        + _abs_cross_bound(rotation_acceleration, np.abs(offset))
+        + _abs_centripetal_bound(rotation_velocity, offset)
+    )
+
+
+def _geometry_or_default(geometry: SafetyGeometry | None) -> SafetyGeometry:
+    if geometry is None:
+        return DEFAULT_SAFETY_LIMITS.geometry
+    if not isinstance(geometry, SafetyGeometry):
+        raise SafetyError("geometry must be a SafetyGeometry instance")
+    return geometry
 
 
 def check_displacement(
     program: ExcitationProgram,
     *,
     max_displacement_m: float = DEFAULT_SAFETY_LIMITS.max_displacement_m,
+    geometry: SafetyGeometry | None = None,
 ) -> SafetyCheck:
-    """Reject programs whose conservative translational displacement exceeds 25 mm."""
+    """Check translation norm and named rotation-induced feature travel."""
 
     _require_program(program)
     limit = float(max_displacement_m)
-    if not np.isfinite(limit) or limit < 0.0:
-        raise SafetyError("max_displacement_m must be finite and non-negative")
-    bounds = program.axis_displacement_bound[:3]
-    measured = float(np.max(bounds))
-    details = {axis: float(bounds[index]) for index, axis in enumerate(AXES[:3])}
-    passed = measured < limit if limit > 0.0 else measured == 0.0
+    if not np.isfinite(limit) or limit <= 0.0:
+        raise SafetyError("max_displacement_m must be finite and positive")
+    geometry = _geometry_or_default(geometry)
+    position_bound, _, _, _ = _bound_motion_components(program)
+    translation_components = position_bound[:3]
+    translation_norm = float(np.linalg.norm(translation_components))
+    feature_bounds = {}
+    for name, raw_offset in geometry.feature_offsets_m.items():
+        offset = np.asarray(raw_offset, dtype=float)
+        feature_bounds[name] = float(np.linalg.norm(_point_displacement_bound(position_bound, offset)))
+    measured = max([translation_norm, *feature_bounds.values()])
+    passed = measured < limit
     message = (
-        f"displacement bound {measured:.9g} m is within limit {limit:.9g} m"
+        f"six-DoF displacement bound {measured:.9g} m is within limit {limit:.9g} m"
         if passed
-        else f"displacement bound {measured:.9g} m exceeds limit {limit:.9g} m"
+        else f"six-DoF displacement bound {measured:.9g} m exceeds limit {limit:.9g} m"
     )
-    return SafetyCheck("displacement", passed, measured, limit, message, details)
+    return SafetyCheck(
+        "displacement",
+        passed,
+        measured,
+        limit,
+        message,
+        {
+            "translation_component_bound_m": translation_components.tolist(),
+            "translation_vector_norm_bound_m": translation_norm,
+            "feature_bounds_m": feature_bounds,
+            "feature_offsets_m": geometry.to_dict()["feature_offsets_m"],
+            "formula": "||translation||_2 and ||translation + rotation x offset||_2 componentwise bounds",
+        },
+    )
 
 
 def check_frequency(
@@ -254,7 +461,7 @@ def check_frequency(
         raise SafetyError("min_samples_per_cycle must be a positive integer")
     samples = int(min_samples_per_cycle)
     measured = program.max_frequency_hz
-    messages: list[str] = []
+    messages = []
     passed = measured < limit
     if not passed:
         messages.append(f"max line frequency {measured:.9g} Hz must be < {limit:.9g} Hz")
@@ -272,14 +479,20 @@ def check_frequency(
             )
     if not messages:
         messages.append(f"max line frequency {measured:.9g} Hz and timestep sampling pass")
-    details = {
-        "max_frequency_hz": measured,
-        "configured_limit_hz": limit,
-        "timestep_s": timestep_value,
-        "timestep_limit_s": timestep_limit,
-        "min_samples_per_cycle": samples,
-    }
-    return SafetyCheck("frequency", passed, measured, limit, "; ".join(messages), details)
+    return SafetyCheck(
+        "frequency",
+        passed,
+        measured,
+        limit,
+        "; ".join(messages),
+        {
+            "max_frequency_hz": measured,
+            "configured_limit_hz": limit,
+            "timestep_s": timestep_value,
+            "timestep_limit_s": timestep_limit,
+            "min_samples_per_cycle": samples,
+        },
+    )
 
 
 def check_non_ballistic(
@@ -289,27 +502,37 @@ def check_non_ballistic(
     time: Any | None = None,
     sample_count: int = 4097,
     point_offset_m: Iterable[float] | None = None,
+    support_normal: Iterable[float] | None = None,
+    geometry: SafetyGeometry | None = None,
 ) -> SafetyCheck:
-    """Reject authored workpiece-point vertical peaks at or above one gravity."""
+    """Check command-level effective normal acceleration before dynamics exist."""
 
     _require_program(program)
     limit = float(max_gamma)
     if not np.isfinite(limit) or limit < 0.0:
         raise SafetyError("max_gamma must be finite and non-negative")
+    geometry = _geometry_or_default(geometry)
+    if point_offset_m is None:
+        point_offset_m = geometry.workpiece_support_point_m
+    if support_normal is None:
+        support_normal = geometry.workpiece_support_normal
     try:
         calibration = calibrate_gamma(
             program,
-            time=_sample_times(program, time, sample_count),
+            time=time,
+            sample_count=sample_count,
             point_offset_m=point_offset_m,
+            support_normal=support_normal,
+            include_centripetal=True,
         )
     except CalibrationError as exc:
         raise SafetyError(str(exc)) from exc
     measured = calibration.gamma_commanded
     passed = measured < limit if limit > 0.0 else measured == 0.0
     message = (
-        f"Gamma_commanded {measured:.9g} is below non-ballistic limit {limit:.9g}"
+        f"effective-normal Gamma_commanded {measured:.9g} is below limit {limit:.9g}"
         if passed
-        else f"Gamma_commanded {measured:.9g} reaches/exceeds non-ballistic limit {limit:.9g}"
+        else f"effective-normal Gamma_commanded {measured:.9g} reaches/exceeds limit {limit:.9g}"
     )
     return SafetyCheck(
         "non_ballistic",
@@ -322,6 +545,10 @@ def check_non_ballistic(
             "gravity_m_s2": calibration.gravity_m_s2,
             "peak_time_s": calibration.peak_time_s,
             "point_offset_m": list(calibration.point_offset_m),
+            "support_normal": list(calibration.support_normal),
+            "gate_scope": "command_level_preflight; realized-state check deferred to dynamic deck",
+            "includes_translation_and_alpha_cross_r": True,
+            "includes_centripetal": True,
         },
     )
 
@@ -331,44 +558,72 @@ def check_solver_travel(
     *,
     timestep_s: float,
     solver_travel_m: float = DEFAULT_SAFETY_LIMITS.solver_travel_m,
+    solver_step_fraction: float = DEFAULT_SAFETY_LIMITS.solver_step_fraction,
+    geometry: SafetyGeometry | None = None,
     time: Any | None = None,
     sample_count: int = 4097,
 ) -> SafetyCheck:
-    """Check maximum translational distance travelled during one solver step."""
+    """Check translation and rotation-induced feature travel per solver step."""
 
     _require_program(program)
     dt = float(timestep_s)
-    limit = float(solver_travel_m)
+    clearance = float(solver_travel_m)
+    fraction = float(solver_step_fraction)
     if not np.isfinite(dt) or dt <= 0.0:
         raise SafetyError("timestep_s must be finite and positive")
-    if not np.isfinite(limit) or limit < 0.0:
-        raise SafetyError("solver_travel_m must be finite and non-negative")
-    times = _sample_times(program, time, sample_count)
-    motion = program.evaluate(times)
-    sampled_velocity = np.max(np.abs(motion.qdot[..., :3]), axis=-1)
-    sampled_max_velocity = float(np.max(sampled_velocity))
-    carrier_bound = float(np.max(program.carrier_velocity_bound[:3]))
-    # The sampled ramped value is the useful measurement; the carrier bound is
-    # added as a conservative fallback for unsampled phase extrema.
-    max_velocity = max(sampled_max_velocity, carrier_bound)
-    travel = max_velocity * dt
-    passed = travel < limit if limit > 0.0 else travel == 0.0
+    if not np.isfinite(clearance) or clearance <= 0.0:
+        raise SafetyError("solver_travel_m/clearance must be finite and positive")
+    if not np.isfinite(fraction) or not 0.0 < fraction <= 1.0:
+        raise SafetyError("solver_step_fraction must be in (0, 1]")
+    geometry = _geometry_or_default(geometry)
+    position_bound, velocity_bound, acceleration_bound, _ = _bound_motion_components(program)
+    translation_velocity = velocity_bound[:3]
+    translation_acceleration = acceleration_bound[:3]
+    translation_speed = float(np.linalg.norm(translation_velocity))
+    translation_accel = float(np.linalg.norm(translation_acceleration))
+    translation_step = translation_speed * dt + 0.5 * translation_accel * dt**2
+    feature_speed_bounds = {}
+    feature_accel_bounds = {}
+    feature_step_bounds = {}
+    for name, raw_offset in geometry.feature_offsets_m.items():
+        offset = np.asarray(raw_offset, dtype=float)
+        feature_speed = float(np.linalg.norm(_point_velocity_bound(velocity_bound, offset)))
+        feature_accel = float(np.linalg.norm(_point_acceleration_bound(acceleration_bound, velocity_bound, offset)))
+        feature_speed_bounds[name] = feature_speed
+        feature_accel_bounds[name] = feature_accel
+        feature_step_bounds[name] = feature_speed * dt + 0.5 * feature_accel * dt**2
+    required_step = max([translation_step, *feature_step_bounds.values()])
+    allowed_step = clearance * fraction
+    passed = required_step < allowed_step
     message = (
-        f"solver travel bound {travel:.9g} m is within limit {limit:.9g} m"
+        f"required feature travel {required_step:.9g} m is within allowed {allowed_step:.9g} m"
         if passed
-        else f"solver travel bound {travel:.9g} m exceeds limit {limit:.9g} m"
+        else f"required feature travel {required_step:.9g} m exceeds allowed {allowed_step:.9g} m"
     )
     return SafetyCheck(
         "solver_travel",
         passed,
-        travel,
-        limit,
+        required_step,
+        allowed_step,
         message,
         {
             "timestep_s": dt,
-            "max_velocity_m_s": max_velocity,
-            "sampled_max_velocity_m_s": sampled_max_velocity,
-            "carrier_velocity_bound_m_s": carrier_bound,
+            "clearance_m": clearance,
+            "solver_step_fraction": fraction,
+            "allowed_step_displacement_m": allowed_step,
+            "translation_speed_bound_m_s": translation_speed,
+            "translation_acceleration_bound_m_s2": translation_accel,
+            "translation_step_displacement_m": translation_step,
+            "feature_speed_bound_m_s": max(feature_speed_bounds.values()),
+            "feature_acceleration_bound_m_s2": max(feature_accel_bounds.values()),
+            "feature_step_displacement_m": max(feature_step_bounds.values()),
+            "feature_speed_bounds_m_s": feature_speed_bounds,
+            "feature_acceleration_bounds_m_s2": feature_accel_bounds,
+            "feature_step_displacement_bounds_m": feature_step_bounds,
+            "formula": "speed_bound*dt + 0.5*acceleration_bound*dt^2; max over translation and named features",
+            "time_grid_argument_used": time is not None,
+            "sample_count_argument": sample_count,
+            "clearance_source": "candidate geometric/contact-feature envelope; not equal to wall thickness",
         },
     )
 
@@ -380,13 +635,16 @@ def check_angle(
     time: Any | None = None,
     sample_count: int = 4097,
 ) -> SafetyCheck:
-    """Optional rotational-angle gate used by later physics phases."""
+    """Check sampled authored rotational coordinate magnitude."""
 
     _require_program(program)
     limit = float(max_angle_rad)
     if not np.isfinite(limit) or limit < 0.0:
         raise SafetyError("max_angle_rad must be finite and non-negative")
-    times = _sample_times(program, time, sample_count)
+    if time is None:
+        times = np.linspace(0.0, program.config.episode_duration_s, sample_count)
+    else:
+        times = np.asarray(time, dtype=float)
     measured = float(np.max(np.abs(program.evaluate(times).q[..., 3:])))
     passed = measured < limit if limit > 0.0 else measured == 0.0
     message = (
@@ -406,13 +664,17 @@ def check_safety(
     sample_count: int = 4097,
     point_offset_m: Iterable[float] | None = None,
 ) -> SafetyReport:
-    """Run all applicable fail-closed gates and return an auditable report."""
+    """Run all applicable candidate preflight gates and return a report."""
 
     _require_program(program)
     if not isinstance(limits, SafetyLimits):
         raise SafetyError("limits must be a SafetyLimits instance")
     checks = [
-        check_displacement(program, max_displacement_m=limits.max_displacement_m),
+        check_displacement(
+            program,
+            max_displacement_m=limits.max_displacement_m,
+            geometry=limits.geometry,
+        ),
         check_frequency(
             program,
             max_frequency_hz=limits.max_frequency_hz,
@@ -425,6 +687,7 @@ def check_safety(
             time=time,
             sample_count=sample_count,
             point_offset_m=point_offset_m,
+            geometry=limits.geometry,
         ),
     ]
     if limits.max_angle_rad is not None:
@@ -442,6 +705,8 @@ def check_safety(
                 program,
                 timestep_s=timestep_s,
                 solver_travel_m=limits.solver_travel_m,
+                solver_step_fraction=limits.solver_step_fraction,
+                geometry=limits.geometry,
                 time=time,
                 sample_count=sample_count,
             )
@@ -475,8 +740,11 @@ assert_safe = validate_safety
 
 __all__ = [
     "DEFAULT_SAFETY_LIMITS",
+    "SAFETY_PROFILE_ID",
+    "SAFETY_PROFILE_VERSION",
     "SafetyCheck",
     "SafetyError",
+    "SafetyGeometry",
     "SafetyLimits",
     "SafetyReport",
     "SafetyViolation",
@@ -487,5 +755,7 @@ __all__ = [
     "check_non_ballistic",
     "check_safety",
     "check_solver_travel",
+    "safety_profile_hash",
+    "safety_profile_payload",
     "validate_safety",
 ]

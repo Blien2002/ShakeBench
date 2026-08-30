@@ -4,6 +4,8 @@
 > 状态：设计冻结；允许通过预注册 physics pilot 填入第 14 节列出的派生数值。  
 > 当前实现范围：State Oracle-Control Track；Vision 仅作为后续消融。
 
+> 2026-08-30 reconciliation：committed state protocol 已与设计树同步为 10 个 dev + 400 个 official states，Can yaw 恒为 0；Phase 01 的 authored spectrum 是新的 candidate profile，不是已证明的旧 ShakeBench exact reuse。物理 timestep、weld/contact `solref/solimp`、isolator 参数和 `Gamma_star` 仍未冻结。
+
 ## 1. 目标与非目标
 
 v0 构建一个基于 robosuite 1.5.2 / MuJoCo 的可复现振动操作测试床，研究在任务状态真值已知时，机械振动如何影响控制、接触、抓取、搬运和放置。
@@ -190,7 +192,7 @@ Can ↔ Panda finger pads:
 
 ### 7.1 v0 family
 
-快速实现复用当前 ShakeBench：
+Phase 01 remediation 选择 **B：new authored v0 candidate**。旧 ShakeBench 激励实现不在当前仓库中，无法证明 exact reuse；本节数值只表示待 bench-author 批准的 authored candidate：
 
 - 六轴解析随机多频谱；
 - 每轴独立 line jitter/phase，episode 级确定性；
@@ -333,16 +335,16 @@ support topology ID
 ## 11. Initial-state protocol
 
 ```text
-50 committed official-development states
+410 committed task states
 ├── 10 dev
-└── 40 official
+└── 400 official
 ```
 
 每个 state：
 
 ```text
 Can XY perturbation around nominal: independent uniform ±0.02 m
-Can yaw: uniform [0, 2π)
+Can yaw: 0 for every State-track episode
 target: fixed
 object pose
 excitation seed / t0 / level_scale
@@ -384,10 +386,10 @@ SR@Gamma_star
 
 ### 12.3 Paired statistics
 
-每个 tier 在相同 40 official state IDs 上报告：
+每个 tier 在相同 400 official state IDs 上报告：
 
 ```text
-success count / 40
+success count / 400
 success rate
 95% Wilson interval
 failure-reason histogram
@@ -460,7 +462,7 @@ placement、free-table slip、in-hand slip、contact loss、penetration 和 resp
 9. success evaluator boundary tests；
 10. V0 ⊂ V1 ⊂ V2 ⊂ V3 key-set and fail-closed permissions；
 11. recorder truth cannot leak to policy observation；
-12. 100 knee-calibration episodes and 40 official states committed；
+12. 100 knee-calibration episodes and 400 official states committed；
 13. all crashes, reruns, failures and violations auditable。
 
 ## 16. Deferred work

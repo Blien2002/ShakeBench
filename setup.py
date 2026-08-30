@@ -34,7 +34,10 @@ setup(
     },
     eager_resources=["*"],
     include_package_data=True,
-    python_requires=">=3",
+    # Phase 01 uses ``from __future__ import annotations`` and dataclasses;
+    # Python 3.7 is the minimum interpreter for the additive ShakeBench
+    # modules while preserving the existing Python 3.7/3.8 formatting targets.
+    python_requires=">=3.7",
     description="robosuite: A Modular Simulation Framework and Benchmark for Robot Learning",
     author="Yuke Zhu",
     url="https://github.com/ARISE-Initiative/robosuite",
