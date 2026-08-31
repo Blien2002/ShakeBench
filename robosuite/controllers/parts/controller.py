@@ -7,6 +7,34 @@ import numpy as np
 import robosuite.macros as macros
 
 
+def get_model_timestep(sim):
+    """Return a simulator model timestep, falling back to the legacy macro.
+
+    Args:
+        sim: A MuJoCo simulator or a lightweight test double. The simulator
+            may omit ``model`` or ``model.opt``.
+
+    Returns:
+        float: The positive finite model timestep in seconds.
+
+    Raises:
+        ValueError: If a timestep is present but is not positive and finite.
+    """
+
+    model = getattr(sim, "model", None)
+    option = getattr(model, "opt", None)
+    timestep = getattr(option, "timestep", None)
+    if timestep is None:
+        return float(macros.SIMULATION_TIMESTEP)
+    try:
+        value = float(timestep)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("simulator model timestep must be a finite positive number") from exc
+    if not np.isfinite(value) or value <= 0.0:
+        raise ValueError("simulator model timestep must be a finite positive number")
+    return value
+
+
 class Controller(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
@@ -61,7 +89,10 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # mujoco simulator state
         self.sim = sim
-        self.model_timestep = macros.SIMULATION_TIMESTEP
+        # Read the compiled model so environment-owned timesteps also reach
+        # controller interpolation and dynamics calculations.  The fallback
+        # preserves compatibility with lightweight mock simulators.
+        self.model_timestep = get_model_timestep(self.sim)
         self.lite_physics = lite_physics
         self.ref_name = ref_name
         # A list of site the controller want to follow

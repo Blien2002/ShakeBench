@@ -92,6 +92,9 @@ class TwoArmTransport(TwoArmEnv):
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
 
+        model_timestep (None or float): Optional environment-owned MuJoCo model timestep in seconds. If omitted,
+            the legacy macro/default path is used.
+
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
             Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
 
@@ -174,6 +177,7 @@ class TwoArmTransport(TwoArmEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        model_timestep=None,
     ):
         # settings for table top
         self.tables_boundary = tables_boundary
@@ -221,6 +225,7 @@ class TwoArmTransport(TwoArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            model_timestep=model_timestep,
         )
 
     def reward(self, action=None):

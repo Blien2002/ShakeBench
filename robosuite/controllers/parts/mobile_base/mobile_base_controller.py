@@ -4,7 +4,7 @@ from collections.abc import Iterable
 import mujoco
 import numpy as np
 
-import robosuite.macros as macros
+from robosuite.controllers.parts.controller import get_model_timestep
 
 
 class MobileBaseController(object, metaclass=abc.ABCMeta):
@@ -52,7 +52,7 @@ class MobileBaseController(object, metaclass=abc.ABCMeta):
 
         # mujoco simulator state
         self.sim = sim
-        self.model_timestep = macros.SIMULATION_TIMESTEP
+        self.model_timestep = get_model_timestep(self.sim)
         self.naming_prefix = naming_prefix
 
         self.joint_index = joint_indexes["joints"]

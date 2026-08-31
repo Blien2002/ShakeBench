@@ -1,6 +1,6 @@
 # ShakeBench integration map
 
-状态：Phase 00 骨架与 Phase 01/01R simulator-independent candidate excitation 完成；后续 physics/task 尚未实现。
+状态：Phase 00 骨架、Phase 01/01R candidate excitation 与 Phase 02R/02R2/02R3/02R4 dynamic deck remediation 已实现；R4 provisional driver/load conformance 与 Phase 03 handoff 已 PASS，isolator/task 及 official physics freeze 尚未实现。
 审计路径：`/home/miracle04/Desktop/ShakeBench`。  
 审计基线 commit：`5ce6643f3092639d08f7b0f90ed1c6a84f50552c`。
 
@@ -28,18 +28,34 @@
 
 本阶段没有修改上游核心源码、`robosuite/__init__.py` 或任何既有环境/模型文件；为使新增代码的 Python 最低版本声明与语法一致，更新了 `setup.py`/`pyproject.toml`，并为已存在的 candidate texture 添加了最小 `.gitignore` 例外。
 
+## 1.2 Phase 02 实际新增与修改文件
+
+| 路径 | 职责 | 默认行为 |
+| --- | --- | --- |
+| `robosuite/utils/shakebench_deck.py` | role-based dynamic deck XML processor、mocap+weld driver、XML/compiled-model audit、world spatial six-axis instrumentation、raw equality diagnostics | 只有显式 processor/driver 安装时启用；pre-init install fail-closed；不猜测 task body 名称 |
+| `robosuite/scripts/shakebench_probe_deck_driver.py` | pre-registered candidate screen/selection、zero/six-axis/per-line spectrum/target-Gamma/Panda-load/dt/solver-sensitivity matrix、artifact verifier/atomic writer | 只创建 no-task in-memory fixture，不注册环境、不加入 task；Gamma target 与 level scale 分开；Panda fixture 使用实际仓内 Panda XML |
+| `tests/test_shakebench_deck_driver.py` | lifecycle、timestep seam、SO(3)/world-frame/right-limit regression、raw weld field separation、candidate selection mutation、Panda compiled load audit 和 mocap-parent negative regression | 显式关闭 pytest plugin；不依赖 EGL |
+| `robosuite/environments/base.py`、`robot_env.py`、`manipulation_env.py`、现有 manipulation env | 可选 environment-owned `model_timestep` 与 pre/post physics hook；旧 env 未指定时保留 macro fallback | 不修改 `macros.SIMULATION_TIMESTEP` |
+| `robosuite/controllers/parts/*.py` | 通过一个共享 helper 从 compiled model 读取 controller model timestep | 缺少 `model` / `opt` 的 mock simulator 安全 fallback 到 macro |
+| `docs/phase_02_report.md` | Phase 02/02R provisional evidence、derived-not-frozen 边界和测试记录 | 文档 |
+| `docs/phase_02_remediation_report.md` | Phase 02R measurement semantics、coverage matrix、blocked evidence 和 reproducibility record | 文档 |
+| `docs/phase_02_final_remediation_report.md` | Phase 02R3/R4 final conformance and artifact-lock evidence | 文档；当前 `integrity_valid=true`、physics gates true、handoff PASS |
+| `docs/phase_02_time_contract_report.md` | Phase 02R3/R4 left/right-limit contract、旧/新 target evidence、selection/load handoff | 文档；Phase 03 handoff PASS |
+| `docs/phase_02_driver_selection_report.md` | R4 complete candidate screen/selection、Panda compiled audit、3×2×64 matrix 和唯一 handoff | 文档；provisional，Phase 06 仍 freeze |
+| `tests/shakebench_phase_02r_probe.json` | committed-flat machine-readable Phase 02R4 selection/load matrix artifact | artifact schema 3、trace schema 3、two-beat right-limit fit window；需显式 update reason 才能替换 |
+
 ## 2. 已审计的真实上游入口
 
 | 领域 | 实际路径与 symbol | 集成结论 |
 | --- | --- | --- |
 | 环境注册 | `robosuite/environments/base.py:register_env`、`EnvMeta.__new__`、`make` | 具体环境 class 在 class creation 时写入 `REGISTERED_ENVS`；`robosuite.make` 实际由 `robosuite/environments/base.py:make` 提供 |
 | 根导入路径 | `robosuite/__init__.py` 中的 `from robosuite.environments.base import make`，以及随后逐项导入 manipulation env | 后续 `VibrationPickPlaceCan` 应在现有根导入链中显式 import，依靠 `EnvMeta` 注册；Phase 00 不添加它 |
-| 环境基类 | `robosuite/environments/base.py:MujocoEnv` | 公共 constructor 保存 `_xml_processors`、`control_freq`、`lite_physics`、`model_timestep`、`control_timestep`；后续可选 seam 必须保持旧默认路径 |
+| 环境基类 | `robosuite/environments/base.py:MujocoEnv` | 公共 constructor 保存 `_xml_processors`、`control_freq`、`lite_physics`、`model_timestep`、`control_timestep`；Phase 02 seam 只在显式参数/hook 时启用，旧默认路径保留 |
 | XML processor | `MujocoEnv.__init__` 的 `_xml_processors = [self.edit_model_xml]`、`set_xml_processor`、`_initialize_sim` 的 processor loop、`edit_model_xml` | deck processor 应是显式环境配置添加的 callable；不在 import 时注册 callback。`edit_model_xml` 负责把 XML 内 robosuite asset 路径解析到当前 package |
 | reset | `MujocoEnv.reset`、`_reset_internal`、`reset_from_xml_string` | 新环境 reset 状态和 sensor state 应挂在已有 reset 生命周期；不要改变现有环境的 hard/deterministic reset 语义 |
-| lite-physics step | `MujocoEnv.step`：每个 control step 内执行 `sim.step1()`/`sim.forward()` → `_pre_action` → `sim.step2()`/`sim.step()` → `_update_observables`，之后 `_post_action` | deck command 的写入时序必须在后续阶段用 probe 锁定，不能把旧的 `_pre_action` 一步超前行为直接当成合同 |
+| lite-physics step | `MujocoEnv.step`：可选 pre-physics hook → `sim.step1()`/`sim.forward()` → `_pre_action` → `sim.step2()`/`sim.step()` → `_update_observables` → 可选 post-physics hook → `_post_action` | deck command 在对应 position phase 前写入；不使用旧 `_pre_action` 一步超前行为 |
 | robot step hook | `RobotEnv._pre_action` | 现有实现按 robot action 分发至 `robot.control`；若要增加 deck 写入，应以最小、可选接口组合，不改变旧 action 语义 |
-| timestep | `MujocoEnv.initialize_time` 读取 `robosuite.macros.SIMULATION_TIMESTEP`；`MujocoWorldBase.__init__` 将同值写入 `<option timestep>` | Phase 00 不修改 global macro。后续 environment-owned timestep 必须先在新环境显式传入并锁定兼容 fallback；不能在模块 import 时改 `SIMULATION_TIMESTEP` |
+| timestep | `MujocoEnv.initialize_time` 读取 compiled `sim.model.opt.timestep`；显式 `model_timestep` 在 processor loop 后写入 model-local `<option timestep>` | 未指定时完全保留 `macros.SIMULATION_TIMESTEP` fallback；显式值只属于当前 env，且 control/model 时间不能漂移 |
 | manipulation 基类 | `robosuite/environments/manipulation/manipulation_env.py:ManipulationEnv` | 提供 `_check_grasp`、EEF/object 相对 pose sensors、`_get_arm_prefixes` 和 gripper visualization；新任务可复用这些 helper |
 | Lift 装配模板 | `robosuite/environments/manipulation/lift.py:Lift._load_model`、`_setup_references`、`_setup_observables`、`_reset_internal`、`_check_success` | 这是 `TableArena` + robot + object + `ManipulationTask` 的实际装配样板；ShakeBench 任务必须去掉 Lift 的 cube/height 硬编码 |
 | task merge | `robosuite/models/tasks/task.py:Task.__init__`、`merge_arena`、`merge_robot`、`merge_objects` | 实际 world assembly 在 `Task`，`ManipulationTask` 目前只是 placeholder subclass；所有 XML reparent 必须适配此 merge 顺序 |
@@ -62,9 +78,14 @@
 | 01 | `robosuite/utils/shakebench_safety.py` | **已实现 candidate gate**：六自由度位移、non-ballistic、频率、feature solver travel 和 safety rejection |
 | 01 | `robosuite/scripts/shakebench_generate_excitation_golden.py` | **已实现**：生成 tests 根目录的平铺 golden fixture 和误差摘要 |
 | 01 | `tests/test_shakebench_excitation.py`、`tests/test_shakebench_calibration.py`、`tests/test_shakebench_config.py` | **已实现**：excitation/calibration/config/safety 纯工具测试；golden 用独立 evaluator 验收 |
-| 02 | `robosuite/utils/shakebench_deck.py` | dynamic deck model、mocap driver、weld XML processor；挂接 `MujocoEnv.set_xml_processor` 和经过测试的 step timing |
-| 02 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/test_shakebench_deck_driver.py` | zero/six-axis/spectrum/Gamma、empty/load、多 dt 和 weld conformance |
-| 02 | `robosuite/environments/base.py`（仅在测试锁定后） | 可选 environment-owned timestep / pre-step hook 的最小向后兼容 seam；旧 env 未传参数时完全走现有 `macros.SIMULATION_TIMESTEP` |
+| 02R2 | `robosuite/utils/shakebench_deck.py` | **已实现**：post-integration driver-only refresh、same-state kinematics/constraint buffers、immutable audit mappings、explicit trace contract |
+| 02R2 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/test_shakebench_deck_driver.py` | **已实现并由 R3/R4 supersede**：two-beat resolution、synthetic estimator gate、64-line fits、Gamma×load 原型 matrix、artifact verify/update lock |
+| 02R2 | `robosuite/environments/base.py`、相关父类/现有 manipulation env | **已实现**：driver-only post-integration refresh；未安装 driver 的上游环境不增加 forward |
+| 02R3 | `robosuite/utils/shakebench_deck.py` | **已实现**：right-limit mocap write before refresh、explicit integration/sample timestamps、trace schema 3 |
+| 02R3 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/test_shakebench_deck_driver.py` | **已实现并由 R4 supersede**：old-target `35.2417` vs right-limit `0.9867` regression、schema 2 historical artifact、Gamma×load re-run、integrity/physics/handoff separation |
+| 02R3 | `robosuite/environments/base.py`、相关父类/现有 manipulation env | **已实现**：post-integration refresh hook 在 forward 前写 sample target；未安装 driver 的上游环境不增加 forward |
+| 02R4 | `robosuite/scripts/shakebench_probe_deck_driver.py` | **已实现**：运行前注册 fine/nominal/coarse profile；每个 candidate 实际完成 zero/六单轴/目标 Gamma 0.30 的 64-line screen；只按 physics metrics 选最大可行 dt；confirmatory 不回选 candidate |
+| 02R4 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/shakebench_phase_02r_probe.json` | **已实现**：实际 robosuite Panda XML/base subtree + 32 kg proxy，compiled body mass/COM/inertia/initial-state audit，3×2×64 load matrix，authenticated atomic artifact lock；handoff PASS |
 | 03 | `robosuite/utils/shakebench_isolator.py` | canonical linear 6-DoF support、解析 transfer、preload/k/c 派生 |
 | 03 | `robosuite/models/arenas/shakebench_arena.py` | 继承/组合现有 `TableArena` 结构，提供 explicit tabletop inertial root、industrial visual primitives、target assembly 接口 |
 | 03 | `robosuite/models/assets/arenas/shakebench_arena.xml` | arena XML；只放现有 assets/arenas 目录 |
@@ -106,20 +127,22 @@
 
 ```text
 control action
-  → for each model step: step1/forward
+  → for each model step: optional pre-physics hook
+  → step1/forward
   → _pre_action(action, policy_step)
   → step2/step
   → _update_observables
+  → optional post-physics hook
   → _post_action
 ```
 
-当前 model timestep 由 `MujocoEnv.initialize_time` 和 `MujocoWorldBase.__init__` 的 macro 路径共同确定。Phase 00 不写入任何 global timestep/callback。Phase 02 若需要 pre-step 或 environment-owned timestep，必须：
+当前 model timestep 默认由 `MujocoWorldBase.__init__` 的 macro 路径提供，显式 Phase 02 env 则在编译前覆写 model-local option；没有写入 global timestep/callback。Controller、GripperController 和 MobileBaseController 共用 `get_model_timestep`，在 mock 缺少 `model` / `opt` 时才 fallback。已安装 driver 的 env 默认在每次 integration 后、observable/post-hook 前请求一次完整 `sim.forward()`；spectrum-only probe 可显式使用 deterministic refresh stride 记录实际 post-step samples，未安装 driver 的 env 保持零次额外 refresh。当前实现满足：
 
 1. 只在新环境/显式参数启用；
 2. 对旧 env 保留 constructor 与旧执行路径；
-3. 先添加 regression tests，再修改 `base.py`；
-4. 记录 command/actual deck pose、twist、acceleration、weld error 和 constraint wrench；
-5. 按 `dt`、weld time constant、频率 sampling 和 solver travel 的约束 fail closed。
+3. regression tests 覆盖 parent signatures、现有 Lift、顺序和 registry；R4 tests 覆盖 metric-driven selection、Panda/base audit 和 handoff mutation；
+4. 记录 left/right-limit command target、post-refresh world spatial actual state、same-state tracking error、raw equality `efc_pos` / `efc_force`、solver iterations 和 warning deltas；不把 raw constraint force 称为空间 wrench；
+5. 按 `dt`、weld time constant 和 control-step divisibility fail closed；candidate screen 另按 amplitude/phase/conditioning/residual fail closed。
 
 ## 5. Asset、texture 和 package data
 
@@ -136,7 +159,7 @@ control action
 - 只有 `validate_config` / `ShakeBenchConfig.validate()` 在 scoreable mode 下执行 official gate；scoreable config 必须提供完整 official-field map，且任何 sentinel（包括嵌套值）都会失败。
 - `canonical_json` 使用排序 key、无空白 separators、UTF-8、拒绝 non-finite number；`config_hash` 是该字节串的 lower-case SHA-256。
 - CLI 的 `version` 只报告 extension identity 和当前 package version；`print-schema` 输出上述 config envelope；`validate-config` 不会实例化环境。
-- 不修改 `robosuite.macros.SIMULATION_TIMESTEP`，不注册全局 callbacks，不改现有 action/observation/model timestep/XML 默认行为。
+- 不修改 `robosuite.macros.SIMULATION_TIMESTEP`，不注册全局 callbacks，不改现有 action/observation/model timestep/XML 默认行为；Phase 02 hooks 只有显式 driver 注册时才运行。
 
 ## 7. 测试落点与命令
 
@@ -151,10 +174,10 @@ python -m robosuite.scripts.shakebench_cli validate-config <config.json>
 
 仓库当前安装环境有 ROS pytest entrypoint 与两个模块级 argparse 测试；完整上游基线的兼容 invocation 和阻断原因记录在 `docs/phase_00_report.md`。后续新增测试不得依赖这些环境外部条件；测试应显式关闭插件自动发现，或在 CI 中提供与上游测试匹配的 runner。
 
-## 8. 明确不在 Phase 00 的工作
+## 8. 明确不在 Phase 00/02 的工作
 
-本阶段没有实现 excitation、deck、isolator、arena、Can task、target box、contact/friction、IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。
+本阶段没有实现 isolator、arena、Can task、target box、contact/friction、IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，但 deck mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未冻结。
 
-Phase 01 已实现 authored excitation，但仍未实现 deck、isolator、arena、task、contact、IMU 或任何 MuJoCo model/environment；这些继续由后续 phases 负责。
+Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。当前 artifact 只能通过 `--verify-artifact` 或带 reason 的显式 update 变更；Phase 03 runtime physics 仍未实现。
 
 Phase 01R 将该 excitation 明确标记为 `new authored v0 candidate`；没有可审计的旧 ShakeBench algorithm/reference，因此不宣称 exact reuse。`scoreable=True` 仍需后续 freeze authority。

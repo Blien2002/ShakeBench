@@ -51,7 +51,7 @@ class EnvMeta(type):
         # List all environments that should not be registered here.
         _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "TwoArmEnv"]
 
-        if cls.__name__ not in _unregistered_envs:
+        if cls.__name__ not in _unregistered_envs and not class_dict.get("_unregistered_env", False):
             register_env(cls)
         return cls
 
@@ -76,6 +76,8 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
+        model_timestep (None or float): Optional environment-owned MuJoCo model timestep in seconds. If omitted,
+            the legacy ``robosuite.macros.SIMULATION_TIMESTEP`` path is used.
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
             Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
         horizon (int): Every episode lasts for exactly @horizon timesteps.
@@ -108,6 +110,7 @@ class MujocoEnv(metaclass=EnvMeta):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        model_timestep=None,
     ):
         # Rendering-specific attributes
         self.has_renderer = has_renderer
@@ -129,6 +132,10 @@ class MujocoEnv(metaclass=EnvMeta):
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
+        # An explicitly requested timestep belongs to this environment only.
+        # Keep the legacy macro as the fallback, but never mutate it while
+        # constructing an environment.
+        self._requested_model_timestep = self._validate_model_timestep(model_timestep)
         # Function to process model xml in _initialize_sim() call
         # include edit_model_xml function by default
         self._xml_processors = [self.edit_model_xml]
@@ -136,6 +143,14 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
+        self._control_steps = None
+        self._pre_physics_step_hooks = []
+        self._post_physics_step_hooks = []
+        self._post_integration_refresh_hooks = []
+        self._sim_initialization_hooks = []
+        self._post_integration_refresh_requested = False
+        self._post_integration_refresh_stride = 1
+        self._physics_step_index = 0
         self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
@@ -207,6 +222,34 @@ class MujocoEnv(metaclass=EnvMeta):
                 f"{self.renderer} is not a valid renderer name. Valid options include mjviewer (native mujoco renderer), mujoco"
             )
 
+    @staticmethod
+    def _validate_model_timestep(model_timestep):
+        """Validate an optional environment-owned model timestep."""
+
+        if model_timestep is None:
+            return None
+        if isinstance(model_timestep, (bool, np.bool_)):
+            raise ValueError("model_timestep must be a finite positive number")
+        try:
+            value = float(model_timestep)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("model_timestep must be a finite positive number") from exc
+        if not np.isfinite(value) or value <= 0.0:
+            raise ValueError("model_timestep must be a finite positive number")
+        return value
+
+    @staticmethod
+    def _set_xml_model_timestep(xml_string, model_timestep):
+        """Set a model-local timestep in an XML string without touching macros."""
+
+        root = ET.fromstring(xml_string)
+        option = root.find("option")
+        if option is None:
+            option = ET.Element("option")
+            root.insert(0, option)
+        option.set("timestep", format(float(model_timestep), ".17g"))
+        return ET.tostring(root, encoding="utf8").decode("utf8")
+
     def initialize_time(self, control_freq):
         """
         Initializes the time constants used for simulation.
@@ -214,13 +257,34 @@ class MujocoEnv(metaclass=EnvMeta):
             control_freq (float): Hz rate to run control loop at within the simulation
         """
         self.cur_time = 0
-        self.model_timestep = macros.SIMULATION_TIMESTEP
+        if self.sim is not None:
+            self.model_timestep = float(self.sim.model.opt.timestep)
+        elif self._requested_model_timestep is not None:
+            self.model_timestep = self._requested_model_timestep
+        else:
+            self.model_timestep = macros.SIMULATION_TIMESTEP
         if self.model_timestep <= 0:
             raise ValueError("Invalid simulation timestep defined!")
         self.control_freq = control_freq
         if control_freq <= 0:
             raise SimulationError("Control frequency {} is invalid".format(control_freq))
         self.control_timestep = 1.0 / control_freq
+
+        steps = self.control_timestep / self.model_timestep
+        rounded_steps = int(round(steps))
+        if self._requested_model_timestep is None:
+            # Preserve the legacy execution path for existing environments,
+            # including its integer truncation for unusual control/model
+            # frequency pairs.
+            self._control_steps = int(steps)
+        else:
+            if rounded_steps < 1 or not np.isclose(steps, rounded_steps, rtol=1e-10, atol=1e-10):
+                raise SimulationError(
+                    "control timestep {} must be an integer multiple of model timestep {}".format(
+                        self.control_timestep, self.model_timestep
+                    )
+                )
+            self._control_steps = rounded_steps
 
     def set_xml_processor(self, processor):
         """
@@ -230,6 +294,111 @@ class MujocoEnv(metaclass=EnvMeta):
                 return no arguments.
         """
         self._xml_processors.append(processor)
+
+    def add_sim_initialization_hook(self, hook):
+        """Register a callback after a compiled simulator is initialized.
+
+        Args:
+            hook (callable): Callback receiving the newly created simulator.
+                It runs after the model-local timestep is resolved and before
+                the environment returns from its initialization/reset path.
+
+        Raises:
+            ValueError: If ``hook`` is ``None``.
+            TypeError: If ``hook`` is not callable.
+        """
+
+        if hook is None:
+            raise ValueError("sim-initialization hook must be callable")
+        if not callable(hook):
+            raise TypeError("sim-initialization hook must be callable")
+        self._sim_initialization_hooks.append(hook)
+
+    def request_post_integration_refresh(self, stride=1):
+        """Request a full derived-state refresh after selected integrations.
+
+        The default is disabled to preserve the native robosuite stepping
+        path. With the default ``stride=1``, opt-in users receive a
+        ``sim.forward()`` refresh after every ``step2()`` / ``step()`` and
+        before observables or post-physics hooks, so qpos, kinematics,
+        constraints, and the sample timestamp describe the same
+        post-integration state. A larger explicit stride is available to
+        record a decimated measurement stream without changing integration.
+        """
+
+        if isinstance(stride, (bool, np.bool_)):
+            raise ValueError("post-integration refresh stride must be a positive integer")
+        try:
+            numeric_stride = float(stride)
+            stride = int(numeric_stride)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("post-integration refresh stride must be a positive integer") from exc
+        if not np.isfinite(numeric_stride) or stride < 1 or numeric_stride != float(stride):
+            raise ValueError("post-integration refresh stride must be a positive integer")
+        self._post_integration_refresh_stride = stride
+        self._post_integration_refresh_requested = True
+
+    def add_post_integration_refresh_hook(self, hook):
+        """Register a callback that updates inputs before an opt-in refresh.
+
+        Args:
+            hook (callable): Callback receiving ``(sample_time_s,
+                policy_step)`` after integration and before the full
+                derived-state refresh.
+
+        Raises:
+            ValueError: If ``hook`` is ``None``.
+            TypeError: If ``hook`` is not callable.
+        """
+
+        if hook is None:
+            raise ValueError("post-integration refresh hook must be callable")
+        if not callable(hook):
+            raise TypeError("post-integration refresh hook must be callable")
+        self._post_integration_refresh_hooks.append(hook)
+
+    def add_pre_physics_step_hook(self, hook):
+        """Register a callback invoked immediately before each ``step1`` / ``forward``.
+
+        The callback receives ``(physics_time_s, policy_step)``.  This seam is
+        intentionally opt-in so existing environments retain their exact
+        action and stepping path.
+        """
+
+        if hook is None:
+            raise ValueError("pre-physics hook must be callable")
+        if not callable(hook):
+            raise TypeError("pre-physics hook must be callable")
+        self._pre_physics_step_hooks.append(hook)
+
+    def add_post_physics_step_hook(self, hook):
+        """Register a callback invoked after each physics step and observable update."""
+
+        if hook is None:
+            raise ValueError("post-physics hook must be callable")
+        if not callable(hook):
+            raise TypeError("post-physics hook must be callable")
+        self._post_physics_step_hooks.append(hook)
+
+    def set_pre_physics_step_hook(self, hook):
+        """Replace the optional pre-physics callback set."""
+
+        self._pre_physics_step_hooks = []
+        if hook is not None:
+            self.add_pre_physics_step_hook(hook)
+
+    def set_post_physics_step_hook(self, hook):
+        """Replace the optional post-physics callback set."""
+
+        self._post_physics_step_hooks = []
+        if hook is not None:
+            self.add_post_physics_step_hook(hook)
+
+    def _pre_physics_step(self, physics_time_s, policy_step=False):
+        """Subclass hook invoked before MuJoCo computes the next step."""
+
+    def _post_physics_step(self, physics_time_s, policy_step=False):
+        """Subclass hook invoked after MuJoCo and observable updates."""
 
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
@@ -265,6 +434,12 @@ class MujocoEnv(metaclass=EnvMeta):
         for processor in self._xml_processors:
             xml = processor(xml)
 
+        # Apply the explicit environment-owned timestep last so an XML
+        # processor cannot accidentally make the runtime timing differ from
+        # the value requested by this environment.
+        if self._requested_model_timestep is not None:
+            xml = self._set_xml_model_timestep(xml, self._requested_model_timestep)
+
         # Create the simulation instance
         self.sim = MjSim.from_xml_string(xml)
 
@@ -273,6 +448,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Setup sim time based on control frequency
         self.initialize_time(self.control_freq)
+        self._physics_step_index = 0
+        for hook in self._sim_initialization_hooks:
+            hook(self.sim)
 
     def reset(self):
         """
@@ -387,6 +565,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = 0
         self.timestep = 0
         self.done = False
+        self._physics_step_index = 0
 
         # Empty observation cache and reset all observables
         self._obs_cache = {}
@@ -491,7 +670,11 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
         # (as defined by the control frequency specified at the environment level)
-        for i in range(int(self.control_timestep / self.model_timestep)):
+        for i in range(self._control_steps):
+            physics_time_s = float(self.sim.data.time)
+            self._pre_physics_step(physics_time_s, policy_step)
+            for hook in self._pre_physics_step_hooks:
+                hook(physics_time_s, policy_step)
             if self.lite_physics:
                 self.sim.step1()
             else:
@@ -501,7 +684,21 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.sim.step2()
             else:
                 self.sim.step()
+            refresh_due = self._post_integration_refresh_requested and (
+                (self._physics_step_index + 1) % self._post_integration_refresh_stride == 0
+            )
+            if refresh_due:
+                refresh_time_s = float(self.sim.data.time)
+                for hook in self._post_integration_refresh_hooks:
+                    hook(refresh_time_s, policy_step)
+                self.sim.forward()
             self._update_observables()
+            if refresh_due:
+                sample_time_s = float(self.sim.data.time)
+                self._post_physics_step(sample_time_s, policy_step)
+                for hook in self._post_physics_step_hooks:
+                    hook(sample_time_s, policy_step)
+            self._physics_step_index += 1
             policy_step = False
 
         # Note: this is done all at once to avoid floating point inaccuracies

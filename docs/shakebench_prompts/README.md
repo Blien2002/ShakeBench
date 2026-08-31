@@ -102,6 +102,10 @@ docs/robosuite_benchmark_design_tree.md
 | 01 | `phase_01_excitation_core.md` | `robosuite/utils` 内纯 NumPy 激励模块 | golden 解析不变量 |
 | 01R | `phase_01_review_remediation.md` | 封闭 scoreable 配置、独立 golden、六自由度 safety 与文档 provenance | 审查问题全部可证伪地关闭 |
 | 02 | `phase_02_dynamic_deck_driver.md` | env-owned timestep、XML processor、dynamic deck | six-axis driver conformance |
+| 02R | `phase_02_review_remediation.md` | 修复 driver 生命周期、Γ/坐标系/weld 测量语义与 conformance matrix | Phase 02 P1 测量门关闭 |
+| 02R2 | `phase_02_final_conformance_remediation.md` | 闭合 post-step state、谱线分辨率、Γ×load 与 artifact 锁定 | Phase 03 handoff PASS |
+| 02R3 | `phase_02_time_contract_remediation.md` | 闭合 mocap 左右极限与 acceleration/Gamma 时间契约 | Phase 03 handoff PASS |
+| 02R4 | `phase_02_driver_selection_and_load_remediation.md` | 数据驱动选择 driver 参数、Panda/base-inclusive Γ×load conformance | Phase 03 handoff PASS |
 | 03 | `phase_03_arena_and_isolator.md` | `robosuite/models/arenas` 工业工作台、6-DoF isolator | analytic transfer/preload |
 | 04 | `phase_04_environment_task_contacts.md` | VibrationPickPlaceCan、Can/浅箱/contact/evaluator | passive physics/evaluator gates |
 | 05 | `phase_05_state_tiers_imu.md` | observables、V0–V3、IMU、privilege isolation | sensor/key-set gates |
