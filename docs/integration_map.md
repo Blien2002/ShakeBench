@@ -1,8 +1,8 @@
 # ShakeBench integration map
 
-状态：Phase 00 骨架、Phase 01/01R candidate excitation 与 Phase 02R/02R2/02R3/02R4 dynamic deck remediation 已实现；R4 provisional driver/load conformance 与 Phase 03 handoff 已 PASS，isolator/task 及 official physics freeze 尚未实现。
+状态：Phase 00 骨架、Phase 01/01R candidate excitation、Phase 02R/02R2/02R3/02R4 dynamic deck remediation、Phase 03 arena/isolator physics-only probes、Phase 03R transfer remediation、Phase 04 task/contact/evaluator 与 Phase 04R task-contract remediation 已实现；Phase 05 handoff PASS，tier observables、controller 及 official physics freeze 尚未实现。
 审计路径：`/home/miracle04/Desktop/ShakeBench`。  
-审计基线 commit：`5ce6643f3092639d08f7b0f90ed1c6a84f50552c`。
+审计基线 commit：`02aa46f9`（Phase 02 pushed baseline）。
 
 本文件把 ShakeBench 直接集成到现有 robosuite 目录的落点和真实源码 seam 固定下来。内部 Python package 仍然是 `robosuite`；下表中的 ShakeBench 文件都是现有目录内的 additive module，不创建 `shakebench/` 子目录。
 
@@ -86,14 +86,19 @@
 | 02R3 | `robosuite/environments/base.py`、相关父类/现有 manipulation env | **已实现**：post-integration refresh hook 在 forward 前写 sample target；未安装 driver 的上游环境不增加 forward |
 | 02R4 | `robosuite/scripts/shakebench_probe_deck_driver.py` | **已实现**：运行前注册 fine/nominal/coarse profile；每个 candidate 实际完成 zero/六单轴/目标 Gamma 0.30 的 64-line screen；只按 physics metrics 选最大可行 dt；confirmatory 不回选 candidate |
 | 02R4 | `robosuite/scripts/shakebench_probe_deck_driver.py`、`tests/shakebench_phase_02r_probe.json` | **已实现**：实际 robosuite Panda XML/base subtree + 32 kg proxy，compiled body mass/COM/inertia/initial-state audit，3×2×64 load matrix，authenticated atomic artifact lock；handoff PASS |
-| 03 | `robosuite/utils/shakebench_isolator.py` | canonical linear 6-DoF support、解析 transfer、preload/k/c 派生 |
-| 03 | `robosuite/models/arenas/shakebench_arena.py` | 继承/组合现有 `TableArena` 结构，提供 explicit tabletop inertial root、industrial visual primitives、target assembly 接口 |
-| 03 | `robosuite/models/assets/arenas/shakebench_arena.xml` | arena XML；只放现有 assets/arenas 目录 |
-| 03 | `tests/test_shakebench_arena.py`、`tests/test_shakebench_isolator.py` | XML、惯量、preload、解析 transfer 和 physics-only probes |
-| 04 | `robosuite/environments/manipulation/vibration_pick_place_can.py` | `ManipulationEnv` 子类；复用 `Lift` 的生命周期，但显式处理 Can、开放起点、浅目标箱和 success handles |
-| 04 | `robosuite/utils/shakebench_metrics.py` | 接触接口、containment、settle/velocity/penetration 和 recorder-only metrics |
-| 04 | `robosuite/__init__.py`（仅注册时） | 显式 import `VibrationPickPlaceCan`，让 `EnvMeta` 通过已有 `REGISTERED_ENVS` 注册；不得改动已有 registry entries |
-| 04 | `tests/test_environments/test_vibration_pick_place_can.py`、`tests/test_shakebench_metrics.py` | task assembly、static contact、boundary evaluator 和 metric tests |
+| 03 | `robosuite/utils/shakebench_isolator.py` | **已实现**：canonical linear 6-DoF support、解析 transfer、preload/k/c 派生、payload sensitivity 与 fail-closed limits |
+| 03 | `robosuite/models/arenas/shakebench_arena.py` | **已实现**：显式 tabletop inertial root、industrial visual primitives、visual invariance、target assembly 接口与 compiled audit |
+| 03 | `robosuite/models/assets/arenas/shakebench_arena.xml` | **已实现**：arena XML；只放现有 assets/arenas 目录 |
+| 03 | `tests/test_shakebench_arena.py`、`tests/test_shakebench_isolator.py` | **已实现**：XML、惯量、preload、解析 transfer、六轴 MuJoCo transfer、空载/payload physics-only probes |
+| 03R | `robosuite/utils/shakebench_isolator.py` | **已实现**：复数 harmonic fit、tracking/resonance/isolation grid、全局 64-line joint spectrum、cross-axis leakage、world-child COM sensitivity、artifact verifier |
+| 03R | `tests/shakebench_phase_03_transfer.json`、`tests/test_shakebench_transfer_remediation.py` | **已实现**：受 hash 保护的 transfer/payload/default-equality evidence 与只读 verification |
+| 03R | `docs/phase_03_transfer_remediation_report.md` | **已实现**：Phase 04 handoff = PASS；official isolator freeze 仍 deferred to Phase 06 |
+| 04 | `robosuite/environments/manipulation/vibration_pick_place_can.py` | **已实现**：`ManipulationEnv` 子类；复用 Lift 生命周期，但显式处理 Can、开放起点、浅目标箱、deck role 和 success handles |
+| 04 | `robosuite/utils/shakebench_metrics.py` | **已实现**：移动 frame pose/twist、支撑点 containment、settle/velocity/penetration、table/in-hand/contact-loss、接口 force/wrench/impulse 和 driver/table response |
+| 04 | `robosuite/__init__.py`（仅注册时） | **已实现**：显式 import `VibrationPickPlaceCan`，让 `EnvMeta` 通过已有 `REGISTERED_ENVS` 注册；未改动既有 registry entries |
+| 04 | `tests/test_environments/test_vibration_pick_place_can.py`、`tests/test_shakebench_metrics.py`、`tests/shakebench_phase_04_environment.json` | **已实现**：task assembly、compiled topology/contact、static contact、boundary evaluator、frame invariance 和 machine-readable evidence |
+| 04R | `robosuite/utils/shakebench_metrics.py`、`robosuite/environments/manipulation/vibration_pick_place_can.py` | **已实现**：compiled collision-envelope authority、derived Can inertia/placement、target-local support-force/height gate、单一 contact-loss schema 和 robot-base observables |
+| 04R | `.gitignore`、`tests/shakebench_phase_04_environment.json`、`docs/phase_04_task_contract_remediation_report.md` | **已实现**：runtime PNG Git/manifest tracking、clean source compile、read-only artifact hash lock 和 remediation evidence |
 | 05 | `robosuite/utils/shakebench_sensors.py` | canonical 200 Hz deck IMU（specific force、gravity、lever arm、filter/delay/noise） |
 | 05 | `robosuite/utils/shakebench_providers.py` | V0–V3 vibration information providers；只生成 policy-allowed keys |
 | 05 | `robosuite/utils/shakebench_privilege.py` | `privileged_` recorder/evaluator truth 与 fail-closed key audit |
@@ -150,7 +155,7 @@ control action
 - `MujocoEnv.edit_model_xml` 会对包含 `robosuite` 路径段的 mesh/texture 做当前 package 路径修复。
 - `MANIFEST.in` 已有 `recursive-include robosuite/models/assets/ *`，`setup.py` 已有 `include_package_data=True`；因此未来 profile/state/arena XML 和 texture 应直接平铺在已有 assets 目录或其已有子目录，不需要新增打包配置。
 - Phase 00 已验证 `robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.jpg` 存在，大小 `163720` bytes，SHA-256 为 `6fb5d97aa0169d7e1f6897d61687148d00566cf7bcd9ec8fe0315c23ad9d3bdb`。
-- Phase 03 可直接使用该 texture；若材质代码需要注册纹理名，应在 additive arena/XML 层处理，不修改 stock `TEXTURE_FILES` 以避免改变已有材质行为。
+- Phase 03 保留该 JPEG 作为视觉 provenance，并新增其确定性 RGB PNG 转码 `shakebench_phenolic_bench_dark_1k.png`（SHA-256 `87a5478e7325b7d79fc8073afefd3ac7c44b44d6c804ecb586c1641d8157e162`），因为当前 MuJoCo loader 对仓内 JPEG 报 `Non-PNG texture`；arena/XML 层使用 PNG，不修改 stock `TEXTURE_FILES`。
 
 ## 6. Registry、API 和兼容性护栏
 
@@ -176,8 +181,8 @@ python -m robosuite.scripts.shakebench_cli validate-config <config.json>
 
 ## 8. 明确不在 Phase 00/02 的工作
 
-本阶段没有实现 isolator、arena、Can task、target box、contact/friction、IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，但 deck mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未冻结。
+Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/inertia authority、target-local support metrics、单一 contact-loss schema 和 success evaluator；仍没有实现 IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，Phase 03R 已完成 transfer/default/payload/visual physics gates，但 deck/isolator/contact mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未由 Phase 06 official freeze。
 
-Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。当前 artifact 只能通过 `--verify-artifact` 或带 reason 的显式 update 变更；Phase 03 runtime physics 仍未实现。
+Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。Phase 03R 已通过 XML default、18 格复数 transfer、64-line joint spectrum、4 格 payload COM sensitivity 和 visual invariance gates，故 `phase04_handoff=PASS`。最终 isolator operating point、contact/task runtime 和 official freeze 仍属于后续阶段。当前 Phase 02/03 artifacts 只能通过只读 verifier 或带 reason 的显式 update 变更。
 
 Phase 01R 将该 excitation 明确标记为 `new authored v0 candidate`；没有可审计的旧 ShakeBench algorithm/reference，因此不宣称 exact reuse。`scoreable=True` 仍需后续 freeze authority。

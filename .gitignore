@@ -114,6 +114,7 @@ MUJOCO_LOG.TXT
 
 *.jpg
 !robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.jpg
+!robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.png
 .idea
 
 .pytest_cache/

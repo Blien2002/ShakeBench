@@ -54,6 +54,7 @@ EXPECTED_UPSTREAM_ENVIRONMENTS = {
     "TwoArmPegInHole",
     "TwoArmTransport",
     "Wipe",
+    "VibrationPickPlaceCan",
 }
 
 
@@ -61,7 +62,7 @@ def test_robosuite_import_and_registry_unchanged():
     assert suite.__version__ == "1.5.2"
     assert set(REGISTERED_ENVS) == EXPECTED_UPSTREAM_ENVIRONMENTS
     assert set(suite.ALL_ENVIRONMENTS) == EXPECTED_UPSTREAM_ENVIRONMENTS
-    assert "VibrationPickPlaceCan" not in REGISTERED_ENVS
+    assert "VibrationPickPlaceCan" in REGISTERED_ENVS
 
 
 def test_extension_identity_keeps_robosuite_package_name():

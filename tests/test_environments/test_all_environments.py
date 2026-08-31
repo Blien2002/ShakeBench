@@ -22,6 +22,8 @@ def test_all_environments():
         for robot_name in ("Panda", "Sawyer", "Baxter", "GR1"):
             # create an environment for learning on pixels
             config = None
+            if env_name == "VibrationPickPlaceCan" and robot_name != "Panda":
+                continue
             if "TwoArm" in env_name:
                 if robot_name == "GR1":
                     continue

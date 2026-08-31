@@ -107,7 +107,9 @@ docs/robosuite_benchmark_design_tree.md
 | 02R3 | `phase_02_time_contract_remediation.md` | 闭合 mocap 左右极限与 acceleration/Gamma 时间契约 | Phase 03 handoff PASS |
 | 02R4 | `phase_02_driver_selection_and_load_remediation.md` | 数据驱动选择 driver 参数、Panda/base-inclusive Γ×load conformance | Phase 03 handoff PASS |
 | 03 | `phase_03_arena_and_isolator.md` | `robosuite/models/arenas` 工业工作台、6-DoF isolator | analytic transfer/preload |
+| 03R | `phase_03_transfer_remediation.md` | 闭合六轴复数传递、联合谱、偏载平衡与 XML default | Phase 04 handoff PASS |
 | 04 | `phase_04_environment_task_contacts.md` | VibrationPickPlaceCan、Can/浅箱/contact/evaluator | passive physics/evaluator gates |
+| 04R | `phase_04_task_contract_remediation.md` | 闭合 Can collision inertia、support/contact 语义与运行时 asset | Phase 05 handoff PASS |
 | 05 | `phase_05_state_tiers_imu.md` | observables、V0–V3、IMU、privilege isolation | sensor/key-set gates |
 | 06 | `phase_06_physics_freeze.md` | dt/solver/weld/contact/isolator freeze | all physics gates |
 | 07 | `phase_07_oracle_controller.md` | shared 7D State Oracle controller | Gamma=0 10/10 dev |
