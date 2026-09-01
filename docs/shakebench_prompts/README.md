@@ -111,6 +111,8 @@ docs/robosuite_benchmark_design_tree.md
 | 04 | `phase_04_environment_task_contacts.md` | VibrationPickPlaceCan、Can/浅箱/contact/evaluator | passive physics/evaluator gates |
 | 04R | `phase_04_task_contract_remediation.md` | 闭合 Can collision inertia、support/contact 语义与运行时 asset | Phase 05 handoff PASS |
 | 05 | `phase_05_state_tiers_imu.md` | observables、V0–V3、IMU、privilege isolation | sensor/key-set gates |
+| 05R | `phase_05_observation_imu_remediation.md` | 闭合 robot-base IMU、exact key-set、连续时间链、int16 与 privilege immutability | Phase 06 handoff PASS |
+| 05R-W | `phase_05_gym_wrapper_cleanup.md` | 移除 production fake-Gym、用 test-only harness 验证 wrapper 隔离 | Phase 06 handoff PASS |
 | 06 | `phase_06_physics_freeze.md` | dt/solver/weld/contact/isolator freeze | all physics gates |
 | 07 | `phase_07_oracle_controller.md` | shared 7D State Oracle controller | Gamma=0 10/10 dev |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |

@@ -6,5 +6,13 @@ from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 try:
     from robosuite.wrappers.gym_wrapper import GymWrapper
-except:
-    print("Warning: make sure gym is installed if you want to use the GymWrapper.")
+except ImportError as _gym_wrapper_import_error:
+    # Keep the other robosuite wrappers importable without the optional Gym
+    # dependency, while making an explicit GymWrapper import fail clearly.
+    _GYM_WRAPPER_IMPORT_ERROR = _gym_wrapper_import_error
+
+    def __getattr__(name):
+        if name == "GymWrapper":
+            message = str(_GYM_WRAPPER_IMPORT_ERROR)
+            raise ImportError(message) from _GYM_WRAPPER_IMPORT_ERROR
+        raise AttributeError(name)

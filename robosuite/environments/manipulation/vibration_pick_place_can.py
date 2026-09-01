@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
 
@@ -36,6 +37,27 @@ from robosuite.utils.shakebench_metrics import (
     extract_can_collision_envelope,
     frame_world_position,
 )
+from robosuite.utils.shakebench_privilege import (
+    PRIVILEGED_NAMESPACE,
+    ShakeBenchPrivilegeError,
+    assert_policy_observation_is_clean,
+    make_privileged_recorder,
+)
+from robosuite.utils.shakebench_providers import (
+    COMMON_STATE_KEYS,
+    TIER_POLICY_KEYS,
+    ShakeBenchProviderError,
+    make_vibration_provider,
+    normalize_observation_tier,
+    observation_contract_for_tier,
+)
+from robosuite.utils.shakebench_sensors import (
+    CANONICAL_IMU_PROFILE,
+    CanonicalIMU,
+    IMU_DT_S,
+    ShakeBenchSensorError,
+)
+from robosuite.utils.shakebench_excitation import ExcitationProgram
 
 CAN_START_XY_M = (-0.10, -0.13)
 TARGET_CENTER_XY_M = (-0.10, 0.17)
@@ -119,12 +141,41 @@ class VibrationPickPlaceCan(ManipulationEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        observation_tier=None,
+        imu_mode="canonical_noisy_v1",
+        imu_seed=None,
+        excitation_program=None,
+        privileged_recorder=None,
     ):
         requested_robots = list(robots) if isinstance(robots, (list, tuple)) else [robots]
         if requested_robots != ["Panda"]:
             raise ValueError("VibrationPickPlaceCan currently supports exactly one Panda robot")
         if env_configuration != "default":
             raise ValueError("VibrationPickPlaceCan only supports env_configuration='default'")
+        if observation_tier is not None:
+            try:
+                observation_tier = normalize_observation_tier(observation_tier)
+            except ShakeBenchProviderError as exc:
+                raise ValueError(str(exc)) from exc
+            if use_camera_obs:
+                raise ValueError("State observation tiers require use_camera_obs=False")
+            if imu_mode not in CanonicalIMU.VALID_MODES:
+                raise ValueError("imu_mode must be ideal_smoke or canonical_noisy_v1")
+            if float(control_freq) != 20.0:
+                raise ValueError("State observation tiers require control_freq=20 Hz")
+            if model_timestep is not None:
+                try:
+                    phase05_timestep = float(model_timestep)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("model_timestep must be compatible with the 200 Hz IMU") from exc
+                if (
+                    not np.isfinite(phase05_timestep)
+                    or phase05_timestep <= 0.0
+                    or not np.isclose(
+                        phase05_timestep * round(IMU_DT_S / phase05_timestep), IMU_DT_S, rtol=0.0, atol=1e-12
+                    )
+                ):
+                    raise ValueError("State observation tiers require model_timestep to divide the 5 ms IMU interval")
         _one_value("base_types", base_types, allowed=("default",))
         _one_value("gripper_types", gripper_types, allowed=("default", "PandaGripper"))
         self.table_full_size = _finite_vector("table_full_size", table_full_size, 3)
@@ -146,10 +197,29 @@ class VibrationPickPlaceCan(ManipulationEnv):
 
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-        self.policy_task_state_frame = "robot_base"
         self.table_object_sliding_mu = 0.30
         self.finger_object_sliding_mu = 1.00
         self.use_object_obs = use_object_obs
+        self.use_camera_obs = use_camera_obs
+        self.observation_tier = observation_tier
+        self.imu_mode = imu_mode
+        requested_imu_seed = seed if imu_seed is None and seed is not None else (0 if imu_seed is None else imu_seed)
+        if isinstance(requested_imu_seed, (bool, np.bool_)):
+            raise ValueError("imu_seed must be a non-negative integer")
+        try:
+            self.imu_seed = int(requested_imu_seed)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("imu_seed must be a non-negative integer") from exc
+        if self.imu_seed != requested_imu_seed or self.imu_seed < 0:
+            raise ValueError("imu_seed must be a non-negative integer")
+        try:
+            self.privileged_recorder = make_privileged_recorder(privileged_recorder)
+        except ShakeBenchPrivilegeError as exc:
+            raise ValueError(str(exc)) from exc
+        self._phase05_last_action = np.zeros(0, dtype=np.float32)
+        self._phase05_policy_observation_keys = ()
+        self._imu_mount_audit = None
+        self.policy_task_state_frame = "robot_base"
         self.placement_initializer = placement_initializer
         self._requested_load_model_on_init = bool(load_model_on_init)
         self._compiled_contract = None
@@ -168,12 +238,47 @@ class VibrationPickPlaceCan(ManipulationEnv):
         ):
             raise ValueError("deck_config.physics_timestep_s must equal model_timestep")
         self.deck_config = deck_config
+        if observation_tier == "V3":
+            if excitation_program is None and isinstance(deck_trajectory, ExcitationProgram):
+                excitation_program = deck_trajectory
+            elif excitation_program is None and deck_trajectory is not None:
+                raise ValueError(
+                    "V3 requires deck_trajectory to be an ExcitationProgram or an explicit excitation_program"
+                )
+            elif (
+                excitation_program is not None
+                and isinstance(deck_trajectory, ExcitationProgram)
+                and excitation_program is not deck_trajectory
+            ):
+                raise ValueError("deck_trajectory and excitation_program specify different V3 programs")
+        runtime_trajectory = deck_trajectory
+        if excitation_program is not None:
+            if runtime_trajectory is not None and runtime_trajectory is not excitation_program:
+                raise ValueError("deck_trajectory and excitation_program specify different trajectories")
+            runtime_trajectory = excitation_program
         self.deck_driver = DeckDriver(
-            trajectory=deck_trajectory,
+            trajectory=runtime_trajectory,
             config=self.deck_config,
             body_handles={"isolated_worktable": "worktable", "robot_base": "robot0_base"},
             required_roles=("isolated_worktable", "robot_base"),
         )
+        if observation_tier is None:
+            self.vibration_provider = None
+        else:
+            try:
+                self.vibration_provider = make_vibration_provider(
+                    observation_tier,
+                    seed=self.imu_seed,
+                    imu_mode=imu_mode,
+                    program=excitation_program,
+                    deck_body_name=self.deck_config.deck_body_name,
+                    imu_body_name="robot0_base",
+                    table_body_name="worktable",
+                    nominal_frame_position_m=self.deck_config.deck_pos_m,
+                    nominal_frame_quat_wxyz=self.deck_config.deck_quat_wxyz,
+                )
+            except (ShakeBenchProviderError, ShakeBenchSensorError) as exc:
+                raise ValueError(str(exc)) from exc
 
         # The driver must be installed before the first model compile.  The
         # parent supports load_model_on_init=False as an additive seam; the
@@ -216,6 +321,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.deck_driver.install(self)
         self.add_sim_initialization_hook(self._audit_compiled_contract)
         self.add_post_physics_step_hook(self._record_post_physics_metrics)
+        if self.observation_tier is not None:
+            # The provider runs after the DeckDriver has recorded the current
+            # realized body state and before the policy observation is read.
+            self.add_post_physics_step_hook(self._update_phase05_provider)
+            self.add_post_physics_step_hook(self._record_phase05_privileged)
         if self._requested_load_model_on_init:
             self.reset()
 
@@ -437,47 +547,209 @@ class VibrationPickPlaceCan(ManipulationEnv):
         )
         compiled_envelope.assert_matches(self.can_collision_envelope)
         self.can_collision_envelope = compiled_envelope
+        if self.vibration_provider is not None:
+            self._imu_mount_audit = self.vibration_provider.audit_compiled_mount(self.sim)
 
     def _setup_observables(self):
         observables = super()._setup_observables()
-        if not self.use_object_obs:
-            return observables
-        modality = "object"
+        if self.observation_tier is None:
+            if not self.use_object_obs:
+                return observables
+            modality = "object"
 
-        @sensor(modality=modality)
-        def can_pos_robot_base(obs_cache):
-            return can_pose_twist_in_frame(
-                self.sim,
-                self.can.root_body,
-                self.robot_base_body_name,
-            ).position_m
-
-        @sensor(modality=modality)
-        def can_quat_robot_base(obs_cache):
-            return T.convert_quat(
-                can_pose_twist_in_frame(
+            @sensor(modality=modality)
+            def can_pos_robot_base(obs_cache):
+                return can_pose_twist_in_frame(
                     self.sim,
                     self.can.root_body,
                     self.robot_base_body_name,
-                ).quaternion_wxyz,
-                to="xyzw",
+                ).position_m
+
+            @sensor(modality=modality)
+            def can_quat_robot_base(obs_cache):
+                return T.convert_quat(
+                    can_pose_twist_in_frame(
+                        self.sim,
+                        self.can.root_body,
+                        self.robot_base_body_name,
+                    ).quaternion_wxyz,
+                    to="xyzw",
+                )
+
+            @sensor(modality=modality)
+            def can_to_target_pos(obs_cache):
+                return can_pose_twist_in_frame(
+                    self.sim,
+                    self.can.root_body,
+                    self.arena.worktable_body_name,
+                    frame_local_origin_m=self.metrics.target_frame_local_origin_m,
+                ).position_m
+
+            for name, sensor_fn in (
+                ("can_pos_robot_base", can_pos_robot_base),
+                ("can_quat_robot_base", can_quat_robot_base),
+                ("can_to_target_pos", can_to_target_pos),
+            ):
+                observables[name] = Observable(name=name, sensor=sensor_fn, sampling_rate=self.control_freq)
+            return observables
+
+        # The stock robot observables report EEF pose in the world frame.  A
+        # world-frame EEF value would make the State track leak deck motion, so
+        # those three legacy observables are inactive only for an explicit
+        # State tier.  Their names remain available in the underlying object
+        # for compatibility with robosuite's internal robot bookkeeping.
+        robot_prefix = self.robots[0].robot_model.naming_prefix
+        for name in (
+            f"{robot_prefix}eef_pos",
+            f"{robot_prefix}eef_quat",
+            f"{robot_prefix}eef_quat_site",
+        ):
+            if name in observables:
+                observables[name].set_active(False)
+
+        task_modality = "shakebench_task"
+        vibration_modality = "shakebench_vibration"
+        robot = self.robots[0]
+
+        def _world_to_robot_base(point_world):
+            base_position = np.asarray(self.sim.data.get_body_xpos(self.robot_base_body_name), dtype=float)
+            base_rotation = np.asarray(self.sim.data.get_body_xmat(self.robot_base_body_name), dtype=float).reshape(
+                3, 3
+            )
+            return base_rotation.T.dot(np.asarray(point_world, dtype=float) - base_position)
+
+        @sensor(modality=task_modality)
+        def eef_pos_robot_base(obs_cache):
+            pose = robot.pose_in_base_from_name(self.gripper_body_name)
+            return np.asarray(pose[:3, 3], dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def eef_quat_robot_base(obs_cache):
+            pose = robot.pose_in_base_from_name(self.gripper_body_name)
+            return np.asarray(T.mat2quat(pose[:3, :3]), dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def gripper_state(obs_cache):
+            qpos = np.asarray(
+                [self.sim.data.qpos[index] for index in robot._ref_gripper_joint_pos_indexes["right"]],
+                dtype=np.float32,
+            )
+            qvel = np.asarray(
+                [self.sim.data.qvel[index] for index in robot._ref_gripper_joint_vel_indexes["right"]],
+                dtype=np.float32,
+            )
+            return np.concatenate((qpos, qvel))
+
+        @sensor(modality=task_modality)
+        def wrist_force(obs_cache):
+            return np.asarray(robot.ee_force["right"], dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def wrist_torque(obs_cache):
+            return np.asarray(robot.ee_torque["right"], dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def fingertip_pos_robot_base(obs_cache):
+            positions = [
+                _world_to_robot_base(self.sim.data.geom_xpos[self.sim.model.geom_name2id(name)])
+                for name in self.finger_pad_geom_names
+            ]
+            return np.asarray(np.concatenate(positions), dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def can_pos_robot_base(obs_cache):
+            return np.asarray(
+                can_pose_twist_in_frame(self.sim, self.can.root_body, self.robot_base_body_name).position_m,
+                dtype=np.float32,
             )
 
-        @sensor(modality=modality)
-        def can_to_target_pos(obs_cache):
-            return can_pose_twist_in_frame(
+        @sensor(modality=task_modality)
+        def can_quat_robot_base(obs_cache):
+            return np.asarray(
+                T.convert_quat(
+                    can_pose_twist_in_frame(self.sim, self.can.root_body, self.robot_base_body_name).quaternion_wxyz,
+                    to="xyzw",
+                ),
+                dtype=np.float32,
+            )
+
+        @sensor(modality=task_modality)
+        def goal_center_robot_base(obs_cache):
+            target_world = frame_world_position(
                 self.sim,
-                self.can.root_body,
                 self.arena.worktable_body_name,
                 frame_local_origin_m=self.metrics.target_frame_local_origin_m,
-            ).position_m
+            )
+            return np.asarray(_world_to_robot_base(target_world), dtype=np.float32)
 
-        for name, sensor_fn in (
+        @sensor(modality=task_modality)
+        def goal_half_extents_robot_base(obs_cache):
+            return np.asarray(
+                (self.target_inner_xy_m[0] / 2.0, self.target_inner_xy_m[1] / 2.0),
+                dtype=np.float32,
+            )
+
+        @sensor(modality=task_modality)
+        def goal_z_bounds_robot_base(obs_cache):
+            target_world = frame_world_position(
+                self.sim,
+                self.arena.worktable_body_name,
+                frame_local_origin_m=self.metrics.target_frame_local_origin_m,
+            )
+            worktable_id = self.sim.model.body_name2id(self.arena.worktable_body_name)
+            worktable_rotation = np.asarray(self.sim.data.xmat[worktable_id], dtype=float).reshape(3, 3)
+            wall_height = float(self.arena.target_container_spec["wall_height_m"])
+            top_world = target_world + worktable_rotation.dot(np.asarray((0.0, 0.0, wall_height)))
+            return np.asarray(
+                (_world_to_robot_base(target_world)[2], _world_to_robot_base(top_world)[2]), dtype=np.float32
+            )
+
+        @sensor(modality=task_modality)
+        def goal_orientation_mask(obs_cache):
+            # v0 has no final-yaw requirement.  A false mask is explicit and
+            # avoids pretending the shallow box has a unique target pose.
+            return np.zeros(3, dtype=np.bool_)
+
+        state_sensors = (
+            ("robot0_eef_pos_robot_base", eef_pos_robot_base),
+            ("robot0_eef_quat_robot_base", eef_quat_robot_base),
+            ("robot0_gripper_state", gripper_state),
+            ("robot0_wrist_force", wrist_force),
+            ("robot0_wrist_torque", wrist_torque),
+            ("robot0_fingertip_pos_robot_base", fingertip_pos_robot_base),
             ("can_pos_robot_base", can_pos_robot_base),
             ("can_quat_robot_base", can_quat_robot_base),
-            ("can_to_target_pos", can_to_target_pos),
-        ):
+            ("goal_center_robot_base", goal_center_robot_base),
+            ("goal_half_extents_robot_base", goal_half_extents_robot_base),
+            ("goal_z_bounds_robot_base", goal_z_bounds_robot_base),
+            ("goal_orientation_mask", goal_orientation_mask),
+        )
+        for name, sensor_fn in state_sensors:
+            # State fields intentionally have heterogeneous shapes.  Giving
+            # each field its own modality prevents robosuite's legacy
+            # same-modality concatenation from trying to join e.g. [10, 6]
+            # with a scalar while preserving the individual observation keys.
+            sensor_fn.__modality__ = f"{task_modality}_{name}"
             observables[name] = Observable(name=name, sensor=sensor_fn, sampling_rate=self.control_freq)
+
+        for name in self.vibration_provider.policy_keys:
+
+            @sensor(modality=vibration_modality)
+            def provider_sensor(obs_cache, provider_key=name):
+                return self.vibration_provider.observation(self.sim)[provider_key]
+
+            provider_sensor.__modality__ = f"{vibration_modality}_{name}"
+            observables[name] = Observable(name=name, sensor=provider_sensor, sampling_rate=self.control_freq)
+
+        self._phase05_policy_observation_keys = tuple(COMMON_STATE_KEYS) + tuple(
+            TIER_POLICY_KEYS[self.observation_tier]
+        )
+        for key in observables:
+            if key.startswith(PRIVILEGED_NAMESPACE):
+                raise ShakeBenchPrivilegeError("privileged namespace cannot be installed as an Observable")
+        for key in self._phase05_policy_observation_keys:
+            if key not in observables:
+                raise ShakeBenchPrivilegeError(f"State tier observable {key!r} was not constructed")
         return observables
 
     def _reset_internal(self):
@@ -486,15 +758,105 @@ class VibrationPickPlaceCan(ManipulationEnv):
             object_placements = self.placement_initializer.sample(on_top=False)
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate((np.asarray(obj_pos), np.asarray(obj_quat))))
+        # Placement is applied after the parent reset housekeeping.  Refresh
+        # derived MuJoCo state before using it to seed the IMU's static history
+        # so the first delivered window contains a real physical reading.
+        if self.observation_tier is not None:
+            self.sim.forward()
+            self.vibration_provider.reset(self.sim, timestamp_s=0.0)
+            if self.privileged_recorder is not None:
+                self.privileged_recorder.reset()
+        self._phase05_last_action = np.zeros(self.action_dim if hasattr(self, "action_dim") else 0, dtype=np.float32)
         if self.metrics is not None:
             self.metrics.reset()
         self.success_evaluator.reset()
+
+    def _pre_action(self, action, policy_step=False):
+        if self.observation_tier is not None and policy_step:
+            self._phase05_last_action = np.asarray(action, dtype=np.float32).copy()
+        super()._pre_action(action, policy_step=policy_step)
+
+    def _update_phase05_provider(self, sample_time_s, policy_step=False):
+        if self.vibration_provider is not None:
+            self.vibration_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
+
+    def _record_phase05_privileged(self, sample_time_s, policy_step=False):
+        if self.privileged_recorder is None or self.observation_tier is None:
+            return
+        if self._control_steps and (self._physics_step_index + 1) % self._control_steps != 0:
+            return
+        can_pose_world = np.concatenate(
+            (
+                np.asarray(self.sim.data.xpos[self.can_body_id], dtype=float),
+                np.asarray(self.sim.data.xquat[self.can_body_id], dtype=float),
+            )
+        )
+        target_world = self.target_frame_world_position()
+        metrics_report = self.metrics.to_dict() if self.metrics is not None and self.metrics.latest is not None else {}
+        provider_truth = self.vibration_provider.privileged_snapshot(self.sim, time_s=float(sample_time_s))
+        success_report = metrics_report.get("success", {})
+        if not isinstance(success_report, dict):
+            success_report = {}
+        driver_response = metrics_report.get("driver_response", {})
+        table_response = metrics_report.get("table_response", {})
+        snapshot = {
+            "privileged_time_s": float(sample_time_s),
+            "privileged_actions": self._phase05_last_action.copy(),
+            "privileged_can_pose_world": can_pose_world,
+            "privileged_goal_center_world": np.asarray(target_world, dtype=float),
+            "privileged_support": {
+                "deck_body_name": self.deck_body_name,
+                "worktable_body_name": self.worktable_body_name,
+                "metrics_driver_response": metrics_report.get("driver_response", {}),
+                "metrics_table_response": metrics_report.get("table_response", {}),
+            },
+            "privileged_commanded_support": {
+                key: driver_response[key]
+                for key in ("command_pose", "command_twist", "command_acceleration")
+                if key in driver_response
+            },
+            "privileged_actual_support": {
+                "deck": driver_response.get("actual_pose"),
+                "deck_twist": driver_response.get("actual_twist"),
+                "deck_acceleration": driver_response.get("deck_acceleration"),
+                "table": table_response,
+            },
+            "privileged_contacts": metrics_report.get("contacts", {}),
+            "privileged_success_subconditions": success_report.get(
+                "subconditions", metrics_report.get("success_snapshot", {})
+            ),
+            "privileged_success": success_report,
+            "privileged_parameters": self.policy_task_context,
+            "privileged_provider": provider_truth,
+        }
+        # Keep the nested provider record convenient for consumers while also
+        # giving every truth field a directly auditable privileged_ name.
+        for key, value in provider_truth.items():
+            snapshot[f"{PRIVILEGED_NAMESPACE}{key}"] = value
+        for key in (
+            "command_pose",
+            "command_twist",
+            "command_acceleration",
+            "actual_pose",
+            "actual_twist",
+            "deck_acceleration",
+        ):
+            if key in driver_response:
+                snapshot[f"{PRIVILEGED_NAMESPACE}deck_{key}"] = driver_response[key]
+        for key, value in table_response.items():
+            snapshot[f"{PRIVILEGED_NAMESPACE}table_{key}"] = value
+        if "support_state" in provider_truth:
+            snapshot[f"{PRIVILEGED_NAMESPACE}support_state"] = provider_truth["support_state"]
+        self.privileged_recorder.record(snapshot)
 
     def _audit_compiled_contract(self, sim):
         # This callback executes after the Phase 02 driver has validated and
         # bound the compiled deck.  It is intentionally an assertion seam, not
         # a recovery path.
         self._compiled_contract = self.audit_compiled_model(sim)
+        if self.vibration_provider is not None:
+            self._imu_mount_audit = self.vibration_provider.audit_compiled_mount(sim)
+            self._compiled_contract["imu_mount"] = self._imu_mount_audit
 
     def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
         if self.metrics is None:
@@ -530,6 +892,113 @@ class VibrationPickPlaceCan(ManipulationEnv):
         if update or self.metrics.latest is None:
             self._sample_metrics()
         return self.metrics.to_dict()
+
+    @property
+    def policy_observation_keys(self):
+        """Return the explicit State-track keys, excluding aggregate modality keys."""
+
+        if self.observation_tier is None:
+            return tuple(self._observables.keys())
+        return tuple(self._phase05_policy_observation_keys)
+
+    @property
+    def state_observation_keys(self):
+        """Alias for the State-track policy key contract."""
+
+        return self.policy_observation_keys
+
+    @property
+    def vibration_observation_keys(self):
+        """Return only the dedicated vibration keys visible at this tier."""
+
+        if self.observation_tier is None:
+            return ()
+        return tuple(TIER_POLICY_KEYS[self.observation_tier])
+
+    @property
+    def policy_task_context(self):
+        """Return public static task/physics metadata, never current runtime truth."""
+
+        if not hasattr(self, "arena"):
+            return {
+                "observation_tier": self.observation_tier,
+                "policy_rate_hz": float(self.control_freq),
+            }
+        target_spec = self.arena.target_container_spec
+        return {
+            "observation_tier": self.observation_tier,
+            "policy_rate_hz": float(self.control_freq),
+            "worktable": {
+                "dimensions_m": list(self.table_full_size),
+                "mass_kg": float(self.arena.isolator_parameters.mass_kg),
+                "inertia_kg_m2": list(self.arena.isolator_parameters.inertia_kg_m2),
+            },
+            "can": {
+                "mass_kg": float(CANONICAL_CAN_MASS_KG),
+                "inertia_kg_m2": list(self.can_inertia) if self.can_inertia is not None else None,
+                "collision_envelope": (
+                    self.can_collision_envelope.to_dict() if hasattr(self, "can_collision_envelope") else None
+                ),
+            },
+            "isolator": self.arena.isolator_parameters.to_dict(),
+            "friction": {
+                "table_object_sliding_mu": float(self.table_object_sliding_mu),
+                "finger_object_sliding_mu": float(self.finger_object_sliding_mu),
+                "target_container": list(self.target_container_friction),
+            },
+            "imu": {
+                "profile_id": CANONICAL_IMU_PROFILE.profile_id,
+                "sample_rate_hz": CANONICAL_IMU_PROFILE.sample_rate_hz,
+                "policy_window_shape": list(CANONICAL_IMU_PROFILE.window_shape),
+                "position_m_in_robot_base": [0.0, 0.0, 0.0],
+                "quaternion_wxyz_in_robot_base": [1.0, 0.0, 0.0, 0.0],
+                "compiled_robot_base_pose_in_deck": (
+                    self._imu_mount_audit.get("robot_base_pose_in_deck").tolist()
+                    if self._imu_mount_audit is not None
+                    and isinstance(self._imu_mount_audit.get("robot_base_pose_in_deck"), np.ndarray)
+                    else None
+                ),
+            },
+            "target_container": target_spec,
+            "support_topology_id": "deck_robot_base_plus_isolated_worktable",
+            "success_semantics": "phase04_vibration_success_evaluator",
+        }
+
+    def get_policy_task_context(self):
+        """Return the public static task context as a fresh mapping."""
+
+        return self.policy_task_context
+
+    def observation_contract(self):
+        """Return the declared public State shape/unit/frame contract."""
+
+        if self.observation_tier is None:
+            return {}
+        return observation_contract_for_tier(self.observation_tier)
+
+    def _get_observations(self, force_update=False):
+        observations = super()._get_observations(force_update=force_update)
+        if self.observation_tier is None:
+            assert_policy_observation_is_clean(observations)
+            return observations
+
+        # Base robosuite updates Observable objects before its post-physics
+        # hooks.  The provider hook therefore runs just after the normal
+        # update on the last internal step.  Refresh provider-owned values at
+        # the policy boundary so V2 is genuinely current-only and the V1
+        # window includes the newest delivered sample.
+        observations.update(self.vibration_provider.observation(self.sim))
+        expected_keys = tuple(self._phase05_policy_observation_keys)
+        missing = set(expected_keys) - set(observations)
+        if missing:
+            raise ShakeBenchPrivilegeError("State policy observation is missing key(s): " + ", ".join(sorted(missing)))
+        policy_observation = OrderedDict((key, np.array(observations[key], copy=True)) for key in expected_keys)
+        if set(policy_observation) != set(expected_keys) or len(policy_observation) != len(expected_keys):
+            raise ShakeBenchPrivilegeError("State policy observation key-set does not match its declared contract")
+        if any(key.startswith(PRIVILEGED_NAMESPACE) for key in policy_observation):
+            raise ShakeBenchPrivilegeError("privileged namespace cannot cross the State policy boundary")
+        assert_policy_observation_is_clean(policy_observation)
+        return policy_observation
 
     def audit_compiled_model(self, sim_or_model=None):
         """Audit compiled topology, canonical Can inertia, target, and pairs."""
@@ -603,7 +1072,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             self.deck_driver.role_handles,
         )
         worktable_audit = self.arena.audit_compiled_model(sim_or_model)
-        return {
+        result = {
             "topology": {
                 "deck_body": self.deck_config.deck_body_name,
                 "can_parent": parent_name(self.can.root_body),
@@ -629,6 +1098,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
             },
             "contacts": contact_audit,
         }
+        if self.vibration_provider is not None:
+            result["imu_mount"] = self.vibration_provider.audit_compiled_mount(sim_or_model)
+        return result
 
     def reward(self, action=None):
         """Sparse reward using the same latched success definition."""

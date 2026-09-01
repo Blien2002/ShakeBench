@@ -1,6 +1,6 @@
 # ShakeBench integration map
 
-状态：Phase 00 骨架、Phase 01/01R candidate excitation、Phase 02R/02R2/02R3/02R4 dynamic deck remediation、Phase 03 arena/isolator physics-only probes、Phase 03R transfer remediation、Phase 04 task/contact/evaluator 与 Phase 04R task-contract remediation 已实现；Phase 05 handoff PASS，tier observables、controller 及 official physics freeze 尚未实现。
+状态：Phase 00 骨架、Phase 01/01R candidate excitation、Phase 02R/02R2/02R3/02R4 dynamic deck remediation、Phase 03 arena/isolator physics-only probes、Phase 03R transfer remediation、Phase 04 task/contact/evaluator、Phase 04R task-contract remediation、Phase 05/05R observation 与 IMU remediation 已实现；Phase 06 physics freeze、Phase 07 controller 及后续 official evaluation 仍 deferred。
 审计路径：`/home/miracle04/Desktop/ShakeBench`。  
 审计基线 commit：`02aa46f9`（Phase 02 pushed baseline）。
 
@@ -64,7 +64,7 @@
 | Can object | `robosuite/models/objects/xml_objects.py:CanObject`；`MujocoXMLObject`/`MujocoObject` properties 在 `robosuite/models/objects/objects.py`；资产 `robosuite/models/assets/objects/can.xml` | stock Can XML 使用 free joint、mesh density 和默认摩擦；后续任务必须显式覆盖 canonical mass/inertia/接触接口，而不是默默复用 mesh-derived 质量 |
 | Panda base | `robosuite/models/robots/manipulators/panda_robot.py:Panda.default_base`、`base_xpos_offset`；`robosuite/models/robots/robot_model.py:RobotModel.add_base`/`add_mount` | Panda 通过 `Robot.load_model` → `RobotModel.add_base` 合并 mount；robot base 隶属 deck 的 reparent 必须发生在正式 task XML assembly 层 |
 | Panda gripper | `robosuite/robots/robot.py:Robot.load_model`；`ManipulatorModel.add_gripper`；`robosuite/models/grippers/panda_gripper.py:PandaGripper` | 现有 Panda 是 7D arm+single gripper action 的来源；Phase 00 不改 force、gripper semantics 或 controller |
-| observables | `robosuite/utils/observables.py:sensor`、`Observable.update`；`MujocoEnv._setup_observables`、`Robot.setup_observables`、`Lift._setup_observables` | 后续 V0–V3 应在任务 `_setup_observables` / additive provider 中建立明确 key set；不能通过 privileged recorder 反向污染 policy observation |
+| observables | `robosuite/utils/observables.py:sensor`、`Observable.update`；`MujocoEnv._setup_observables`、`Robot.setup_observables`、`VibrationPickPlaceCan._setup_observables` | Phase 05R 在任务 `_setup_observables` / additive provider 中建立 exact State key set；最终 policy boundary 不携带 stock aggregates 或 privileged recorder truth |
 | wrappers | `robosuite/wrappers/wrapper.py:Wrapper.step/reset`；`GymWrapper` 的 `reset`、`step`、`_flatten_obs` | wrapper 是外围适配层，不是 task physics seam；后续 score/recording wrapper 需保持四元组原生 API与 Gym 五元组转换边界清楚 |
 
 ## 3. 后续模块的最终落点
@@ -99,11 +99,14 @@
 | 04 | `tests/test_environments/test_vibration_pick_place_can.py`、`tests/test_shakebench_metrics.py`、`tests/shakebench_phase_04_environment.json` | **已实现**：task assembly、compiled topology/contact、static contact、boundary evaluator、frame invariance 和 machine-readable evidence |
 | 04R | `robosuite/utils/shakebench_metrics.py`、`robosuite/environments/manipulation/vibration_pick_place_can.py` | **已实现**：compiled collision-envelope authority、derived Can inertia/placement、target-local support-force/height gate、单一 contact-loss schema 和 robot-base observables |
 | 04R | `.gitignore`、`tests/shakebench_phase_04_environment.json`、`docs/phase_04_task_contract_remediation_report.md` | **已实现**：runtime PNG Git/manifest tracking、clean source compile、read-only artifact hash lock 和 remediation evidence |
-| 05 | `robosuite/utils/shakebench_sensors.py` | canonical 200 Hz deck IMU（specific force、gravity、lever arm、filter/delay/noise） |
-| 05 | `robosuite/utils/shakebench_providers.py` | V0–V3 vibration information providers；只生成 policy-allowed keys |
-| 05 | `robosuite/utils/shakebench_privilege.py` | `privileged_` recorder/evaluator truth 与 fail-closed key audit |
-| 05 | `VibrationPickPlaceCan._setup_observables`（已有 task 文件） | 将公共 task state 与 V0–V3 provider 接到既有 `Observable` 生命周期，不修改 stock env defaults |
-| 05 | `tests/test_shakebench_sensors.py`、`tests/test_shakebench_providers.py`、`tests/test_shakebench_privilege.py` | IMU/key-set/privilege isolation tests |
+| 05 | `robosuite/utils/shakebench_sensors.py` | **已实现**：canonical 200 Hz IMU pipeline（specific force、gravity、lever arm、filter/delay/noise、quantization/window） |
+| 05 | `robosuite/utils/shakebench_providers.py` | **已实现**：V0–V3 vibration information providers；只生成 policy-allowed keys，并保持 V2 current-only |
+| 05 | `robosuite/utils/shakebench_privilege.py` | **已实现**：`privileged_` recorder/evaluator truth 与 fail-closed key audit |
+| 05 | `VibrationPickPlaceCan._setup_observables`（已有 task 文件） | **已实现**：将公共 task state 与 V0–V3 provider 接到既有 `Observable` 生命周期，不修改 stock env defaults |
+| 05 | `tests/test_shakebench_sensors.py`、`tests/test_shakebench_providers.py`、`tests/test_shakebench_privilege.py` | **已实现**：IMU/key-set/privilege isolation tests |
+| 05R | `robosuite/utils/shakebench_sensors.py`、`robosuite/utils/shakebench_providers.py` | **已实现**：robot-base IMU mounting、连续 acquisition/delivery timeline、合法 signed int16、独立 V3 reconstruction 与不可变 truth boundary |
+| 05R | `robosuite/utils/shakebench_privilege.py`、`robosuite/wrappers/gym_wrapper.py` | **已实现**：exact policy allowlist、recorder copy-fail-closed、production dependency fail-closed、test-only isolated GymWrapper/adversarial isolation |
+| 05R | `tests/test_shakebench_sensors.py`、`tests/test_shakebench_providers.py`、`tests/test_shakebench_privilege.py`、`tests/shakebench_phase_05_observation.json` | **已实现**：quantitative IMU、mount/timeline/key-set/privilege artifact evidence 与 wrapper dependency harness |
 | 07 | `robosuite/utils/shakebench_oracle.py` | shared 7D State Oracle controller；调用既有 OSC/action schema，不创建新 controller default |
 | 07 | `robosuite/scripts/shakebench_run_oracle.py`、`tests/test_shakebench_oracle.py` | Gamma=0 acquisition/transport/place/release 与 V0–V3 shared-controller tests |
 | 08 | `robosuite/utils/shakebench_protocol.py` | committed state IDs、replay、manifest 和 hash provenance |
@@ -181,7 +184,7 @@ python -m robosuite.scripts.shakebench_cli validate-config <config.json>
 
 ## 8. 明确不在 Phase 00/02 的工作
 
-Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/inertia authority、target-local support metrics、单一 contact-loss schema 和 success evaluator；仍没有实现 IMU、V0–V3 provider、oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，Phase 03R 已完成 transfer/default/payload/visual physics gates，但 deck/isolator/contact mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未由 Phase 06 official freeze。
+Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/inertia authority、target-local support metrics、单一 contact-loss schema 和 success evaluator；Phase 05/05R 已实现 State tiers、robot-base IMU、exact policy boundary、continuous timeline、signed int16 与 privileged isolation；仍未实现 oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，Phase 03R 已完成 transfer/default/payload/visual physics gates，但 deck/isolator/contact mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未由 Phase 06 official freeze。
 
 Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。Phase 03R 已通过 XML default、18 格复数 transfer、64-line joint spectrum、4 格 payload COM sensitivity 和 visual invariance gates，故 `phase04_handoff=PASS`。最终 isolator operating point、contact/task runtime 和 official freeze 仍属于后续阶段。当前 Phase 02/03 artifacts 只能通过只读 verifier 或带 reason 的显式 update 变更。
 
