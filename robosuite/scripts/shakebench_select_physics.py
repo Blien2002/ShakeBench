@@ -881,6 +881,8 @@ def _contact_candidate_probe(base_profile: PhysicsProfile, candidate: Mapping[st
             "sample_count": len(impact_distances),
             "minimum_distance_m": min(impact_distances) if impact_distances else None,
             "maximum_penetration_m": max(0.0, -min(impact_distances)) if impact_distances else 0.0,
+            "recovery_velocity_m_s": float(np.linalg.norm(data.qvel[can_qvel : can_qvel + 3])),
+            "recovery_angular_velocity_rad_s": float(np.linalg.norm(data.qvel[can_qvel + 3 : can_qvel + 6])),
             "warning_count": int(np.sum(data.warning.number)),
             "passed": bool(
                 impact_distances

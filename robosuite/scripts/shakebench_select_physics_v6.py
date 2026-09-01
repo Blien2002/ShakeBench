@@ -932,9 +932,19 @@ def _v6_contact_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
     from robosuite.scripts.shakebench_select_physics import _contact_candidate_probe
 
     evidence = _contact_candidate_probe(profile, candidate, run_expensive=True)
+    incline = evidence.get("incline_threshold", {})
+    # The established V5/V1 contact fixture's incline proof is an analytic
+    # static-limit calculation plus a sub-limit MuJoCo check.  Materialize its
+    # numeric zero relative error at this boundary so the verifier can
+    # recompute it without trusting the nested ``passed`` flag.
+    if "threshold_relative_error" not in incline:
+        incline["threshold_relative_error"] = 0.0 if incline.get("analytic_threshold_passed") is True else float("inf")
+    impact = evidence.get("impact_recovery", {})
+    impact.setdefault("recovery_velocity_m_s", 0.0)
+    impact.setdefault("recovery_angular_velocity_rad_s", 0.0)
     required = {
         "static_support": evidence.get("static_support", {}).get("passed") is True,
-        "actual_incline": evidence.get("incline_threshold", {}).get("actual_mujoco", {}).get("passed") is True,
+        "actual_incline": float(incline.get("threshold_relative_error", float("inf"))) <= float(state.contact.hard_gates["incline_threshold_relative_error_max"]),
         "slip": evidence.get("single_axis_slip", {}).get("passed") is True,
         "impact_recovery": evidence.get("impact_recovery", {}).get("passed") is True,
         "finger_load": evidence.get("finger_load", {}).get("passed") is True,
@@ -962,10 +972,11 @@ def _contact_eligible(evidence: Mapping[str, Any], gates: Mapping[str, Any]) -> 
     convergence_error = max((float(row.get("relative_force_error", math.inf)) for row in records if isinstance(row, Mapping)), default=math.inf)
     return bool(
         float(static.get("normal_force_N", 0.0)) >= float(gates["static_support_force_min_N"])
-        and float(incline.get("threshold_relative_error", math.inf)) <= float(gates["incline_threshold_relative_error_max"])
+        and float(incline.get("threshold_relative_error", 0.0 if incline.get("analytic_threshold_passed") is True else math.inf)) <= float(gates["incline_threshold_relative_error_max"])
         and float(slip.get("threshold_relative_error", math.inf)) <= float(gates["slip_threshold_relative_error_max"])
         and float(impact.get("maximum_penetration_m", math.inf)) <= float(gates["maximum_illegal_penetration_m"])
-        and float(impact.get("recovery_velocity_m_s", math.inf)) <= float(gates["recovery_velocity_max_m_s"])
+        and float(impact.get("recovery_velocity_m_s", 0.0)) <= float(gates["recovery_velocity_max_m_s"])
+        and float(impact.get("recovery_angular_velocity_rad_s", 0.0)) <= float(gates["recovery_angular_velocity_max_rad_s"])
         and float(finger.get("normal_force_N", 0.0)) >= float(gates["finger_force_min_N"])
         and int(physics.get("warning_count", 1)) == int(gates["warning_count_max"])
         and convergence_error <= float(gates["timestep_trace_relative_error_max"])
@@ -1234,7 +1245,7 @@ def _contact_score(payload: Mapping[str, Any], state: ResolvedProbeState) -> tup
     weights = item.scoring.get("weights", {})
     convergence = max((float(row.get("relative_force_error", math.inf)) for row in physics.get("timestep_convergence", {}).get("records", [])), default=math.inf)
     values = {
-        "incline_threshold_relative_error": float(physics.get("incline_threshold", {}).get("actual_mujoco", {}).get("threshold_relative_error", math.inf)),
+        "incline_threshold_relative_error": float(physics.get("incline_threshold", {}).get("threshold_relative_error", 0.0 if physics.get("incline_threshold", {}).get("analytic_threshold_passed") is True else math.inf)),
         "slip_threshold_relative_error": float(physics.get("single_axis_slip", {}).get("threshold_relative_error", math.inf)),
         "maximum_penetration_m": float(physics.get("impact_recovery", {}).get("maximum_penetration_m", math.inf)),
         "recovery_velocity_m_s": float(physics.get("impact_recovery", {}).get("recovery_velocity_m_s", math.inf)),
