@@ -1,0 +1,701 @@
+{
+  "candidate_counts": {
+    "contact": 4,
+    "isolator": 3,
+    "timestep_solver": 3
+  },
+  "contact_timestep_convergence": {
+    "passed": true,
+    "records": [
+      {
+        "contact_count": 4,
+        "contact_solref_time_constant_s": 0.0004,
+        "dt_s": 0.0001,
+        "normal_force_N": 3.345707708463863,
+        "passed": true,
+        "relative_force_error": 0.0034564152969059903,
+        "warning_count": 0
+      },
+      {
+        "contact_count": 4,
+        "contact_solref_time_constant_s": 0.0004,
+        "dt_s": 0.0002,
+        "normal_force_N": 3.357311972923562,
+        "passed": true,
+        "relative_force_error": 0.0,
+        "warning_count": 0
+      },
+      {
+        "contact_count": 4,
+        "contact_solref_time_constant_s": 0.0008,
+        "dt_s": 0.0004,
+        "normal_force_N": 3.3602619421002924,
+        "passed": true,
+        "relative_force_error": 0.0008786699599327985,
+        "warning_count": 0
+      }
+    ],
+    "stability_tolerance": 0.1
+  },
+  "driver_convergence": {
+    "dt_candidate_count": 3,
+    "dt_candidates": [
+      {
+        "candidate_id": "dt_fine",
+        "dt_s": 0.0001,
+        "hard_gate_passed": true,
+        "max_absolute_phase_error_deg": 0.3344004560819982,
+        "max_amplitude_relative_error": 2.5311698843670567e-06,
+        "warnings": 0
+      },
+      {
+        "candidate_id": "dt_nominal",
+        "dt_s": 0.0002,
+        "hard_gate_passed": true,
+        "max_absolute_phase_error_deg": 0.6688036485300444,
+        "max_amplitude_relative_error": 1.0124592061217974e-05,
+        "warnings": 0
+      },
+      {
+        "candidate_id": "dt_conservative_coarse",
+        "dt_s": 0.0004,
+        "hard_gate_passed": false,
+        "max_absolute_phase_error_deg": 1.337629184600622,
+        "max_amplitude_relative_error": 4.049691546968897e-05,
+        "warnings": 0
+      }
+    ],
+    "dt_convergence_passed": true,
+    "selection_basis": "physics-only driver trace; no task/controller outcome",
+    "solver_sensitivity": [
+      {
+        "fit": {
+          "actual_amplitude": 0.0002000007170343413,
+          "actual_fit_residual_rms": 2.4868798555871487e-13,
+          "actual_phase_rad": -0.011672825719846219,
+          "amplitude_ratio": 1.0000035851717066,
+          "amplitude_relative_error": 3.5851717066295607e-06,
+          "command_amplitude": 0.00019999999999999998,
+          "command_fit_residual_rms": 3.2433136008621116e-20,
+          "command_phase_rad": 1.6879566340186562e-16,
+          "discard_s": 0.25,
+          "phase_convention": "A*sin(omega*t + phase); atan2(cos_coefficient, sin_coefficient)",
+          "phase_error_deg": -0.6688036487389432,
+          "sample_rate_hz": 5000.00000000055
+        },
+        "options": {
+          "control_freq_hz": 20.0,
+          "control_steps": 250,
+          "integrator": "implicitfast",
+          "iterations": 100,
+          "post_integration_refresh": true,
+          "refresh_stride": 1,
+          "solver": "Newton",
+          "timestep_s": 0.0002,
+          "tolerance": 1e-10
+        },
+        "passed": true,
+        "trace": {
+          "digest": "6197cccb51d93b4c6a1ea287c58415326519381b9a63f1fe969ebc420ec500f3",
+          "field_contract": "complete DeckDriverTrace fields; digest covers every field",
+          "field_shapes": {
+            "actual_acceleration": [
+              3750,
+              6
+            ],
+            "actual_pose": [
+              3750,
+              7
+            ],
+            "actual_twist": [
+              3750,
+              6
+            ],
+            "command_acceleration": [
+              3750,
+              6
+            ],
+            "command_pose": [
+              3750,
+              7
+            ],
+            "command_twist": [
+              3750,
+              6
+            ],
+            "deck_tracking_pose_error": [
+              3750,
+              6
+            ],
+            "integration_application_time_s": [
+              3750
+            ],
+            "integration_target_time_s": [
+              3750
+            ],
+            "sample_application_time_s": [
+              3750
+            ],
+            "sample_target_acceleration": [
+              3750,
+              6
+            ],
+            "sample_target_pose": [
+              3750,
+              7
+            ],
+            "sample_target_time_s": [
+              3750
+            ],
+            "sample_target_twist": [
+              3750,
+              6
+            ],
+            "sample_time_s": [
+              3750
+            ],
+            "solver_iterations": [
+              3750
+            ],
+            "solver_niter": [
+              3750,
+              20
+            ],
+            "warning_lastinfo": [
+              3750,
+              7
+            ],
+            "warning_number_delta": [
+              3750,
+              7
+            ],
+            "weld_constraint_force_raw": [
+              3750,
+              6
+            ],
+            "weld_constraint_residual_raw": [
+              3750,
+              6
+            ]
+          },
+          "summary": {
+            "max_actual_acceleration": 49.624022984398806,
+            "max_actual_twist": 0.011463159465215578,
+            "max_deck_tracking_pose_error": 2.438040928578111e-06,
+            "max_solver_iterations": 1,
+            "max_weld_constraint_force_raw": 19849.60919375953,
+            "max_weld_constraint_residual_raw": 2.438040928578111e-06,
+            "samples": 3750,
+            "warning_delta_max": 0,
+            "warning_delta_sum": 0
+          }
+        },
+        "variant_id": "official"
+      },
+      {
+        "fit": {
+          "actual_amplitude": 0.0002000007170343413,
+          "actual_fit_residual_rms": 2.4868798555871487e-13,
+          "actual_phase_rad": -0.011672825719846219,
+          "amplitude_ratio": 1.0000035851717066,
+          "amplitude_relative_error": 3.5851717066295607e-06,
+          "command_amplitude": 0.00019999999999999998,
+          "command_fit_residual_rms": 3.2433136008621116e-20,
+          "command_phase_rad": 1.6879566340186562e-16,
+          "discard_s": 0.25,
+          "phase_convention": "A*sin(omega*t + phase); atan2(cos_coefficient, sin_coefficient)",
+          "phase_error_deg": -0.6688036487389432,
+          "sample_rate_hz": 5000.00000000055
+        },
+        "options": {
+          "control_freq_hz": 20.0,
+          "control_steps": 250,
+          "integrator": "implicitfast",
+          "iterations": 150,
+          "post_integration_refresh": true,
+          "refresh_stride": 1,
+          "solver": "Newton",
+          "timestep_s": 0.0002,
+          "tolerance": 1e-10
+        },
+        "passed": true,
+        "trace": {
+          "digest": "6197cccb51d93b4c6a1ea287c58415326519381b9a63f1fe969ebc420ec500f3",
+          "field_contract": "complete DeckDriverTrace fields; digest covers every field",
+          "field_shapes": {
+            "actual_acceleration": [
+              3750,
+              6
+            ],
+            "actual_pose": [
+              3750,
+              7
+            ],
+            "actual_twist": [
+              3750,
+              6
+            ],
+            "command_acceleration": [
+              3750,
+              6
+            ],
+            "command_pose": [
+              3750,
+              7
+            ],
+            "command_twist": [
+              3750,
+              6
+            ],
+            "deck_tracking_pose_error": [
+              3750,
+              6
+            ],
+            "integration_application_time_s": [
+              3750
+            ],
+            "integration_target_time_s": [
+              3750
+            ],
+            "sample_application_time_s": [
+              3750
+            ],
+            "sample_target_acceleration": [
+              3750,
+              6
+            ],
+            "sample_target_pose": [
+              3750,
+              7
+            ],
+            "sample_target_time_s": [
+              3750
+            ],
+            "sample_target_twist": [
+              3750,
+              6
+            ],
+            "sample_time_s": [
+              3750
+            ],
+            "solver_iterations": [
+              3750
+            ],
+            "solver_niter": [
+              3750,
+              20
+            ],
+            "warning_lastinfo": [
+              3750,
+              7
+            ],
+            "warning_number_delta": [
+              3750,
+              7
+            ],
+            "weld_constraint_force_raw": [
+              3750,
+              6
+            ],
+            "weld_constraint_residual_raw": [
+              3750,
+              6
+            ]
+          },
+          "summary": {
+            "max_actual_acceleration": 49.624022984398806,
+            "max_actual_twist": 0.011463159465215578,
+            "max_deck_tracking_pose_error": 2.438040928578111e-06,
+            "max_solver_iterations": 1,
+            "max_weld_constraint_force_raw": 19849.60919375953,
+            "max_weld_constraint_residual_raw": 2.438040928578111e-06,
+            "samples": 3750,
+            "warning_delta_max": 0,
+            "warning_delta_sum": 0
+          }
+        },
+        "variant_id": "more_solver_iterations"
+      },
+      {
+        "fit": {
+          "actual_amplitude": 0.0002000007170343413,
+          "actual_fit_residual_rms": 2.4868798555871487e-13,
+          "actual_phase_rad": -0.011672825719846219,
+          "amplitude_ratio": 1.0000035851717066,
+          "amplitude_relative_error": 3.5851717066295607e-06,
+          "command_amplitude": 0.00019999999999999998,
+          "command_fit_residual_rms": 3.2433136008621116e-20,
+          "command_phase_rad": 1.6879566340186562e-16,
+          "discard_s": 0.25,
+          "phase_convention": "A*sin(omega*t + phase); atan2(cos_coefficient, sin_coefficient)",
+          "phase_error_deg": -0.6688036487389432,
+          "sample_rate_hz": 5000.00000000055
+        },
+        "options": {
+          "control_freq_hz": 20.0,
+          "control_steps": 250,
+          "integrator": "implicit",
+          "iterations": 100,
+          "post_integration_refresh": true,
+          "refresh_stride": 1,
+          "solver": "Newton",
+          "timestep_s": 0.0002,
+          "tolerance": 1e-10
+        },
+        "passed": true,
+        "trace": {
+          "digest": "5e1d194ad0a7c3c078bb8a3d6ecfeeb55e2c25325850dc39ba3278a324463751",
+          "field_contract": "complete DeckDriverTrace fields; digest covers every field",
+          "field_shapes": {
+            "actual_acceleration": [
+              3750,
+              6
+            ],
+            "actual_pose": [
+              3750,
+              7
+            ],
+            "actual_twist": [
+              3750,
+              6
+            ],
+            "command_acceleration": [
+              3750,
+              6
+            ],
+            "command_pose": [
+              3750,
+              7
+            ],
+            "command_twist": [
+              3750,
+              6
+            ],
+            "deck_tracking_pose_error": [
+              3750,
+              6
+            ],
+            "integration_application_time_s": [
+              3750
+            ],
+            "integration_target_time_s": [
+              3750
+            ],
+            "sample_application_time_s": [
+              3750
+            ],
+            "sample_target_acceleration": [
+              3750,
+              6
+            ],
+            "sample_target_pose": [
+              3750,
+              7
+            ],
+            "sample_target_time_s": [
+              3750
+            ],
+            "sample_target_twist": [
+              3750,
+              6
+            ],
+            "sample_time_s": [
+              3750
+            ],
+            "solver_iterations": [
+              3750
+            ],
+            "solver_niter": [
+              3750,
+              20
+            ],
+            "warning_lastinfo": [
+              3750,
+              7
+            ],
+            "warning_number_delta": [
+              3750,
+              7
+            ],
+            "weld_constraint_force_raw": [
+              3750,
+              6
+            ],
+            "weld_constraint_residual_raw": [
+              3750,
+              6
+            ]
+          },
+          "summary": {
+            "max_actual_acceleration": 49.624022984398806,
+            "max_actual_twist": 0.011463159465215578,
+            "max_deck_tracking_pose_error": 2.438040928578111e-06,
+            "max_solver_iterations": 1,
+            "max_weld_constraint_force_raw": 19849.60919375953,
+            "max_weld_constraint_residual_raw": 2.438040928578111e-06,
+            "samples": 3750,
+            "warning_delta_max": 0,
+            "warning_delta_sum": 0
+          }
+        },
+        "variant_id": "implicit_solver"
+      }
+    ],
+    "solver_sensitivity_passed": true
+  },
+  "eligible_counts": {
+    "contact": 1,
+    "isolator": 1,
+    "timestep_solver": 2
+  },
+  "excluded": [
+    {
+      "candidate_id": "dt_fine",
+      "passed": true,
+      "reasons": [
+        "lower_priority_after_hard_gates"
+      ],
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "dt_conservative_coarse",
+      "passed": false,
+      "reasons": [
+        "driver_single_axis_hard_gate_failed"
+      ],
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "balanced_nominal",
+      "passed": false,
+      "reasons": [
+        "isolator_hard_gate_failed"
+      ],
+      "score": [
+        3.749290623593699,
+        1.5689290811054721,
+        "balanced_nominal"
+      ],
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "high_frequency_light_damping",
+      "passed": false,
+      "reasons": [
+        "isolator_hard_gate_failed"
+      ],
+      "score": [
+        7.3427190646443234,
+        0.7960297521679913,
+        "high_frequency_light_damping"
+      ],
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "stiffer_contact",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "torsional_condim4",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "zero_torsion_rolling",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    }
+  ],
+  "official_profile_alignment": {
+    "contact_condim": true,
+    "contact_gap": true,
+    "contact_margin": true,
+    "contact_rolling": true,
+    "contact_solimp": true,
+    "contact_solref": true,
+    "contact_torsional": true,
+    "deck_eq_solimp": true,
+    "deck_eq_solref": true,
+    "deck_inertia": true,
+    "deck_mass": true,
+    "integrator": true,
+    "isolator_fn": true,
+    "isolator_zeta": true,
+    "iterations": true,
+    "solver": true,
+    "timestep": true,
+    "tolerance": true
+  },
+  "official_profile_before_selection": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+  "payload_sha256": "e699ed8461a90d10bfef024acdc0953cee613d1b7b14d736ea64ed5974b07d0a",
+  "protocol": {
+    "path": "/home/miracle04/Desktop/ShakeBench/robosuite/models/assets/shakebench_selection_protocol.yaml",
+    "sha256": "9f992b9a7277772604cbdc761e80bb61156dfadb806773042f8ddab36c9b2578",
+    "status": "pre_registered"
+  },
+  "provenance": {
+    "forbidden_selection_inputs": [
+      "task_success_rate",
+      "task_sr",
+      "controller_success",
+      "v0_v3_ranking",
+      "policy_observation",
+      "gamma_star"
+    ],
+    "phase02_artifact_reused_as": "none; no task result input",
+    "phase03_artifact_reused_as": "none; direct MuJoCo/analytic probe rerun",
+    "profile_status": "selected profile is the sole scoreable physics profile",
+    "source": "physics probes only"
+  },
+  "raw_files": [
+    {
+      "candidate_id": "dt_fine",
+      "path": "shakebench_phase_06_raw_timestep_solver_dt_fine.json",
+      "sha256": "db3fd68cf670e22395784c943acd9cde4d0051284f9cd314cee492de3b200c6f",
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "dt_nominal",
+      "path": "shakebench_phase_06_raw_timestep_solver_dt_nominal.json",
+      "sha256": "e33056e50122a2118b8077241532957155429e520c5e4d6e4a6d09867ffb7b1b",
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "dt_conservative_coarse",
+      "path": "shakebench_phase_06_raw_timestep_solver_dt_conservative_coarse.json",
+      "sha256": "cf5ae1817eb0ebedc8aedb65083dbaf85cf2bdccdeb7ea3656897d62d78a5b1d",
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "balanced_nominal",
+      "path": "shakebench_phase_06_raw_isolator_balanced_nominal.json",
+      "sha256": "491a2f650f19f774a351b9ee6bec9129f32eed9df765bfe89c87bd6c7d3355fd",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "low_frequency_damped",
+      "path": "shakebench_phase_06_raw_isolator_low_frequency_damped.json",
+      "sha256": "10e0d001e2c772f875f2dc20e88b9ec0e7ecd02da79bf842760e76a66c30b49a",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "high_frequency_light_damping",
+      "path": "shakebench_phase_06_raw_isolator_high_frequency_light_damping.json",
+      "sha256": "ff7ea2b5887393b755419c9e5ad90e6f492fa46dfad63a72b14e0bc153c7f67d",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "canonical_explicit_pair",
+      "path": "shakebench_phase_06_raw_contact_canonical_explicit_pair.json",
+      "sha256": "18714208d991ef3b03f885e3afa191a5171ed65645395969a056f1b1d2fc0543",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "stiffer_contact",
+      "path": "shakebench_phase_06_raw_contact_stiffer_contact.json",
+      "sha256": "888b899a0e1926527acac761c60f9c34763ea053562f5aa0347df60bcdcb7472",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "torsional_condim4",
+      "path": "shakebench_phase_06_raw_contact_torsional_condim4.json",
+      "sha256": "14e7dde7ed02497e8dd095db032af04837b59044338d9eefdc9751a80bb54738",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "zero_torsion_rolling",
+      "path": "shakebench_phase_06_raw_contact_zero_torsion_rolling.json",
+      "sha256": "5342bcf2cf686f4b01072b6a26dde322ef7c0bc495afdb887dd8bc5154a60f92",
+      "stage": "contact"
+    }
+  ],
+  "schema_id": "shakebench.phase06.physics_selection",
+  "schema_version": 1,
+  "selection": {
+    "contact": {
+      "candidate_id": "canonical_explicit_pair",
+      "condim": 3,
+      "gap_m": 0.0,
+      "iterations": 100,
+      "margin_m": 0.0,
+      "rolling_mu": 0.0001,
+      "solimp": [
+        0.9,
+        0.95,
+        0.001,
+        0.5,
+        2.0
+      ],
+      "solref": [
+        0.0004,
+        1.0
+      ],
+      "torsional_mu": 0.005
+    },
+    "controller_outcome_used": false,
+    "isolator": {
+      "candidate_id": "low_frequency_damped",
+      "fn_hz": [
+        4.0,
+        4.0,
+        4.0,
+        3.0,
+        3.0,
+        2.0
+      ],
+      "zeta": [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2
+      ]
+    },
+    "physics_only": true,
+    "selected_candidate_count": 1,
+    "selection_rule": {
+      "contact": "complete physics hard gates; minimum distance to canonical explicit-pair contract; lexicographic id",
+      "driver": "maximum physics_timestep_s among complete hard-gate passes; lexicographic candidate id",
+      "isolator": "weighted normalized transfer-envelope distance; minimum margin; analytic/MuJoCo disagreement; lexicographic id"
+    },
+    "status": "selected",
+    "task_success_used": false,
+    "timestep_solver": {
+      "candidate_id": "dt_nominal",
+      "deck_eq_solimp": [
+        0.9,
+        0.95,
+        0.001,
+        0.5,
+        2.0
+      ],
+      "deck_eq_solref": [
+        0.0004,
+        0.5
+      ],
+      "deck_inertia_kg_m2": [
+        12.12,
+        14.083333333333334,
+        26.03333333333333
+      ],
+      "deck_mass_kg": 400.0,
+      "integrator": "implicitfast",
+      "physics_timestep_s": 0.0002,
+      "solver": "Newton",
+      "solver_iterations": 100,
+      "solver_tolerance": 1e-10
+    }
+  },
+  "status": "PASS"
+}

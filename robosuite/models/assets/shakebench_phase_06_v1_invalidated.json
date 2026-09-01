@@ -1,0 +1,34 @@
+{
+  "schema_id": "shakebench.phase06r.v1_invalidation",
+  "schema_version": 1,
+  "status": "invalidated_phase06r",
+  "invalidated_at_phase": "06R",
+  "invalidated_protocol": {
+    "path": "shakebench_selection_protocol.yaml",
+    "sha256": "9f992b9a7277772604cbdc761e80bb61156dfadb806773042f8ddab36c9b2578",
+    "commit": "8d34171a"
+  },
+  "archived_artifacts_prefix": "shakebench_phase_06_",
+  "archived_official_profile": {
+    "path": "shakebench_official_physics.yaml",
+    "profile_sha256": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+    "status": "not_scoreable_pending_phase06r"
+  },
+  "reasons": [
+    "contact selection excluded noncanonical candidates before physics probes",
+    "driver convergence accepted fewer than three complete passes",
+    "driver spectrum matrix omitted representative-load coverage",
+    "isolator selection deferred required MuJoCo probes and used non-preregistered scoring targets",
+    "Gamma-zero parity and multi-probe determinism artifacts were incomplete",
+    "official-profile loading permitted scoreable external-path bypass",
+    "selection read the official profile before selection completed",
+    "Phase 06 altered frozen Phase 05 IMU semantics",
+    "verifier did not recompute raw hard gates"
+  ],
+  "replacement_protocol": {
+    "path": "shakebench_selection_protocol_v2.yaml",
+    "commit": "13c7bd5e",
+    "status": "pre_registered"
+  },
+  "preservation": "V1 raw evidence remains present as archive/provenance only and must not support a PASS claim."
+}

@@ -21,6 +21,7 @@ setup(
         "mujoco>=3.3.0,<3.10",  # 3.10 changed mj_fullM signature; breaks controllers/parts/controller.py
         "qpsolvers[quadprog]>=4.3.1",
         "Pillow",
+        "PyYAML>=5.3",
         "opencv-python",
         "pynput",
         "termcolor",
@@ -30,6 +31,15 @@ setup(
     extras_require={
         "mink": [
             "mink==0.0.5",
+        ],
+    },
+    # Keep the Phase 06 profile/protocol and flat physics artifacts discoverable
+    # from wheels as well as sdists.  MANIFEST.in remains the source archive
+    # contract for the complete asset tree.
+    package_data={
+        "robosuite": [
+            "models/assets/*.yaml",
+            "models/assets/*.json",
         ],
     },
     eager_resources=["*"],

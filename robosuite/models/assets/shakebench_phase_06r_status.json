@@ -1,0 +1,30 @@
+{
+  "protocol": {
+    "path": "/home/miracle04/Desktop/ShakeBench/robosuite/models/assets/shakebench_selection_protocol_v2.yaml",
+    "sha256": "4d15e7a20ce242edad6a41ed4bf74e2a00f4e04276accbc6362dce73ef5b875c"
+  },
+  "raw_files": [
+    {
+      "candidate_id": "dt_ultrafine",
+      "path": "shakebench_phase_06r_raw_driver_dt_ultrafine.json",
+      "sha256": "8cc3e4593a5ea5bbf426560afee3f0a44f0772d968421d1933dbf7525d047a4b",
+      "stage": "driver"
+    },
+    {
+      "candidate_id": "dt_fine",
+      "path": "shakebench_phase_06r_raw_driver_dt_fine.json",
+      "sha256": "8e7168a0517fbb9aa00a77d257b9283f5f2e160c116c840e23c7a1b2d08737d5",
+      "stage": "driver"
+    },
+    {
+      "candidate_id": "dt_nominal",
+      "path": "shakebench_phase_06r_raw_driver_dt_nominal.json",
+      "sha256": "bd94dd76796055f821b9cdefeeee221808a7418b75ba345303c241f8181710ed",
+      "stage": "driver"
+    }
+  ],
+  "reason": "required V2 candidate group did not pass",
+  "schema_id": "shakebench.phase06r.selection_status",
+  "schema_version": 1,
+  "status": "BLOCKED"
+}

@@ -1,0 +1,59 @@
+{
+  "candidate": {
+    "candidate_id": "dt_medium",
+    "composed_candidate_id": "medium_low_c3soft",
+    "deck_eq_solimp": [
+      0.9,
+      0.95,
+      0.001,
+      0.5,
+      2.0
+    ],
+    "deck_eq_solref": [
+      0.0003,
+      0.5
+    ],
+    "deck_inertia_kg_m2": [
+      12.12,
+      14.083333333333334,
+      26.03333333333333
+    ],
+    "deck_mass_kg": 400.0,
+    "integrator": "Euler",
+    "physics_timestep_s": 0.00015,
+    "solver": "Newton",
+    "solver_iterations": 100,
+    "solver_tolerance": 1e-12
+  },
+  "payload_sha256": "d682d293aa3fa7f781304026f00e3a2f9a171edf6ae90cd746447aa532d68669",
+  "physics_only": true,
+  "protocol": {
+    "path": "/home/miracle04/Desktop/ShakeBench/robosuite/models/assets/shakebench_selection_protocol_v3.yaml",
+    "registration_commit": "2f6cac5ed201a75b030c7e68980f519137ea0604",
+    "sha256": "8175160da40e66d39b85f2f3dccf75338d713b309b7612a968f053fbe808fbee"
+  },
+  "record_count": 1,
+  "records": [
+    {
+      "gamma": 0.15,
+      "load_case": "empty",
+      "passed": false,
+      "retry_ledger": [
+        {
+          "attempt": 1,
+          "exception": "SimulationError: control timestep 0.05 must be an integer multiple of model timestep 0.00015",
+          "state_config_identical": true
+        },
+        {
+          "attempt": 2,
+          "exception": "SimulationError: control timestep 0.05 must be an integer multiple of model timestep 0.00015",
+          "state_config_identical": true
+        }
+      ],
+      "status": "incomplete_infrastructure_crash"
+    }
+  ],
+  "schema_id": "shakebench.phase06r2.physics_selection.raw_driver",
+  "schema_version": 3,
+  "stage": "driver"
+}

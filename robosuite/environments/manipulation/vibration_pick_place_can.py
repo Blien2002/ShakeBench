@@ -37,6 +37,7 @@ from robosuite.utils.shakebench_metrics import (
     extract_can_collision_envelope,
     frame_world_position,
 )
+from robosuite.utils.shakebench_physics import PhysicsProfileError, resolve_physics_profile
 from robosuite.utils.shakebench_privilege import (
     PRIVILEGED_NAMESPACE,
     ShakeBenchPrivilegeError,
@@ -120,6 +121,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         placement_initializer=None,
         deck_trajectory=None,
         deck_config=None,
+        physics_profile=None,
         has_renderer=False,
         has_offscreen_renderer=False,
         render_camera="frontview",
@@ -127,7 +129,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        model_timestep=DEFAULT_MODEL_TIMESTEP_S,
+        model_timestep=None,
         lite_physics=True,
         horizon=1000,
         ignore_done=False,
@@ -152,6 +154,29 @@ class VibrationPickPlaceCan(ManipulationEnv):
             raise ValueError("VibrationPickPlaceCan currently supports exactly one Panda robot")
         if env_configuration != "default":
             raise ValueError("VibrationPickPlaceCan only supports env_configuration='default'")
+        try:
+            self.physics_profile = resolve_physics_profile(physics_profile)
+        except PhysicsProfileError as exc:
+            raise ValueError(str(exc)) from exc
+        profile_timestep = self.physics_profile.model_timestep_s
+        if model_timestep is None:
+            model_timestep = profile_timestep
+        elif not np.isclose(float(model_timestep), profile_timestep, rtol=0.0, atol=1e-14):
+            raise ValueError("model_timestep must equal the selected physics profile timestep")
+        if not np.isclose(float(control_freq), self.physics_profile.control_freq_hz, rtol=0.0, atol=1e-12):
+            raise ValueError("control_freq must equal control_freq=20 Hz in the selected physics profile scheduler")
+        expected_target_friction = (
+            float(self.physics_profile.contact["sliding_mu"]["table_object"]),
+            float(self.physics_profile.contact["torsional_mu"]),
+            float(self.physics_profile.contact["rolling_mu"]),
+        )
+        if not np.allclose(
+            np.asarray(target_container_friction, dtype=float),
+            np.asarray(expected_target_friction, dtype=float),
+            rtol=0.0,
+            atol=1e-12,
+        ):
+            raise ValueError("target_container_friction must equal the selected physics profile")
         if observation_tier is not None:
             try:
                 observation_tier = normalize_observation_tier(observation_tier)
@@ -185,8 +210,6 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.can_start_xy = _finite_vector("can_start_xy", can_start_xy, 2)
         if any(value < 0.0 for value in self.table_friction + self.target_container_friction):
             raise ValueError("friction values must be non-negative")
-        if model_timestep is None:
-            model_timestep = DEFAULT_MODEL_TIMESTEP_S
         if (
             isinstance(model_timestep, (bool, np.bool_))
             or not np.isfinite(float(model_timestep))
@@ -197,8 +220,8 @@ class VibrationPickPlaceCan(ManipulationEnv):
 
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-        self.table_object_sliding_mu = 0.30
-        self.finger_object_sliding_mu = 1.00
+        self.table_object_sliding_mu = float(self.physics_profile.contact["sliding_mu"]["table_object"])
+        self.finger_object_sliding_mu = float(self.physics_profile.contact["sliding_mu"]["finger_object"])
         self.use_object_obs = use_object_obs
         self.use_camera_obs = use_camera_obs
         self.observation_tier = observation_tier
@@ -229,14 +252,16 @@ class VibrationPickPlaceCan(ManipulationEnv):
         if deck_config is not None and not isinstance(deck_config, DeckDriverConfig):
             raise ValueError("deck_config must be a DeckDriverConfig")
         if deck_config is None:
-            deck_config = DeckDriverConfig(
-                physics_timestep_s=self._phase04_model_timestep,
-                eq_solref=(2.0 * self._phase04_model_timestep, DEFAULT_DECK_EQ_SOLREF[1]),
-            )
+            deck_config = self.physics_profile.deck_driver_config()
         elif deck_config.physics_timestep_s is not None and not np.isclose(
             deck_config.physics_timestep_s, self._phase04_model_timestep, rtol=0.0, atol=1e-14
         ):
             raise ValueError("deck_config.physics_timestep_s must equal model_timestep")
+        if self.physics_profile.scoreable:
+            try:
+                self.physics_profile.assert_matches_deck_config(deck_config)
+            except PhysicsProfileError as exc:
+                raise ValueError(str(exc)) from exc
         self.deck_config = deck_config
         if observation_tier == "V3":
             if excitation_program is None and isinstance(deck_trajectory, ExcitationProgram):
@@ -318,6 +343,10 @@ class VibrationPickPlaceCan(ManipulationEnv):
         # requested value available during the pre-compile task assembly too.
         self.model_timestep = self._phase04_model_timestep
         self.load_model_on_init = self._requested_load_model_on_init
+        # Set environment-owned solver/timestep options before the deck XML
+        # processor generates the dynamic deck.  This profile is the only
+        # source of score-affecting physics for the official environment.
+        self.set_xml_processor(self.physics_profile.process_xml)
         self.deck_driver.install(self)
         self.add_sim_initialization_hook(self._audit_compiled_contract)
         self.add_post_physics_step_hook(self._record_post_physics_metrics)
@@ -406,12 +435,8 @@ class VibrationPickPlaceCan(ManipulationEnv):
             if key.startswith("wall_") and not key.endswith("_visual")
         )
         finger_pad_names = tuple(self.finger_pad_geom_names)
-        table_friction = array_to_string(
-            (self.table_object_sliding_mu, DEFAULT_CONTACT_TORSIONAL_MU, DEFAULT_CONTACT_ROLLING_MU)
-        )
-        finger_friction = array_to_string(
-            (self.finger_object_sliding_mu, DEFAULT_CONTACT_TORSIONAL_MU, DEFAULT_CONTACT_ROLLING_MU)
-        )
+        table_pair_attributes = self.physics_profile.pair_attributes(self.table_object_sliding_mu)
+        finger_pair_attributes = self.physics_profile.pair_attributes(self.finger_object_sliding_mu)
         partner_names = table_geom_names + target_collision_names + finger_pad_names
         for geom_name in partner_names:
             geom = self.model.worldbody.find(f".//geom[@name='{geom_name}']")
@@ -421,15 +446,21 @@ class VibrationPickPlaceCan(ManipulationEnv):
         for can_name in can_geom_names:
             for table_name in table_geom_names:
                 ET.SubElement(
-                    self.model.contact, "pair", {"geom1": can_name, "geom2": table_name, "friction": table_friction}
+                    self.model.contact,
+                    "pair",
+                    {"geom1": can_name, "geom2": table_name, **table_pair_attributes},
                 )
             for target_name in target_collision_names:
                 ET.SubElement(
-                    self.model.contact, "pair", {"geom1": can_name, "geom2": target_name, "friction": table_friction}
+                    self.model.contact,
+                    "pair",
+                    {"geom1": can_name, "geom2": target_name, **table_pair_attributes},
                 )
             for finger_name in finger_pad_names:
                 ET.SubElement(
-                    self.model.contact, "pair", {"geom1": can_name, "geom2": finger_name, "friction": finger_friction}
+                    self.model.contact,
+                    "pair",
+                    {"geom1": can_name, "geom2": finger_name, **finger_pair_attributes},
                 )
         self.table_contact_geom_names = table_geom_names
         self.target_collision_geom_names = target_collision_names
@@ -456,6 +487,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
             table_offset=self.table_offset,
+            isolator_config=self.physics_profile.isolator_config(),
             include_target_container=False,
             visual=True,
         )
@@ -946,6 +978,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "finger_object_sliding_mu": float(self.finger_object_sliding_mu),
                 "target_container": list(self.target_container_friction),
             },
+            "physics_profile": {
+                "profile_id": self.physics_profile.profile_id,
+                "profile_sha256": self.physics_profile.profile_sha256,
+                "scoreable": self.physics_profile.scoreable,
+            },
             "imu": {
                 "profile_id": CANONICAL_IMU_PROFILE.profile_id,
                 "sample_rate_hz": CANONICAL_IMU_PROFILE.sample_rate_hz,
@@ -1040,6 +1077,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             finger_pad_geom_names=self.finger_pad_geom_names,
             table_sliding_mu=self.table_object_sliding_mu,
             finger_sliding_mu=self.finger_object_sliding_mu,
+            contact_profile=self.physics_profile.contact,
         )
         target_spec = self.arena.target_container_spec
         target_collision_names = list(self.target_collision_geom_names)
@@ -1097,6 +1135,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "collision_geometry": target_geometry,
             },
             "contacts": contact_audit,
+            "physics_profile": self.physics_profile.audit(),
         }
         if self.vibration_provider is not None:
             result["imu_mount"] = self.vibration_provider.audit_compiled_mount(sim_or_model)

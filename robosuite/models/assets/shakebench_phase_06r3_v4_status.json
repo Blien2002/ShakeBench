@@ -1,0 +1,13 @@
+{
+  "schema_id": "shakebench.phase06r3.v4.selection_status",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "reason": "V4 machinery and structural feasibility registration are pending",
+  "protocol": {
+    "path": "shakebench_selection_protocol_v4.yaml",
+    "sha256": null,
+    "registration_commit": null
+  },
+  "official_profile_publication": "forbidden",
+  "phase07": "forbidden"
+}

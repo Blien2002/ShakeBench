@@ -1,0 +1,81 @@
+{
+  "excluded": [
+    {
+      "candidate_id": "dt_fine",
+      "passed": true,
+      "reasons": [
+        "lower_priority_after_hard_gates"
+      ],
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "dt_conservative_coarse",
+      "passed": false,
+      "reasons": [
+        "driver_single_axis_hard_gate_failed"
+      ],
+      "stage": "timestep_solver"
+    },
+    {
+      "candidate_id": "balanced_nominal",
+      "passed": false,
+      "reasons": [
+        "isolator_hard_gate_failed"
+      ],
+      "score": [
+        3.749290623593699,
+        1.5689290811054721,
+        "balanced_nominal"
+      ],
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "high_frequency_light_damping",
+      "passed": false,
+      "reasons": [
+        "isolator_hard_gate_failed"
+      ],
+      "score": [
+        7.3427190646443234,
+        0.7960297521679913,
+        "high_frequency_light_damping"
+      ],
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "stiffer_contact",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "torsional_condim4",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "zero_torsion_rolling",
+      "passed": false,
+      "reasons": [
+        "not_selected_by_registered_contact_tie_break"
+      ],
+      "stage": "contact"
+    }
+  ],
+  "payload_sha256": "f05da852068c67f40ad560779d639b586e043ef88b9db1f6cdae545bc3fdc2f1",
+  "physics_only": true,
+  "protocol_sha256": "9f992b9a7277772604cbdc761e80bb61156dfadb806773042f8ddab36c9b2578",
+  "schema_id": "shakebench.phase06.physics_selection.excluded",
+  "schema_version": 1,
+  "selected_candidate_ids": {
+    "contact": "canonical_explicit_pair",
+    "isolator": "low_frequency_damped",
+    "timestep_solver": "dt_nominal"
+  },
+  "status": "PASS"
+}

@@ -1257,13 +1257,15 @@ def audit_contact_pairs(
     finger_pad_geom_names: Iterable[str],
     table_sliding_mu: float = 0.30,
     finger_sliding_mu: float = 1.00,
+    contact_profile: Optional[Mapping[str, Any]] = None,
     tolerance: float = 1e-12,
 ) -> dict[str, Any]:
     """Audit exact compiled contact roles and their pair-local friction.
 
-    The function rejects extra Can pairs.  ``condim``, margin/gap and
-    ``solref/solimp`` are reported as provisional compiled fields but are not
-    changed here; later phases own their freeze.
+    The function rejects extra Can pairs.  When ``contact_profile`` is
+    supplied, every score-affecting pair field is checked against that
+    profile; without it the historical Phase 04 structural-only audit is
+    preserved.
     """
 
     model, _ = _raw_model_data(sim_or_model)
@@ -1272,6 +1274,25 @@ def audit_contact_pairs(
     bottom_names = _normalise_names(target_bottom_geom_names)
     wall_names = _normalise_names(target_wall_geom_names)
     finger_names = _normalise_names(finger_pad_geom_names)
+    expected_condim = None
+    expected_torsional_mu = None
+    expected_rolling_mu = None
+    expected_margin_m = None
+    expected_gap_m = None
+    expected_solref = None
+    expected_solimp = None
+    if contact_profile is not None:
+        if not isinstance(contact_profile, Mapping):
+            raise ShakeBenchMetricsError("contact_profile must be a mapping")
+        expected_condim = int(contact_profile["condim"])
+        expected_torsional_mu = float(contact_profile["torsional_mu"])
+        expected_rolling_mu = float(contact_profile["rolling_mu"])
+        expected_margin_m = float(contact_profile["margin_m"])
+        expected_gap_m = float(contact_profile["gap_m"])
+        expected_solref = np.asarray(contact_profile["solref"], dtype=float)
+        expected_solimp = np.asarray(contact_profile["solimp"], dtype=float)
+        if expected_solref.shape != (2,) or expected_solimp.shape != (5,):
+            raise ShakeBenchMetricsError("contact_profile solref/solimp has the wrong shape")
     expected = {}
     for can_name in can_names:
         for other_name in table_names:
@@ -1298,6 +1319,23 @@ def audit_contact_pairs(
         friction = np.asarray(model.pair_friction[pair_id], dtype=float)
         if friction.size < 1 or not np.isclose(friction[0], expected_mu, rtol=0.0, atol=tolerance):
             raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong sliding friction")
+        if contact_profile is not None:
+            if friction.size < 3:
+                raise ShakeBenchMetricsError("compiled contact pair does not expose torsional/rolling friction")
+            if not np.isclose(friction[1], expected_torsional_mu, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
+            if not np.allclose(friction[2:], expected_rolling_mu, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong rolling friction")
+            if not hasattr(model, "pair_dim") or int(model.pair_dim[pair_id]) != expected_condim:
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong condim")
+            if not np.isclose(model.pair_margin[pair_id], expected_margin_m, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong margin")
+            if not np.isclose(model.pair_gap[pair_id], expected_gap_m, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong gap")
+            if not np.allclose(model.pair_solref[pair_id], expected_solref, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong solref")
+            if not np.allclose(model.pair_solimp[pair_id], expected_solimp, rtol=0.0, atol=tolerance):
+                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong solimp")
         record = {
             "pair_id": pair_id,
             "geom1": geom1,
@@ -1332,10 +1370,25 @@ def audit_contact_pairs(
         "roles": {key: list(value) for key, value in roles.items()},
         "geometry_friction": geometry_friction,
         "geometry_contact_bits": geometry_contact_bits,
+        "contact_profile": (
+            {
+                "scope": "explicit_pair",
+                "condim": expected_condim,
+                "torsional_mu": expected_torsional_mu,
+                "rolling_mu": expected_rolling_mu,
+                "margin_m": expected_margin_m,
+                "gap_m": expected_gap_m,
+                "solref": None if expected_solref is None else expected_solref.tolist(),
+                "solimp": None if expected_solimp is None else expected_solimp.tolist(),
+                "frozen": contact_profile is not None,
+            }
+            if contact_profile is not None
+            else None
+        ),
         "provisional_fields": {
-            "condim": "compiled pair defaults / geom defaults; not frozen in Phase 04",
-            "margin_gap": "compiled pair defaults; not frozen in Phase 04",
-            "solref_solimp": "compiled pair defaults; not frozen in Phase 04",
+            "condim": "validated only when an explicit Phase 06 contact profile is supplied",
+            "margin_gap": "validated only when an explicit Phase 06 contact profile is supplied",
+            "solref_solimp": "validated only when an explicit Phase 06 contact profile is supplied",
         },
     }
 

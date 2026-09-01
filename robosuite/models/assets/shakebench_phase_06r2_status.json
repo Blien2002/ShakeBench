@@ -1,0 +1,28 @@
+{
+  "schema_id": "shakebench.phase06r2.selection_status",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "reason": "invalid_pre_registered_configuration: dt_medium_control_scheduler_nonintegral",
+  "protocol": {
+    "path": "shakebench_selection_protocol_v3.yaml",
+    "sha256": "8175160da40e66d39b85f2f3dccf75338d713b309b7612a968f053fbe808fbee",
+    "registration_commit": "2f6cac5ed201a75b030c7e68980f519137ea0604"
+  },
+  "blocking_raw_artifact": "shakebench_phase_06r2_raw_driver_dt_medium.json",
+  "driver_gate": {
+    "required_complete_convergence_passes": 3,
+    "completed_passes": 1,
+    "dt_medium_disposition": "preflight_rejected_before_MuJoCo_integration",
+    "rejection": "control timestep 0.05 must be an integer multiple of model timestep 0.00015"
+  },
+  "failure_taxonomy": "invalid_protocol_configuration",
+  "failure_integrity": {
+    "same_state_attempts": 2,
+    "state_config_identical": true,
+    "replacement_candidate_or_seed": false,
+    "retry_disposition": "ledger preserved verbatim; retry was historical V3 behavior and is not evidence of an infrastructure failure",
+    "protocol_mutation": false
+  },
+  "official_profile_publication": "forbidden",
+  "phase07": "forbidden"
+}

@@ -1,0 +1,263 @@
+{
+  "audit": {
+    "deck": {
+      "eq_solimp": [
+        0.9,
+        0.95,
+        0.001,
+        0.5,
+        2.0
+      ],
+      "eq_solref": [
+        0.0002,
+        0.5
+      ],
+      "inertia_kg_m2": [
+        12.12,
+        14.083333333333334,
+        26.03333333333333
+      ],
+      "load_case": "empty",
+      "mass_kg": 400.0,
+      "parent_graph": {
+        "deck": null,
+        "deck_driver": null,
+        "world": null
+      },
+      "warnings": 0
+    },
+    "trace": {
+      "digest": "ae7cd54c2fb60c3ea15cf46aff6d4000736575d4e1cd949335d7bdabe00c5677",
+      "field_contract": "complete DeckDriverTrace fields; digest covers every field",
+      "field_shapes": {
+        "actual_acceleration": [
+          6950,
+          6
+        ],
+        "actual_pose": [
+          6950,
+          7
+        ],
+        "actual_twist": [
+          6950,
+          6
+        ],
+        "command_acceleration": [
+          6950,
+          6
+        ],
+        "command_pose": [
+          6950,
+          7
+        ],
+        "command_twist": [
+          6950,
+          6
+        ],
+        "deck_tracking_pose_error": [
+          6950,
+          6
+        ],
+        "integration_application_time_s": [
+          6950
+        ],
+        "integration_target_time_s": [
+          6950
+        ],
+        "sample_application_time_s": [
+          6950
+        ],
+        "sample_target_acceleration": [
+          6950,
+          6
+        ],
+        "sample_target_pose": [
+          6950,
+          7
+        ],
+        "sample_target_time_s": [
+          6950
+        ],
+        "sample_target_twist": [
+          6950,
+          6
+        ],
+        "sample_time_s": [
+          6950
+        ],
+        "solver_iterations": [
+          6950
+        ],
+        "solver_niter": [
+          6950,
+          20
+        ],
+        "warning_lastinfo": [
+          6950,
+          7
+        ],
+        "warning_number_delta": [
+          6950,
+          7
+        ],
+        "weld_constraint_force_raw": [
+          6950,
+          6
+        ],
+        "weld_constraint_residual_raw": [
+          6950,
+          6
+        ]
+      },
+      "summary": {
+        "max_actual_acceleration": 0.8748284236635093,
+        "max_actual_twist": 0.021348916248170587,
+        "max_deck_tracking_pose_error": 2.2534396214285474e-06,
+        "max_solver_iterations": 1,
+        "max_weld_constraint_force_raw": 349.9313694654037,
+        "max_weld_constraint_residual_raw": 1.8663456644583658e-06,
+        "samples": 6950,
+        "warning_delta_max": 0,
+        "warning_delta_sum": 0
+      }
+    }
+  },
+  "duration_s": 34.71991810092712,
+  "elapsed_wall_time_s": 71.8817107869545,
+  "kind": "engineering_capacity_preflight_non_decisional",
+  "measurement_plan": {
+    "cadence_hz": 200.0,
+    "f_max_hz": 8.87,
+    "minimum_required_cadence_hz": 177.39999999999998,
+    "physics_timestep_s": 0.0001,
+    "refresh_stride": 50,
+    "retention": "bounded named measurement trace; no record is retained for unmeasured integration steps",
+    "sample_dt_s": 0.005,
+    "sampling_phase_rule": "post-integration right-limit refresh; sample at data.time after every refresh_stride MuJoCo steps",
+    "schema_id": "shakebench.driver.bounded_measurement",
+    "schema_version": 1,
+    "trace_fields": [
+      "integration_target_time_s",
+      "sample_target_time_s",
+      "integration_application_time_s",
+      "sample_application_time_s",
+      "sample_time_s",
+      "command_pose",
+      "actual_pose",
+      "command_twist",
+      "actual_twist",
+      "command_acceleration",
+      "actual_acceleration",
+      "sample_target_pose",
+      "sample_target_twist",
+      "sample_target_acceleration",
+      "deck_tracking_pose_error",
+      "weld_constraint_residual_raw",
+      "weld_constraint_force_raw",
+      "solver_iterations",
+      "solver_niter",
+      "warning_number_delta",
+      "warning_lastinfo"
+    ],
+    "trace_schema_id": "shakebench.deck_driver.trace",
+    "trace_schema_version": 3
+  },
+  "metadata_sha256": "2b3bc2fd098a2e79b5cee5eeb4344d2a23d8d39d3128b207f8fcfb7c9925b6b3",
+  "mujoco_step_count": 347200,
+  "options": {
+    "control_freq_hz": 20.0,
+    "control_steps": 500,
+    "integrator": "Euler",
+    "iterations": 100,
+    "post_integration_refresh": true,
+    "refresh_stride": 50,
+    "solver": "Newton",
+    "timestep_s": 0.0001,
+    "tolerance": 1e-12
+  },
+  "passed": true,
+  "peak_retained_sample_count": 6950,
+  "runtime_ceiling_s": 120.0,
+  "sampled_trace_digest": "ae7cd54c2fb60c3ea15cf46aff6d4000736575d4e1cd949335d7bdabe00c5677",
+  "sampled_trace_shapes": {
+    "actual_acceleration": [
+      6950,
+      6
+    ],
+    "actual_pose": [
+      6950,
+      7
+    ],
+    "actual_twist": [
+      6950,
+      6
+    ],
+    "command_acceleration": [
+      6950,
+      6
+    ],
+    "command_pose": [
+      6950,
+      7
+    ],
+    "command_twist": [
+      6950,
+      6
+    ],
+    "deck_tracking_pose_error": [
+      6950,
+      6
+    ],
+    "integration_application_time_s": [
+      6950
+    ],
+    "integration_target_time_s": [
+      6950
+    ],
+    "sample_application_time_s": [
+      6950
+    ],
+    "sample_target_acceleration": [
+      6950,
+      6
+    ],
+    "sample_target_pose": [
+      6950,
+      7
+    ],
+    "sample_target_time_s": [
+      6950
+    ],
+    "sample_target_twist": [
+      6950,
+      6
+    ],
+    "sample_time_s": [
+      6950
+    ],
+    "solver_iterations": [
+      6950
+    ],
+    "solver_niter": [
+      6950,
+      20
+    ],
+    "warning_lastinfo": [
+      6950,
+      7
+    ],
+    "warning_number_delta": [
+      6950,
+      7
+    ],
+    "weld_constraint_force_raw": [
+      6950,
+      6
+    ],
+    "weld_constraint_residual_raw": [
+      6950,
+      6
+    ]
+  },
+  "selection_input": false
+}

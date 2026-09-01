@@ -1,0 +1,549 @@
+{
+  "comparison": [
+    {
+      "complete_trace_compared": true,
+      "options_equal": true,
+      "process_index": 0,
+      "profile_sha256_equal": true,
+      "program_hash_equal": true,
+      "trace_digest_equal": true,
+      "trace_dtypes_equal": true,
+      "trace_shapes_equal": true,
+      "warning_count": 0
+    },
+    {
+      "complete_trace_compared": true,
+      "options_equal": true,
+      "process_index": 1,
+      "profile_sha256_equal": true,
+      "program_hash_equal": true,
+      "trace_digest_equal": true,
+      "trace_dtypes_equal": true,
+      "trace_shapes_equal": true,
+      "warning_count": 0
+    },
+    {
+      "complete_trace_compared": true,
+      "options_equal": true,
+      "process_index": 2,
+      "profile_sha256_equal": true,
+      "program_hash_equal": true,
+      "trace_digest_equal": true,
+      "trace_dtypes_equal": true,
+      "trace_shapes_equal": true,
+      "warning_count": 0
+    }
+  ],
+  "complete_trace_comparison": true,
+  "crash_handling": {
+    "replacement_state_forbidden": true,
+    "same_state_only_rerun": true,
+    "worker_crash": "fail_replay"
+  },
+  "failures": [],
+  "independent_process_count": 3,
+  "payload_sha256": "c8cc96349a0fd0d8b8e7496430e2295594b2c5d1377847bfa9f03dc4d4bb9a9f",
+  "profile_id": "shakebench.official.physics.v1",
+  "profile_sha256": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+  "same_process_reset_used": false,
+  "schema_id": "shakebench.phase06.physics_replay",
+  "schema_version": 1,
+  "state_id": "phase06_zero_and_six_axis_trace",
+  "status": "PASS",
+  "trace_fields": [
+    "integration_target_time_s",
+    "sample_target_time_s",
+    "integration_application_time_s",
+    "sample_application_time_s",
+    "sample_time_s",
+    "command_pose",
+    "actual_pose",
+    "command_twist",
+    "actual_twist",
+    "command_acceleration",
+    "actual_acceleration",
+    "sample_target_pose",
+    "sample_target_twist",
+    "sample_target_acceleration",
+    "deck_tracking_pose_error",
+    "weld_constraint_residual_raw",
+    "weld_constraint_force_raw",
+    "solver_iterations",
+    "solver_niter",
+    "warning_number_delta",
+    "warning_lastinfo"
+  ],
+  "workers": [
+    {
+      "complete_trace_compared": true,
+      "options": {
+        "control_freq_hz": 20.0,
+        "control_steps": 250,
+        "integrator": "implicitfast",
+        "iterations": 100,
+        "post_integration_refresh": true,
+        "refresh_stride": 1,
+        "solver": "Newton",
+        "timestep_s": 0.0002,
+        "tolerance": 1e-10
+      },
+      "profile_id": "shakebench.official.physics.v1",
+      "profile_sha256": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+      "program_hash": "095b5df74f7f81e69241e328ad4ffec8987afe3f602b9a51c1075b2b28471c85",
+      "state_id": "phase06_zero_and_six_axis_trace",
+      "trace_digest": "3e9f0918306dc604f7904f62371a96fe57f9cf902d257bd543279b329f23ab7c",
+      "trace_dtypes": {
+        "actual_acceleration": "float64",
+        "actual_pose": "float64",
+        "actual_twist": "float64",
+        "command_acceleration": "float64",
+        "command_pose": "float64",
+        "command_twist": "float64",
+        "deck_tracking_pose_error": "float64",
+        "integration_application_time_s": "float64",
+        "integration_target_time_s": "float64",
+        "sample_application_time_s": "float64",
+        "sample_target_acceleration": "float64",
+        "sample_target_pose": "float64",
+        "sample_target_time_s": "float64",
+        "sample_target_twist": "float64",
+        "sample_time_s": "float64",
+        "solver_iterations": "int64",
+        "solver_niter": "int64",
+        "warning_lastinfo": "int64",
+        "warning_number_delta": "int64",
+        "weld_constraint_force_raw": "float64",
+        "weld_constraint_residual_raw": "float64"
+      },
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ],
+      "trace_shapes": {
+        "actual_acceleration": [
+          6250,
+          6
+        ],
+        "actual_pose": [
+          6250,
+          7
+        ],
+        "actual_twist": [
+          6250,
+          6
+        ],
+        "command_acceleration": [
+          6250,
+          6
+        ],
+        "command_pose": [
+          6250,
+          7
+        ],
+        "command_twist": [
+          6250,
+          6
+        ],
+        "deck_tracking_pose_error": [
+          6250,
+          6
+        ],
+        "integration_application_time_s": [
+          6250
+        ],
+        "integration_target_time_s": [
+          6250
+        ],
+        "sample_application_time_s": [
+          6250
+        ],
+        "sample_target_acceleration": [
+          6250,
+          6
+        ],
+        "sample_target_pose": [
+          6250,
+          7
+        ],
+        "sample_target_time_s": [
+          6250
+        ],
+        "sample_target_twist": [
+          6250,
+          6
+        ],
+        "sample_time_s": [
+          6250
+        ],
+        "solver_iterations": [
+          6250
+        ],
+        "solver_niter": [
+          6250,
+          20
+        ],
+        "warning_lastinfo": [
+          6250,
+          7
+        ],
+        "warning_number_delta": [
+          6250,
+          7
+        ],
+        "weld_constraint_force_raw": [
+          6250,
+          6
+        ],
+        "weld_constraint_residual_raw": [
+          6250,
+          6
+        ]
+      },
+      "trace_summary": {
+        "max_actual_acceleration": 0.5546880284077983,
+        "max_actual_twist": 0.010713650328488788,
+        "max_deck_tracking_pose_error": 2.2617802902198114e-06,
+        "max_solver_iterations": 1,
+        "max_weld_constraint_force_raw": 221.87521136311935,
+        "max_weld_constraint_residual_raw": 2.2617802902198114e-06,
+        "samples": 6250,
+        "warning_delta_max": 0,
+        "warning_delta_sum": 0
+      },
+      "warning_count": 0
+    },
+    {
+      "complete_trace_compared": true,
+      "options": {
+        "control_freq_hz": 20.0,
+        "control_steps": 250,
+        "integrator": "implicitfast",
+        "iterations": 100,
+        "post_integration_refresh": true,
+        "refresh_stride": 1,
+        "solver": "Newton",
+        "timestep_s": 0.0002,
+        "tolerance": 1e-10
+      },
+      "profile_id": "shakebench.official.physics.v1",
+      "profile_sha256": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+      "program_hash": "095b5df74f7f81e69241e328ad4ffec8987afe3f602b9a51c1075b2b28471c85",
+      "state_id": "phase06_zero_and_six_axis_trace",
+      "trace_digest": "3e9f0918306dc604f7904f62371a96fe57f9cf902d257bd543279b329f23ab7c",
+      "trace_dtypes": {
+        "actual_acceleration": "float64",
+        "actual_pose": "float64",
+        "actual_twist": "float64",
+        "command_acceleration": "float64",
+        "command_pose": "float64",
+        "command_twist": "float64",
+        "deck_tracking_pose_error": "float64",
+        "integration_application_time_s": "float64",
+        "integration_target_time_s": "float64",
+        "sample_application_time_s": "float64",
+        "sample_target_acceleration": "float64",
+        "sample_target_pose": "float64",
+        "sample_target_time_s": "float64",
+        "sample_target_twist": "float64",
+        "sample_time_s": "float64",
+        "solver_iterations": "int64",
+        "solver_niter": "int64",
+        "warning_lastinfo": "int64",
+        "warning_number_delta": "int64",
+        "weld_constraint_force_raw": "float64",
+        "weld_constraint_residual_raw": "float64"
+      },
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ],
+      "trace_shapes": {
+        "actual_acceleration": [
+          6250,
+          6
+        ],
+        "actual_pose": [
+          6250,
+          7
+        ],
+        "actual_twist": [
+          6250,
+          6
+        ],
+        "command_acceleration": [
+          6250,
+          6
+        ],
+        "command_pose": [
+          6250,
+          7
+        ],
+        "command_twist": [
+          6250,
+          6
+        ],
+        "deck_tracking_pose_error": [
+          6250,
+          6
+        ],
+        "integration_application_time_s": [
+          6250
+        ],
+        "integration_target_time_s": [
+          6250
+        ],
+        "sample_application_time_s": [
+          6250
+        ],
+        "sample_target_acceleration": [
+          6250,
+          6
+        ],
+        "sample_target_pose": [
+          6250,
+          7
+        ],
+        "sample_target_time_s": [
+          6250
+        ],
+        "sample_target_twist": [
+          6250,
+          6
+        ],
+        "sample_time_s": [
+          6250
+        ],
+        "solver_iterations": [
+          6250
+        ],
+        "solver_niter": [
+          6250,
+          20
+        ],
+        "warning_lastinfo": [
+          6250,
+          7
+        ],
+        "warning_number_delta": [
+          6250,
+          7
+        ],
+        "weld_constraint_force_raw": [
+          6250,
+          6
+        ],
+        "weld_constraint_residual_raw": [
+          6250,
+          6
+        ]
+      },
+      "trace_summary": {
+        "max_actual_acceleration": 0.5546880284077983,
+        "max_actual_twist": 0.010713650328488788,
+        "max_deck_tracking_pose_error": 2.2617802902198114e-06,
+        "max_solver_iterations": 1,
+        "max_weld_constraint_force_raw": 221.87521136311935,
+        "max_weld_constraint_residual_raw": 2.2617802902198114e-06,
+        "samples": 6250,
+        "warning_delta_max": 0,
+        "warning_delta_sum": 0
+      },
+      "warning_count": 0
+    },
+    {
+      "complete_trace_compared": true,
+      "options": {
+        "control_freq_hz": 20.0,
+        "control_steps": 250,
+        "integrator": "implicitfast",
+        "iterations": 100,
+        "post_integration_refresh": true,
+        "refresh_stride": 1,
+        "solver": "Newton",
+        "timestep_s": 0.0002,
+        "tolerance": 1e-10
+      },
+      "profile_id": "shakebench.official.physics.v1",
+      "profile_sha256": "72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414",
+      "program_hash": "095b5df74f7f81e69241e328ad4ffec8987afe3f602b9a51c1075b2b28471c85",
+      "state_id": "phase06_zero_and_six_axis_trace",
+      "trace_digest": "3e9f0918306dc604f7904f62371a96fe57f9cf902d257bd543279b329f23ab7c",
+      "trace_dtypes": {
+        "actual_acceleration": "float64",
+        "actual_pose": "float64",
+        "actual_twist": "float64",
+        "command_acceleration": "float64",
+        "command_pose": "float64",
+        "command_twist": "float64",
+        "deck_tracking_pose_error": "float64",
+        "integration_application_time_s": "float64",
+        "integration_target_time_s": "float64",
+        "sample_application_time_s": "float64",
+        "sample_target_acceleration": "float64",
+        "sample_target_pose": "float64",
+        "sample_target_time_s": "float64",
+        "sample_target_twist": "float64",
+        "sample_time_s": "float64",
+        "solver_iterations": "int64",
+        "solver_niter": "int64",
+        "warning_lastinfo": "int64",
+        "warning_number_delta": "int64",
+        "weld_constraint_force_raw": "float64",
+        "weld_constraint_residual_raw": "float64"
+      },
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ],
+      "trace_shapes": {
+        "actual_acceleration": [
+          6250,
+          6
+        ],
+        "actual_pose": [
+          6250,
+          7
+        ],
+        "actual_twist": [
+          6250,
+          6
+        ],
+        "command_acceleration": [
+          6250,
+          6
+        ],
+        "command_pose": [
+          6250,
+          7
+        ],
+        "command_twist": [
+          6250,
+          6
+        ],
+        "deck_tracking_pose_error": [
+          6250,
+          6
+        ],
+        "integration_application_time_s": [
+          6250
+        ],
+        "integration_target_time_s": [
+          6250
+        ],
+        "sample_application_time_s": [
+          6250
+        ],
+        "sample_target_acceleration": [
+          6250,
+          6
+        ],
+        "sample_target_pose": [
+          6250,
+          7
+        ],
+        "sample_target_time_s": [
+          6250
+        ],
+        "sample_target_twist": [
+          6250,
+          6
+        ],
+        "sample_time_s": [
+          6250
+        ],
+        "solver_iterations": [
+          6250
+        ],
+        "solver_niter": [
+          6250,
+          20
+        ],
+        "warning_lastinfo": [
+          6250,
+          7
+        ],
+        "warning_number_delta": [
+          6250,
+          7
+        ],
+        "weld_constraint_force_raw": [
+          6250,
+          6
+        ],
+        "weld_constraint_residual_raw": [
+          6250,
+          6
+        ]
+      },
+      "trace_summary": {
+        "max_actual_acceleration": 0.5546880284077983,
+        "max_actual_twist": 0.010713650328488788,
+        "max_deck_tracking_pose_error": 2.2617802902198114e-06,
+        "max_solver_iterations": 1,
+        "max_weld_constraint_force_raw": 221.87521136311935,
+        "max_weld_constraint_residual_raw": 2.2617802902198114e-06,
+        "samples": 6250,
+        "warning_delta_max": 0,
+        "warning_delta_sum": 0
+      },
+      "warning_count": 0
+    }
+  ]
+}
