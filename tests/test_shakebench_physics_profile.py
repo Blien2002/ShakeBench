@@ -133,11 +133,14 @@ def test_v3_dt_medium_scheduler_rejection_is_not_infrastructure_failure():
     assert status["driver_gate"]["dt_medium_disposition"] == "preflight_rejected_before_MuJoCo_integration"
 
 
-def test_v4_status_is_blocked_and_no_v4_selection_artifact_exists():
+def test_v4_status_is_blocked_and_first_v4_raw_artifact_is_preserved():
     status = json.loads((ASSETS / "shakebench_phase_06r3_v4_status.json").read_text(encoding="utf-8"))
     assert status["status"] == "BLOCKED"
-    assert not (ASSETS / "shakebench_selection_protocol_v4.yaml").exists()
-    assert not list(ASSETS.glob("shakebench_phase_06r3_v4_raw_*.json"))
+    assert status["failure_taxonomy"] == "invalid_protocol_configuration"
+    assert (ASSETS / "shakebench_selection_protocol_v4.yaml").exists()
+    raw = ASSETS / "shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json"
+    assert raw.is_file()
+    assert json.loads(raw.read_text(encoding="utf-8"))["state_id"] == "driver.dt_fine.gamma_0_15.empty"
 
 
 def test_profile_assets_remain_flat_and_packaged():

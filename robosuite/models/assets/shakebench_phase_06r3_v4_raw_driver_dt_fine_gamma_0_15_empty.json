@@ -1,0 +1,24 @@
+{
+  "pass_claim": false,
+  "payload_sha256": "5dd6f5e076a8f784809360d2e2bb5be74c2a5a604d5b8ec4807ad6091033c230",
+  "protocol_sha256": "cf84dee4de60d43eab305501f5abb15b2022f0a2d71e4d615331054652e6b72e",
+  "retry_ledger": [
+    {
+      "attempt": 1,
+      "exception_message": "'sample_rate_hz'",
+      "exception_type": "KeyError",
+      "state_config_identical": true
+    },
+    {
+      "attempt": 2,
+      "exception_message": "'sample_rate_hz'",
+      "exception_type": "KeyError",
+      "state_config_identical": true
+    }
+  ],
+  "schema_id": "shakebench.phase06r3.v4.physics_selection.raw",
+  "schema_version": 4,
+  "stage": "driver",
+  "state_id": "driver.dt_fine.gamma_0_15.empty",
+  "status": "infrastructure_failure_repeated"
+}

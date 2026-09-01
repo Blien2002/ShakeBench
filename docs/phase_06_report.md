@@ -59,6 +59,23 @@ isolator/contact/parity/determinism stages. See
 `shakebench_phase_06r2_status.json`. No official profile was published; V2
 remains unchanged and the active loader remains fail-closed.
 
+## Phase 06R3 / V4 result (BLOCKED)
+
+V4 structural registration was committed as `80712165`; the protocol and
+feasibility artifact were byte-checked before any V4 raw output. The first
+manifest state, `driver.dt_fine.gamma_0_15.empty`, never reached MuJoCo. The
+new runner expected per-state `sample_rate_hz` and `refresh_stride` fields that
+the immutable V4 manifest did not declare. The identical state failed twice
+with `KeyError: 'sample_rate_hz'`, and the raw ledger is preserved at
+`shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json`.
+
+This is classified as `invalid_protocol_configuration`, not a physics result
+and not a candidate exclusion. V4 cannot be amended or resumed after this
+registration-time defect. The derived status is
+`shakebench_phase_06r3_v4_status.json`; no V4 isolator, contact, parity,
+determinism, or official-profile publication stage was executed. Phase 07
+remains forbidden.
+
 ## Archived V1 report (invalidated)
 
 状态：**INVALIDATED（not a PASS）**

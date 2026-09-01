@@ -2,11 +2,25 @@
   "schema_id": "shakebench.phase06r3.v4.selection_status",
   "schema_version": 1,
   "status": "BLOCKED",
-  "reason": "V4 machinery and structural feasibility registration are pending",
+  "reason": "invalid_protocol_configuration: V4 driver manifest omitted per-state sample_rate_hz/refresh_stride fields required by the registered runner; identical state failed twice before MuJoCo integration",
   "protocol": {
     "path": "shakebench_selection_protocol_v4.yaml",
-    "sha256": null,
-    "registration_commit": null
+    "sha256": "c9f8832025dec120c389b34650abf3b7a5ce11f64cb842b51d788ca69e7f9cd5",
+    "registration_commit": "80712165"
+  },
+  "feasibility": {
+    "path": "shakebench_phase_06r3_v4_feasibility.json",
+    "sha256": "abcde901e4c01bd6dcd4bcfe35ae9e47d23e607b4683342f8caf9b712ad57307"
+  },
+  "failure_taxonomy": "invalid_protocol_configuration",
+  "blocking_raw_artifact": "shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json",
+  "failure_integrity": {
+    "state_id": "driver.dt_fine.gamma_0_15.empty",
+    "same_state_attempts": 2,
+    "raw_preserved_verbatim": true,
+    "mujoco_integration_started": false,
+    "replacement_candidate_or_seed": false,
+    "protocol_mutation": false
   },
   "official_profile_publication": "forbidden",
   "phase07": "forbidden"
