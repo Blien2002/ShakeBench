@@ -775,7 +775,13 @@ def _profile_payload_with_contact(base: PhysicsProfile, contact: Mapping[str, An
     return payload
 
 
-def _contact_candidate_probe(base_profile: PhysicsProfile, candidate: Mapping[str, Any], *, run_expensive: bool) -> dict[str, Any]:
+def _contact_candidate_probe(
+    base_profile: PhysicsProfile,
+    candidate: Mapping[str, Any],
+    *,
+    run_expensive: bool,
+    recovery_duration_s: Optional[float] = None,
+) -> dict[str, Any]:
     """Exercise real task contact geometry without evaluating task outcome."""
 
     from robosuite.environments.manipulation.vibration_pick_place_can import VibrationPickPlaceCan
@@ -853,7 +859,10 @@ def _contact_candidate_probe(base_profile: PhysicsProfile, candidate: Mapping[st
         data.qvel[can_qvel : can_qvel + 2] = (0.05, 0.0)
         mujoco.mj_forward(model, data)
         slip_speeds = []
-        for _ in range(1000):
+        recovery_steps = 1000 if recovery_duration_s is None else max(
+            1, int(math.ceil(float(recovery_duration_s) / float(profile.model_timestep_s)))
+        )
+        for _ in range(recovery_steps):
             physics_steps(1)
             slip_speeds.append(float(np.linalg.norm(data.qvel[can_qvel : can_qvel + 2])))
         slip = {

@@ -931,7 +931,12 @@ def _v6_contact_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
     candidate = _contact_candidate_mapping(state)
     from robosuite.scripts.shakebench_select_physics import _contact_candidate_probe
 
-    evidence = _contact_candidate_probe(profile, candidate, run_expensive=True)
+    evidence = _contact_candidate_probe(
+        profile,
+        candidate,
+        run_expensive=True,
+        recovery_duration_s=float(state.contact.probes["recovery_duration_s"]),
+    )
     incline = evidence.get("incline_threshold", {})
     # The established V5/V1 contact fixture's incline proof is an analytic
     # static-limit calculation plus a sub-limit MuJoCo check.  Materialize its
