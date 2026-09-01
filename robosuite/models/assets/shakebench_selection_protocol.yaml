@@ -1,0 +1,250 @@
+schema_id: shakebench.phase06.physics_selection_protocol
+schema_version: 1
+status: pre_registered
+description: >-
+  Physics-only, fail-closed selection rules for the immutable ShakeBench v0
+  environment-owned physics profile. This file is read before any candidate
+  probe and must not be changed after selection begins.
+
+scope:
+  benchmark_version: shakebench-v0
+  selection_authority: physics_probes_only
+  scoreable_fields:
+    - physics_timestep_s
+    - integrator
+    - solver
+    - solver_iterations
+    - solver_tolerance
+    - deck_mass_kg
+    - deck_inertia_kg_m2
+    - deck_eq_solref
+    - deck_eq_solimp
+    - isolator_fn_hz
+    - isolator_zeta
+    - isolator_k
+    - isolator_c
+    - isolator_springref
+    - contact_condim
+    - contact_torsional_mu
+    - contact_rolling_mu
+    - contact_margin_m
+    - contact_gap_m
+    - contact_solref
+    - contact_solimp
+  forbidden_selection_inputs:
+    - task_success_rate
+    - task_sr
+    - controller_success
+    - v0_v3_ranking
+    - policy_observation
+    - gamma_star
+
+candidate_grids:
+  timestep_solver:
+    f_max_hz: 8.87
+    candidates:
+      - candidate_id: dt_fine
+        physics_timestep_s: 0.0001
+        integrator: implicitfast
+        solver: Newton
+        solver_iterations: 100
+        solver_tolerance: 1.0e-10
+        deck_eq_solref: [0.0002, 0.5]
+        deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+      - candidate_id: dt_nominal
+        physics_timestep_s: 0.0002
+        integrator: implicitfast
+        solver: Newton
+        solver_iterations: 100
+        solver_tolerance: 1.0e-10
+        deck_eq_solref: [0.0004, 0.5]
+        deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+      - candidate_id: dt_conservative_coarse
+        physics_timestep_s: 0.0004
+        integrator: implicitfast
+        solver: Newton
+        solver_iterations: 100
+        solver_tolerance: 1.0e-10
+        deck_eq_solref: [0.0008, 0.5]
+        deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    deck:
+      mass_kg: 400.0
+      inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
+      weld_residual_rows: 6
+    load_cases: [empty, representative_panda_plus_worktable]
+    gamma_scales: [0.0, 0.15, 0.30, 0.50, 0.75, 0.95]
+    single_axis_line_count: 64
+    hard_gate:
+      line_amplitude_relative_error_max: 0.01
+      line_phase_absolute_error_deg_max: 1.0
+      gamma_relative_error_max: 0.01
+      warning_count_max: 0
+      unstable_residual: false
+      minimum_convergence_passes: 3
+
+  isolator:
+    axis_order: [tx, ty, tz, rx, ry, rz]
+    natural_frequency_hz:
+      tx: [4.0, 5.0, 6.0]
+      ty: [4.0, 5.0, 6.0]
+      tz: [4.0, 5.0, 6.0]
+      rx: [3.0, 4.0, 5.0]
+      ry: [3.0, 4.0, 5.0]
+      rz: [2.0, 2.5, 3.0]
+    damping_ratio:
+      tx: [0.05, 0.10, 0.20]
+      ty: [0.05, 0.10, 0.20]
+      tz: [0.05, 0.10, 0.20]
+      rx: [0.05, 0.10, 0.20]
+      ry: [0.05, 0.10, 0.20]
+      rz: [0.05, 0.10, 0.20]
+    candidate_families:
+      - candidate_id: balanced_nominal
+        fn_hz: [5.0, 5.0, 5.0, 4.0, 4.0, 2.5]
+        zeta: [0.10, 0.10, 0.10, 0.10, 0.10, 0.10]
+      - candidate_id: low_frequency_damped
+        fn_hz: [4.0, 4.0, 4.0, 3.0, 3.0, 2.0]
+        zeta: [0.20, 0.20, 0.20, 0.20, 0.20, 0.20]
+      - candidate_id: high_frequency_light_damping
+        fn_hz: [6.0, 6.0, 6.0, 5.0, 5.0, 3.0]
+        zeta: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    reference_mass_kg: 32.0
+    reference_inertia_kg_m2: [0.9696, 1.1363, 2.0867]
+    payload_mass_kg: 0.349
+    travel_limits_m: [0.025, 0.025, 0.025]
+    angle_limits_rad: [0.08726646259971647, 0.08726646259971647, 0.08726646259971647]
+    excitation_probe_frequencies_hz: [1.0, 2.5, 4.0, 5.0, 8.0, 10.0, 12.0]
+    gamma_scales: [0.0, 0.15, 0.30, 0.50, 0.75, 0.95]
+    metrics:
+      - T_accel
+      - R_relative
+      - D_relative
+      - T_peak
+      - travel_margin
+      - static_sag_uncompensated
+      - static_offset_compensated_empty
+      - static_offset_compensated_payload
+      - payload_sensitivity
+    target_transfer_envelope:
+      R_relative_min: 0.10
+      T_peak_max: 8.0
+      T_accel_min: 0.05
+      T_accel_max: 2.0
+      travel_margin_min_m: 0.005
+      static_sag_uncompensated_max_m: 0.020
+      static_offset_compensated_empty_max_m: 0.0005
+      static_offset_compensated_payload_max_m: 0.005
+      payload_sensitivity_max: 0.35
+      required_tracking_axes: 1
+      required_isolation_axes: 1
+    analytic_mujoco_tolerances:
+      amplitude_relative_error_max: 0.10
+      phase_absolute_error_deg_max: 6.0
+      joint_fit_normalized_residual_max: 0.05
+      combined_diagonal_leakage_max: 0.05
+      timestep_relative_stability_max: 0.10
+      solver_relative_stability_max: 0.10
+      static_equilibrium_absolute_error_max_m: 0.0001
+    scoring:
+      method: weighted_normalized_distance_to_target_then_margin
+      weights:
+        R_relative: 2.0
+        T_peak: 2.0
+        T_accel: 1.0
+        D_relative: 1.0
+        travel_margin: 2.0
+        static_sag_uncompensated: 1.0
+        static_offset_compensated_empty: 1.0
+        static_offset_compensated_payload: 1.0
+        payload_sensitivity: 1.0
+      secondary: maximize_minimum_normalized_margin
+
+  contact:
+    sliding_mu:
+      table_object: 0.30
+      finger_object: 1.00
+    condim: [3, 4, 6]
+    torsional_mu: [0.0, 0.005]
+    rolling_mu: [0.0, 0.0001]
+    margin_m: [0.0, 0.001]
+    gap_m: [0.0, 0.001]
+    solref: [[0.0004, 1.0], [0.001, 1.0], [0.002, 1.0]]
+    solimp:
+      - [0.90, 0.95, 0.001, 0.5, 2.0]
+      - [0.90, 0.95, 0.002, 0.5, 2.0]
+    iterations: [80, 100, 150]
+    explicit_pair_interfaces:
+      - can_open_worktable
+      - can_target_bottom
+      - can_target_walls
+      - can_panda_finger_pads
+    validation_probes:
+      - static_support
+      - incline_threshold
+      - single_axis_slip
+      - impact_recovery
+      - finger_load
+      - timestep_convergence
+    hard_gate:
+      sliding_threshold_relative_error_max: 0.10
+      static_support_force_min_N: 0.001
+      maximum_illegal_penetration_m: 0.0005
+      recovery_settle_time_s: 0.50
+      warning_count_max: 0
+      relative_trace_stability_max: 0.10
+
+hard_exclusions:
+  - candidate violates dt_leq_inverse_20_fmax
+  - positive equality solref time constant is less than 2_dt
+  - candidate has a non-positive or non-finite stiffness/damping
+  - candidate exceeds isolator travel or angle limits
+  - candidate has warning, NaN, unstable residual, or crash
+  - candidate fails any driver amplitude, phase, or Gamma gate
+  - candidate changes the canonical sliding friction values
+  - contact candidate is not explicit-pair scoped
+  - candidate changes controller configuration or reads task success
+  - repeated infrastructure crash for the same state ID
+
+scoring:
+  isolator_only: true
+  forbidden_fields: [task_success_rate, task_sr, controller_success, gamma_star]
+  candidate_score_order:
+    - hard_gates_passed_desc
+    - weighted_normalized_transfer_distance_asc
+    - minimum_normalized_margin_desc
+    - analytic_mujoco_disagreement_asc
+    - timestep_cost_asc
+  selected_candidate_count: 1
+
+deterministic_tie_break:
+  - candidate_id_lexicographic_ascending
+  - serialized_candidate_json_lexicographic_ascending
+
+tolerances:
+  float_absolute: 1.0e-12
+  float_relative: 1.0e-9
+  hash_algorithm: sha256
+  profile_hash_excludes: [profile_sha256]
+  exact_profile_match: true
+  trace_comparison:
+    independent_processes: 3
+    time_absolute_s: 1.0e-12
+    state_absolute: 1.0e-10
+    metric_absolute: 1.0e-10
+    integer_exact: true
+
+crash_handling:
+  policy_crash: fail_candidate_and_count_failure
+  simulator_or_infrastructure_crash: rerun_same_state_id_only
+  repeated_same_state_infrastructure_crash: mark_group_incomplete
+  replacement_seed: forbidden
+  missing_trace: fail_candidate
+  incomplete_selection: blocked
+
+artifact_contract:
+  raw_directory: robosuite/models/assets
+  raw_prefix: shakebench_phase_06_raw_
+  selected_table: shakebench_phase_06_selected_candidates.json
+  excluded_table: shakebench_phase_06_excluded_candidates.json
+  official_profile: shakebench_official_physics.yaml
+  protocol_is_immutable_after_selection: true
