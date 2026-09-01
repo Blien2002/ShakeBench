@@ -1696,10 +1696,19 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         status = _publish_if_verified(selected_path=selected_path, protocol_path=protocol_file, output=output, protocol_bytes_hash=protocol_bytes_hash, normalized_hash=normalized_hash, states=states, selected_ids=selected_ids, feasibility_hash=feasibility_hash, adapter_digest=contract["adapter_contract_digest"])
         return {"status": status or {"status": "BLOCKED", "reason": "publication failed"}, "verification": verification, "selected": selected_payload}
     selected_payload["status"] = "BLOCKED"
-    selected_payload["blocking_reason"] = "evidence_integrity_failure: independent V6 verifier failed"
+    selected_payload["blocking_reason"] = contact_blocked_reason or "evidence_integrity_failure: independent V6 verifier failed"
     selected_payload["payload_sha256"] = payload_hash(selected_payload)
     write_json_atomic(selected_path, selected_payload)
-    status = _write_blocked_status(output=output, protocol_name=protocol_name, protocol_bytes_hash=protocol_bytes_hash, normalized_hash=normalized_hash, feasibility_hash=feasibility_hash, reason="evidence_integrity_failure: independent V6 verifier failed", blocking_stage="verification", adapter_digest=contract["adapter_contract_digest"])
+    status = _write_blocked_status(
+        output=output,
+        protocol_name=protocol_name,
+        protocol_bytes_hash=protocol_bytes_hash,
+        normalized_hash=normalized_hash,
+        feasibility_hash=feasibility_hash,
+        reason=contact_blocked_reason or "evidence_integrity_failure: independent V6 verifier failed",
+        blocking_stage="contact" if contact_blocked_reason else "verification",
+        adapter_digest=contract["adapter_contract_digest"],
+    )
     return {"status": status, "verification": verification, "selected": selected_payload}
 
 
