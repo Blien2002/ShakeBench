@@ -348,6 +348,107 @@ def adapter_contract(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | 
     }
 
 
+def _last_json_line(output: str) -> Mapping[str, Any]:
+    for line in reversed(output.splitlines()):
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, Mapping):
+            return value
+    raise V6ProtocolError("pure V6 command did not emit JSON")
+
+
+def write_feasibility_artifact(protocol_path: str | Path, *, output_path: str | Path | None = None) -> dict[str, Any]:
+    """Record the exact three pure-command runs used for V6 registration."""
+
+    protocol, protocol_name, protocol_bytes_hash = load_v6_protocol(protocol_path)
+    protocol_arg = str(protocol_path)
+    command_specs = (
+        ("validate", "--validate-protocol"),
+        ("dry_run", "--dry-run-manifest"),
+        ("adapter_contract", "--adapter-contract"),
+    )
+    command_results: dict[str, Mapping[str, Any]] = {}
+    exit_codes: dict[str, int] = {}
+    for label, flag in command_specs:
+        completed = subprocess.run(
+            [sys.executable, "-m", "robosuite.scripts.shakebench_select_physics_v6", "--protocol", protocol_arg, flag],
+            cwd=str(Path(__file__).resolve().parents[2]),
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        exit_codes[label] = int(completed.returncode)
+        command_results[label] = _last_json_line(completed.stdout or completed.stderr)
+    if any(code != 0 for code in exit_codes.values()):
+        raise V6ProtocolError(f"cannot register feasibility from failed pure commands: {exit_codes}")
+    validate_v6_protocol(protocol, protocol_bytes_hash=protocol_bytes_hash)
+    states = _resolve(protocol, protocol_bytes_hash=protocol_bytes_hash)
+    contract = adapter_contract(protocol, protocol_bytes_hash=protocol_bytes_hash)
+    measurement = protocol["measurement"]
+    capacity_path = Path(models.assets_root) / str(measurement["capacity_preflight"])
+    if not capacity_path.is_file():
+        raise V6ProtocolError(f"missing V3 capacity artifact: {capacity_path}")
+    proofs = []
+    for state in states:
+        ratio = state.common.control_period_s / state.common.physics_timestep_s
+        duration_controls = int(math.ceil(state.common.duration_s / state.common.control_period_s))
+        proofs.append(
+            {
+                "state_id": state.state_id,
+                "physics_timestep_s": state.common.physics_timestep_s,
+                "control_period_s": state.common.control_period_s,
+                "control_steps": state.common.control_steps,
+                "control_ratio": ratio,
+                "control_ratio_integer": bool(np.isclose(ratio, round(ratio), rtol=0.0, atol=1.0e-12)),
+                "refresh_stride": state.common.refresh_stride,
+                "sample_dt_s": state.common.sample_dt_s,
+                "sample_dt_equals_stride_times_timestep": bool(np.isclose(state.common.sample_dt_s, state.common.refresh_stride * state.common.physics_timestep_s, rtol=0.0, atol=1.0e-12)),
+                "sample_rate_hz": state.common.measurement_rate_hz,
+                "sample_rate_inverse_error": abs(state.common.measurement_rate_hz - 1.0 / state.common.sample_dt_s),
+                "duration_s": state.common.duration_s,
+                "duration_control_count": duration_controls,
+                "mujoco_step_count": state.common.mujoco_step_count,
+                "retained_sample_count": state.common.retained_sample_count,
+            }
+        )
+    artifact = {
+        "schema_id": SCHEMA_ID + ".feasibility",
+        "schema_version": SCHEMA_VERSION,
+        "status": "PASS",
+        "protocol": {
+            "path": protocol_name,
+            "bytes_sha256": protocol_bytes_hash,
+            "normalized_sha256": sha256_json(protocol),
+            "immutable_after_registration": protocol.get("immutable_after_registration"),
+        },
+        "resolved_state_digest": sha256_state_json([state.to_dict() for state in states]),
+        "resolved_states": [state.to_dict() for state in states],
+        "state_count": len(states),
+        "stage_counts": {stage: sum(state.stage == stage for state in states) for stage in ("driver", "isolator", "contact", "parity", "replay")},
+        "legal_replay_binding_count": len(resolve_replay_binding_templates(protocol)),
+        "adapter_contract_digest": contract["adapter_contract_digest"],
+        "adapter_contract_state_count": contract["state_count"],
+        "adapter_contract_prepared_plan_count": contract["prepared_plan_count"],
+        "integer_ratio_proofs": proofs,
+        "capacity_evidence": {"path": str(measurement["capacity_preflight"]), "sha256": file_sha256(capacity_path), "selection_input": measurement["capacity_selection_input"]},
+        "commands": {
+            label: {
+                "command": f"python -m robosuite.scripts.shakebench_select_physics_v6 --protocol {protocol_arg} {flag}",
+                "exit_code": exit_codes[label],
+                "result_digest": sha256_json(command_results[label]),
+            }
+            for label, flag in command_specs
+        },
+    }
+    artifact["payload_sha256"] = payload_hash(artifact)
+    destination = Path(output_path) if output_path is not None else Path(models.assets_root) / FEASIBILITY_FILENAME
+    write_json_atomic(destination, artifact)
+    return artifact
+
+
 def _protocol_hashes(state: ResolvedProbeState) -> tuple[str | None, str]:
     identity = state.common.protocol_identity
     return identity.get("bytes_sha256"), str(identity.get("normalized_sha256"))
@@ -895,9 +996,39 @@ def _v6_parity_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
         env.reset()
         raw_model = env.sim.model._model
         raw_data = env.sim.data._data
-        raw_data.ctrl[:] = 0.0
-        for _ in range(max(1, int(math.ceil(state.parity.static_duration_s / state.common.physics_timestep_s)))):
-            mujoco.mj_step(raw_model, raw_data)
+        zero_action = np.zeros(env.action_dim)
+        # Reproduce the environment's control/physics split without invoking
+        # ``env.step`` (which would call reward/task success).  This retains
+        # controller action semantics and the real driver hooks while keeping
+        # parity strictly physics-only.
+        for _ in range(max(1, int(math.ceil(state.parity.static_duration_s * env.control_freq)))):
+            for internal_index in range(env._control_steps):
+                physics_time_s = float(env.sim.data.time)
+                env._pre_physics_step(physics_time_s, internal_index == 0)
+                for hook in env._pre_physics_step_hooks:
+                    hook(physics_time_s, internal_index == 0)
+                if env.lite_physics:
+                    env.sim.step1()
+                else:
+                    env.sim.forward()
+                env._pre_action(zero_action, internal_index == 0)
+                if env.lite_physics:
+                    env.sim.step2()
+                else:
+                    env.sim.step()
+                refresh_due = env._post_integration_refresh_requested and ((env._physics_step_index + 1) % env._post_integration_refresh_stride == 0)
+                if refresh_due:
+                    refresh_time_s = float(env.sim.data.time)
+                    for hook in env._post_integration_refresh_hooks:
+                        hook(refresh_time_s, internal_index == 0)
+                    env.sim.forward()
+                if refresh_due:
+                    sample_time_s = float(env.sim.data.time)
+                    env._post_physics_step(sample_time_s, internal_index == 0)
+                    for hook in env._post_physics_step_hooks:
+                        hook(sample_time_s, internal_index == 0)
+                env._physics_step_index += 1
+            env.cur_time += env.control_timestep
         table_names = set(env.table_contact_geom_names)
         can_names = set(env.can.contact_geoms)
         normal_force = 0.0
@@ -1543,6 +1674,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--validate-protocol", action="store_true")
     parser.add_argument("--dry-run-manifest", action="store_true")
     parser.add_argument("--adapter-contract", action="store_true")
+    parser.add_argument("--write-feasibility", action="store_true")
     parser.add_argument("--stage", choices=("driver", "isolator", "contact", "parity", "replay", "all"))
     parser.add_argument("--state-id", default=None)
     parser.add_argument("--verify", default=None)
@@ -1561,6 +1693,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             result = {"path": name, "protocol_sha256_bytes": bytes_hash, **dry_run_manifest(protocol, protocol_bytes_hash=bytes_hash)}
         elif args.adapter_contract:
             result = {"path": name, "protocol_sha256_bytes": bytes_hash, **adapter_contract(protocol, protocol_bytes_hash=bytes_hash)}
+        elif args.write_feasibility:
+            result = write_feasibility_artifact(args.protocol or name)
         elif args.verify:
             result = verify_selection_artifact(args.verify, protocol_path=args.protocol)
         elif args.stage:
