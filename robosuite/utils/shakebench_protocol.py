@@ -266,3 +266,20 @@ def resolve_all_protocol_states(protocol: Mapping[str, Any]) -> tuple[ResolvedPh
     if len({state.state_id for state in states}) != len(states) or len({state.output for state in states}) != len(states):
         raise ProtocolStateError("resolved state IDs and outputs must be unique")
     return states
+
+
+# V5's flat state remains available for archive compatibility.  V6 callers
+# use the tagged state and resolver explicitly; keeping the aliases here also
+# gives downstream code one stable protocol utility import location.
+from robosuite.utils.shakebench_protocol_v6 import (  # noqa: E402  (intentional compatibility export)
+    ResolvedProbeState,
+    ResolvedCommon,
+    ResolvedContact,
+    ResolvedDriver,
+    ResolvedIsolator,
+    ResolvedParity,
+    ResolvedReplay,
+    V6ProtocolStateError,
+    resolve_all_protocol_states_v6,
+    resolve_protocol_state_v6,
+)

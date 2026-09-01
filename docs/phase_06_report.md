@@ -78,6 +78,10 @@ replay and official-profile publication. See
 `shakebench_phase_06r4_v5_status.json`. No official profile was published and
 Phase 07 remains forbidden.
 
+No V5 isolator, contact, bounded-parity, or replay/determinism evidence
+exists. The 18 V5 driver files are retained as archive/provenance only and
+are not relabeled or reused as V6 selection evidence.
+
 ## Phase 06R3 / V4 result (BLOCKED)
 
 V4 structural registration was committed as `80712165`; the protocol and
