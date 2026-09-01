@@ -953,6 +953,8 @@ def _v6_contact_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
         "actual_incline": float(incline.get("threshold_relative_error", float("inf"))) <= float(state.contact.hard_gates["incline_threshold_relative_error_max"]),
         "slip": evidence.get("single_axis_slip", {}).get("passed") is True,
         "impact_recovery": evidence.get("impact_recovery", {}).get("passed") is True,
+        "recovery_velocity": float(impact.get("recovery_velocity_m_s", float("inf"))) <= float(state.contact.hard_gates["recovery_velocity_max_m_s"]),
+        "recovery_angular_velocity": float(impact.get("recovery_angular_velocity_rad_s", float("inf"))) <= float(state.contact.hard_gates["recovery_angular_velocity_max_rad_s"]),
         "finger_load": evidence.get("finger_load", {}).get("passed") is True,
         "timestep_convergence": evidence.get("timestep_convergence", {}).get("passed") is True,
         "warnings": evidence.get("warning_count") == 0,
