@@ -1631,9 +1631,15 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
     contact_candidates = {states[record["state_id"]].candidate_id: record for record in contact_records}
     eligible_contacts = [candidate_id for candidate_id, record in contact_candidates.items() if _contact_eligible(record, states[record["state_id"]].contact.hard_gates)]
     selected_contact = sorted(eligible_contacts, key=lambda candidate_id: _contact_score(contact_candidates[candidate_id], states[contact_candidates[candidate_id]["state_id"]]))[0] if eligible_contacts else None
+    contact_blocked_reason = None
     if selected_contact is None:
-        status = _write_blocked_status(output=output, protocol_name=protocol_name, protocol_bytes_hash=protocol_bytes_hash, normalized_hash=normalized_hash, feasibility_hash=feasibility_hash, reason="physics_gate_failure: no contact candidate passed", blocking_stage="contact", adapter_digest=contract["adapter_contract_digest"])
-        return {"status": status, "driver_eligibility": driver_eligibility}
+        # A completed candidate failure excludes the component but does not
+        # erase the remaining parity/replay evidence.  Continue with the
+        # registered default binding solely to make those independent gates
+        # auditable; the final selection remains BLOCKED.
+        contact_blocked_reason = "physics_gate_failure: no contact candidate passed"
+        selection_defaults = protocol.get("selection", {}).get("default", {})
+        selected_contact = str(selection_defaults.get("contact_candidate_id", "c3_nominal"))
     context["contact_candidate_id"] = selected_contact
 
     parity_records = run_resolved_stage(protocol, stage="parity", output_dir=output, probe=_v6_parity_probe, protocol_bytes_hash=protocol_bytes_hash, selection_context=context)
@@ -1651,7 +1657,7 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
     selected_payload = {
         "schema_id": SCHEMA_ID,
         "schema_version": SCHEMA_VERSION,
-        "status": "PASS",
+        "status": "PASS" if contact_blocked_reason is None else "BLOCKED",
         "physics_only": True,
         "protocol": {"path": protocol_file.name, "bytes_sha256": protocol_bytes_hash, "normalized_sha256": normalized_hash, "status": protocol.get("status")},
         "resolved_state_digest": structure["resolved_state_digest"],
@@ -1662,9 +1668,10 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "eligible_counts": {"driver": sum(record["eligible"] for record in driver_eligibility.values()), "isolator": len(eligible_isolators), "contact": len(eligible_contacts)},
         "raw_files": raw_files,
         "official_profile": OFFICIAL_PROFILE_FILENAME,
-        "official_profile_alignment": True,
+        "official_profile_alignment": contact_blocked_reason is None,
         "driver_recomputed": driver_eligibility,
         "replay_groups": ["driver", "isolator", "contact", "gamma_zero_parity"],
+        "blocking_reason": contact_blocked_reason,
     }
     selected_payload["payload_sha256"] = payload_hash(selected_payload)
     selected_path = output / SELECTED_FILENAME
