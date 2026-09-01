@@ -936,6 +936,7 @@ def _v6_contact_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
         candidate,
         run_expensive=True,
         recovery_duration_s=float(state.contact.probes["recovery_duration_s"]),
+        reset_drop_velocity=True,
     )
     incline = evidence.get("incline_threshold", {})
     # The established V5/V1 contact fixture's incline proof is an analytic

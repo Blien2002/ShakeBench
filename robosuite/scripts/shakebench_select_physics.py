@@ -781,6 +781,7 @@ def _contact_candidate_probe(
     *,
     run_expensive: bool,
     recovery_duration_s: Optional[float] = None,
+    reset_drop_velocity: bool = False,
 ) -> dict[str, Any]:
     """Exercise real task contact geometry without evaluating task outcome."""
 
@@ -876,6 +877,8 @@ def _contact_candidate_probe(
         can_qpos = int(model.jnt_qposadr[can_joint])
         data.qpos[can_qpos : can_qpos + 3] = table_top + np.asarray((0.0, 0.0, 0.15))
         data.qpos[can_qpos + 3 : can_qpos + 7] = (1.0, 0.0, 0.0, 0.0)
+        if reset_drop_velocity:
+            data.qvel[can_qvel : can_qvel + 6] = 0.0
         mujoco.mj_forward(model, data)
         impact_distances = []
         for _ in range(1000):
