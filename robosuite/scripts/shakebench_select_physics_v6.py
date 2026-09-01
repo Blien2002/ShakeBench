@@ -82,6 +82,8 @@ SELECTED_FILENAME = "shakebench_phase_06r5_v6_selected_candidates.json"
 EXCLUDED_FILENAME = "shakebench_phase_06r5_v6_excluded_candidates.json"
 FEASIBILITY_FILENAME = "shakebench_phase_06r5_v6_feasibility.json"
 STATUS_FILENAME = "shakebench_phase_06r5_v6_status.json"
+PARITY_FILENAME = "shakebench_phase_06r5_v6_gamma_zero_parity.json"
+DETERMINISM_FILENAME = "shakebench_phase_06r5_v6_replay_determinism.json"
 OFFICIAL_PROFILE_FILENAME = "shakebench_official_physics.yaml"
 
 
@@ -1388,6 +1390,47 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
         errors.append("resolved-state digest mismatch")
     if not verify_payload_hash(selected):
         errors.append("selected payload hash mismatch")
+    if selected.get("physics_only") is not True or selected.get("selection", {}).get("task_success_used") is not False or selected.get("selection", {}).get("reward_used") is not False or selected.get("selection", {}).get("controller_outcome_used") is not False:
+        errors.append("selection contains a forbidden non-physics input")
+
+    feasibility = selected.get("feasibility", {})
+    feasibility_path = selected_path.parent / str(feasibility.get("path", FEASIBILITY_FILENAME))
+    if not feasibility_path.is_file():
+        errors.append("feasibility artifact is missing")
+    else:
+        try:
+            feasibility_payload = json.loads(feasibility_path.read_text(encoding="utf-8"))
+            if feasibility.get("sha256") != file_sha256(feasibility_path) or not verify_payload_hash(feasibility_payload):
+                errors.append("feasibility hash or payload mismatch")
+            if feasibility_payload.get("protocol", {}).get("bytes_sha256") != protocol_bytes_hash or feasibility_payload.get("resolved_state_digest") != structure["resolved_state_digest"]:
+                errors.append("feasibility/protocol/resolved-state mismatch")
+            if feasibility_payload.get("adapter_contract_digest") != selected.get("adapter_contract_digest"):
+                errors.append("feasibility/adapter-contract digest mismatch")
+            if any(int(feasibility_payload.get("commands", {}).get(name, {}).get("exit_code", 1)) != 0 for name in ("validate", "dry_run", "adapter_contract")):
+                errors.append("feasibility records a failed pure command")
+        except (OSError, json.JSONDecodeError):
+            errors.append("feasibility artifact is unreadable")
+
+    for artifact_key, default_name in (("parity_artifact", PARITY_FILENAME), ("determinism_artifact", DETERMINISM_FILENAME)):
+        reference = selected.get(artifact_key, {})
+        artifact_path = selected_path.parent / str(reference.get("path", default_name))
+        if not artifact_path.is_file():
+            errors.append(f"{artifact_key} is missing")
+            continue
+        try:
+            artifact_payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+            if reference.get("sha256") != file_sha256(artifact_path) or not verify_payload_hash(artifact_payload):
+                errors.append(f"{artifact_key} hash or payload mismatch")
+            if artifact_payload.get("protocol_sha256_bytes") != protocol_bytes_hash or artifact_payload.get("protocol_sha256_normalized") != sha256_json(protocol):
+                errors.append(f"{artifact_key}/protocol hash mismatch")
+            if artifact_key == "parity_artifact" and artifact_payload.get("status") != "PASS":
+                errors.append("parity artifact is not PASS")
+            if artifact_key == "determinism_artifact":
+                groups = artifact_payload.get("groups", {})
+                if set(groups) < {"driver", "isolator", "contact", "gamma_zero_parity"}:
+                    errors.append("determinism artifact is missing replay groups")
+        except (OSError, json.JSONDecodeError):
+            errors.append(f"{artifact_key} is unreadable")
 
     driver = _driver_eligibility(states, raw)
     checks["driver_matrix"] = all(record["complete_state_count"] == 6 for record in driver.values())
@@ -1475,10 +1518,6 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
     profile_ref = selected.get("official_profile", OFFICIAL_PROFILE_FILENAME)
     if profile_ref != OFFICIAL_PROFILE_FILENAME:
         errors.append("external scoreable profile reference is forbidden")
-    feasibility = selected.get("feasibility", {})
-    feasibility_path = selected_path.parent / str(feasibility.get("path", FEASIBILITY_FILENAME))
-    if feasibility_path.is_file() and feasibility.get("sha256") != file_sha256(feasibility_path):
-        errors.append("feasibility hash mismatch")
     if selected.get("adapter_contract_digest"):
         try:
             contract = adapter_contract(protocol, protocol_bytes_hash=protocol_bytes_hash)
@@ -1486,6 +1525,30 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
                 errors.append("adapter-contract digest mismatch")
         except Exception as exc:
             errors.append(f"adapter-contract recomputation failed: {exc}")
+    else:
+        errors.append("adapter-contract digest is missing")
+
+    status_path = selected_path.parent / STATUS_FILENAME
+    if not status_path.is_file():
+        errors.append("V6 status artifact is missing")
+    else:
+        try:
+            status_payload = json.loads(status_path.read_text(encoding="utf-8"))
+            if selected.get("status") == "PASS":
+                if status_payload.get("status") != "PASS":
+                    errors.append("PASS selection does not have PASS status")
+                if status_payload.get("protocol", {}).get("bytes_sha256") != protocol_bytes_hash or status_payload.get("protocol", {}).get("normalized_sha256") != sha256_json(protocol):
+                    errors.append("status/protocol hash mismatch")
+                profile = status_payload.get("official_profile", {})
+                profile_path = selected_path.parent / str(profile.get("path", ""))
+                if profile.get("path") != OFFICIAL_PROFILE_FILENAME or not profile_path.is_file() or profile.get("file_sha256") != file_sha256(profile_path):
+                    errors.append("status/profile binding mismatch")
+            elif status_payload.get("status") != "BLOCKED":
+                errors.append("blocked selection does not have BLOCKED status")
+            if status_payload.get("adapter_contract_digest") != selected.get("adapter_contract_digest"):
+                errors.append("status/adapter-contract digest mismatch")
+        except (OSError, json.JSONDecodeError):
+            errors.append("V6 status artifact is unreadable")
     return {
         "passed": not errors,
         "errors": errors,
@@ -1658,6 +1721,55 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
             continue
         raw_files.append({"stage": state.stage, "state_id": state.state_id, "path": path.name, "sha256": file_sha256(path), "resolved_state_digest": state.resolved_state_digest})
     selected_ids = {"driver": selected_driver, "isolator": selected_isolator, "contact": selected_contact}
+    parity_raw = next(record for record in parity_records if record.get("stage") == "parity")
+    parity_artifact = {
+        "schema_id": SCHEMA_ID + ".parity",
+        "schema_version": SCHEMA_VERSION,
+        "status": "PASS" if _parity_eligible(parity_raw, states[parity_raw["state_id"]]) else "BLOCKED",
+        "protocol_sha256_bytes": protocol_bytes_hash,
+        "protocol_sha256_normalized": normalized_hash,
+        "resolved_state_digest": parity_raw["resolved_state_digest"],
+        "raw_file": {"path": states[parity_raw["state_id"]].output, "state_id": parity_raw["state_id"]},
+        "evidence": parity_raw.get("evidence", {}),
+    }
+    parity_artifact["payload_sha256"] = payload_hash(parity_artifact)
+    parity_path = output / PARITY_FILENAME
+    write_json_atomic(parity_path, parity_artifact)
+    replay_groups = defaultdict(list)
+    for record in replay_records:
+        replay_groups[str(record.get("evidence", {}).get("selected_component"))].append(record)
+    determinism_groups = {}
+    for group, records in replay_groups.items():
+        evidence_rows = [record.get("evidence", {}) for record in sorted(records, key=lambda item: int(item.get("evidence", {}).get("process_index", 0)))]
+        determinism_groups[group] = {
+            "process_count": len(evidence_rows),
+            "process_indices": [row.get("process_index") for row in evidence_rows],
+            "trace_digests": [row.get("trace_digest") for row in evidence_rows],
+            "metric_digests": [row.get("metric_digest") for row in evidence_rows],
+            "trace_fields": evidence_rows[0].get("trace_fields", []) if evidence_rows else [],
+            "complete_trace": all(row.get("complete_trace") is True for row in evidence_rows),
+        }
+    determinism_artifact = {
+        "schema_id": SCHEMA_ID + ".replay_determinism",
+        "schema_version": SCHEMA_VERSION,
+        "status": "PASS" if set(determinism_groups) >= {"driver", "isolator", "contact", "gamma_zero_parity"} and all(row["process_count"] == 3 and len(set(row["trace_digests"])) == 1 for row in determinism_groups.values()) else "BLOCKED",
+        "protocol_sha256_bytes": protocol_bytes_hash,
+        "protocol_sha256_normalized": normalized_hash,
+        "resolved_state_digest": structure["resolved_state_digest"],
+        "independent_process_count": 3,
+        "groups": determinism_groups,
+        "same_process_reset_used": False,
+    }
+    determinism_artifact["payload_sha256"] = payload_hash(determinism_artifact)
+    determinism_path = output / DETERMINISM_FILENAME
+    write_json_atomic(determinism_path, determinism_artifact)
+    excluded_rows = []
+    for candidate_id, record in isolator_candidates.items():
+        if not _isolator_eligible(record, states[record["state_id"]]):
+            excluded_rows.append({"stage": "isolator", "candidate_id": candidate_id, "reason": "isolator_hard_gate_failed"})
+    for candidate_id, record in contact_candidates.items():
+        if not _contact_eligible(record, states[record["state_id"]].contact.hard_gates):
+            excluded_rows.append({"stage": "contact", "candidate_id": candidate_id, "reason": "contact_hard_gate_failed"})
     selected_payload = {
         "schema_id": SCHEMA_ID,
         "schema_version": SCHEMA_VERSION,
@@ -1676,6 +1788,9 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "driver_recomputed": driver_eligibility,
         "replay_groups": ["driver", "isolator", "contact", "gamma_zero_parity"],
         "blocking_reason": contact_blocked_reason,
+        "parity_artifact": {"path": PARITY_FILENAME, "sha256": file_sha256(parity_path)},
+        "determinism_artifact": {"path": DETERMINISM_FILENAME, "sha256": file_sha256(determinism_path)},
+        "excluded": excluded_rows,
     }
     selected_payload["payload_sha256"] = payload_hash(selected_payload)
     selected_path = output / SELECTED_FILENAME
