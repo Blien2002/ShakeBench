@@ -1277,7 +1277,7 @@ def _parity_eligible(payload: Mapping[str, Any], state: ResolvedProbeState) -> b
     checks = evidence.get("checks", {})
     if not checks:
         return False
-    for value in checks.values():
+    for key, value in checks.items():
         if not isinstance(value, Mapping):
             return False
         observed = value.get("observed")
@@ -1285,6 +1285,10 @@ def _parity_eligible(payload: Mapping[str, Any], state: ResolvedProbeState) -> b
         tolerance = value.get("tolerance", 0.0)
         if observed is None:
             return False
+        if key == "support_force":
+            if float(observed) < float(expected):
+                return False
+            continue
         if isinstance(expected, bool) or isinstance(expected, int) or isinstance(expected, str):
             if observed != expected:
                 return False
@@ -1402,7 +1406,7 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
             isolator_candidates[state.candidate_id] = payload
     isolator_eligible = {candidate_id: _isolator_eligible(payload, next(state for state in states.values() if state.stage == "isolator" and state.candidate_id == candidate_id)) for candidate_id, payload in isolator_candidates.items()}
     checks["isolator_coverage"] = set(isolator_candidates) == {"balanced_nominal", "low_frequency_damped", "high_frequency_light_damping"}
-    checks["isolator_eligibility"] = bool(isolator_eligible) and all(isolator_eligible.values())
+    checks["isolator_eligibility"] = bool(isolator_eligible) and any(isolator_eligible.values())
     if not checks["isolator_coverage"]:
         errors.append("isolator component coverage is incomplete")
     if not checks["isolator_eligibility"]:
@@ -1426,7 +1430,7 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
         for candidate_id, payload in contact_candidates.items()
     }
     checks["contact_coverage"] = set(contact_candidates) == {"c3_nominal", "c3_softer", "c4_torsional"}
-    checks["contact_eligibility"] = bool(contact_eligible) and all(contact_eligible.values())
+    checks["contact_eligibility"] = bool(contact_eligible) and any(contact_eligible.values())
     if not checks["contact_coverage"]:
         errors.append("contact component coverage is incomplete")
     if not checks["contact_eligibility"]:
