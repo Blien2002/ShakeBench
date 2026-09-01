@@ -1,0 +1,116 @@
+schema_id: shakebench.phase06r3.v4.physics_selection_protocol
+schema_version: 4
+phase: 06R3
+status: pre_registered
+immutable_after_registration: true
+selection_authority: physics_probes_only
+registration:
+  normalized_hash_scope: exact_registered_yaml_bytes
+  registration_commit: recorded_in_feasibility_and_all_raw_artifacts
+  capacity_evidence_is_selection_input: false
+
+scope:
+  forbidden_selection_inputs: [task_success, reward, success_evaluator, controller_outcome, state_tier_ranking, policy_observation, Gamma_star]
+  allowed_selection_inputs: [v4_protocol, frozen_phase01_to_phase05_physical_facts, raw_mujoco_state, raw_solver_diagnostics]
+
+frozen_facts:
+  f_max_hz: 8.87
+  authored_spectrum: {seed: 17, t0_s: 0.0, line_count: 64, transient_discard_s: 0.75}
+  safe_gamma_candidates: [0.15, 0.30, 0.50]
+  load_cases: [empty, panda_plus_worktable_reference_proxy]
+  control_frequency_hz: 20.0
+  gravity_m_s2: 9.81
+  table_mass_kg: 32.0
+  table_inertia_kg_m2: [0.9696, 1.1363, 2.0867]
+  can_mass_kg: 0.349
+  sliding_mu: {table_object: 0.30, finger_object: 1.00}
+
+measurement:
+  trace_schema_id: shakebench.deck_driver.trace
+  trace_schema_version: 3
+  sampling_phase_rule: post-integration right-limit refresh; actual state sampled at data.time
+  no_skipped_mujoco_steps: true
+  cadence_hz: 200.0
+  minimum_cadence_hz: 177.4
+  capacity_preflight: shakebench_phase_06r2_capacity_preflight.json
+  capacity_selection_input: false
+
+driver:
+  convergence_candidates:
+    - {candidate_id: dt_fine, physics_timestep_s: 0.0001, refresh_stride: 50, sample_dt_s: 0.005, sample_rate_hz: 200.0, integrator: Euler, solver: Newton, iterations: 100, tolerance: 1.0e-12, deck_mass_kg: 400.0, deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332], deck_eq_solref: [0.0002, 0.5], deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]}
+    - {candidate_id: dt_medium, physics_timestep_s: 0.000125, refresh_stride: 40, sample_dt_s: 0.005, sample_rate_hz: 200.0, integrator: Euler, solver: Newton, iterations: 100, tolerance: 1.0e-12, deck_mass_kg: 400.0, deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332], deck_eq_solref: [0.00025, 0.5], deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]}
+    - {candidate_id: dt_nominal, physics_timestep_s: 0.0002, refresh_stride: 25, sample_dt_s: 0.005, sample_rate_hz: 200.0, integrator: Euler, solver: Newton, iterations: 100, tolerance: 1.0e-12, deck_mass_kg: 400.0, deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332], deck_eq_solref: [0.0004, 0.5], deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]}
+  negative_control: {candidate_id: dt_coarse_negative_control, physics_timestep_s: 0.0004, refresh_stride: 13, sample_dt_s: 0.0052, sample_rate_hz: 192.30769230769232, integrator: Euler, solver: Newton, iterations: 100, tolerance: 1.0e-12, deck_eq_solref: [0.0008, 0.5], never_counts_as_convergence_pass: true}
+  hard_gates: {line_amplitude_relative_error_max: 0.01, line_phase_absolute_error_deg_max: 1.0, gamma_deck_relative_error_max: 0.01, warning_count_max: 0, unstable_residual_max: 0.001, minimum_complete_convergence_passes: 3}
+  selection: {primary: largest_dt_complete_hard_gate_pass, secondary: smallest_max_absolute_line_phase_error_deg, tertiary: candidate_id_lexicographic_ascending}
+
+components:
+  isolator_candidates:
+    - {candidate_id: balanced_nominal, fn_hz: [5.0, 5.0, 5.0, 4.0, 4.0, 2.5], zeta: [0.10, 0.10, 0.10, 0.10, 0.10, 0.10]}
+    - {candidate_id: low_frequency_damped, fn_hz: [4.0, 4.0, 4.0, 3.0, 3.0, 2.0], zeta: [0.20, 0.20, 0.20, 0.20, 0.20, 0.20]}
+    - {candidate_id: high_frequency_light_damping, fn_hz: [6.0, 6.0, 6.0, 5.0, 5.0, 3.0], zeta: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]}
+  contact_candidates:
+    - {candidate_id: c3_nominal, condim: 3, torsional_mu: 0.005, rolling_mu: 0.0001, margin_m: 0.0, gap_m: 0.0, solref: [0.0004, 1.0], solimp: [0.9, 0.95, 0.001, 0.5, 2.0], iterations: 100}
+    - {candidate_id: c3_softer, condim: 3, torsional_mu: 0.005, rolling_mu: 0.0001, margin_m: 0.0, gap_m: 0.0, solref: [0.001, 1.0], solimp: [0.9, 0.95, 0.002, 0.5, 2.0], iterations: 100}
+    - {candidate_id: c4_torsional, condim: 4, torsional_mu: 0.005, rolling_mu: 0.0001, margin_m: 0.0, gap_m: 0.0, solref: [0.0004, 1.0], solimp: [0.9, 0.95, 0.001, 0.5, 2.0], iterations: 100}
+
+isolator:
+  regions: {tracking_ratio: 0.2, resonance_ratio: 1.0, isolation_ratio: 2.0, transient_cycles: 10, fit_cycles: 20}
+  combined_spectrum: {seed: 17, t0_s: 0.137, level_scale: 0.30, transient_discard_s: 0.75, line_count: 64}
+  payload: {mass_kg: 0.349, com_offsets_m: [[0.0, 0.0], [0.10, 0.0], [0.0, 0.20], [0.10, 0.20]], settle_duration_s: 8.0, equilibrium_window_s: 1.0}
+  targets: {R_relative_median: 1.0, T_peak: 4.0, T_accel_mean: 1.025, D_relative_m: 0.005, travel_margin_min_m: 0.015, static_sag_uncompensated_m: 0.010, static_offset_compensated_payload_max_m: 0.0025, payload_sensitivity: 0.175}
+  hard_gates: {T_accel_mean_min: 0.05, T_accel_mean_max: 2.0, T_peak_max: 8.0, travel_margin_min_m: 0.005, static_sag_uncompensated_max_m: 0.020, static_offset_compensated_payload_max_m: 0.005, payload_sensitivity_max: 0.35, analytic_mujoco_amplitude_relative_error_max: 0.10, analytic_mujoco_phase_absolute_error_deg_max: 6.0, cross_axis_leakage_max: 0.05, warnings_max: 0}
+  scoring: {weights: {R_relative_median: 2.0, T_peak: 2.0, T_accel_mean: 1.0, D_relative_m: 1.0, travel_margin_min_m: 2.0, static_sag_uncompensated_m: 1.0, static_offset_compensated_payload_max_m: 1.0, payload_sensitivity: 1.0}, primary: weighted_normalized_distance_ascending, secondary: minimum_normalized_margin_descending, tertiary: candidate_id_lexicographic_ascending}
+
+contact:
+  interfaces: [can_open_worktable, can_target_bottom, can_target_walls, can_panda_finger_pads]
+  probes: {static_support_settle_s: 1.0, incline_angles_rad: [0.10, 0.20, 0.2914567944778671, 0.35], slip_initial_speed_m_s: 0.05, slip_duration_s: 0.50, impact_drop_height_m: 0.15, recovery_duration_s: 0.50, finger_load_duration_s: 0.10, timestep_candidates_s: [0.0001, 0.000125, 0.0002]}
+  hard_gates: {static_support_force_min_N: 0.001, incline_threshold_relative_error_max: 0.10, slip_threshold_relative_error_max: 0.10, maximum_illegal_penetration_m: 0.0005, recovery_velocity_max_m_s: 0.02, recovery_angular_velocity_max_rad_s: 0.20, finger_force_min_N: 0.001, warning_count_max: 0, timestep_trace_relative_error_max: 0.10}
+  scoring: {weights: {incline_threshold_relative_error: 3.0, slip_threshold_relative_error: 3.0, maximum_penetration_m: 2.0, recovery_velocity_m_s: 1.0, finger_force_relative_error: 1.0, timestep_trace_relative_error: 2.0}, primary: weighted_normalized_physics_error_ascending, secondary: maximum_illegal_penetration_ascending, tertiary: candidate_id_lexicographic_ascending}
+
+parity: {duration_s: 1.0, geometry_absolute_m: 1.0e-12, action_dimension_exact: true, passive_support_force_min_N: 0.001, dynamic_residual_report_only: true}
+determinism: {independent_processes: 3, groups: [driver, isolator, contact, gamma_zero_parity], compare: complete_declared_sampled_trace_schema, time_absolute_s: 1.0e-12, state_absolute: 1.0e-10, metric_absolute: 1.0e-10, integer_exact: true}
+failure_taxonomy: [invalid_protocol_configuration, physics_gate_failure, infrastructure_failure, evidence_integrity_failure]
+failure_integrity: {infrastructure_crash: retry_same_state_config_once, repeated_infrastructure_crash: group_incomplete_and_blocked, replacement_seed_or_candidate: forbidden, missing_trace: blocked, raw_artifact_mutation: blocked}
+
+# Every planned state is listed explicitly. No Python Cartesian product is authoritative.
+execution_manifest:
+  - {state_id: driver.dt_fine.gamma_0_15.empty, stage: driver, candidate_id: dt_fine, gamma: 0.15, load_case: empty, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_fine.gamma_0_15.panda_reference, stage: driver, candidate_id: dt_fine, gamma: 0.15, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_fine.gamma_0_30.empty, stage: driver, candidate_id: dt_fine, gamma: 0.30, load_case: empty, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_30_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_fine.gamma_0_30.panda_reference, stage: driver, candidate_id: dt_fine, gamma: 0.30, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_30_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_fine.gamma_0_50.empty, stage: driver, candidate_id: dt_fine, gamma: 0.50, load_case: empty, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_50_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_fine.gamma_0_50.panda_reference, stage: driver, candidate_id: dt_fine, gamma: 0.50, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0001, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_50_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_15.empty, stage: driver, candidate_id: dt_medium, gamma: 0.15, load_case: empty, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_15_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_15.panda_reference, stage: driver, candidate_id: dt_medium, gamma: 0.15, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_15_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_30.empty, stage: driver, candidate_id: dt_medium, gamma: 0.30, load_case: empty, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_30_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_30.panda_reference, stage: driver, candidate_id: dt_medium, gamma: 0.30, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_30_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_50.empty, stage: driver, candidate_id: dt_medium, gamma: 0.50, load_case: empty, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_50_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_medium.gamma_0_50.panda_reference, stage: driver, candidate_id: dt_medium, gamma: 0.50, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.000125, duration_s: 34.71991810092712, mujoco_step_count: 277760, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_medium_gamma_0_50_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_15.empty, stage: driver, candidate_id: dt_nominal, gamma: 0.15, load_case: empty, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_15_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_15.panda_reference, stage: driver, candidate_id: dt_nominal, gamma: 0.15, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_15_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_30.empty, stage: driver, candidate_id: dt_nominal, gamma: 0.30, load_case: empty, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_30_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_30.panda_reference, stage: driver, candidate_id: dt_nominal, gamma: 0.30, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_30_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_50.empty, stage: driver, candidate_id: dt_nominal, gamma: 0.50, load_case: empty, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_50_empty.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: driver.dt_nominal.gamma_0_50.panda_reference, stage: driver, candidate_id: dt_nominal, gamma: 0.50, load_case: panda_plus_worktable_reference_proxy, physics_timestep_s: 0.0002, duration_s: 34.71991810092712, mujoco_step_count: 173600, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_driver_dt_nominal_gamma_0_50_panda_reference.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: isolator.balanced_nominal.all_regions, stage: isolator, candidate_id: balanced_nominal, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_isolator_balanced_nominal.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: isolator.low_frequency_damped.all_regions, stage: isolator, candidate_id: low_frequency_damped, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_isolator_low_frequency_damped.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: isolator.high_frequency_light_damping.all_regions, stage: isolator, candidate_id: high_frequency_light_damping, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_isolator_high_frequency_light_damping.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: contact.c3_nominal.all_probes, stage: contact, candidate_id: c3_nominal, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_contact_c3_nominal.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: contact.c3_softer.all_probes, stage: contact, candidate_id: c3_softer, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_contact_c3_softer.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: contact.c4_torsional.all_probes, stage: contact, candidate_id: c4_torsional, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_contact_c4_torsional.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: parity.gamma_zero.stock_static, stage: parity, candidate_id: gamma_zero, duration_s: 1.0, mujoco_step_count: 10000, retained_sample_count: 200, output: shakebench_phase_06r3_v4_raw_parity_gamma_zero.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.driver.process_1, stage: replay, candidate_id: driver, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_replay_driver_process_1.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.driver.process_2, stage: replay, candidate_id: driver, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_replay_driver_process_2.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.driver.process_3, stage: replay, candidate_id: driver, duration_s: 34.71991810092712, mujoco_step_count: 347200, retained_sample_count: 6950, output: shakebench_phase_06r3_v4_raw_replay_driver_process_3.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.isolator.process_1, stage: replay, candidate_id: isolator, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_replay_isolator_process_1.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.isolator.process_2, stage: replay, candidate_id: isolator, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_replay_isolator_process_2.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.isolator.process_3, stage: replay, candidate_id: isolator, duration_s: 20.0, mujoco_step_count: 200000, retained_sample_count: 4000, output: shakebench_phase_06r3_v4_raw_replay_isolator_process_3.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.contact.process_1, stage: replay, candidate_id: contact, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_replay_contact_process_1.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.contact.process_2, stage: replay, candidate_id: contact, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_replay_contact_process_2.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.contact.process_3, stage: replay, candidate_id: contact, duration_s: 3.1, mujoco_step_count: 31000, retained_sample_count: 620, output: shakebench_phase_06r3_v4_raw_replay_contact_process_3.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.gamma_zero_parity.process_1, stage: replay, candidate_id: gamma_zero_parity, duration_s: 1.0, mujoco_step_count: 10000, retained_sample_count: 200, output: shakebench_phase_06r3_v4_raw_replay_gamma_zero_parity_process_1.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.gamma_zero_parity.process_2, stage: replay, candidate_id: gamma_zero_parity, duration_s: 1.0, mujoco_step_count: 10000, retained_sample_count: 200, output: shakebench_phase_06r3_v4_raw_replay_gamma_zero_parity_process_2.json, retry_policy: same_state_config_once_then_block}
+  - {state_id: replay.gamma_zero_parity.process_3, stage: replay, candidate_id: gamma_zero_parity, duration_s: 1.0, mujoco_step_count: 10000, retained_sample_count: 200, output: shakebench_phase_06r3_v4_raw_replay_gamma_zero_parity_process_3.json, retry_policy: same_state_config_once_then_block}
+
+artifacts: {feasibility: shakebench_phase_06r3_v4_feasibility.json, selected: shakebench_phase_06r3_v4_selected_candidates.json, excluded: shakebench_phase_06r3_v4_excluded_candidates.json, parity: shakebench_phase_06r3_v4_gamma_zero_parity.json, determinism: shakebench_phase_06r3_v4_replay_determinism.json, status: shakebench_phase_06r3_v4_status.json, official_profile: shakebench_official_physics.yaml}
