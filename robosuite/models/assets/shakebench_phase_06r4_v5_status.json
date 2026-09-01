@@ -1,0 +1,26 @@
+{
+  "schema_id": "shakebench.phase06r4.v5.selection_status",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "reason": "invalid_protocol_configuration: resolved-state authority does not materialize isolator fn_hz/zeta or contact tuple fields required by post-driver probes; V5 stopped before those stages",
+  "protocol": {
+    "path": "shakebench_selection_protocol_v5.yaml",
+    "sha256": "a35f65d950705cf4f5963bec065924e4d4a88d40127dcc3f39895d8b6acb0658",
+    "registration_commit": "d53bcccc"
+  },
+  "feasibility": {
+    "path": "shakebench_phase_06r4_v5_feasibility.json",
+    "sha256": "ff2b206da764ca356df8aa82aa32183c2518e127812a91b8f4e343987868f35f"
+  },
+  "failure_taxonomy": "invalid_protocol_configuration",
+  "driver": {
+    "raw_state_count": 18,
+    "complete_matrix": true,
+    "all_states_passed": true,
+    "canonical_protocol_sha256": "59e544893520851935a6496ca9f47b7718f1cd251bf6e5681bd2814c66627078"
+  },
+  "blocking_stage": "isolator",
+  "blocking_reason": "ResolvedPhysicsProbeState has no materialized component-owned isolator/contact parameters; consulting protocol mappings in an adapter would violate V5 contract",
+  "official_profile_publication": "forbidden",
+  "phase07": "forbidden"
+}

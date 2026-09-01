@@ -59,6 +59,25 @@ isolator/contact/parity/determinism stages. See
 `shakebench_phase_06r2_status.json`. No official profile was published; V2
 remains unchanged and the active loader remains fail-closed.
 
+## Phase 06R4 / V5 result (BLOCKED)
+
+V5 protocol and resolved-state feasibility were registered as `d53bcccc`.
+The complete driver matrix—18 states (`3 dt × 3 Gamma × 2 load`)—finished
+with all amplitude, phase, Gamma, weld-residual and warning gates passing.
+Raw evidence uses the V5 canonical protocol hash
+`59e544893520851935a6496ca9f47b7718f1cd251bf6e5681bd2814c66627078` and is
+preserved under `shakebench_phase_06r4_v5_raw_driver_*.json`.
+
+Before the isolator stage, the resolved-state contract exposed a missing
+authority: `ResolvedPhysicsProbeState` materialized `candidate_id` but not the
+isolator `fn_hz/zeta` or contact tuple needed by later probes. Reading those
+values directly from YAML in an adapter would violate the V5 contract. This
+deterministic implementation/configuration mismatch is classified as
+`invalid_protocol_configuration`; V5 stopped before isolator/contact/parity/
+replay and official-profile publication. See
+`shakebench_phase_06r4_v5_status.json`. No official profile was published and
+Phase 07 remains forbidden.
+
 ## Phase 06R3 / V4 result (BLOCKED)
 
 V4 structural registration was committed as `80712165`; the protocol and

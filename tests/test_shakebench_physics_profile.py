@@ -27,7 +27,7 @@ ASSETS = Path(assets_root)
 def _temporary_official_fixture(tmp_path: Path) -> Path:
     """Create an isolated PASS package fixture; never mutate checkout state."""
 
-    protocol = tmp_path / "shakebench_selection_protocol_v4.yaml"
+    protocol = tmp_path / "shakebench_selection_protocol_v5.yaml"
     protocol.write_text("schema_id: test.v4\nstatus: pre_registered\n", encoding="utf-8")
     payload = make_probe_physics_profile().to_dict()
     payload.update(
@@ -44,7 +44,7 @@ def _temporary_official_fixture(tmp_path: Path) -> Path:
     (tmp_path / OFFICIAL_PHYSICS_PROFILE_FILENAME).write_text(
         yaml.safe_dump(payload, sort_keys=True), encoding="utf-8"
     )
-    (tmp_path / "shakebench_phase_06r3_v4_status.json").write_text(
+    (tmp_path / "shakebench_phase_06r4_v5_status.json").write_text(
         json.dumps(
             {
                 "schema_id": "test.status",
@@ -59,8 +59,8 @@ def _temporary_official_fixture(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_packaged_baseline_is_blocked_before_v4_publication():
-    with pytest.raises(PhysicsProfileIntegrityError, match="Phase 06R2 V3 selection"):
+def test_packaged_baseline_is_blocked_before_v5_publication():
+    with pytest.raises(PhysicsProfileIntegrityError, match="Phase 06R4 V5 selection"):
         load_official_physics_profile()
 
 
@@ -141,6 +141,16 @@ def test_v4_status_is_blocked_and_first_v4_raw_artifact_is_preserved():
     raw = ASSETS / "shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json"
     assert raw.is_file()
     assert json.loads(raw.read_text(encoding="utf-8"))["state_id"] == "driver.dt_fine.gamma_0_15.empty"
+
+
+def test_v5_driver_matrix_is_preserved_but_active_status_is_blocked():
+    status = json.loads((ASSETS / "shakebench_phase_06r4_v5_status.json").read_text(encoding="utf-8"))
+    files = sorted(ASSETS.glob("shakebench_phase_06r4_v5_raw_driver_*.json"))
+    assert status["status"] == "BLOCKED"
+    assert status["failure_taxonomy"] == "invalid_protocol_configuration"
+    assert len(files) == 18
+    assert all(json.loads(path.read_text(encoding="utf-8"))["evidence"]["passed"] is True for path in files)
+    assert not list(ASSETS.glob("shakebench_phase_06r4_v5_raw_isolator_*.json"))
 
 
 def test_profile_assets_remain_flat_and_packaged():

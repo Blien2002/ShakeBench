@@ -117,7 +117,7 @@ docs/robosuite_benchmark_design_tree.md
 | 06R | `phase_06_review_remediation.md` | 重新预注册 V2，闭合 candidate coverage、profile authority 与 raw-evidence verifier | all physics gates |
 | 06R2 | `phase_06r2_feasible_physics_freeze.md` | 保留 V2 BLOCKED，预注册可完成的 V3 测量与完整物理选择 | all physics gates（当前 V3 因 dt_medium 与 20 Hz scheduler 非整倍数而 BLOCKED） |
 | 06R3 | `phase_06r3_v4_physics_freeze.md` | 保留 V3 BLOCKED，先验证 scheduler/采样/solref 可行性，再执行完整 V4 freeze | all physics gates |
-| 06R4 | `phase_06r4_v5_protocol_execution_contract.md` | 保留 V4 BLOCKED，用同一 resolver 驱动 dry-run 与执行后完成 V5 freeze | all physics gates |
+| 06R4 | `phase_06r4_v5_protocol_execution_contract.md` | 保留 V4 BLOCKED，用同一 resolver 驱动 dry-run 与执行后完成 V5 freeze | all physics gates（当前 driver 通过，组件参数 materialize 缺失导致 BLOCKED） |
 | 07 | `phase_07_oracle_controller.md` | shared 7D State Oracle controller | Gamma=0 10/10 dev |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |
 | 09 | `phase_09_knee_official_eval.md` | Gamma* + 400×4 official evaluation | complete paired matrix |

@@ -37,9 +37,11 @@ OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
 SELECTION_PROTOCOL_FILENAME = "shakebench_selection_protocol.yaml"
 SELECTION_PROTOCOL_V2_FILENAME = "shakebench_selection_protocol_v2.yaml"
 SELECTION_PROTOCOL_V4_FILENAME = "shakebench_selection_protocol_v4.yaml"
+SELECTION_PROTOCOL_V5_FILENAME = "shakebench_selection_protocol_v5.yaml"
 PHASE06R_STATUS_FILENAME = "shakebench_phase_06r_status.json"
 PHASE06R2_STATUS_FILENAME = "shakebench_phase_06r2_status.json"
 PHASE06R3_STATUS_FILENAME = "shakebench_phase_06r3_v4_status.json"
+PHASE06R4_STATUS_FILENAME = "shakebench_phase_06r4_v5_status.json"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v1"
 
@@ -574,16 +576,16 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             raise PhysicsProfileIntegrityError(
                 "scoreable official physics must be loaded from the packaged canonical asset"
             )
-    # V1 and V2 are archived.  A scoreable package profile may be enabled
-    # only by the active V3/Phase-06R2 status; when that artifact is absent or
-    # blocked the loader remains fail-closed.
-    status_path = _asset_path(PHASE06R3_STATUS_FILENAME)
+    # V1 through V4 are archived. A scoreable package profile may be enabled
+    # only by the active V5 status; when that artifact is absent or blocked the
+    # loader remains fail-closed.
+    status_path = _asset_path(PHASE06R4_STATUS_FILENAME)
     try:
         selection_status = json.loads(status_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise PhysicsProfileIntegrityError("Phase 06R2 selection status is unreadable") from exc
+        raise PhysicsProfileIntegrityError("Phase 06R4 V5 selection status is unreadable") from exc
     if selection_status.get("status") != "PASS":
-        raise PhysicsProfileIntegrityError("official physics is blocked until Phase 06R2 V3 selection passes")
+        raise PhysicsProfileIntegrityError("official physics is blocked until Phase 06R4 V5 selection passes")
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
     try:
         payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
@@ -591,12 +593,12 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
         raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
     profile = _validate_payload(payload, source=str(profile_path), require_official=True)
     try:
-        protocol_bytes = _asset_path(SELECTION_PROTOCOL_V4_FILENAME).read_bytes()
+        protocol_bytes = _asset_path(SELECTION_PROTOCOL_V5_FILENAME).read_bytes()
     except PhysicsProfileIntegrityError:
         raise
     expected_protocol_hash = hashlib.sha256(protocol_bytes).hexdigest()
     if profile.payload.get("protocol_sha256") != expected_protocol_hash:
-        raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06R2 V3 selection protocol")
+        raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06R4 V5 selection protocol")
     return profile
 
 

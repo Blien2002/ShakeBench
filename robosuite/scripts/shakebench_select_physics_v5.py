@@ -164,6 +164,8 @@ def run_resolved_stage(
                     "retry_ledger": retry_ledger,
                     "evidence": evidence,
                 }
+                if state.stage == "driver":
+                    payload["protocol_driver_gates"] = copy.deepcopy(dict(protocol["driver"]["hard_gates"]))
                 payload["payload_sha256"] = payload_hash(payload)
                 write_json_atomic(path, payload)
                 results.append(payload)
@@ -178,6 +180,144 @@ def run_resolved_stage(
             write_json_atomic(path, payload)
             raise V5EvidenceError(f"repeated infrastructure failure: {state.state_id}")
     return results
+
+
+def run_resolved_state(
+    protocol: Mapping[str, Any],
+    *,
+    state_id: str,
+    output_dir: str | Path,
+    probe: Callable[[ResolvedPhysicsProbeState], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Execute one resolved state, preserving the same stage retry contract."""
+
+    state = resolve_protocol_state(protocol, state_id)
+    output = Path(output_dir)
+    protocol_hash = sha256_json(protocol)
+    path = output / state.output
+    if path.is_file():
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        if existing.get("state_id") != state.state_id or existing.get("protocol_sha256") != protocol_hash or not verify_payload_hash(existing):
+            raise V5EvidenceError(f"resolved-state provenance mismatch: {state.state_id}")
+        return existing
+    retry_ledger = []
+    for attempt in (1, 2):
+        try:
+            evidence = dict(probe(state))
+            payload = {"schema_id": SCHEMA_ID + ".raw", "schema_version": SCHEMA_VERSION, "stage": state.stage, "state_id": state.state_id, "protocol_sha256": protocol_hash, "resolved_state_digest": sha256_json(state.to_dict()), "attempt": attempt, "retry_ledger": retry_ledger, "evidence": evidence}
+            if state.stage == "driver":
+                payload["protocol_driver_gates"] = copy.deepcopy(dict(protocol["driver"]["hard_gates"]))
+            payload["payload_sha256"] = payload_hash(payload)
+            write_json_atomic(path, payload)
+            return payload
+        except ProtocolStateError:
+            raise
+        except Exception as exc:
+            retry_ledger.append({"attempt": attempt, "state_config_identical": True, "exception_type": type(exc).__name__, "exception_message": str(exc), "failure_taxonomy": "infrastructure_failure"})
+    payload = {"schema_id": SCHEMA_ID + ".raw", "schema_version": SCHEMA_VERSION, "stage": state.stage, "state_id": state.state_id, "protocol_sha256": protocol_hash, "resolved_state_digest": sha256_json(state.to_dict()), "status": "infrastructure_failure_repeated", "retry_ledger": retry_ledger, "pass_claim": False}
+    payload["payload_sha256"] = payload_hash(payload)
+    write_json_atomic(path, payload)
+    raise V5EvidenceError(f"repeated infrastructure failure: {state.state_id}")
+
+
+def _v5_driver_probe(state: ResolvedPhysicsProbeState, protocol: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Execute one V5 driver state from the already-resolved immutable state."""
+
+    from robosuite.scripts.shakebench_probe_deck_driver import (
+        canonical_gamma_conformance,
+        spectrum_conformance,
+        spectrum_gate_reasons,
+    )
+    from robosuite.scripts.shakebench_select_physics import _program_for_gamma, _run_driver_trace, _trace_digest, _trace_shapes
+    from robosuite.utils.shakebench_deck import DeckDriverConfig
+    from robosuite.utils.shakebench_deck import TRACE_FIELD_CONTRACT
+    from robosuite.utils.shakebench_excitation import build_excitation_program
+
+    if state.stage != "driver" or state.gamma is None or state.load_case is None:
+        raise ProtocolStateError("driver adapter received a non-driver resolved state")
+    candidate = {
+        "candidate_id": state.candidate_id,
+        "physics_timestep_s": state.physics_timestep_s,
+        "integrator": state.integrator,
+        "solver": state.solver,
+        "solver_iterations": state.solver_iterations,
+        "solver_tolerance": state.solver_tolerance,
+        "deck_mass_kg": state.deck_mass_kg,
+        "deck_inertia_kg_m2": list(state.deck_inertia_kg_m2),
+        "deck_eq_solref": list(state.deck_eq_solref),
+        "deck_eq_solimp": list(state.deck_eq_solimp),
+    }
+    level = _program_for_gamma(state.gamma, dt=state.physics_timestep_s, duration_s=state.duration_s)
+    facts = protocol["frozen_facts"]
+    program = build_excitation_program(
+        seed=int(facts["authored_spectrum"]["seed"]),
+        t0=float(facts["authored_spectrum"]["t0_s"]),
+        level_scale=level,
+    )
+    started = time.perf_counter()
+    trace, audit, options = _run_driver_trace(
+        candidate,
+        duration_s=state.duration_s,
+        trajectory=program,
+        load_case=state.load_case,
+        refresh_stride=state.refresh_stride,
+    )
+    elapsed = time.perf_counter() - started
+    discard = float(facts["authored_spectrum"]["transient_discard_s"])
+    spectrum = spectrum_conformance(trace, program, discard_s=discard, max_fit_samples=50000)
+    gamma_fit = canonical_gamma_conformance(
+        trace,
+        program,
+        config=DeckDriverConfig(
+            deck_mass_kg=state.deck_mass_kg,
+            deck_inertia_kg_m2=state.deck_inertia_kg_m2,
+            eq_solref=state.deck_eq_solref,
+            eq_solimp=state.deck_eq_solimp,
+            physics_timestep_s=state.physics_timestep_s,
+        ),
+        discard_s=discard,
+    )
+    lines = [line for axis in spectrum["axes"].values() for line in axis["line_fits"]]
+    gates = protocol["driver"]["hard_gates"]
+    reasons = spectrum_gate_reasons(spectrum, expected_line_count=int(facts["authored_spectrum"]["line_count"]))
+    max_amplitude = max((float(line["amplitude_relative_error"]) for line in lines), default=float("inf"))
+    max_phase = max((abs(float(line["phase_error_deg"])) for line in lines), default=float("inf"))
+    gamma_error = float(gamma_fit["relative_error_abs"])
+    warning_count = int(np.sum(trace.warning_number_delta)) if trace.warning_number_delta.size else 0
+    residual = float(np.max(np.abs(trace.weld_constraint_residual_raw))) if trace.weld_constraint_residual_raw.size else 0.0
+    if gamma_error > float(gates["gamma_deck_relative_error_max"]): reasons.append("gamma_deck_relative_error_exceeds_threshold")
+    if warning_count > int(gates["warning_count_max"]): reasons.append("warning_count_exceeds_threshold")
+    if residual > float(gates["unstable_residual_max"]): reasons.append("weld_residual_exceeds_threshold")
+    return {
+        "candidate_id": state.candidate_id,
+        "gamma": state.gamma,
+        "load_case": state.load_case,
+        "metrics": {
+            "max_line_amplitude_relative_error": max_amplitude,
+            "max_absolute_line_phase_error_deg": max_phase,
+            "max_gamma_relative_error": gamma_error,
+            "warning_count": warning_count,
+            "max_weld_residual": residual,
+            "complete_64_line_spectrum": len(lines) == int(facts["authored_spectrum"]["line_count"]),
+        },
+        "spectrum": spectrum,
+        "gamma_fit": gamma_fit,
+        "timing": {"elapsed_wall_time_s": elapsed, "mujoco_step_count": int(state.mujoco_step_count), "retained_sample_count": int(trace.sample_time_s.size)},
+        "trace": {"digest": _trace_digest(trace), "shapes": _trace_shapes(trace), "dtypes": {name: str(np.asarray(getattr(trace, name)).dtype) for name in TRACE_FIELD_CONTRACT}},
+        "audit": audit,
+        "options": options,
+        "failure_reasons": reasons,
+        "passed": not reasons,
+    }
+
+
+def run_v5_driver_stage(*, protocol_path: str | Path, output_dir: str | Path | None = None) -> dict[str, Any]:
+    protocol, _, _ = load_v5_protocol(protocol_path)
+    validate_v5_protocol(protocol)
+    output = Path(models.assets_root) if output_dir is None else Path(output_dir)
+    records = run_driver_stage(protocol, output_dir=output, probe=lambda state: _v5_driver_probe(state, protocol))
+    passed = all(record.get("evidence", {}).get("passed") is True for record in records)
+    return {"status": "PASS" if passed else "BLOCKED", "state_count": len(records), "passed_state_count": sum(record.get("evidence", {}).get("passed") is True for record in records), "records": records}
 
 
 def run_driver_stage(protocol: Mapping[str, Any], *, output_dir: str | Path, probe: Callable[[ResolvedPhysicsProbeState], Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -274,6 +414,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--validate-protocol", action="store_true")
     parser.add_argument("--dry-run-manifest", action="store_true")
     parser.add_argument("--stage", choices=("driver", "isolator", "contact", "parity", "replay", "all"))
+    parser.add_argument("--state-id", default=None)
+    parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--verify", default=None)
     args = parser.parse_args(argv)
     try:
@@ -285,12 +427,26 @@ def main(argv: Optional[list[str]] = None) -> int:
             result = {"path": name, "protocol_sha256_bytes": digest, **dry_run_manifest(protocol)}
         elif args.verify:
             result = verify_selection_artifact(args.verify, protocol_path=args.protocol)
+        elif args.stage:
+            if args.stage != "driver":
+                raise V5ProtocolError("real V5 adapters for non-driver stages are not yet enabled")
+            protocol, _, _ = load_v5_protocol(args.protocol)
+            validate_v5_protocol(protocol)
+            if args.state_id is None:
+                result = run_v5_driver_stage(protocol_path=args.protocol)
+            else:
+                result = run_resolved_state(protocol, state_id=args.state_id, output_dir=models.assets_root, probe=lambda state: _v5_driver_probe(state, protocol))
         else:
             parser.error("choose --validate-protocol, --dry-run-manifest, or --verify")
             return 2
     except (V5ProtocolError, ProtocolStateError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"passed": False, "error": str(exc)}, ensure_ascii=False, sort_keys=True))
         return 2
+    if args.quiet:
+        if isinstance(result, Mapping) and "state_id" in result:
+            result = {"status": "PASS", "state_id": result["state_id"], "attempt": result.get("attempt")}
+        elif isinstance(result, Mapping):
+            result = {key: result[key] for key in ("status", "state_count", "passed_state_count") if key in result}
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result.get("passed", True) else 1
 
