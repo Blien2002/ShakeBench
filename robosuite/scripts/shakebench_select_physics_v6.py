@@ -762,7 +762,12 @@ def _isolator_summary(state: ResolvedProbeState, combined: Mapping[str, Any], pa
         "travel_margin_min_m": float(min(metrics["travel_margin_m"])),
         "static_sag_uncompensated_m": float(static_sag_uncompensated_m(_isolator_config(state))),
         "static_offset_compensated_payload_max_m": max(offsets),
-        "payload_sensitivity": float(np.linalg.norm(farthest - nominal) / max(np.linalg.norm(nominal), 1.0e-12)),
+        # Sensitivity is the maximum payload-induced equilibrium excursion
+        # normalized by the smallest translational travel limit.  The empty
+        # payload equilibrium is close to zero by construction, so normalizing
+        # by its norm would make this metric singular and would contradict the
+        # registered V5 target/gate (and the Phase 06 analytic evidence).
+        "payload_sensitivity": float(max(offsets) / max(min(state.isolator.travel_limits_m), 1.0e-12)),
     }
 
 
