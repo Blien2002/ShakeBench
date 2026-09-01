@@ -1,0 +1,304 @@
+schema_id: shakebench.phase06r.physics_selection_protocol
+schema_version: 2
+status: pre_registered
+phase: 06R
+selection_authority: physics_probes_only
+immutable_after_selection_start: true
+
+scope:
+  forbidden_selection_inputs:
+    - task_success_rate
+    - task_sr
+    - controller_success
+    - success_evaluator
+    - reward
+    - v0_v3_ranking
+    - policy_observation
+    - gamma_star
+  allowed_inputs:
+    - phase02_to_phase05_read_only_provenance
+    - canonical_table_and_can_inertial_contract
+    - authored_excitation_program
+    - raw_mujoco_physics_probe_traces
+  environment_scoreable_fields:
+    - physics_timestep_s
+    - integrator
+    - solver
+    - solver_iterations
+    - solver_tolerance
+    - gravity_m_s2
+    - deck_mass_kg
+    - deck_inertia_kg_m2
+    - deck_eq_solref
+    - deck_eq_solimp
+    - deck_scheduler
+    - isolator_fn_hz
+    - isolator_zeta
+    - isolator_k
+    - isolator_c
+    - isolator_springref
+    - table_geometry_friction
+    - target_geometry_friction
+    - contact_pair_profile
+
+canonical_facts:
+  f_max_hz: 8.87
+  gravity_m_s2: 9.81
+  table_mass_kg: 32.0
+  table_inertia_kg_m2: [0.9696, 1.1363, 2.0867]
+  can_mass_kg: 0.349
+  sliding_mu:
+    table_object: 0.30
+    finger_object: 1.00
+  table_geometry_friction: [1.0, 0.005, 0.0001]
+  target_geometry_friction: [0.30, 0.005, 0.0001]
+  travel_limits_m: [0.025, 0.025, 0.025]
+  angle_limits_rad: [0.08726646259971647, 0.08726646259971647, 0.08726646259971647]
+
+driver:
+  load_cases: [empty, panda_plus_worktable_reference_proxy]
+  safe_gamma_candidates: [0.15, 0.30, 0.50]
+  authored_spectrum:
+    seed: 17
+    t0_s: 0.0
+    line_count: 64
+    transient_discard_s: 0.75
+    complete_matrix: true
+  convergence_candidates:
+    - candidate_id: dt_ultrafine
+      physics_timestep_s: 0.00005
+      integrator: Euler
+      solver: Newton
+      solver_iterations: 100
+      solver_tolerance: 1.0e-12
+      deck_mass_kg: 400.0
+      deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
+      deck_eq_solref: [0.0002, 0.5]
+      deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    - candidate_id: dt_fine
+      physics_timestep_s: 0.0001
+      integrator: Euler
+      solver: Newton
+      solver_iterations: 100
+      solver_tolerance: 1.0e-12
+      deck_mass_kg: 400.0
+      deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
+      deck_eq_solref: [0.0002, 0.5]
+      deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    - candidate_id: dt_nominal
+      physics_timestep_s: 0.0002
+      integrator: Euler
+      solver: Newton
+      solver_iterations: 100
+      solver_tolerance: 1.0e-12
+      deck_mass_kg: 400.0
+      deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
+      deck_eq_solref: [0.0004, 0.5]
+      deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+  negative_controls:
+    - candidate_id: dt_coarse_negative_control
+      physics_timestep_s: 0.0004
+      integrator: Euler
+      solver: Newton
+      solver_iterations: 100
+      solver_tolerance: 1.0e-12
+      deck_mass_kg: 400.0
+      deck_inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
+      deck_eq_solref: [0.0008, 0.5]
+      deck_eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+      expected_hard_exclusion: phase_error
+  hard_gates:
+    line_amplitude_relative_error_max: 0.01
+    line_phase_absolute_error_deg_max: 1.0
+    gamma_deck_relative_error_max: 0.01
+    warning_count_max: 0
+    unstable_residual_max: 1.0e-3
+    positive_solref_min_factor_dt: 2.0
+    minimum_convergence_passes: 3
+  selection:
+    primary: maximum_physics_timestep_s_among_complete_matrix_passes
+    secondary: minimum_max_absolute_line_phase_error_deg
+    tertiary: candidate_id_lexicographic_ascending
+
+isolator:
+  candidates:
+    - candidate_id: balanced_nominal
+      fn_hz: [5.0, 5.0, 5.0, 4.0, 4.0, 2.5]
+      zeta: [0.10, 0.10, 0.10, 0.10, 0.10, 0.10]
+    - candidate_id: low_frequency_damped
+      fn_hz: [4.0, 4.0, 4.0, 3.0, 3.0, 2.0]
+      zeta: [0.20, 0.20, 0.20, 0.20, 0.20, 0.20]
+    - candidate_id: high_frequency_light_damping
+      fn_hz: [6.0, 6.0, 6.0, 5.0, 5.0, 3.0]
+      zeta: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+  probe_regions:
+    tracking_ratio: 0.2
+    resonance_ratio: 1.0
+    isolation_ratio: 2.0
+    transient_cycles: 10
+    fit_cycles: 20
+  combined_spectrum:
+    seed: 17
+    t0_s: 0.137
+    level_scale: 0.30
+    transient_discard_s: 0.75
+    line_count: 64
+  payload_probe:
+    mass_kg: 0.349
+    com_offsets_m: [[0.0, 0.0], [0.10, 0.0], [0.0, 0.20], [0.10, 0.20]]
+    settle_duration_s: 8.0
+    equilibrium_window_s: 1.0
+  target_values:
+    R_relative_median: 1.0
+    T_peak: 4.0
+    T_accel_mean: 1.025
+    D_relative_m: 0.005
+    travel_margin_min_m: 0.015
+    static_sag_uncompensated_m: 0.010
+    static_offset_compensated_payload_max_m: 0.0025
+    payload_sensitivity: 0.175
+  hard_gates:
+    R_relative_max_min: 0.10
+    T_accel_mean_min: 0.05
+    T_accel_mean_max: 2.0
+    T_peak_max: 8.0
+    travel_margin_min_m: 0.005
+    static_sag_uncompensated_max_m: 0.020
+    static_offset_compensated_empty_max_m: 0.0005
+    static_offset_compensated_payload_max_m: 0.005
+    payload_sensitivity_max: 0.35
+    analytic_mujoco_amplitude_relative_error_max: 0.10
+    analytic_mujoco_phase_absolute_error_deg_max: 6.0
+    combined_cross_axis_leakage_max: 0.05
+    warnings_max: 0
+  scoring:
+    weights:
+      R_relative_median: 2.0
+      T_peak: 2.0
+      T_accel_mean: 1.0
+      D_relative_m: 1.0
+      travel_margin_min_m: 2.0
+      static_sag_uncompensated_m: 1.0
+      static_offset_compensated_payload_max_m: 1.0
+      payload_sensitivity: 1.0
+    primary: weighted_normalized_distance_ascending
+    secondary: minimum_normalized_margin_descending
+    tertiary: candidate_id_lexicographic_ascending
+
+contact:
+  candidates:
+    - candidate_id: c3_nominal
+      condim: 3
+      torsional_mu: 0.005
+      rolling_mu: 0.0001
+      margin_m: 0.0
+      gap_m: 0.0
+      solref: [0.0004, 1.0]
+      solimp: [0.90, 0.95, 0.001, 0.5, 2.0]
+      solver_iterations: 100
+    - candidate_id: c3_softer
+      condim: 3
+      torsional_mu: 0.005
+      rolling_mu: 0.0001
+      margin_m: 0.0
+      gap_m: 0.0
+      solref: [0.001, 1.0]
+      solimp: [0.90, 0.95, 0.002, 0.5, 2.0]
+      solver_iterations: 100
+    - candidate_id: c4_torsional
+      condim: 4
+      torsional_mu: 0.005
+      rolling_mu: 0.0001
+      margin_m: 0.0
+      gap_m: 0.0
+      solref: [0.0004, 1.0]
+      solimp: [0.90, 0.95, 0.001, 0.5, 2.0]
+      solver_iterations: 100
+    - candidate_id: c6_rolling
+      condim: 6
+      torsional_mu: 0.005
+      rolling_mu: 0.0001
+      margin_m: 0.0
+      gap_m: 0.0
+      solref: [0.0004, 1.0]
+      solimp: [0.90, 0.95, 0.001, 0.5, 2.0]
+      solver_iterations: 100
+    - candidate_id: c3_margin
+      condim: 3
+      torsional_mu: 0.005
+      rolling_mu: 0.0001
+      margin_m: 0.001
+      gap_m: 0.001
+      solref: [0.0004, 1.0]
+      solimp: [0.90, 0.95, 0.001, 0.5, 2.0]
+      solver_iterations: 150
+  interfaces:
+    - can_open_worktable
+    - can_target_bottom
+    - can_target_walls
+    - can_panda_finger_pads
+  probes:
+    static_support_settle_s: 1.0
+    incline_angles_rad: [0.10, 0.20, 0.2914567944778671, 0.35]
+    slip_initial_speed_m_s: 0.05
+    slip_duration_s: 0.50
+    impact_drop_height_m: 0.15
+    recovery_duration_s: 0.50
+    finger_load_duration_s: 0.10
+    timestep_candidates_s: [0.0001, 0.0002, 0.0004]
+  hard_gates:
+    static_support_force_min_N: 0.001
+    incline_threshold_relative_error_max: 0.10
+    slip_threshold_relative_error_max: 0.10
+    maximum_illegal_penetration_m: 0.0005
+    recovery_velocity_max_m_s: 0.02
+    recovery_angular_velocity_max_rad_s: 0.20
+    finger_force_min_N: 0.001
+    warning_count_max: 0
+    timestep_trace_relative_error_max: 0.10
+  scoring:
+    weights:
+      incline_threshold_relative_error: 3.0
+      slip_threshold_relative_error: 3.0
+      maximum_penetration_m: 2.0
+      recovery_velocity_m_s: 1.0
+      finger_force_relative_error: 1.0
+      timestep_trace_relative_error: 2.0
+    primary: weighted_normalized_physics_error_ascending
+    secondary: maximum_illegal_penetration_ascending
+    tertiary: candidate_id_lexicographic_ascending
+
+gamma_zero_bounded_parity:
+  dynamic_duration_s: 1.0
+  static_duration_s: 1.0
+  tolerances:
+    geometry_absolute_m: 1.0e-12
+    action_dimension_exact: true
+    passive_support_force_min_N: 0.001
+    dynamic_residual_report_only: true
+
+determinism:
+  independent_processes: 3
+  probes: [driver, isolator, contact, gamma_zero_parity]
+  trace_fields: complete
+  time_absolute_s: 1.0e-12
+  state_absolute: 1.0e-10
+  metric_absolute: 1.0e-10
+  integer_exact: true
+
+failure_integrity:
+  infrastructure_crash: rerun_same_state_config_once
+  repeated_same_state_crash: group_incomplete_and_blocked
+  replacement_seed: forbidden
+  missing_trace: blocked
+  raw_artifact_mutation: blocked
+
+artifact_contract:
+  root_directory: robosuite/models/assets
+  raw_prefix: shakebench_phase_06r_raw_
+  selected_table: shakebench_phase_06r_selected_candidates.json
+  excluded_table: shakebench_phase_06r_excluded_candidates.json
+  parity_artifact: shakebench_phase_06r_gamma_zero_parity.json
+  determinism_artifact: shakebench_phase_06r_replay_determinism.json
+  invalidation_artifact: shakebench_phase_06_v1_invalidated.json
+  official_profile: shakebench_official_physics.yaml
