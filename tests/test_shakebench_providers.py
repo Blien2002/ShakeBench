@@ -40,6 +40,7 @@ def _make_env(tier, **kwargs):
         "model_timestep": 0.0002,
         "horizon": 2,
         "seed": 17,
+        "physics_profile": "probe",
         "observation_tier": tier,
         "imu_mode": "ideal_smoke",
     }

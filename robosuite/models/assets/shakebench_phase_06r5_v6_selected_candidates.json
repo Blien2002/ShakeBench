@@ -1,0 +1,368 @@
+{
+  "adapter_contract_digest": "719f028fd25d1590277311f7502fd86b68416cc4c7d0b62ac04ff0dbeb199795",
+  "blocking_reason": "physics_gate_failure: no contact candidate passed",
+  "candidate_counts": {
+    "contact": 3,
+    "driver": 3,
+    "isolator": 3
+  },
+  "determinism_artifact": {
+    "path": "shakebench_phase_06r5_v6_replay_determinism.json",
+    "sha256": "07a0638a1fbc8eb7a65c1739b025d5f12209561431faf67a23a93885e7c1315f"
+  },
+  "driver_recomputed": {
+    "dt_fine": {
+      "candidate_id": "dt_fine",
+      "complete_state_count": 6,
+      "eligible": true,
+      "failed_states": [],
+      "max_phase_error": 0.33440039800944615
+    },
+    "dt_medium": {
+      "candidate_id": "dt_medium",
+      "complete_state_count": 6,
+      "eligible": true,
+      "failed_states": [],
+      "max_phase_error": 0.41800076688288157
+    },
+    "dt_nominal": {
+      "candidate_id": "dt_nominal",
+      "complete_state_count": 6,
+      "eligible": true,
+      "failed_states": [],
+      "max_phase_error": 0.6688030754346492
+    }
+  },
+  "eligible_counts": {
+    "contact": 0,
+    "driver": 3,
+    "isolator": 1
+  },
+  "excluded": [
+    {
+      "candidate_id": "balanced_nominal",
+      "reason": "isolator_hard_gate_failed",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "high_frequency_light_damping",
+      "reason": "isolator_hard_gate_failed",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "c3_nominal",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c3_softer",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c4_torsional",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    }
+  ],
+  "feasibility": {
+    "path": "shakebench_phase_06r5_v6_feasibility.json",
+    "sha256": "41c9930474443d56798cfbc4b77675faf49a3e0df503286c69d011600a8ac38a"
+  },
+  "official_profile": "shakebench_official_physics.yaml",
+  "official_profile_alignment": false,
+  "parity_artifact": {
+    "path": "shakebench_phase_06r5_v6_gamma_zero_parity.json",
+    "sha256": "4a764a1303d8ebbfa8695ee955d5ed7683f3ec9bae0de842261824c3efc290c7"
+  },
+  "payload_sha256": "cc2d830797e78b92e58718e44a61e66bd2b282f1189f9d5ebe73dddf46ef436d",
+  "physics_only": true,
+  "protocol": {
+    "bytes_sha256": "835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a",
+    "normalized_sha256": "8638df6ee6217da5a14c4593a01d593c989d42a9936902d6c4ecc48e4f3d2fe6",
+    "path": "shakebench_selection_protocol_v6.yaml",
+    "status": "pre_registered"
+  },
+  "raw_files": [
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_empty.json",
+      "resolved_state_digest": "095fa34e8598606cb37d6d96744a4ec39b7b17e387e17b5217699b01c1e8e242",
+      "sha256": "cf1ad9039ed0ccab0cdba9d1d0f3b0daba360172c4a146b9a304f93034963829",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "8c921a394d226ad40758279463a5631d9408b2289de739b5052ae28ec5ae9fc9",
+      "sha256": "adfff22005b6480f3a9cb37296de96ced7388776cb49693cf7f88c72ab1511d6",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_empty.json",
+      "resolved_state_digest": "6e7e19f39996f757712fd73fff6a867622535785bd55d3679bd704b215566c1b",
+      "sha256": "2a6709eb012c5c27d790e3da51a6719bd2d26e946fa5cb822f213a6a7c4c1fba",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "a38c88ef0373ae8d1b6bf764dc48b633b6add08461bc2ff24ae27a271eda3f69",
+      "sha256": "bedde4e2906befc14f18687c5a6f7be4fff2bc56f3f8e5799a616e52aa4e945e",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_empty.json",
+      "resolved_state_digest": "1e50d467b7e520281addae5f04b0c63f0048dced0a3be799570a8d1372db06ef",
+      "sha256": "dee6650cdf2259d20ac3b7affdbae701cb77043743da350f11bc18a142818587",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "9493ff9815511767455e18007e9528e656509001c6370ad4a465908823cd0d1e",
+      "sha256": "96db7ac04754004092279859b476b519fa122e17277644015b68518f76dd3bd8",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_empty.json",
+      "resolved_state_digest": "9ca3d97bf172480227f6f5d454fef060686c99e32d80a5876470cb46c3dea44f",
+      "sha256": "ae91c0015dd13241433d943649a22c8e4842e09a01cdecdbf57ce02cef4f5268",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "69cf6a45f98289fc5d5f95aa3a9777d8ef149429fd64c06683f2155971e8d409",
+      "sha256": "af8178516760077cac7f0dfeaf49a722350524b1844f64bb5cf695723f37e128",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_empty.json",
+      "resolved_state_digest": "4394493dd4e0668013e6f99e04ed1daa9702738d28a97bd33d8352425a541bea",
+      "sha256": "697286ac3ddf996601f3c34b6f9505ae6c41f403c9bedc2935c4fe563818d716",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "db4be74fffc955eef839b8532d5b9409fe46ee9b149e896fd19619ae39e68226",
+      "sha256": "e3c804396174f86766d352074e3f951713203a7bedb244381434b18346ac348b",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_empty.json",
+      "resolved_state_digest": "46d333fafae9d1fc2e5f37193f9395d900c3e9da9592ade1a139fdff044a9933",
+      "sha256": "c204e3890e76002f77d1ae411baddd13a4563681f4f1a6284493c19318120500",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "6a9b0920fca9079b5a1ec0ce15a80b3740dfc9063a472a85f035f74194653285",
+      "sha256": "128f53440399888225ead27996592e0092232ad49e79ea26bf26b9b8fcc6d1aa",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_empty.json",
+      "resolved_state_digest": "c81064db933fa70f6803d86b53498b5ca90ef9a1de400add805cf3f504028e0d",
+      "sha256": "6a6fb434a1b4d6bc7cae6c836571383f99496c730b96bf8b85831d757f795d27",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "8287964ff34a0b743b9ab091d4affbca10d4ef31850252e4961c26580320ffe5",
+      "sha256": "bc02f87fc97539ee11860b72155fff5929f1b89bf1dbd5e4012a44701385afe4",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json",
+      "resolved_state_digest": "7a87df97fe23cc0cf9c30131882fbdffc389994c2833f4fe2137359d28773fdf",
+      "sha256": "52b33d84a08ee47d013127d35ef0d976d414f06ba7a2fea476aba4dc74222249",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "3fc363cf83052111630a7fad0776ba6f287d3a262c36feba4cb946ed709eacb6",
+      "sha256": "19b9d608560dd6587e2007aac65f50b037cac63cb1a4db740a4e8656513e352b",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_empty.json",
+      "resolved_state_digest": "068e24426ca25b26570b4ba39ec03d944a9d46ace1d4b0db7f5dbc9c41c2b0f3",
+      "sha256": "264eaea7292b9e25eac6678f818e92fe99a939edba49e99bf00f4b088012f6db",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "9ec523a67d1e3b3697200ccbf8776b64c3f0538a24afb1f388e40c7d0c542d2b",
+      "sha256": "9725e04358f56d6e9c2a6fcd3cf443d5b994b50c9942e6ab0754dfe5f6bb24c9",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_balanced_nominal.json",
+      "resolved_state_digest": "e02ff67162e2aed1eaf6b1a4e7c909ebdd61e46ec2ad99b61efc2bed472e49b7",
+      "sha256": "fbdb591af0c47f22be5b6f3fadd828a7c250f57fcd1b8e3dabc07aa3d213c624",
+      "stage": "isolator",
+      "state_id": "isolator.balanced_nominal.all_regions"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_low_frequency_damped.json",
+      "resolved_state_digest": "8174f81f74b6e996646c62f113f76b385a267dee09a90750fdb1774d956f491a",
+      "sha256": "df4b6e246e95a6048a4de086f23dc3bc5f5b414342b18dd4a765d041dfcadd6d",
+      "stage": "isolator",
+      "state_id": "isolator.low_frequency_damped.all_regions"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_high_frequency_light_damping.json",
+      "resolved_state_digest": "4e48f854ae718faf2cce23cdc4164ca1f65cb572d98b10ef38f9ab8f17254f15",
+      "sha256": "d77c5f40b8e48a3ea1bed50e3cd802279992f283ac7af3459b030be22e584266",
+      "stage": "isolator",
+      "state_id": "isolator.high_frequency_light_damping.all_regions"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_contact_c3_nominal.json",
+      "resolved_state_digest": "7b0980828d479c371506786476c8d3d45be554957eda0954dde2c6355881bacf",
+      "sha256": "779e85dd1b79b89597761bd184b92b9355257aab5efd4716ad11e3329ce238f2",
+      "stage": "contact",
+      "state_id": "contact.c3_nominal.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_contact_c3_softer.json",
+      "resolved_state_digest": "505f3be9aaa56129f54b55c954e225b279c9d810fba7f1c03d3332f31314f7b9",
+      "sha256": "304809af609449a7e0440e813eab67da67bf58b1aef271959b98b28bb87e719a",
+      "stage": "contact",
+      "state_id": "contact.c3_softer.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_contact_c4_torsional.json",
+      "resolved_state_digest": "e3be9d695758c75966ac4c8ac443bb0e31a1769d840e39f656eedd2ee57cd7b4",
+      "sha256": "8ffdcf04f46ff73ec72760bdff564b8eca8470756d93a67689ef8649c3021501",
+      "stage": "contact",
+      "state_id": "contact.c4_torsional.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_parity_gamma_zero.json",
+      "resolved_state_digest": "68eeff63c760dcb2f6715110dccef2b63a5f59563350af4c41dbfe72a9f4475e",
+      "sha256": "39fe5acbd023f90bc990a128b3a688e8525ab1c1fd7f1df6212819994f1f66da",
+      "stage": "parity",
+      "state_id": "parity.gamma_zero.stock_static"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_driver_process_1.json",
+      "resolved_state_digest": "c5aff1446a6b6ab3f2ca3d4bf3d66bc31426d720dc21f98ef73ed34cacf50732",
+      "sha256": "e5402bd243b278c765053743f4bb416002721f7454695ebfedc0cf4e5e791d4c",
+      "stage": "replay",
+      "state_id": "replay.driver.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_driver_process_2.json",
+      "resolved_state_digest": "f60820667a39b88fcbd475fbb70ec8fa416ee247b0a41cfb49ede5c4c56ba9a0",
+      "sha256": "903b539703b9720f471429136f956d78b2ace0af5e82bc6aa73943a08faf0b48",
+      "stage": "replay",
+      "state_id": "replay.driver.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_driver_process_3.json",
+      "resolved_state_digest": "e3f263bbce61c43a49822bfb8711556bb1cacbddf2e47c1078023074cd77559a",
+      "sha256": "e7f05e0b870607d46832ab058b579843646fef8f1c138b2f9fa7d8a953746ed4",
+      "stage": "replay",
+      "state_id": "replay.driver.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_isolator_process_1.json",
+      "resolved_state_digest": "c2d413433d31df04abfd2f158582e8506352e8507691d4477f962f3a8051dd9e",
+      "sha256": "6b43737c22401e0818fb2a613be6560d30683f1e7a3665f0340f9ed01a3bef0e",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_isolator_process_2.json",
+      "resolved_state_digest": "7a8b1c018eaa6ec46b2cd39eec63f2da2ba85fd08429be30979c5ee57165cad6",
+      "sha256": "89b2be74be97782705b435aa2242d5bbcc59a118b5940c5e2edaf09c0fa84709",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_isolator_process_3.json",
+      "resolved_state_digest": "ab5932b35d323c7bc0eeeef17b07f652e30c9a5268243b352725bf1ea5e5525e",
+      "sha256": "4b2712a7362fad23eb9d73770a554dbecf3b990e22160be6e84ffa1103806ab9",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_contact_process_1.json",
+      "resolved_state_digest": "1edad1b768be95992463f7a2f82d54430c8a47306b709f6b45845616dc0346f7",
+      "sha256": "f2032963d3e9251147b148f5611568ec7ba93bbd449edff739346add770d6bec",
+      "stage": "replay",
+      "state_id": "replay.contact.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_contact_process_2.json",
+      "resolved_state_digest": "5becd47976f26c107b805a48b63a8e19c8e529e8841d8ee65dffd833894c0c9e",
+      "sha256": "2bbc2b8d54541b46861958c877f849b0e87dce2fd34c34b8861ddef6e34f18b1",
+      "stage": "replay",
+      "state_id": "replay.contact.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_contact_process_3.json",
+      "resolved_state_digest": "971409068133efb29a92ead3d769f0a35a0dad53e7239b115b41d15d78d1e084",
+      "sha256": "af598454d3fccfa62cdf5933b6404a18ab7820778ddaf1f8ea48f2ae28d9deec",
+      "stage": "replay",
+      "state_id": "replay.contact.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_gamma_zero_parity_process_1.json",
+      "resolved_state_digest": "8ee8849105e7627f97811f0b112a8e969ca905b71ded3d1645b3adea39b4fce8",
+      "sha256": "09d17a8dcb05ed3acda6966f8a849be5ac795200a6bdbf9cf2e6769f39540799",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_gamma_zero_parity_process_2.json",
+      "resolved_state_digest": "e67d5ea82c7d5d5f81e14c57b224b79381e85ed8f2f285e2ada021d132f99328",
+      "sha256": "b9c41c7eb72c097e28bfd1ca3696378071065a1fccb71bdff79269a694670ce3",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_replay_gamma_zero_parity_process_3.json",
+      "resolved_state_digest": "42ec5a9d60f74040cbd0e34315a526213a3c02b930d8d20de2f1c8adb8836bf5",
+      "sha256": "1d61b7dd5eac4a211a47bf6eb36535314fa44db559d14b09821007119a52251f",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_3"
+    }
+  ],
+  "replay_groups": [
+    "driver",
+    "isolator",
+    "contact",
+    "gamma_zero_parity"
+  ],
+  "resolved_state_digest": "44f331d6a16880d33a5edda273fb02502f64ef9310ab817fc4c1bc7f994ec7f9",
+  "schema_id": "shakebench.phase06r5.v6.physics_selection",
+  "schema_version": 6,
+  "selection": {
+    "controller_outcome_used": false,
+    "physics_only": true,
+    "reward_used": false,
+    "selected_candidate_ids": {
+      "contact": "c3_nominal",
+      "driver": "dt_nominal",
+      "isolator": "low_frequency_damped"
+    },
+    "task_success_used": false
+  },
+  "status": "BLOCKED"
+}

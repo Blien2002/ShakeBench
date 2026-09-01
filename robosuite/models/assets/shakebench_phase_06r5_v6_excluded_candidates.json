@@ -1,0 +1,40 @@
+{
+  "excluded": [
+    {
+      "candidate_id": "balanced_nominal",
+      "reason": "isolator_hard_gate_failed",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "high_frequency_light_damping",
+      "reason": "isolator_hard_gate_failed",
+      "stage": "isolator"
+    },
+    {
+      "candidate_id": "c3_nominal",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c3_softer",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c4_torsional",
+      "reason": "contact_hard_gate_failed",
+      "stage": "contact"
+    }
+  ],
+  "payload_sha256": "4275006b87834768c7ac9a960ac31122c9a8980d104068ed9f8fcea841624f83",
+  "physics_only": true,
+  "protocol_sha256_bytes": "835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a",
+  "schema_id": "shakebench.phase06r5.v6.physics_selection.excluded",
+  "schema_version": 6,
+  "selected_candidate_ids": {
+    "contact": "c3_nominal",
+    "driver": "dt_nominal",
+    "isolator": "low_frequency_damped"
+  },
+  "status": "PASS"
+}

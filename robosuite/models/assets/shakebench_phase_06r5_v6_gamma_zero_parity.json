@@ -1,0 +1,138 @@
+{
+  "adapter_contract_digest": "719f028fd25d1590277311f7502fd86b68416cc4c7d0b62ac04ff0dbeb199795",
+  "evidence": {
+    "checks": {
+      "action_control_freq_hz": {
+        "expected": 20.0,
+        "observed": 20.0,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "action_dimension": {
+        "expected": 7,
+        "observed": 7,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "can_mass_kg": {
+        "expected": 0.349,
+        "observed": 0.349,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "support_force": {
+        "expected": 0.001,
+        "observed": 3.422707746440628,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "target_bottom_thickness_m": {
+        "expected": 0.012,
+        "observed": 0.012,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "target_inner_xy_m": {
+        "expected": [
+          0.164,
+          0.144
+        ],
+        "observed": [
+          0.164,
+          0.144
+        ],
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "target_outer_xy_m": {
+        "expected": [
+          0.18,
+          0.16
+        ],
+        "observed": [
+          0.18,
+          0.16
+        ],
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "target_wall_height_m": {
+        "expected": 0.035,
+        "observed": 0.035,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "warnings": {
+        "expected": 0,
+        "observed": 0,
+        "passed": true,
+        "tolerance": 0
+      },
+      "worktable_inertia_kg_m2": {
+        "expected": [
+          0.9696,
+          1.1363,
+          2.0867
+        ],
+        "observed": [
+          0.9696,
+          1.1363,
+          2.0867
+        ],
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      "worktable_mass_kg": {
+        "expected": 32.0,
+        "observed": 32.0,
+        "passed": true,
+        "tolerance": 1e-12
+      }
+    },
+    "dynamic_residual": {
+      "max_residual": 0.0,
+      "reported_only": true
+    },
+    "observations": {
+      "action": {
+        "control_freq_hz": 20.0,
+        "dimension": 7
+      },
+      "geometry": {
+        "can_mass_kg": 0.349,
+        "target_bottom_thickness_m": 0.012,
+        "target_inner_xy_m": [
+          0.164,
+          0.144
+        ],
+        "target_outer_xy_m": [
+          0.18,
+          0.16
+        ],
+        "target_wall_height_m": 0.035,
+        "worktable_inertia_kg_m2": [
+          0.9696,
+          1.1363,
+          2.0867
+        ],
+        "worktable_mass_kg": 32.0
+      },
+      "support": {
+        "normal_force_N": 3.422707746440628,
+        "warning_count": 0
+      }
+    },
+    "passed": true
+  },
+  "payload_sha256": "936b882b8fe399e83508ea108abab479cac20ce79da1a5c5ba441d80d83cdbd2",
+  "protocol_sha256_bytes": "835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a",
+  "protocol_sha256_normalized": "8638df6ee6217da5a14c4593a01d593c989d42a9936902d6c4ecc48e4f3d2fe6",
+  "raw_file": {
+    "path": "shakebench_phase_06r5_v6_raw_parity_gamma_zero.json",
+    "state_id": "parity.gamma_zero.stock_static"
+  },
+  "resolved_state_digest": "68eeff63c760dcb2f6715110dccef2b63a5f59563350af4c41dbfe72a9f4475e",
+  "schema_id": "shakebench.phase06r5.v6.physics_selection.parity",
+  "schema_version": 6,
+  "status": "PASS"
+}

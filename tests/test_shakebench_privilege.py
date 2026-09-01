@@ -34,6 +34,7 @@ def _make_env(**kwargs):
         "model_timestep": 0.0002,
         "horizon": 2,
         "seed": 29,
+        "physics_profile": "probe",
         "observation_tier": "V1",
         "imu_mode": "ideal_smoke",
     }
@@ -266,6 +267,7 @@ def test_gym_wrapper_cannot_leak_recorder_namespace(tmp_path):
             model_timestep=0.0002,
             horizon=2,
             seed=29,
+            physics_profile="probe",
             observation_tier="V1",
             imu_mode="ideal_smoke",
             privileged_recorder=recorder,
@@ -316,6 +318,7 @@ def test_gym_wrapper_fail_closes_privileged_and_non_policy_keys(tmp_path):
                 model_timestep=0.0002,
                 horizon=2,
                 seed=29,
+                physics_profile="probe",
                 observation_tier="V1",
                 imu_mode="ideal_smoke",
             )
@@ -381,6 +384,7 @@ def test_gym_wrapper_default_state_keys_match_each_explicit_tier(tmp_path):
                 model_timestep=0.0002,
                 horizon=2,
                 seed=29,
+                physics_profile="probe",
                 observation_tier=tier,
                 imu_mode="ideal_smoke",
             )

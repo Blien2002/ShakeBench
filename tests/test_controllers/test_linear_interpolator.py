@@ -55,7 +55,9 @@ min_ratio = 1.10
 # Define arguments for this test
 parser = argparse.ArgumentParser()
 parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
-args = parser.parse_args()
+# Pytest owns the process command line; ignore its unrelated options while
+# retaining the optional manual ``--render`` switch for direct invocation.
+args, _ = parser.parse_known_args()
 
 # Setup printing options for numbers
 np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})

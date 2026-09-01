@@ -82,6 +82,53 @@ No V5 isolator, contact, bounded-parity, or replay/determinism evidence
 exists. The 18 V5 driver files are retained as archive/provenance only and
 are not relabeled or reused as V6 selection evidence.
 
+## Phase 06R5 / V6 result (BLOCKED)
+
+The immutable V6 protocol and feasibility artifact were registered in
+`379c412f`. The protocol bytes hash is
+`835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a`; its
+resolved-state digest is
+`44f331d6a16880d33a5edda273fb02502f64ef9310ab817fc4c1bc7f994ec7f9`, and
+the feasibility artifact hash is
+`41c9930474443d56798cfbc4b77675faf49a3e0df503286c69d011600a8ac38a`.
+The validate, dry-run, and adapter-contract commands all exited `0`. The
+adapter contract covered 37 manifest states plus 66 legal replay bindings
+(169 preparation plans) with `NoPhysicsBackend` reporting zero physics calls.
+
+The complete V6 run produced 37 flat raw artifacts: all 18 driver states
+passed all driver gates; all three isolator candidates completed and only
+`low_frequency_damped` was eligible; parity and all four three-process replay
+groups passed independent verification. All three contact candidates
+completed, but none passed the registered recovery gates: `c3_nominal` and
+`c4_torsional` measured approximately `0.463 m/s` and `11.1 rad/s` recovery
+velocity/angle, above the `0.02 m/s` and `0.20 rad/s` limits, while
+`c3_softer` also exceeded the penetration limit. This is a completed
+`physics_gate_failure`, not an infrastructure failure.
+
+The independent V6 verifier recomputed hashes, state coverage, driver and
+component eligibility, selection ordering, bounded parity and replay
+completeness; it rejected publication because no contact candidate was
+eligible. `shakebench_phase_06r5_v6_status.json` therefore remains
+`BLOCKED`, no official profile was published, and Phase 07 remains forbidden.
+
+### V6 validation and regression record
+
+- `--validate-protocol`: exit `0`; `--dry-run-manifest`: exit `0`; and
+  `--adapter-contract`: exit `0`.
+- Focused Phase 06/V1–V5 archive suite: `36 passed`.
+- Affected Phase 02–05 suite: `167 passed`; test-only helpers explicitly use
+  the non-scoreable `probe` profile while the production official loader stays
+  fail-closed.
+- Clean source sdist and wheel builds both included the V6 protocol,
+  feasibility, and 37 V6 raw artifacts; direct `shakebench_arena.xml` MJCF
+  compilation passed.
+- Full non-EGL regression (`python -m pytest -q` excluding the two
+  renderer-dependent environment collections): `460 passed, 58 skipped, 2
+  failed`. The two failures are `test_camera_transforms` and
+  `test_environment_determinism`, both stopped by the container's missing EGL
+  device/swrast driver. The exact unfiltered full command was also attempted;
+  it is blocked by the same EGL failure, not by a V6 assertion.
+
 ## Phase 06R3 / V4 result (BLOCKED)
 
 V4 structural registration was committed as `80712165`; the protocol and

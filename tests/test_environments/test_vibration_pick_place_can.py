@@ -37,6 +37,10 @@ def _make_env(**kwargs):
         "model_timestep": 0.0002,
         "horizon": 20,
         "seed": 7,
+        # Phase 06 is fail-closed until an official profile passes; these
+        # Phase 04 regression tests intentionally use the non-scoreable probe
+        # profile so they do not assume an archived V1/V5 profile is active.
+        "physics_profile": "probe",
     }
     options.update(kwargs)
     return robosuite.make("VibrationPickPlaceCan", **options)

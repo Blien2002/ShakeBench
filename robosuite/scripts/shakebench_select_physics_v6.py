@@ -1201,12 +1201,16 @@ def _isolator_eligible(payload: Mapping[str, Any], state: ResolvedProbeState) ->
         and float(summary.get("static_offset_compensated_payload_max_m", math.inf)) <= float(gates["static_offset_compensated_payload_max_m"])
         and float(summary.get("payload_sensitivity", math.inf)) <= float(gates["payload_sensitivity_max"])
         and _numeric_transfer_evidence_passes(evidence, gates)
+        and _numeric_payload_evidence_passes(evidence.get("payload", {}), float(gates.get("static_offset_compensated_payload_max_m", math.inf)))
     )
 
 
 def _numeric_transfer_evidence_passes(evidence: Mapping[str, Any], gates: Mapping[str, Any]) -> bool:
     grid = evidence.get("transfer_grid", {})
     for record in grid.get("records", []) if isinstance(grid, Mapping) else []:
+        trace = record.get("trace_summary", {})
+        if sum(int(item) for item in trace.get("warning_number_delta_total", ())) > int(gates.get("warnings_max", 0)):
+            return False
         for key in ("relative_comparison", "absolute_comparison"):
             comparison = record.get(key, {})
             if "amplitude_relative_error" in comparison and float(comparison["amplitude_relative_error"]) > float(gates["analytic_mujoco_amplitude_relative_error_max"]):
@@ -1215,6 +1219,9 @@ def _numeric_transfer_evidence_passes(evidence: Mapping[str, Any], gates: Mappin
                 return False
     combined = evidence.get("combined_spectrum", {})
     if isinstance(combined, Mapping):
+        trace = combined.get("metrics", {}).get("trace", {})
+        if sum(int(item) for item in trace.get("warning_number_delta_total", ())) > int(gates.get("warnings_max", 0)):
+            return False
         if float(combined.get("cross_axis_leakage_max", 0.0)) > float(gates["cross_axis_leakage_max"]):
             return False
         for record in combined.get("line_fits", []) if isinstance(combined.get("line_fits"), list) else []:
@@ -1224,6 +1231,37 @@ def _numeric_transfer_evidence_passes(evidence: Mapping[str, Any], gates: Mappin
                     return False
                 if float(comparison.get("phase_absolute_error_deg", 0.0)) > float(gates["analytic_mujoco_phase_absolute_error_deg_max"]):
                     return False
+    return True
+
+
+def _numeric_payload_evidence_passes(payload: Mapping[str, Any], offset_limit: float) -> bool:
+    records = payload.get("records", []) if isinstance(payload, Mapping) else []
+    if not isinstance(records, list) or not records:
+        return False
+    for record in records:
+        if not isinstance(record, Mapping):
+            return False
+        for value in record.get("travel_margin_m", ()):
+            if float(value) <= 0.0:
+                return False
+        for value in record.get("angle_margin_rad", ()):
+            if float(value) <= 0.0:
+                return False
+        if float(record.get("com_offset_error_m", math.inf)) > 1.0e-3:
+            return False
+        if any(int(value) != 0 for value in record.get("warnings", ())):
+            return False
+        checks = record.get("equilibrium_gate", {}).get("checks", {})
+        if not isinstance(checks, Mapping) or not checks:
+            return False
+        for check in checks.values():
+            expected = float(check.get("expected", 0.0))
+            measured = float(check.get("measured", math.inf))
+            if abs(expected) <= 5.0e-5:
+                if abs(measured) > 5.0e-5:
+                    return False
+            elif measured * expected <= 0.0 or abs(measured / expected - 1.0) > 0.25:
+                return False
     return True
 
 
@@ -1356,14 +1394,21 @@ def _raw_index(selected: Mapping[str, Any], selected_path: Path, states: Mapping
             bytes_hash, normalized_hash = _protocol_hashes(state)
             if payload.get("stage") != state.stage or payload.get("resolved_state_digest") != state.resolved_state_digest or payload.get("protocol_sha256_bytes") != bytes_hash or payload.get("protocol_sha256_normalized") != normalized_hash:
                 errors.append("raw/resolved-state mismatch: " + state_id)
+            evidence = payload.get("evidence", {})
+            if state.stage != "replay" and isinstance(evidence, Mapping) and evidence.get("candidate_id") is not None and str(evidence.get("candidate_id")) != state.candidate_id:
+                errors.append("raw candidate disagrees with resolved state: " + state_id)
+            if state.stage == "replay" and isinstance(evidence, Mapping) and state.replay is not None and str(evidence.get("selected_candidate_id")) != state.replay.selected_candidate_id:
+                errors.append("raw replay binding disagrees with resolved state: " + state_id)
             if not str(entry.get("path", "")).startswith(RAW_PREFIX):
                 errors.append("raw entry is outside V6 prefix: " + str(entry.get("path")))
+            if str(entry.get("path")) != state.output:
+                errors.append("raw entry path disagrees with resolved manifest: " + state_id)
     if set(raw) != set(states):
         errors.append("raw state coverage differs from resolved manifest")
     return raw, errors
 
 
-def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | None = None) -> dict[str, Any]:
+def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | None = None, require_published_status: bool = True) -> dict[str, Any]:
     """Independently recompute V6 gates, selection, hashes, parity and replay."""
 
     selected_path = Path(path)
@@ -1431,6 +1476,19 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
                     errors.append("determinism artifact is missing replay groups")
         except (OSError, json.JSONDecodeError):
             errors.append(f"{artifact_key} is unreadable")
+
+    excluded_path = selected_path.parent / EXCLUDED_FILENAME
+    if not excluded_path.is_file():
+        errors.append("excluded-candidate artifact is missing")
+    else:
+        try:
+            excluded_payload = json.loads(excluded_path.read_text(encoding="utf-8"))
+            if not verify_payload_hash(excluded_payload) or excluded_payload.get("protocol_sha256_bytes") != protocol_bytes_hash:
+                errors.append("excluded-candidate artifact hash/protocol mismatch")
+            if excluded_payload.get("excluded") != selected.get("excluded", []):
+                errors.append("selected/excluded candidate tables disagree")
+        except (OSError, json.JSONDecodeError):
+            errors.append("excluded-candidate artifact is unreadable")
 
     driver = _driver_eligibility(states, raw)
     checks["driver_matrix"] = all(record["complete_state_count"] == 6 for record in driver.values())
@@ -1530,11 +1588,14 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
 
     status_path = selected_path.parent / STATUS_FILENAME
     if not status_path.is_file():
-        errors.append("V6 status artifact is missing")
+        if require_published_status:
+            errors.append("V6 status artifact is missing")
     else:
         try:
             status_payload = json.loads(status_path.read_text(encoding="utf-8"))
-            if selected.get("status") == "PASS":
+            if not verify_payload_hash(status_payload):
+                errors.append("V6 status payload hash mismatch")
+            if selected.get("status") == "PASS" and require_published_status:
                 if status_payload.get("status") != "PASS":
                     errors.append("PASS selection does not have PASS status")
                 if status_payload.get("protocol", {}).get("bytes_sha256") != protocol_bytes_hash or status_payload.get("protocol", {}).get("normalized_sha256") != sha256_json(protocol):
@@ -1543,7 +1604,7 @@ def verify_selection_artifact(path: str | Path, *, protocol_path: str | Path | N
                 profile_path = selected_path.parent / str(profile.get("path", ""))
                 if profile.get("path") != OFFICIAL_PROFILE_FILENAME or not profile_path.is_file() or profile.get("file_sha256") != file_sha256(profile_path):
                     errors.append("status/profile binding mismatch")
-            elif status_payload.get("status") != "BLOCKED":
+            elif selected.get("status") != "PASS" and status_payload.get("status") != "BLOCKED":
                 errors.append("blocked selection does not have BLOCKED status")
             if status_payload.get("adapter_contract_digest") != selected.get("adapter_contract_digest"):
                 errors.append("status/adapter-contract digest mismatch")
@@ -1576,6 +1637,7 @@ def _write_blocked_status(*, output: Path, protocol_name: str, protocol_bytes_ha
         "official_profile_publication": "forbidden",
         "phase07": "forbidden",
     }
+    status["payload_sha256"] = payload_hash(status)
     write_json_atomic(output / STATUS_FILENAME, status)
     return status
 
@@ -1599,7 +1661,7 @@ def _profile_from_selected_states(states: Mapping[str, ResolvedProbeState], sele
 
 
 def _publish_if_verified(*, selected_path: Path, protocol_path: Path, output: Path, protocol_bytes_hash: str, normalized_hash: str, states: Mapping[str, ResolvedProbeState], selected_ids: Mapping[str, str], feasibility_hash: str | None, adapter_digest: str) -> dict[str, Any] | None:
-    verification = verify_selection_artifact(selected_path, protocol_path=protocol_path)
+    verification = verify_selection_artifact(selected_path, protocol_path=protocol_path, require_published_status=False)
     if verification.get("passed") is not True:
         return None
     profile = _profile_from_selected_states(states, selected_ids, protocol_bytes_hash)
@@ -1626,6 +1688,7 @@ def _publish_if_verified(*, selected_path: Path, protocol_path: Path, output: Pa
         "official_profile_publication": "PASS",
         "phase07": "authorized_after_independent_verification",
     }
+    status["payload_sha256"] = payload_hash(status)
     write_json_atomic(output / STATUS_FILENAME, status)
     return status
 
@@ -1727,6 +1790,7 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "schema_version": SCHEMA_VERSION,
         "status": "PASS" if _parity_eligible(parity_raw, states[parity_raw["state_id"]]) else "BLOCKED",
         "protocol_sha256_bytes": protocol_bytes_hash,
+        "adapter_contract_digest": contract["adapter_contract_digest"],
         "protocol_sha256_normalized": normalized_hash,
         "resolved_state_digest": parity_raw["resolved_state_digest"],
         "raw_file": {"path": states[parity_raw["state_id"]].output, "state_id": parity_raw["state_id"]},
@@ -1754,6 +1818,7 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "schema_version": SCHEMA_VERSION,
         "status": "PASS" if set(determinism_groups) >= {"driver", "isolator", "contact", "gamma_zero_parity"} and all(row["process_count"] == 3 and len(set(row["trace_digests"])) == 1 for row in determinism_groups.values()) else "BLOCKED",
         "protocol_sha256_bytes": protocol_bytes_hash,
+        "adapter_contract_digest": contract["adapter_contract_digest"],
         "protocol_sha256_normalized": normalized_hash,
         "resolved_state_digest": structure["resolved_state_digest"],
         "independent_process_count": 3,
@@ -1801,12 +1866,12 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "status": "PASS",
         "protocol_sha256_bytes": protocol_bytes_hash,
         "selected_candidate_ids": selected_ids,
-        "excluded": [],
+        "excluded": excluded_rows,
         "physics_only": True,
     }
     excluded["payload_sha256"] = payload_hash(excluded)
     write_json_atomic(output / EXCLUDED_FILENAME, excluded)
-    verification = verify_selection_artifact(selected_path, protocol_path=protocol_file)
+    verification = verify_selection_artifact(selected_path, protocol_path=protocol_file, require_published_status=False)
     if verification.get("passed") is True:
         status = _publish_if_verified(selected_path=selected_path, protocol_path=protocol_file, output=output, protocol_bytes_hash=protocol_bytes_hash, normalized_hash=normalized_hash, states=states, selected_ids=selected_ids, feasibility_hash=feasibility_hash, adapter_digest=contract["adapter_contract_digest"])
         return {"status": status or {"status": "BLOCKED", "reason": "publication failed"}, "verification": verification, "selected": selected_payload}
@@ -1824,6 +1889,7 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         blocking_stage="contact" if contact_blocked_reason else "verification",
         adapter_digest=contract["adapter_contract_digest"],
     )
+    verification = verify_selection_artifact(selected_path, protocol_path=protocol_file, require_published_status=False)
     return {"status": status, "verification": verification, "selected": selected_payload}
 
 

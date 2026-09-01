@@ -895,14 +895,20 @@ def _contact_child(protocol: Mapping[str, Any], row: Mapping[str, Any], candidat
     # synthetic pre-registration fixtures readable; the V6 validator requires
     # the fields in every contact candidate row.
     condim = _integer(candidate.get("condim"), f"contact candidate {candidate_id}.condim", positive=True)
+    if condim not in {1, 3, 4, 6}:
+        raise V6ProtocolStateError(f"contact candidate {candidate_id}.condim is not a MuJoCo condim")
     sliding = candidate.get("sliding_mu", facts.get("sliding_mu"))
     sliding = _mapping(sliding, f"contact candidate {candidate_id}.sliding_mu")
+    for interface in ("table_object", "finger_object"):
+        _number(sliding.get(interface), f"contact candidate {candidate_id}.sliding_mu.{interface}", nonnegative=True)
     torsional = _number(candidate.get("torsional_mu"), f"contact candidate {candidate_id}.torsional_mu", nonnegative=True)
     rolling = _number(candidate.get("rolling_mu"), f"contact candidate {candidate_id}.rolling_mu", nonnegative=True)
     margin = _number(candidate.get("margin_m"), f"contact candidate {candidate_id}.margin_m", nonnegative=True)
     gap = _number(candidate.get("gap_m"), f"contact candidate {candidate_id}.gap_m", nonnegative=True)
     solref = _vector(candidate.get("solref"), 2, f"contact candidate {candidate_id}.solref", positive=True)
     solimp = _vector(candidate.get("solimp"), 5, f"contact candidate {candidate_id}.solimp")
+    if not 0.0 <= solimp[0] <= solimp[1] <= 1.0 or solimp[2] <= 0.0 or not 0.0 <= solimp[3] <= 1.0 or solimp[4] <= 0.0:
+        raise V6ProtocolStateError(f"contact candidate {candidate_id}.solimp is invalid")
     iterations = _integer(candidate.get("iterations"), f"contact candidate {candidate_id}.iterations", positive=True)
     interfaces = candidate.get("interfaces", contact.get("interfaces"))
     if isinstance(interfaces, (str, bytes)) or not isinstance(interfaces, Sequence) or not interfaces:
@@ -1034,6 +1040,8 @@ def _resolve_row(protocol: Mapping[str, Any], row: Mapping[str, Any], context: M
         contact_id = _required_string(str(row.get("candidate_id", "")), "contact candidate_id")
         isolator = _isolator_child(protocol, row, isolator_id, driver_id)
         contact = _contact_child(protocol, row, contact_id, driver_id, isolator_id)
+        if contact.solref[0] < 2.0 * common.physics_timestep_s:
+            raise V6ProtocolStateError("contact solref time constant is below 2 * timestep")
     elif stage == "parity":
         selection = _mapping(protocol.get("selection"), "selection", required=False)
         defaults = _mapping(selection.get("default"), "selection.default", required=False)
@@ -1042,6 +1050,8 @@ def _resolve_row(protocol: Mapping[str, Any], row: Mapping[str, Any], context: M
         contact_id = _candidate_id_from(row, context, "contact_candidate_id", defaults.get("contact_candidate_id", defaults.get("contact")))
         isolator = _isolator_child(protocol, row, isolator_id, driver_id)
         contact = _contact_child(protocol, row, contact_id, driver_id, isolator_id)
+        if contact.solref[0] < 2.0 * common.physics_timestep_s:
+            raise V6ProtocolStateError("contact solref time constant is below 2 * timestep")
         parity = _parity_child(protocol, row, driver_id, isolator_id, contact_id)
     else:
         replay = _replay_child(protocol, row, common, context)
@@ -1066,9 +1076,13 @@ def _resolve_row(protocol: Mapping[str, Any], row: Mapping[str, Any], context: M
         if replay.selected_component == "contact" and contact_id is not None:
             isolator = _isolator_child(protocol, row, str(isolator_id), str(driver_id or runtime_driver_id))
             contact = _contact_child(protocol, row, str(contact_id), str(driver_id or runtime_driver_id), str(isolator_id))
+            if contact.solref[0] < 2.0 * common.physics_timestep_s:
+                raise V6ProtocolStateError("contact solref time constant is below 2 * timestep")
         if replay.selected_component in {"parity", "gamma_zero_parity"}:
             isolator = _isolator_child(protocol, row, str(isolator_id), str(driver_id or runtime_driver_id))
             contact = _contact_child(protocol, row, str(contact_id), str(driver_id or runtime_driver_id), str(isolator_id))
+            if contact.solref[0] < 2.0 * common.physics_timestep_s:
+                raise V6ProtocolStateError("contact solref time constant is below 2 * timestep")
             parity = _parity_child(protocol, row, str(driver_id or runtime_driver_id), str(isolator_id), str(contact_id))
     return ResolvedProbeState(common=common, driver=driver, isolator=isolator, contact=contact, parity=parity, replay=replay)
 
