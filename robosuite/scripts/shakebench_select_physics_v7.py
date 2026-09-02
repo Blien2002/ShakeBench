@@ -576,7 +576,7 @@ def _incline_xml(angle_rad: float, candidate: Mapping[str, Any]) -> str:
   <option timestep="0.0002" integrator="Euler" solver="Newton" iterations="100" tolerance="1e-12" gravity="0 0 -9.81" />
   <asset><mesh name="can_mesh" file="{mesh_path}" /></asset>
   <worldbody>
-    <geom name="incline_plane" type="plane" pos="0 0 0" euler="0 {format(float(angle_rad), '.17g')} 0" />
+    <geom name="incline_plane" type="plane" size="2 2 0.1" pos="0 0 0" euler="0 {format(float(angle_rad), '.17g')} 0" />
     <body name="can" pos="0 0 0.085">
       <freejoint name="can_free" />
       <geom name="can_g0" type="mesh" mesh="can_mesh" mass="0.349" />

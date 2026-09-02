@@ -1009,6 +1009,11 @@ def _v6_parity_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
         robots="Panda",
         physics_profile=profile,
         model_timestep=state.common.physics_timestep_s,
+        target_container_friction=(
+            float(state.contact.sliding_mu["table_object"]),
+            state.contact.torsional_mu,
+            state.contact.rolling_mu,
+        ) if state.contact is not None else None,
         has_renderer=False,
         has_offscreen_renderer=False,
         use_camera_obs=False,
@@ -1196,6 +1201,12 @@ def _select_contact_or_none(eligible_candidates: list[str], ranked_candidates: l
     """
 
     return ranked_candidates[0] if eligible_candidates and ranked_candidates else None
+
+
+def _official_profile_reference(selected_contact: str | None) -> str | None:
+    """Expose the profile reference only for an actually selected contact."""
+
+    return OFFICIAL_PROFILE_FILENAME if selected_contact is not None else None
 
 
 def _isolator_eligible(payload: Mapping[str, Any], state: ResolvedProbeState) -> bool:
@@ -1862,7 +1873,7 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         "candidate_counts": {"driver": 3, "isolator": 3, "contact": 3},
         "eligible_counts": {"driver": sum(record["eligible"] for record in driver_eligibility.values()), "isolator": len(eligible_isolators), "contact": len(eligible_contacts)},
         "raw_files": raw_files,
-        "official_profile": OFFICIAL_PROFILE_FILENAME,
+        "official_profile": _official_profile_reference(selected_contact),
         "official_profile_alignment": contact_blocked_reason is None,
         "driver_recomputed": driver_eligibility,
         "replay_groups": ["driver", "isolator", "contact", "gamma_zero_parity"],
@@ -1890,6 +1901,8 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         status = _publish_if_verified(selected_path=selected_path, protocol_path=protocol_file, output=output, protocol_bytes_hash=protocol_bytes_hash, normalized_hash=normalized_hash, states=states, selected_ids=selected_ids, feasibility_hash=feasibility_hash, adapter_digest=contract["adapter_contract_digest"])
         return {"status": status or {"status": "BLOCKED", "reason": "publication failed"}, "verification": verification, "selected": selected_payload}
     selected_payload["status"] = "BLOCKED"
+    selected_payload["official_profile"] = None
+    selected_payload["official_profile_alignment"] = False
     selected_payload["blocking_reason"] = contact_blocked_reason or "evidence_integrity_failure: independent V6 verifier failed"
     selected_payload["payload_sha256"] = payload_hash(selected_payload)
     write_json_atomic(selected_path, selected_payload)

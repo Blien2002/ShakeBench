@@ -17,6 +17,7 @@ from robosuite.scripts.shakebench_select_physics_v6 import (
     PROTOCOL_FILENAME,
     RAW_PREFIX,
     _select_contact_or_none,
+    _official_profile_reference,
     adapter_contract,
     dry_run_manifest,
     load_v6_protocol,
@@ -182,3 +183,5 @@ def test_v6_zero_eligible_contact_never_becomes_a_selected_candidate():
     assert _select_contact_or_none([], []) is None
     assert _select_contact_or_none([], ["c3_nominal"]) is None
     assert _select_contact_or_none(["c3_nominal"], ["c3_nominal"]) == "c3_nominal"
+    assert _official_profile_reference(None) is None
+    assert _official_profile_reference("c3_nominal") == "shakebench_official_physics.yaml"

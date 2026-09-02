@@ -202,7 +202,7 @@ def _declared_finger_load_trace(env: Any, *, duration_s: float, envelope: Mappin
     steps = max(1, int(math.ceil(duration_s / float(model.opt.timestep))))
     can_names = set(env.can.contact_geoms)
     finger_names = set(env.finger_pad_geom_names)
-    holds = []
+    trace = []
     maximum_normal = 0.0
     maximum_penetration = 0.0
     named_pairs: set[tuple[str | None, str | None]] = set()
@@ -218,7 +218,6 @@ def _declared_finger_load_trace(env: Any, *, duration_s: float, envelope: Mappin
         data.qvel[can_qvel : can_qvel + 6] = 0.0
         data.ctrl[:] = 0.0
         data.ctrl[finger_actuator_ids] = (q, -q)
-        hold_trace = []
         cumulative_impulse: dict[str, float] = {}
         for index in range(steps + 1):
             # Reapply the declared pose at every sample.  This keeps the
@@ -245,7 +244,7 @@ def _declared_finger_load_trace(env: Any, *, duration_s: float, envelope: Mappin
             maximum_normal = max(maximum_normal, float(contacts["normal_force_N"]))
             maximum_penetration = max(maximum_penetration, float(contacts["penetration_m"]))
             named_pairs.update((pair["geom1"], pair["geom2"]) for pair in contacts["contacts"])
-            hold_trace.append({"time_s": float(index * model.opt.timestep), "pad_index": pad_index, "can_position_m": target_position.tolist(), "contacts": contacts})
+            trace.append({"time_s": float(index * model.opt.timestep), "pad_index": pad_index, "hold_time_s": float(index * model.opt.timestep), "can_position_m": target_position.tolist(), "contacts": contacts})
     required_pairs = {
         tuple(sorted((str(env.can.contact_geoms[0]), str(env.finger_pad_geom_names[0])))),
         tuple(sorted((str(env.can.contact_geoms[0]), str(env.finger_pad_geom_names[1])))),
@@ -261,7 +260,7 @@ def _declared_finger_load_trace(env: Any, *, duration_s: float, envelope: Mappin
             "actuator_control": [q, -q],
             "pose_reapplied_before_each_mj_forward": True,
         },
-        "trace": hold_trace,
+        "trace": trace,
         "maximum_normal_force_N": maximum_normal,
         "maximum_penetration_m": maximum_penetration,
         "normal_force_N": maximum_normal,
@@ -269,9 +268,9 @@ def _declared_finger_load_trace(env: Any, *, duration_s: float, envelope: Mappin
         "force_envelope_N": float(envelope["finite_force_envelope_N"]),
         "minimum_force_N": min(
             float(row["contacts"]["normal_force_N"])
-            for row in hold_trace
+            for row in trace
             if row["contacts"]["contact_count"]
-        ) if any(row["contacts"]["contact_count"] for row in hold_trace) else 0.0,
+        ) if any(row["contacts"]["contact_count"] for row in trace) else 0.0,
         "named_pair_audit": [list(pair) for pair in sorted(named_pairs, key=lambda item: (str(item[0]), str(item[1])))],
         "required_named_pairs": [list(pair) for pair in sorted(required_pairs)],
         "all_required_named_pairs_observed": required_pairs.issubset(observed_pairs),

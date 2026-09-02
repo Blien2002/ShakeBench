@@ -1,0 +1,554 @@
+{
+  "excluded": [
+    {
+      "candidate_id": "c3_nominal",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0034542429940352948,
+        "finger": {
+          "maximum_normal_force_N": 14.075361158703627,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.183920124255375,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004385741747439162,
+          "tail_window_max_linear_velocity_m_s": 0.13252003830920053,
+          "tail_window_rms_angular_velocity_rad_s": 0.00042795506803562156,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731389998096,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071563309549327,
+          "terminal_linear_velocity_m_s": 0.13252003830920053,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c3_softer",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.007847053068212206,
+        "finger": {
+          "maximum_normal_force_N": 2.5996816256317934,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 0.6770451178422816,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.000479677965519819,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0006909537254298776,
+          "tail_window_max_linear_velocity_m_s": 0.13246816097155997,
+          "tail_window_rms_angular_velocity_rad_s": 0.0006867110823794761,
+          "tail_window_rms_linear_velocity_m_s": 0.04011473171019033,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0006717390968358348,
+          "terminal_linear_velocity_m_s": 0.13246816097155997,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c4_torsional",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.003454242992044887,
+        "finger": {
+          "maximum_normal_force_N": 14.0753611756424,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.183920113299212,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.00043854414463029745,
+          "tail_window_max_linear_velocity_m_s": 0.1325200402783401,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004279265388134119,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731473070484,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071299944845759,
+          "terminal_linear_velocity_m_s": 0.1325200402783401,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_baseline",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0034543381487626146,
+        "finger": {
+          "maximum_normal_force_N": 14.075689313269965,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.1842602698766194,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004292313705374836,
+          "tail_window_max_linear_velocity_m_s": 0.13251568577051412,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004196926274100987,
+          "tail_window_rms_linear_velocity_m_s": 0.04013531691900444,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.00040029365637491294,
+          "terminal_linear_velocity_m_s": 0.13251568577051412,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_damped",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0008791646843315792,
+        "finger": {
+          "maximum_normal_force_N": 28.294890999604103,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 4.450887556873394,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0012356262322080894,
+          "tail_window_max_linear_velocity_m_s": 0.13192227311008445,
+          "tail_window_rms_angular_velocity_rad_s": 0.0010811292301899011,
+          "tail_window_rms_linear_velocity_m_s": 0.039869379717919734,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.001201263709201551,
+          "terminal_linear_velocity_m_s": 0.13192227311008445,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_rolling_high",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.00322999283876535,
+        "finger": {
+          "maximum_normal_force_N": 14.10468823779184,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.2202333338652327,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.000557440211575913,
+          "tail_window_max_linear_velocity_m_s": 0.13250500432223905,
+          "tail_window_rms_angular_velocity_rad_s": 0.000509192291387361,
+          "tail_window_rms_linear_velocity_m_s": 0.0401303963371709,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004547654960270679,
+          "terminal_linear_velocity_m_s": 0.13250500432223905,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_rolling_low",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.003454369131205337,
+        "finger": {
+          "maximum_normal_force_N": 14.075364444158927,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.1839235297280286,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004385119768902929,
+          "tail_window_max_linear_velocity_m_s": 0.13252004693515332,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004279025202911738,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731774098442,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071156946777198,
+          "terminal_linear_velocity_m_s": 0.13252004693515332,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    }
+  ],
+  "payload_sha256": "6addee0b444c928f9b3f265f97b983f2d81ec258a4ed3e889154524b8aeff736",
+  "physics_only": true,
+  "protocol_sha256_bytes": "d5681561c1a92e210b1e943e531d02701066262178221b098ccfd80fdffeffac",
+  "schema_id": "shakebench.phase06r6.v7.physics_selection.excluded",
+  "schema_version": 7,
+  "selected_candidate_ids": {
+    "contact": null,
+    "driver": "dt_nominal",
+    "isolator": "low_frequency_damped"
+  },
+  "status": "PASS"
+}

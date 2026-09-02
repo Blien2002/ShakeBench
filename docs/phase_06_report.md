@@ -78,6 +78,21 @@ replay and official-profile publication. See
 `shakebench_phase_06r4_v5_status.json`. No official profile was published and
 Phase 07 remains forbidden.
 
+### V7 validation and regression record
+
+- Focused V6/V7 contract and physics-loader suite: `34 passed`.
+- Clean sdist/wheel smoke included the V7 protocol, diagnostic, 20 V7 raw
+  contact/parity/replay artifacts, and V7 runner/resolver modules; direct
+  `shakebench_arena.xml` MJCF compilation passed.
+- The exact required `python -m pytest -q` command was attempted and stopped
+  with renderer-dependent EGL failures because the container lacks
+  `swrast_dri.so` / the EGL device-platform extension. The affected cases are
+  `test_all_environments`, `test_all_renderers`, `test_camera_transforms`,
+  and `test_environment_determinism`; they do not exercise V7 selection.
+- The complete non-EGL regression, excluding those four renderer collections,
+  passed: `468 passed, 58 skipped` in `385.02 s`. No non-EGL V7 or unrelated
+  regression failure remained.
+
 No V5 isolator, contact, bounded-parity, or replay/determinism evidence
 exists. The 18 V5 driver files are retained as archive/provenance only and
 are not relabeled or reused as V6 selection evidence.
@@ -142,6 +157,45 @@ binding separate from the selected table, so a zero-eligible contact writes
   `test_environment_determinism`, both stopped by the container's missing EGL
   device/swrast driver. The exact unfiltered full command was also attempted;
   it is blocked by the same EGL failure, not by a V6 assertion.
+
+## Phase 06R6 / V7 contact-recovery result (BLOCKED)
+
+The V7 pre-registration was committed as `31854e5e` only after the
+non-scoreable diagnostic and runner tests. The immutable protocol bytes hash
+is `d5681561c1a92e210b1e943e531d02701066262178221b098ccfd80fdffeffac`; its
+resolved-state digest is
+`e4c7b50102d5224f51eac4627d1920912364f64843d706e2ffe4c037e750b10c`, and
+the feasibility artifact SHA-256 is
+`06c5c2f62a220f184d0e7067fd167efa7f314b42e93f77e505633d0a47f31814`.
+The pure validation, 41-state dry run, and 317-plan no-physics adapter
+contract all passed before candidate physics. V7 retains all three V6
+contact controls and adds four finite `condim=6` rolling/damping candidates.
+
+V7 independently rechecked the V6 raw hashes, complete matrix, physics gates,
+and score/tie-break ordering before inheriting exactly `dt_nominal` and
+`low_frequency_damped`. It then newly ran all seven V7 contact candidates,
+the raw MuJoCo incline grid, the bounded Gamma=0 parity state, and all four
+three-process replay groups. Contact force-envelope holds passed numerically
+(maximum declared force `2.60–28.29 N` against the compiled `40 N` envelope;
+maximum penetration `9.50e-6 m`) and all named Can–finger pairs were observed.
+Parity and all four replay groups independently passed.
+
+No contact candidate passed the complete contact gate. The fixed 0.50 s
+recovery traces still retain approximately `0.1319–0.1325 m/s` terminal and
+trailing-window linear speed, above the unchanged `0.02 m/s` limit. The raw
+incline grid also did not produce a stable lower bracket at its registered
+`0.0001 m` displacement criterion. This is recorded as a completed
+`physics_gate_failure`, not a runner or infrastructure failure.
+
+The machine-readable selection and status artifacts are
+`shakebench_phase_06r6_v7_selected_candidates.json` and
+`shakebench_phase_06r6_v7_status.json`; both report `BLOCKED`, with
+`selection.selected_candidate_ids.contact: null` and no V7 official-profile
+payload. The selected artifact SHA-256 is
+`07d03908b64307c7faaf381d155b969db1a8ed0522fea0cb603a94056632c2df`, and the
+status artifact SHA-256 is
+`e5c2cbbcb2fa4468862044943e01d6dbfa7263da4ead19fc57a4d60716105c00`.
+Phase 07 remains forbidden.
 
 ## Phase 06R3 / V4 result (BLOCKED)
 

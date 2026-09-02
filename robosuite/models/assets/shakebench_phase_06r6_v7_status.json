@@ -1,0 +1,25 @@
+{
+  "adapter_contract_digest": "79bf1357daef1bf5f146904bb8aa7efe4351caab4211308b01e2f117ec7a2be8",
+  "blocking_stage": "contact",
+  "failure_taxonomy": "physics_gate_failure",
+  "feasibility": {
+    "path": "shakebench_phase_06r6_v7_feasibility.json",
+    "sha256": "06c5c2f62a220f184d0e7067fd167efa7f314b42e93f77e505633d0a47f31814"
+  },
+  "official_profile_publication": "forbidden",
+  "payload_sha256": "95323b55685a734adededccd7876b50ef3bfb9db4d991c9e5b54eaef230d4876",
+  "phase07": "forbidden",
+  "protocol": {
+    "bytes_sha256": "d5681561c1a92e210b1e943e531d02701066262178221b098ccfd80fdffeffac",
+    "normalized_sha256": "f1f4f9543adb410d0cbf3f3cc1166d7018ce991ca9e15f2f30ee16b3a6619834",
+    "path": "shakebench_selection_protocol_v7.yaml"
+  },
+  "reason": "physics_gate_failure: no contact candidate passed",
+  "schema_id": "shakebench.phase06r6.v7.selection_status",
+  "schema_version": 1,
+  "selection_artifact": {
+    "path": "shakebench_phase_06r6_v7_selected_candidates.json",
+    "sha256": "07d03908b64307c7faaf381d155b969db1a8ed0522fea0cb603a94056632c2df"
+  },
+  "status": "BLOCKED"
+}

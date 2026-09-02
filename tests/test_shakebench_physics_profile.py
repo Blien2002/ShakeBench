@@ -59,8 +59,8 @@ def _temporary_official_fixture(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_packaged_baseline_is_blocked_before_v5_publication():
-    with pytest.raises(PhysicsProfileIntegrityError, match="Phase 06R4 V5 selection"):
+def test_packaged_baseline_is_blocked_before_v7_publication():
+    with pytest.raises(PhysicsProfileIntegrityError, match="Phase 06R6 V7 selection"):
         load_official_physics_profile()
 
 

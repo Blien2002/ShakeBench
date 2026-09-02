@@ -15,6 +15,9 @@ from robosuite.scripts.shakebench_select_physics_v7 import (
     _compiled_contact_matches,
     _finger_from_trace,
     _recovery_from_trace,
+    load_v7_protocol,
+    validate_v7_protocol,
+    verify_v7_selection_artifact,
     _verify_v6_inherited_evidence,
 )
 
@@ -91,3 +94,23 @@ def test_v7_inheritance_rejects_historical_v6_contact_selection_and_keeps_noncon
     assert inherited["selected_driver"] == "dt_nominal"
     assert inherited["selected_isolator"] == "low_frequency_damped"
     assert len(inherited["raw_files"]) == 21
+
+
+def test_v7_protocol_is_frozen_after_diagnostic_and_expands_only_contact():
+    protocol, _, protocol_hash = load_v7_protocol(ASSETS / "shakebench_selection_protocol_v7.yaml")
+    structure = validate_v7_protocol(protocol, protocol_bytes_hash=protocol_hash)
+    assert structure["stage_counts"] == {"driver": 18, "isolator": 3, "contact": 7, "parity": 1, "replay": 12}
+    assert structure["inherited"] == {"driver": 18, "isolator": 3}
+    assert structure["legal_replay_binding_count"] == 138
+    ids = {row["candidate_id"] for row in protocol["components"]["contact_candidates"]}
+    assert {"c3_nominal", "c4_torsional", "c6_baseline", "c6_rolling_low", "c6_rolling_high", "c6_damped"} <= ids
+
+
+def test_v7_blocked_artifact_is_independently_verified_with_null_contact():
+    result = verify_v7_selection_artifact(ASSETS / "shakebench_phase_06r6_v7_selected_candidates.json", protocol_path=ASSETS / "shakebench_selection_protocol_v7.yaml")
+    assert result["passed"] is False
+    assert result["recomputed_selection"]["contact"] is None
+    assert result["checks"]["contact_coverage"] is True
+    assert result["checks"]["parity"] is True
+    assert result["checks"]["replay"] is True
+    assert any("contact hard-gate" in error for error in result["errors"])

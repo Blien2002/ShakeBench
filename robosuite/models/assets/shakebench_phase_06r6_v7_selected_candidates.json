@@ -1,0 +1,889 @@
+{
+  "adapter_contract_digest": "79bf1357daef1bf5f146904bb8aa7efe4351caab4211308b01e2f117ec7a2be8",
+  "blocking_reason": "physics_gate_failure: no contact candidate passed",
+  "candidate_counts": {
+    "contact": 7,
+    "driver": 18,
+    "isolator": 3
+  },
+  "determinism_artifact": {
+    "path": "shakebench_phase_06r6_v7_replay_determinism.json",
+    "sha256": "eef153ff2ff50047f7d04d56ce126218e69c144ad0c433f6342f9cfbeee4f551"
+  },
+  "eligible_counts": {
+    "contact": 0,
+    "driver": 3,
+    "isolator": 1
+  },
+  "excluded": [
+    {
+      "candidate_id": "c3_nominal",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0034542429940352948,
+        "finger": {
+          "maximum_normal_force_N": 14.075361158703627,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.183920124255375,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004385741747439162,
+          "tail_window_max_linear_velocity_m_s": 0.13252003830920053,
+          "tail_window_rms_angular_velocity_rad_s": 0.00042795506803562156,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731389998096,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071563309549327,
+          "terminal_linear_velocity_m_s": 0.13252003830920053,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c3_softer",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.007847053068212206,
+        "finger": {
+          "maximum_normal_force_N": 2.5996816256317934,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 0.6770451178422816,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.000479677965519819,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0006909537254298776,
+          "tail_window_max_linear_velocity_m_s": 0.13246816097155997,
+          "tail_window_rms_angular_velocity_rad_s": 0.0006867110823794761,
+          "tail_window_rms_linear_velocity_m_s": 0.04011473171019033,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0006717390968358348,
+          "terminal_linear_velocity_m_s": 0.13246816097155997,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c4_torsional",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.003454242992044887,
+        "finger": {
+          "maximum_normal_force_N": 14.0753611756424,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.183920113299212,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.00043854414463029745,
+          "tail_window_max_linear_velocity_m_s": 0.1325200402783401,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004279265388134119,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731473070484,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071299944845759,
+          "terminal_linear_velocity_m_s": 0.1325200402783401,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_baseline",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0034543381487626146,
+        "finger": {
+          "maximum_normal_force_N": 14.075689313269965,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.1842602698766194,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004292313705374836,
+          "tail_window_max_linear_velocity_m_s": 0.13251568577051412,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004196926274100987,
+          "tail_window_rms_linear_velocity_m_s": 0.04013531691900444,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.00040029365637491294,
+          "terminal_linear_velocity_m_s": 0.13251568577051412,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_damped",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0008791646843315792,
+        "finger": {
+          "maximum_normal_force_N": 28.294890999604103,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 4.450887556873394,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0012356262322080894,
+          "tail_window_max_linear_velocity_m_s": 0.13192227311008445,
+          "tail_window_rms_angular_velocity_rad_s": 0.0010811292301899011,
+          "tail_window_rms_linear_velocity_m_s": 0.039869379717919734,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.001201263709201551,
+          "terminal_linear_velocity_m_s": 0.13192227311008445,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_rolling_high",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.00322999283876535,
+        "finger": {
+          "maximum_normal_force_N": 14.10468823779184,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.2202333338652327,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.000557440211575913,
+          "tail_window_max_linear_velocity_m_s": 0.13250500432223905,
+          "tail_window_rms_angular_velocity_rad_s": 0.000509192291387361,
+          "tail_window_rms_linear_velocity_m_s": 0.0401303963371709,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004547654960270679,
+          "terminal_linear_velocity_m_s": 0.13250500432223905,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    },
+    {
+      "candidate_id": "c6_rolling_low",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.003454369131205337,
+        "finger": {
+          "maximum_normal_force_N": 14.075364444158927,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 2.1839235297280286,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline_bracket": {
+          "bracket_width_rad": null,
+          "displacement_gate_m": 0.0001,
+          "lower_stable_angle_rad": null,
+          "resolution_rad": 0.02,
+          "upper_sliding_angle_rad": 0.1
+        },
+        "recovery": {
+          "duration_s": 0.5,
+          "first_impact_time_s": 0.14980000000000002,
+          "maximum_penetration_m": 0.00019729748080148343,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 0.0004385119768902929,
+          "tail_window_max_linear_velocity_m_s": 0.13252004693515332,
+          "tail_window_rms_angular_velocity_rad_s": 0.0004279025202911738,
+          "tail_window_rms_linear_velocity_m_s": 0.04013731774098442,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 0.0004071156946777198,
+          "terminal_linear_velocity_m_s": 0.13252004693515332,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "recovery_errors": [],
+        "warning_count": 0
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": false,
+        "penetration": true,
+        "recovery_angular_velocity": true,
+        "recovery_trace": true,
+        "recovery_velocity": false,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    }
+  ],
+  "feasibility": {
+    "path": "shakebench_phase_06r6_v7_feasibility.json",
+    "sha256": "06c5c2f62a220f184d0e7067fd167efa7f314b42e93f77e505633d0a47f31814"
+  },
+  "inherited_v6_raw_files": [
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_empty.json",
+      "resolved_state_digest": "095fa34e8598606cb37d6d96744a4ec39b7b17e387e17b5217699b01c1e8e242",
+      "sha256": "cf1ad9039ed0ccab0cdba9d1d0f3b0daba360172c4a146b9a304f93034963829",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "8c921a394d226ad40758279463a5631d9408b2289de739b5052ae28ec5ae9fc9",
+      "sha256": "adfff22005b6480f3a9cb37296de96ced7388776cb49693cf7f88c72ab1511d6",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_empty.json",
+      "resolved_state_digest": "6e7e19f39996f757712fd73fff6a867622535785bd55d3679bd704b215566c1b",
+      "sha256": "2a6709eb012c5c27d790e3da51a6719bd2d26e946fa5cb822f213a6a7c4c1fba",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "a38c88ef0373ae8d1b6bf764dc48b633b6add08461bc2ff24ae27a271eda3f69",
+      "sha256": "bedde4e2906befc14f18687c5a6f7be4fff2bc56f3f8e5799a616e52aa4e945e",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_empty.json",
+      "resolved_state_digest": "1e50d467b7e520281addae5f04b0c63f0048dced0a3be799570a8d1372db06ef",
+      "sha256": "dee6650cdf2259d20ac3b7affdbae701cb77043743da350f11bc18a142818587",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "9493ff9815511767455e18007e9528e656509001c6370ad4a465908823cd0d1e",
+      "sha256": "96db7ac04754004092279859b476b519fa122e17277644015b68518f76dd3bd8",
+      "stage": "driver",
+      "state_id": "driver.dt_fine.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_empty.json",
+      "resolved_state_digest": "9ca3d97bf172480227f6f5d454fef060686c99e32d80a5876470cb46c3dea44f",
+      "sha256": "ae91c0015dd13241433d943649a22c8e4842e09a01cdecdbf57ce02cef4f5268",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "69cf6a45f98289fc5d5f95aa3a9777d8ef149429fd64c06683f2155971e8d409",
+      "sha256": "af8178516760077cac7f0dfeaf49a722350524b1844f64bb5cf695723f37e128",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_empty.json",
+      "resolved_state_digest": "4394493dd4e0668013e6f99e04ed1daa9702738d28a97bd33d8352425a541bea",
+      "sha256": "697286ac3ddf996601f3c34b6f9505ae6c41f403c9bedc2935c4fe563818d716",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "db4be74fffc955eef839b8532d5b9409fe46ee9b149e896fd19619ae39e68226",
+      "sha256": "e3c804396174f86766d352074e3f951713203a7bedb244381434b18346ac348b",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_empty.json",
+      "resolved_state_digest": "46d333fafae9d1fc2e5f37193f9395d900c3e9da9592ade1a139fdff044a9933",
+      "sha256": "c204e3890e76002f77d1ae411baddd13a4563681f4f1a6284493c19318120500",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "6a9b0920fca9079b5a1ec0ce15a80b3740dfc9063a472a85f035f74194653285",
+      "sha256": "128f53440399888225ead27996592e0092232ad49e79ea26bf26b9b8fcc6d1aa",
+      "stage": "driver",
+      "state_id": "driver.dt_medium.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_empty.json",
+      "resolved_state_digest": "c81064db933fa70f6803d86b53498b5ca90ef9a1de400add805cf3f504028e0d",
+      "sha256": "6a6fb434a1b4d6bc7cae6c836571383f99496c730b96bf8b85831d757f795d27",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_15.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_panda_reference.json",
+      "resolved_state_digest": "8287964ff34a0b743b9ab091d4affbca10d4ef31850252e4961c26580320ffe5",
+      "sha256": "bc02f87fc97539ee11860b72155fff5929f1b89bf1dbd5e4012a44701385afe4",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_15.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json",
+      "resolved_state_digest": "7a87df97fe23cc0cf9c30131882fbdffc389994c2833f4fe2137359d28773fdf",
+      "sha256": "52b33d84a08ee47d013127d35ef0d976d414f06ba7a2fea476aba4dc74222249",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_30.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_panda_reference.json",
+      "resolved_state_digest": "3fc363cf83052111630a7fad0776ba6f287d3a262c36feba4cb946ed709eacb6",
+      "sha256": "19b9d608560dd6587e2007aac65f50b037cac63cb1a4db740a4e8656513e352b",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_30.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_empty.json",
+      "resolved_state_digest": "068e24426ca25b26570b4ba39ec03d944a9d46ace1d4b0db7f5dbc9c41c2b0f3",
+      "sha256": "264eaea7292b9e25eac6678f818e92fe99a939edba49e99bf00f4b088012f6db",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_50.empty"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_panda_reference.json",
+      "resolved_state_digest": "9ec523a67d1e3b3697200ccbf8776b64c3f0538a24afb1f388e40c7d0c542d2b",
+      "sha256": "9725e04358f56d6e9c2a6fcd3cf443d5b994b50c9942e6ab0754dfe5f6bb24c9",
+      "stage": "driver",
+      "state_id": "driver.dt_nominal.gamma_0_50.panda_reference"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_balanced_nominal.json",
+      "resolved_state_digest": "e02ff67162e2aed1eaf6b1a4e7c909ebdd61e46ec2ad99b61efc2bed472e49b7",
+      "sha256": "fbdb591af0c47f22be5b6f3fadd828a7c250f57fcd1b8e3dabc07aa3d213c624",
+      "stage": "isolator",
+      "state_id": "isolator.balanced_nominal.all_regions"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_low_frequency_damped.json",
+      "resolved_state_digest": "8174f81f74b6e996646c62f113f76b385a267dee09a90750fdb1774d956f491a",
+      "sha256": "df4b6e246e95a6048a4de086f23dc3bc5f5b414342b18dd4a765d041dfcadd6d",
+      "stage": "isolator",
+      "state_id": "isolator.low_frequency_damped.all_regions"
+    },
+    {
+      "path": "shakebench_phase_06r5_v6_raw_isolator_high_frequency_light_damping.json",
+      "resolved_state_digest": "4e48f854ae718faf2cce23cdc4164ca1f65cb572d98b10ef38f9ab8f17254f15",
+      "sha256": "d77c5f40b8e48a3ea1bed50e3cd802279992f283ac7af3459b030be22e584266",
+      "stage": "isolator",
+      "state_id": "isolator.high_frequency_light_damping.all_regions"
+    }
+  ],
+  "official_profile": null,
+  "official_profile_alignment": false,
+  "parity_artifact": {
+    "path": "shakebench_phase_06r6_v7_gamma_zero_parity.json",
+    "sha256": "766f1085c3c3cecefa62326756907f722e09c8dd8df3de58edfad84473d56bd2"
+  },
+  "payload_sha256": "ac731a3df152890e0b9f3d2acf7a4b04ef2d18e28208d90b468f2667fdf83256",
+  "physics_only": true,
+  "protocol": {
+    "bytes_sha256": "d5681561c1a92e210b1e943e531d02701066262178221b098ccfd80fdffeffac",
+    "normalized_sha256": "f1f4f9543adb410d0cbf3f3cc1166d7018ce991ca9e15f2f30ee16b3a6619834",
+    "path": "shakebench_selection_protocol_v7.yaml",
+    "status": "pre_registered"
+  },
+  "raw_files": [
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c3_nominal.json",
+      "resolved_state_digest": "9eec6a745c62f1a6285bbd7185e5aeaef59c210068c0c8c5ec58027380e994cb",
+      "sha256": "90464fa29a8aecd6a1f48a540d42588bfefdb6b87961b1ed9a4111bbcecd39dc",
+      "stage": "contact",
+      "state_id": "contact.c3_nominal.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c3_softer.json",
+      "resolved_state_digest": "ec51b6d496621b48c1d6c9d77d61efb6765280076184ed7be4c9fdc0b102f083",
+      "sha256": "a3199cb11bd0ca68659740bac8ffb5c4397e95f7c1c89c35795607d40c46d41c",
+      "stage": "contact",
+      "state_id": "contact.c3_softer.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c4_torsional.json",
+      "resolved_state_digest": "8008436079962a8b9997adb69f96b561bc9d9fa67f70380f3298f6c19b92d745",
+      "sha256": "9090456e8e38654ddeca69577e566fa15a4539e1039b602f7d1a1c845fb5367d",
+      "stage": "contact",
+      "state_id": "contact.c4_torsional.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c6_baseline.json",
+      "resolved_state_digest": "c3792811ccd3532744e36b93be2ba73ce52a9a7da55446b5a17be1033c842eee",
+      "sha256": "0bb9b2ab4b3b8d71572dfc83a6d023c3ff5b35a0595f7d8819edd8f27dcbc088",
+      "stage": "contact",
+      "state_id": "contact.c6_baseline.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c6_rolling_low.json",
+      "resolved_state_digest": "f8df8d372c483e0862e8ba1c939b86645e34c127637f9d8ed2ea190aab42e09b",
+      "sha256": "4b173a05f19ef955d2eefe70b5e24403f95e6862691ba8acc85883c7c789869c",
+      "stage": "contact",
+      "state_id": "contact.c6_rolling_low.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c6_rolling_high.json",
+      "resolved_state_digest": "ada77e773809102ec3facc0f0ef7d2375fcb8c07365984502b4568956e1f192c",
+      "sha256": "1d39929bc301b4228da6a135a3624d46cba8c0cd8b8b1b132c186c31ec142db9",
+      "stage": "contact",
+      "state_id": "contact.c6_rolling_high.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_contact_c6_damped.json",
+      "resolved_state_digest": "93d85f7162ea9199fe000ee9935307dae12d4c4a8839b0776c35dbae7cd9715b",
+      "sha256": "38f7c8b163dfbb66e8bfa7dedcad798a87db647119e6c46a30a2d94097bf5025",
+      "stage": "contact",
+      "state_id": "contact.c6_damped.all_probes"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_parity_gamma_zero.json",
+      "resolved_state_digest": "3b0abb9977756a6022350c3de91f49e3ee97c7d1eb0ea9b4f4408c0f346c1a6a",
+      "sha256": "8ff71e1a44ae1f9bb9b94d2fad5919d1857881364297da678d90086b3c7bf2d1",
+      "stage": "parity",
+      "state_id": "parity.gamma_zero.stock_static"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_driver_process_1.json",
+      "resolved_state_digest": "48e0994d9f7075a59abf2002e3342ad6ba6cfbb8ada65f81ce0af2b0d96d03cb",
+      "sha256": "a3d4d6f6ec1659d108f0f8fd9936d1d18243b6bad0ad3d69334077c9efc2006c",
+      "stage": "replay",
+      "state_id": "replay.driver.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_driver_process_2.json",
+      "resolved_state_digest": "8fae2e54206174a2d88ff68b281044f92c68154e58c089470d1adab5d5c07720",
+      "sha256": "db8e0183cc6b3c4b6f587095083adf3abdd481ad4a75524d08f2d0eb6a575468",
+      "stage": "replay",
+      "state_id": "replay.driver.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_driver_process_3.json",
+      "resolved_state_digest": "47ae1f2402fa40edb2386e51823451d5921bc3eb6857e58c657e7861b85a56dd",
+      "sha256": "71ac040d65300d21d05b54c9f4550f5c668f42a74a957dd5cf22d7198811a19a",
+      "stage": "replay",
+      "state_id": "replay.driver.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_isolator_process_1.json",
+      "resolved_state_digest": "bf42d44dd9a86e85b131f347d2529c27456f6df458ad84a0a8e69e37bc7de330",
+      "sha256": "1fc99885b63c23f23dd7b6f9d12792d83b43d762f5deae71a0652c5cede35897",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_isolator_process_2.json",
+      "resolved_state_digest": "4cf15abf34f7b4fca0fcba59ee6497d26caf6937e3e71e57aa41c1d02a1fbce2",
+      "sha256": "722eb8e97adaa1c78f4cd5e57d4a48de603525938f2ab72b7d8e091c5d06821c",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_isolator_process_3.json",
+      "resolved_state_digest": "4a4bdac9b4a4d1d24b5895a19ad068258514240e8c6e1a8b4349b6956dcb62ee",
+      "sha256": "05238456946b7a90e458b802e69eee20fb64e7e5dc9b29f4e0da0ee58d978988",
+      "stage": "replay",
+      "state_id": "replay.isolator.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_contact_process_1.json",
+      "resolved_state_digest": "6ed77bc6c4f14bb0b1103d7bafc48ea2fa0d63658071e82ef8ad91ea61eea93b",
+      "sha256": "8f3a0d8b9d2b826b0ba267aab9062dd595337fc39421c827c6fe29da08d492f3",
+      "stage": "replay",
+      "state_id": "replay.contact.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_contact_process_2.json",
+      "resolved_state_digest": "6df649961e0380227c39040758bc17359e3b406061a84f04df51470870c807d1",
+      "sha256": "2612eccc5971e70c72b94e0215d36eb8d0d34b43bdf3e5ef550974c02ca20823",
+      "stage": "replay",
+      "state_id": "replay.contact.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_contact_process_3.json",
+      "resolved_state_digest": "c536ba4d4807c254dee718051678f1985feea471fc522b553b38a8e3704cfea1",
+      "sha256": "3030c6af90b78a012400c03c119388ccb08d7c803d524d69b4d463ce9e13b5c8",
+      "stage": "replay",
+      "state_id": "replay.contact.process_3"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_gamma_zero_parity_process_1.json",
+      "resolved_state_digest": "d4a19f5c3aff28a8d3687e6d0d70774bcb269f46cd930ce18d5f5f74c1ff8701",
+      "sha256": "4b750a7155270b834534d1c2d242eaecb89f9ba04d53651165cf84efb9500999",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_1"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_gamma_zero_parity_process_2.json",
+      "resolved_state_digest": "e602af4e49a925a1ec2dcffd0d56161cb6ba6d0ec7482c3cf586c8498570c737",
+      "sha256": "3b768a776efa35db63b54c920d8973aa5213df7f6cf7416ee4e426ddfc5e702b",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_2"
+    },
+    {
+      "path": "shakebench_phase_06r6_v7_raw_replay_gamma_zero_parity_process_3.json",
+      "resolved_state_digest": "fab8e7efe0834058c6428d2c9d22729edf17439d764fd23d37fe91df433d6eb7",
+      "sha256": "952bc13f28dc0f13e367bb192a80ec78a7241729467fb9cdf37a78f6dae01cae",
+      "stage": "replay",
+      "state_id": "replay.gamma_zero_parity.process_3"
+    }
+  ],
+  "replay_groups": [
+    "contact",
+    "driver",
+    "gamma_zero_parity",
+    "isolator"
+  ],
+  "resolved_state_digest": "e4c7b50102d5224f51eac4627d1920912364f64843d706e2ffe4c037e750b10c",
+  "schema_id": "shakebench.phase06r6.v7.physics_selection",
+  "schema_version": 7,
+  "selection": {
+    "controller_outcome_used": false,
+    "physics_only": true,
+    "reward_used": false,
+    "selected_candidate_ids": {
+      "contact": null,
+      "driver": "dt_nominal",
+      "isolator": "low_frequency_damped"
+    },
+    "task_success_used": false
+  },
+  "status": "BLOCKED"
+}
