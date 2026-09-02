@@ -111,6 +111,20 @@ completeness; it rejected publication because no contact candidate was
 eligible. `shakebench_phase_06r5_v6_status.json` therefore remains
 `BLOCKED`, no official profile was published, and Phase 07 remains forbidden.
 
+### V6 integrity addendum retained for R6
+
+The historical V6 selected-candidate table is intentionally preserved byte for
+byte as evidence. It records `c3_nominal` in
+`selection.selected_candidate_ids.contact` even though
+`eligible_counts.contact` is `0`, and it has `official_profile_alignment` set
+to `false`. That row is an artifact inconsistency, not a contact PASS and not
+an official-profile payload. The authoritative V6 status remains
+`shakebench_phase_06r5_v6_status.json` with `status: BLOCKED` and
+`blocking_stage: contact`; no V7 code is allowed to inherit the historical
+contact selection. The runner regression now keeps the parity/replay default
+binding separate from the selected table, so a zero-eligible contact writes
+`selected_candidate_ids.contact: null` and no profile publication.
+
 ### V6 validation and regression record
 
 - `--validate-protocol`: exit `0`; `--dry-run-manifest`: exit `0`; and

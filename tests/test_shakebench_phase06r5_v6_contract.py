@@ -16,6 +16,7 @@ from robosuite.models import assets_root
 from robosuite.scripts.shakebench_select_physics_v6 import (
     PROTOCOL_FILENAME,
     RAW_PREFIX,
+    _select_contact_or_none,
     adapter_contract,
     dry_run_manifest,
     load_v6_protocol,
@@ -171,3 +172,13 @@ def test_v6_verifier_rejects_missing_matrix_external_profile_and_raw_mutation(tm
     result = verify_selection_artifact(path, protocol_path=PROTOCOL)
     assert result["passed"] is False
     assert any("driver" in error or "raw" in error or "external" in error for error in result["errors"])
+
+
+def test_v6_zero_eligible_contact_never_becomes_a_selected_candidate():
+    historical = json.loads((ASSETS / "shakebench_phase_06r5_v6_selected_candidates.json").read_text(encoding="utf-8"))
+    assert historical["status"] == "BLOCKED"
+    assert historical["eligible_counts"]["contact"] == 0
+    assert historical["selection"]["selected_candidate_ids"]["contact"] == "c3_nominal"
+    assert _select_contact_or_none([], []) is None
+    assert _select_contact_or_none([], ["c3_nominal"]) is None
+    assert _select_contact_or_none(["c3_nominal"], ["c3_nominal"]) == "c3_nominal"

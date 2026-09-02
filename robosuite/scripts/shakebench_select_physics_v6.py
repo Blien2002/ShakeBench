@@ -1186,6 +1186,18 @@ def _select_driver(eligibility: Mapping[str, Mapping[str, Any]], states: Mapping
     return candidates[0] if candidates else None
 
 
+def _select_contact_or_none(eligible_candidates: list[str], ranked_candidates: list[str]) -> str | None:
+    """Return a selected contact only when the contact gate has an eligible row.
+
+    The V6 runner still executes parity/replay with a registered default when
+    contact is blocked, but that binding is evidence context, never a
+    selected-candidate result.  Keeping this decision pure prevents the
+    context fallback from leaking into the selection table.
+    """
+
+    return ranked_candidates[0] if eligible_candidates and ranked_candidates else None
+
+
 def _isolator_eligible(payload: Mapping[str, Any], state: ResolvedProbeState) -> bool:
     evidence = payload.get("evidence", {})
     summary = evidence.get("summary", {})
@@ -1760,7 +1772,9 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
     raw.update({str(record["state_id"]): record for record in contact_records})
     contact_candidates = {states[record["state_id"]].candidate_id: record for record in contact_records}
     eligible_contacts = [candidate_id for candidate_id, record in contact_candidates.items() if _contact_eligible(record, states[record["state_id"]].contact.hard_gates)]
-    selected_contact = sorted(eligible_contacts, key=lambda candidate_id: _contact_score(contact_candidates[candidate_id], states[contact_candidates[candidate_id]["state_id"]]))[0] if eligible_contacts else None
+    ranked_contacts = sorted(eligible_contacts, key=lambda candidate_id: _contact_score(contact_candidates[candidate_id], states[contact_candidates[candidate_id]["state_id"]]))
+    selected_contact = _select_contact_or_none(eligible_contacts, ranked_contacts)
+    contact_binding_candidate = selected_contact
     contact_blocked_reason = None
     if selected_contact is None:
         # A completed candidate failure excludes the component but does not
@@ -1769,8 +1783,8 @@ def run_v6_selection(*, protocol_path: str | Path | None = None, output_dir: str
         # auditable; the final selection remains BLOCKED.
         contact_blocked_reason = "physics_gate_failure: no contact candidate passed"
         selection_defaults = protocol.get("selection", {}).get("default", {})
-        selected_contact = str(selection_defaults.get("contact_candidate_id", "c3_nominal"))
-    context["contact_candidate_id"] = selected_contact
+        contact_binding_candidate = str(selection_defaults.get("contact_candidate_id", "c3_nominal"))
+    context["contact_candidate_id"] = contact_binding_candidate
 
     parity_records = run_resolved_stage(protocol, stage="parity", output_dir=output, probe=_v6_parity_probe, protocol_bytes_hash=protocol_bytes_hash, selection_context=context)
     raw.update({str(record["state_id"]): record for record in parity_records})
