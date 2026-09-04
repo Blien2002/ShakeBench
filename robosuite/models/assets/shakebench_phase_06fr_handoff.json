@@ -1,0 +1,18 @@
+{
+  "schema_id": "shakebench.phase06fr.handoff",
+  "schema_version": 2,
+  "status": "BLOCKED",
+  "reason": "real_environment_remediation_pending",
+  "phase07_authorized": false,
+  "protocol": {"path": "shakebench_phase_06fr_protocol.yaml", "sha256": "80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006"},
+  "feasibility": {"path": "shakebench_phase_06fr_feasibility.json", "sha256": "8ff72e445145d46cff4f5ed2d259f4a02fe7775b03a9db47d11b6d06f1d1f481"},
+  "historical_phase06f": {
+    "protocol_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0",
+    "selection_sha256": "fe3532ac3f03bc7f71f77da3473ef2d4f60b478df77ddf6e41364ec22610aba1",
+    "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+    "handoff_sha256": "cb91f5badf4e424ab9e2275f80644e9416215cca9edc6cf2e459640588b0082c"
+  },
+  "selected_profile": null,
+  "registration_commit": null,
+  "payload_sha256": "1ae5e81a24365028d9fdc270912094567ddd6048426bb0274be5a58f8b8f230f"
+}

@@ -1,0 +1,32 @@
+{
+  "adapter_contract": {
+    "adapter_contract_digest": "b28d8bba14f49d3c42ff6b9da873efca3f3c8f5817425d135d7f58bfa84b212b",
+    "backend": "NoPhysicsBackend",
+    "mujoco_calls": 0
+  },
+  "dry_run": {
+    "mujoco_calls": 0,
+    "real_environment_states": 0,
+    "state_templates": [
+      "real.open_worktable",
+      "real.target_bottom",
+      "parity.gamma_zero.real_environment",
+      "replay.parity",
+      "replay.contact"
+    ]
+  },
+  "payload_sha256": "71415c620e5a4da095a4fac5a3f563a205ceb2e809257cc772aca78c555995dc",
+  "protocol": {
+    "path": "shakebench_phase_06fr_protocol.yaml",
+    "sha256": "80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006"
+  },
+  "schema_id": "shakebench.phase06fr.feasibility",
+  "schema_version": 1,
+  "status": "PASS",
+  "validation": {
+    "inherited_raw_count": 21,
+    "mujoco_calls": 0,
+    "protocol_sha256": "80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006",
+    "state_count": 13
+  }
+}

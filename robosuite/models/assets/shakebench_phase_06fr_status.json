@@ -1,0 +1,13 @@
+{
+  "schema_id": "shakebench.phase06fr.status",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "reason": "real_environment_remediation_pending",
+  "blocking_stage": "remediation",
+  "protocol_sha256": "80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006",
+  "feasibility_sha256": "8ff72e445145d46cff4f5ed2d259f4a02fe7775b03a9db47d11b6d06f1d1f481",
+  "historical_phase06f_status": "12de5a4cb5a61ecea1fc2e8e7bf3659d1623891c61d5391b62b38566fcb6b2a9",
+  "phase07_authorized": false,
+  "official_profile_sha256": null,
+  "payload_sha256": "5ca4446202ff4603575e70834a8c3ac595db0e635ec91403487c34d3d0f962dc"
+}
