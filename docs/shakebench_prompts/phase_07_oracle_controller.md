@@ -8,6 +8,20 @@
 - 读取 `docs/robosuite_benchmark_design_tree.md` shared controller、State Track、failure integrity 和 Gamma=0 gates。
 - 参考随仓 `docs/spike_implementation_formal_review.md` 记录的失败机制，不复制其 8D gripper、force-switch 或 `move_action_gain`。
 
+## 首个可执行步骤：Phase 06 handoff gate
+
+在 import controller、创建环境或读取任何 Phase 07 state 之前，只运行：
+
+```bash
+python -m robosuite.scripts.shakebench_finalize_physics --verify-final
+```
+
+这个单一 verifier 必须验证
+`shakebench_phase_06_to_07_handoff.json`、final status、official profile、
+Phase 06F protocol、selection/dependent manifest、全部 evidence 与 package hash。
+任一 hash、winner binding、三进程 replay 或 profile tuple 不一致时 Phase 07
+必须拒绝启动；V1–V8 historical status 不能替代该 handoff。
+
 ## 修改落点（不新建目录）
 
 ```text

@@ -1281,6 +1281,7 @@ def audit_contact_pairs(
     expected_gap_m = None
     expected_solref = None
     expected_solimp = None
+    isotropic_pair_5d = False
     if contact_profile is not None:
         if not isinstance(contact_profile, Mapping):
             raise ShakeBenchMetricsError("contact_profile must be a mapping")
@@ -1291,6 +1292,7 @@ def audit_contact_pairs(
         expected_gap_m = float(contact_profile["gap_m"])
         expected_solref = np.asarray(contact_profile["solref"], dtype=float)
         expected_solimp = np.asarray(contact_profile["solimp"], dtype=float)
+        isotropic_pair_5d = contact_profile.get("friction_encoding") == "isotropic_pair_5d"
         if expected_solref.shape != (2,) or expected_solimp.shape != (5,):
             raise ShakeBenchMetricsError("contact_profile solref/solimp has the wrong shape")
     expected = {}
@@ -1322,10 +1324,18 @@ def audit_contact_pairs(
         if contact_profile is not None:
             if friction.size < 3:
                 raise ShakeBenchMetricsError("compiled contact pair does not expose torsional/rolling friction")
-            if not np.isclose(friction[1], expected_torsional_mu, rtol=0.0, atol=tolerance):
-                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
-            if not np.allclose(friction[2:], expected_rolling_mu, rtol=0.0, atol=tolerance):
-                raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong rolling friction")
+            if isotropic_pair_5d:
+                if friction.size != 5 or not np.allclose(friction[:2], expected_mu, rtol=0.0, atol=tolerance):
+                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} is not isotropic in both sliding directions")
+                if not np.isclose(friction[2], expected_torsional_mu, rtol=0.0, atol=tolerance):
+                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
+                if not np.allclose(friction[3:], expected_rolling_mu, rtol=0.0, atol=tolerance):
+                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong rolling friction")
+            else:
+                if not np.isclose(friction[1], expected_torsional_mu, rtol=0.0, atol=tolerance):
+                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
+                if not np.allclose(friction[2:], expected_rolling_mu, rtol=0.0, atol=tolerance):
+                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong rolling friction")
             if not hasattr(model, "pair_dim") or int(model.pair_dim[pair_id]) != expected_condim:
                 raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong condim")
             if not np.isclose(model.pair_margin[pair_id], expected_margin_m, rtol=0.0, atol=tolerance):

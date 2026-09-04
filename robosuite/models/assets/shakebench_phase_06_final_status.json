@@ -1,0 +1,14 @@
+{
+  "blocking_stage": null,
+  "contact_winner": "c3_nominal",
+  "dependent_manifest_sha256": "ed2342fa70ab36f0015fe032b5cca5ce64e39f509f9378a4d598644153adf94d",
+  "official_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+  "payload_sha256": "480350211db0bb89e34f652f8c6670e1d3e2dda1b49325573069688036e599b8",
+  "phase07_authorized": true,
+  "protocol_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0",
+  "reason": null,
+  "schema_id": "shakebench.phase06.final_status",
+  "schema_version": 1,
+  "selection_artifact_sha256": "c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8",
+  "status": "PASS"
+}

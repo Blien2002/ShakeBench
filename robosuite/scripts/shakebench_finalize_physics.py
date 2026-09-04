@@ -40,6 +40,7 @@ from robosuite.utils.shakebench_physics_finalizer import (
     finalize_official_physics,
     seal_artifact,
     validate_finalization_protocol,
+    verify_official_publication_bundle,
 )
 
 
@@ -395,7 +396,15 @@ def _v6_component_probe(group: str) -> Mapping[str, Any]:
     protocol, _, protocol_hash = load_v6_protocol(path)
     states = _resolve(protocol, protocol_bytes_hash=protocol_hash)
     if group == "driver":
-        state = next(row for row in states if row.stage == "driver" and row.candidate_id == "dt_nominal" and row.gamma == 0.30 and row.load_case == "empty")
+        state = next(
+            row
+            for row in states
+            if row.stage == "driver"
+            and row.candidate_id == "dt_nominal"
+            and row.driver is not None
+            and row.driver.gamma == 0.30
+            and row.driver.load_case == "empty"
+        )
         return _v6_driver_probe(state)
     state = next(row for row in states if row.stage == "isolator" and row.candidate_id == "low_frequency_damped")
     return _v6_isolator_probe(state)
@@ -404,7 +413,7 @@ def _v6_component_probe(group: str) -> Mapping[str, Any]:
 def _replay_payload(group: str, candidate: Mapping[str, Any], protocol: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
     if group in {"driver", "isolator"}:
         evidence = _v6_component_probe(group)
-        metrics = {"candidate_id": evidence.get("candidate_id"), "passed": evidence.get("passed")}
+        metrics = evidence.get("metrics", {}) if group == "driver" else {"summary": evidence.get("summary"), "hard_gates": evidence.get("hard_gates")}
     elif group == "contact":
         force = protocol["contact"]["force_threshold"]
         evidence = {
@@ -437,6 +446,11 @@ def replay_worker(protocol_path: Path, candidate_id: str, group: str, process_in
     protocol, _, protocol_hash = load_protocol(protocol_path)
     candidate = next(row for row in protocol["contact_candidates"] if row["candidate_id"] == candidate_id)
     evidence, metrics = _replay_payload(group, candidate, protocol)
+    trace_digest = (
+        str(evidence.get("trace", {}).get("digest"))
+        if group == "driver" and isinstance(evidence.get("trace"), Mapping)
+        else artifact_hash(dict(evidence))
+    )
     return {
         "schema_id": "shakebench.phase06f.replay",
         "schema_version": 1,
@@ -445,8 +459,9 @@ def replay_worker(protocol_path: Path, candidate_id: str, group: str, process_in
         "group": group,
         "process_index": int(process_index),
         "process_count": 3,
-        "trace_digest": artifact_hash(dict(evidence)),
+        "trace_digest": trace_digest,
         "metric_digest": artifact_hash(dict(metrics)),
+        "digest_scope": "declared_complete_trace_schema",
         "complete_trace": True,
         "same_process_reset_used": False,
         "passed": bool(evidence.get("passed", True)),
@@ -505,6 +520,18 @@ class ProductionEvidenceStore:
         return json.loads(path.read_text(encoding="utf-8"))
 
     def execute_dependent(self, state, protocol):
+        output_path = self.output_dir / str(state["output"])
+        if output_path.is_file():
+            existing = json.loads(output_path.read_text(encoding="utf-8"))
+            if (
+                existing.get("payload_sha256") == artifact_hash(existing)
+                and all(existing.get(key) == state.get(key) for key in ("state_id", "contact_candidate_id", "selection_artifact_sha256", "group"))
+                and (
+                    state.get("group") not in REPLAY_GROUPS
+                    or existing.get("evidence", {}).get("digest_scope") == "declared_complete_trace_schema"
+                )
+            ):
+                return existing
         candidate = next(row for row in protocol["contact_candidates"] if row["candidate_id"] == state["contact_candidate_id"])
         group = str(state["group"])
         if group == "selected_diagnostics":
@@ -542,7 +569,7 @@ class ProductionEvidenceStore:
                 "passed": evidence.get("passed") is True,
             }
         )
-        write_json_atomic(self.output_dir / str(state["output"]), record)
+        write_json_atomic(output_path, record)
         return record
 
     def verify_dependent(self, state, evidence, protocol):
@@ -650,9 +677,98 @@ def publish_result(result: BlockedResult | PublicationPlan, output_dir: Path) ->
     write_json_atomic(output_dir / HANDOFF_FILENAME, result.handoff)
 
 
+def verify_final_publication(output_dir: str | Path | None = None) -> dict[str, Any]:
+    """Recompute hard gates, priority, bindings, hashes, and profile alignment."""
+
+    output = Path(models.assets_root) if output_dir is None else Path(output_dir)
+    errors = []
+    bundle = verify_official_publication_bundle(output)
+    errors.extend(bundle.get("errors", ()))
+    try:
+        protocol, source, protocol_sha256 = load_protocol(output / PROTOCOL_FILENAME)
+        validate_finalization_protocol(protocol)
+        validate_registered_sources(protocol)
+        feasibility = json.loads((output / FEASIBILITY_FILENAME).read_text(encoding="utf-8"))
+        if (
+            feasibility.get("payload_sha256") != artifact_hash(feasibility)
+            or feasibility.get("status") != "PASS"
+            or feasibility.get("protocol", {}).get("sha256") != protocol_sha256
+            or feasibility.get("mujoco_calls") != 0
+        ):
+            errors.append("Phase 06F feasibility artifact failed authentication")
+        selection = json.loads((output / SELECTION_FILENAME).read_text(encoding="utf-8"))
+        handoff = json.loads((output / HANDOFF_FILENAME).read_text(encoding="utf-8"))
+        records = {}
+        eligible = []
+        for candidate in protocol["contact_candidates"]:
+            path = output / str(candidate["output"])
+            evidence = json.loads(path.read_text(encoding="utf-8"))
+            if file_sha256(path) == candidate.get("source", {}).get("sha256"):
+                errors.append("Phase 06F contact evidence reused historical candidate bytes")
+            passed, candidate_errors = verify_contact_candidate(candidate, evidence, protocol)
+            records[candidate["candidate_id"]] = {"passed": passed, "errors": candidate_errors}
+            if passed:
+                eligible.append(candidate["candidate_id"])
+        winner = eligible[0] if eligible else None
+        if winner != selection.get("contact_winner") or winner != bundle.get("contact_winner"):
+            errors.append("minimal-intervention priority recomputation differs from publication")
+        selected_rows = [row for row in selection.get("candidates", ()) if row.get("eligible")]
+        if [row.get("candidate_id") for row in selected_rows] != eligible:
+            errors.append("selection eligibility table differs from recomputed hard gates")
+        profile = yaml.safe_load((output / OFFICIAL_PROFILE_FILENAME).read_text(encoding="utf-8"))
+        PhysicsProfile(payload=profile, source=str(output / OFFICIAL_PROFILE_FILENAME), profile_sha256=str(profile.get("profile_sha256"))).assert_valid()
+        candidate = next(row for row in protocol["contact_candidates"] if row["candidate_id"] == winner)
+        expected_contact = {
+            key: copy.deepcopy(candidate[key])
+            for key in ("candidate_id", "condim", "sliding_mu", "torsional_mu", "rolling_mu", "margin_m", "gap_m", "solref", "solimp", "pair_scope", "interfaces")
+        }
+        expected_contact["friction_encoding"] = "isotropic_pair_5d"
+        if profile.get("physics", {}).get("contact") != expected_contact:
+            errors.append("official profile does not exactly match the selected contact tuple")
+        if profile.get("physics", {}).get("timestep", {}).get("candidate_id") != "dt_nominal" or profile.get("physics", {}).get("isolator", {}).get("candidate_id") != "low_frequency_damped":
+            errors.append("official profile does not bind the inherited driver/isolator")
+        completed = subprocess.run(
+            ["git", "log", "-1", "--format=%H", "--", str(source)],
+            cwd=source.resolve().parents[3],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        registration_commit = completed.stdout.strip()
+        if completed.returncode == 0 and registration_commit and handoff.get("registration_commit") != registration_commit:
+            errors.append("handoff registration commit mismatch")
+    except Exception as exc:
+        errors.append(f"final verifier exception: {type(exc).__name__}: {exc}")
+        records = {}
+        eligible = []
+        winner = None
+    return {
+        "passed": not errors,
+        "errors": errors,
+        "contact_winner": winner,
+        "eligible_contacts": eligible,
+        "contact_gates": records,
+        "bundle": bundle,
+        "physics_only": True,
+        "task_success_used": False,
+        "controller_outcome_used": False,
+    }
+
+
 def run_finalization(protocol_path: str | Path | None = None, output_dir: str | Path | None = None) -> BlockedResult | PublicationPlan:
     protocol, source, protocol_sha256 = load_protocol(protocol_path)
     validate_registered_sources(protocol)
+    completed = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", str(source)],
+        cwd=source.resolve().parents[3],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0 or len(completed.stdout.strip()) != 40:
+        raise Phase06FError("cannot resolve the protocol registration commit")
+    protocol = copy.deepcopy(protocol)
+    protocol["registration_commit"] = completed.stdout.strip()
     output = Path(models.assets_root) if output_dir is None else Path(output_dir)
     store = ProductionEvidenceStore(protocol, source, protocol_sha256, output)
     result = finalize_official_physics(protocol, store)
@@ -668,6 +784,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--dry-run-all-winners", action="store_true")
     parser.add_argument("--adapter-contract", action="store_true")
     parser.add_argument("--write-feasibility", action="store_true")
+    parser.add_argument("--verify-final", action="store_true")
     parser.add_argument("--worker", action="store_true")
     parser.add_argument("--candidate-id", default=None)
     parser.add_argument("--group", default=None)
@@ -688,6 +805,8 @@ def main(argv: Optional[list[str]] = None) -> int:
                 result = adapter_contract(protocol, protocol_sha256)
             elif args.write_feasibility:
                 result = write_feasibility(source)
+            elif args.verify_final:
+                result = verify_final_publication(args.output_dir)
             else:
                 final = run_finalization(source, args.output_dir)
                 result = {"status": final.status, "reason": getattr(final, "reason", None), "contact_winner": getattr(final, "contact_winner", None)}

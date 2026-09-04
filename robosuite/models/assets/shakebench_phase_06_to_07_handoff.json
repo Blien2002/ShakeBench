@@ -1,0 +1,117 @@
+{
+  "contact_evidence": [
+    {
+      "candidate_id": "c3_nominal",
+      "path": "shakebench_phase_06f_raw_contact_c3_nominal.json",
+      "sha256": "780c529a6c98782caafa3ba61e58c9336c933ec633e57ad2cbe47f2ae5a80a88"
+    },
+    {
+      "candidate_id": "n6_critical_negative_control",
+      "path": "shakebench_phase_06f_raw_contact_n6_critical_negative_control.json",
+      "sha256": "5ad76cee510e106d0ab305d0fc4cf9ab5c8a3c30d480e08de87b1685614adf1e"
+    },
+    {
+      "candidate_id": "n6_overdamped_2",
+      "path": "shakebench_phase_06f_raw_contact_n6_overdamped_2.json",
+      "sha256": "6dbfca539b82222fba5d576bc5413e56437d5ba48cadfcf83c8dca7c214b33b5"
+    },
+    {
+      "candidate_id": "n6_overdamped_4",
+      "path": "shakebench_phase_06f_raw_contact_n6_overdamped_4.json",
+      "sha256": "e82122788f2749679c83df16dfe6ddb9136a77638badaccbc1ec49a608728ffc"
+    }
+  ],
+  "dependent_evidence": [
+    {
+      "path": "shakebench_phase_06f_raw_parity_gamma_zero_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "31026a7e7b2572003bc30e586817d2aaf1fac026808c218806cfa59ecdb3e440",
+      "state_id": "parity.gamma_zero.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_driver_process_1_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "9d5770adf3d8dcf6f6781bf1365b6317f24486b364101f95a877194dbfbfdccb",
+      "state_id": "replay.driver.process_1.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_driver_process_2_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "b612622053eec5b608a4ec485ea2095236c38b5cf5bd5332f6e487ef9fcf3b72",
+      "state_id": "replay.driver.process_2.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_driver_process_3_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "4522378b622e295500d1aefd9cf28aa891cf241a0cfdc0de8a3ecc0845958a18",
+      "state_id": "replay.driver.process_3.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_isolator_process_1_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "e41e903957aefea595be9a42b19be20ed17bab7ca51939ad4a12d18a711351fb",
+      "state_id": "replay.isolator.process_1.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_isolator_process_2_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "d058bd8cf7654a22ef2488201941b014e1233cd7f736a152444c4ac6f929b830",
+      "state_id": "replay.isolator.process_2.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_isolator_process_3_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "8cf3fbbf1f2166d78225afd76837f166439d185fb42a2539ddee84f59a22caef",
+      "state_id": "replay.isolator.process_3.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_contact_process_1_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "0fce0cf4b32085c9512fc5a43b189d3748ff040fb35543e7d72245a4fb721525",
+      "state_id": "replay.contact.process_1.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_contact_process_2_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "751a413e6743cefa4deb0d62c1d49d95a7075c904c825cf41acbbd9adf7c91a8",
+      "state_id": "replay.contact.process_2.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_contact_process_3_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "679d5951cc9d5f0b94d20ffe3d3fb9a8dd86c98fe33721979b1f34663a1b630a",
+      "state_id": "replay.contact.process_3.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_gamma_zero_parity_process_1_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "d9cb9fe0a3dcb2b1c2df87f78d31611f92cea78eb5a9110f51a50dc464b3296f",
+      "state_id": "replay.gamma_zero_parity.process_1.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_gamma_zero_parity_process_2_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "f6962248b8de34e2f2a10e18cbb10ffa402b4e8b544449244a7fbb68d163d495",
+      "state_id": "replay.gamma_zero_parity.process_2.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_raw_replay_gamma_zero_parity_process_3_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "b665c06956d608120341e01e2b46ab8a2c0eae6b98cd073b5905fbfee1fd80d5",
+      "state_id": "replay.gamma_zero_parity.process_3.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    },
+    {
+      "path": "shakebench_phase_06f_selected_diagnostics_c3_nominal_c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8.json",
+      "sha256": "81a201e99c8ec7018cb8188ee6308092e050c81a4f63839c24caed1d0bfdb520",
+      "state_id": "diagnostics.drop_incline.c3_nominal.c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8"
+    }
+  ],
+  "dependent_manifest_sha256": "ed2342fa70ab36f0015fe032b5cca5ce64e39f509f9378a4d598644153adf94d",
+  "evidence_manifest_sha256": "935b01a32f717a868877b51b62715a5613b7e2732d1e0c69271a388e035b9ba6",
+  "package_hashes": {
+    "official_profile_payload_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+    "protocol_asset_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
+  },
+  "payload_sha256": "e81668f24797b45200e6f7ee80ba020a8f1a19a0eaba7499ee3339b38c253b08",
+  "phase07_authorized": true,
+  "protocol": {
+    "path": "shakebench_phase_06f_protocol.yaml",
+    "sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
+  },
+  "registration_commit": "de2e60df56bce83dd2867d36e6c2d78b63bb52fd",
+  "schema_id": "shakebench.phase06.to_phase07_handoff",
+  "schema_version": 1,
+  "selected_profile": {
+    "profile_id": "shakebench.official.physics.v2",
+    "sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
+  },
+  "selection_artifact_sha256": "c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8",
+  "status": "PASS"
+}

@@ -40,6 +40,7 @@ def _protocol() -> dict:
                 "solref": [0.0004, 1.0 if index < 2 else float(index)],
                 "solimp": [0.9, 0.95, 0.001, 0.5, 2.0],
                 "pair_scope": "explicit_can_pairs",
+                "output": f"phase06f_contact_{candidate_id}.json",
             }
         )
     templates = []

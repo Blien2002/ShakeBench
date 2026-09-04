@@ -14,6 +14,7 @@ import robosuite.utils.shakebench_physics as physics
 from robosuite.utils.shakebench_driver_measurement import DriverMeasurementPlan
 from robosuite.utils.shakebench_physics import (
     OFFICIAL_PHYSICS_PROFILE_FILENAME,
+    OFFICIAL_PHYSICS_PROFILE_ID,
     PhysicsProfileIntegrityError,
     load_official_physics_profile,
     make_probe_physics_profile,
@@ -27,12 +28,12 @@ ASSETS = Path(assets_root)
 def _temporary_official_fixture(tmp_path: Path) -> Path:
     """Create an isolated PASS package fixture; never mutate checkout state."""
 
-    protocol = tmp_path / "shakebench_selection_protocol_v5.yaml"
+    protocol = tmp_path / "shakebench_phase_06f_protocol.yaml"
     protocol.write_text("schema_id: test.v4\nstatus: pre_registered\n", encoding="utf-8")
     payload = make_probe_physics_profile().to_dict()
     payload.update(
         {
-            "profile_id": "shakebench.official.physics.v1",
+            "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
             "status": "official_immutable",
             "scoreable": True,
             "protocol_file": protocol.name,
@@ -59,14 +60,23 @@ def _temporary_official_fixture(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_packaged_baseline_is_blocked_before_v8_publication():
-    with pytest.raises(PhysicsProfileIntegrityError, match="Phase 06R7 V8 selection"):
-        load_official_physics_profile()
+def test_packaged_phase06f_publication_loads_only_after_handoff_verification():
+    profile = load_official_physics_profile()
+    assert profile.profile_id == "shakebench.official.physics.v2"
+    assert profile.scoreable is True
 
 
 def test_official_loader_accepts_only_an_isolated_packaged_pass_fixture(tmp_path, monkeypatch):
     fixture = _temporary_official_fixture(tmp_path)
     monkeypatch.setattr(physics.models, "assets_root", str(fixture))
+    import robosuite.utils.shakebench_physics_finalizer as finalizer
+
+    expected = yaml.safe_load((fixture / OFFICIAL_PHYSICS_PROFILE_FILENAME).read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        finalizer,
+        "verify_official_publication_bundle",
+        lambda root: {"passed": True, "errors": [], "profile_sha256": expected["profile_sha256"]},
+    )
     profile = load_official_physics_profile()
     assert profile.scoreable is True
     assert profile.status == "official_immutable"

@@ -1,0 +1,200 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "c3_nominal",
+      "eligible": true,
+      "errors": [],
+      "evidence_sha256": "780c529a6c98782caafa3ba61e58c9336c933ec633e57ad2cbe47f2ae5a80a88"
+    },
+    {
+      "candidate_id": "n6_critical_negative_control",
+      "eligible": true,
+      "errors": [],
+      "evidence_sha256": "5ad76cee510e106d0ab305d0fc4cf9ab5c8a3c30d480e08de87b1685614adf1e"
+    },
+    {
+      "candidate_id": "n6_overdamped_2",
+      "eligible": true,
+      "errors": [],
+      "evidence_sha256": "6dbfca539b82222fba5d576bc5413e56437d5ba48cadfcf83c8dca7c214b33b5"
+    },
+    {
+      "candidate_id": "n6_overdamped_4",
+      "eligible": true,
+      "errors": [],
+      "evidence_sha256": "e82122788f2749679c83df16dfe6ddb9136a77638badaccbc1ec49a608728ffc"
+    }
+  ],
+  "contact_winner": "c3_nominal",
+  "forbidden_inputs_used": [],
+  "inherited": {
+    "protocol_path": "/home/miracle04/Desktop/ShakeBench/robosuite/models/assets/shakebench_selection_protocol_v7.yaml",
+    "protocol_sha256": "d5681561c1a92e210b1e943e531d02701066262178221b098ccfd80fdffeffac",
+    "selected_driver": "dt_nominal",
+    "selected_isolator": "low_frequency_damped",
+    "selected_path": "shakebench_phase_06r6_v7_selected_candidates.json",
+    "selected_sha256": "07d03908b64307c7faaf381d155b969db1a8ed0522fea0cb603a94056632c2df",
+    "status_path": "shakebench_phase_06r6_v7_status.json",
+    "status_sha256": "e5c2cbbcb2fa4468862044943e01d6dbfa7263da4ead19fc57a4d60716105c00",
+    "v6_inherited_raw_files": [
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_empty.json",
+        "resolved_state_digest": "095fa34e8598606cb37d6d96744a4ec39b7b17e387e17b5217699b01c1e8e242",
+        "sha256": "cf1ad9039ed0ccab0cdba9d1d0f3b0daba360172c4a146b9a304f93034963829",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_15.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_panda_reference.json",
+        "resolved_state_digest": "8c921a394d226ad40758279463a5631d9408b2289de739b5052ae28ec5ae9fc9",
+        "sha256": "adfff22005b6480f3a9cb37296de96ced7388776cb49693cf7f88c72ab1511d6",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_15.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_empty.json",
+        "resolved_state_digest": "6e7e19f39996f757712fd73fff6a867622535785bd55d3679bd704b215566c1b",
+        "sha256": "2a6709eb012c5c27d790e3da51a6719bd2d26e946fa5cb822f213a6a7c4c1fba",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_30.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_panda_reference.json",
+        "resolved_state_digest": "a38c88ef0373ae8d1b6bf764dc48b633b6add08461bc2ff24ae27a271eda3f69",
+        "sha256": "bedde4e2906befc14f18687c5a6f7be4fff2bc56f3f8e5799a616e52aa4e945e",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_30.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_empty.json",
+        "resolved_state_digest": "1e50d467b7e520281addae5f04b0c63f0048dced0a3be799570a8d1372db06ef",
+        "sha256": "dee6650cdf2259d20ac3b7affdbae701cb77043743da350f11bc18a142818587",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_50.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_panda_reference.json",
+        "resolved_state_digest": "9493ff9815511767455e18007e9528e656509001c6370ad4a465908823cd0d1e",
+        "sha256": "96db7ac04754004092279859b476b519fa122e17277644015b68518f76dd3bd8",
+        "stage": "driver",
+        "state_id": "driver.dt_fine.gamma_0_50.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_empty.json",
+        "resolved_state_digest": "9ca3d97bf172480227f6f5d454fef060686c99e32d80a5876470cb46c3dea44f",
+        "sha256": "ae91c0015dd13241433d943649a22c8e4842e09a01cdecdbf57ce02cef4f5268",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_15.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_panda_reference.json",
+        "resolved_state_digest": "69cf6a45f98289fc5d5f95aa3a9777d8ef149429fd64c06683f2155971e8d409",
+        "sha256": "af8178516760077cac7f0dfeaf49a722350524b1844f64bb5cf695723f37e128",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_15.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_empty.json",
+        "resolved_state_digest": "4394493dd4e0668013e6f99e04ed1daa9702738d28a97bd33d8352425a541bea",
+        "sha256": "697286ac3ddf996601f3c34b6f9505ae6c41f403c9bedc2935c4fe563818d716",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_30.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_panda_reference.json",
+        "resolved_state_digest": "db4be74fffc955eef839b8532d5b9409fe46ee9b149e896fd19619ae39e68226",
+        "sha256": "e3c804396174f86766d352074e3f951713203a7bedb244381434b18346ac348b",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_30.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_empty.json",
+        "resolved_state_digest": "46d333fafae9d1fc2e5f37193f9395d900c3e9da9592ade1a139fdff044a9933",
+        "sha256": "c204e3890e76002f77d1ae411baddd13a4563681f4f1a6284493c19318120500",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_50.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_panda_reference.json",
+        "resolved_state_digest": "6a9b0920fca9079b5a1ec0ce15a80b3740dfc9063a472a85f035f74194653285",
+        "sha256": "128f53440399888225ead27996592e0092232ad49e79ea26bf26b9b8fcc6d1aa",
+        "stage": "driver",
+        "state_id": "driver.dt_medium.gamma_0_50.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_empty.json",
+        "resolved_state_digest": "c81064db933fa70f6803d86b53498b5ca90ef9a1de400add805cf3f504028e0d",
+        "sha256": "6a6fb434a1b4d6bc7cae6c836571383f99496c730b96bf8b85831d757f795d27",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_15.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_panda_reference.json",
+        "resolved_state_digest": "8287964ff34a0b743b9ab091d4affbca10d4ef31850252e4961c26580320ffe5",
+        "sha256": "bc02f87fc97539ee11860b72155fff5929f1b89bf1dbd5e4012a44701385afe4",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_15.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json",
+        "resolved_state_digest": "7a87df97fe23cc0cf9c30131882fbdffc389994c2833f4fe2137359d28773fdf",
+        "sha256": "52b33d84a08ee47d013127d35ef0d976d414f06ba7a2fea476aba4dc74222249",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_30.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_panda_reference.json",
+        "resolved_state_digest": "3fc363cf83052111630a7fad0776ba6f287d3a262c36feba4cb946ed709eacb6",
+        "sha256": "19b9d608560dd6587e2007aac65f50b037cac63cb1a4db740a4e8656513e352b",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_30.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_empty.json",
+        "resolved_state_digest": "068e24426ca25b26570b4ba39ec03d944a9d46ace1d4b0db7f5dbc9c41c2b0f3",
+        "sha256": "264eaea7292b9e25eac6678f818e92fe99a939edba49e99bf00f4b088012f6db",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_50.empty"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_panda_reference.json",
+        "resolved_state_digest": "9ec523a67d1e3b3697200ccbf8776b64c3f0538a24afb1f388e40c7d0c542d2b",
+        "sha256": "9725e04358f56d6e9c2a6fcd3cf443d5b994b50c9942e6ab0754dfe5f6bb24c9",
+        "stage": "driver",
+        "state_id": "driver.dt_nominal.gamma_0_50.panda_reference"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_isolator_balanced_nominal.json",
+        "resolved_state_digest": "e02ff67162e2aed1eaf6b1a4e7c909ebdd61e46ec2ad99b61efc2bed472e49b7",
+        "sha256": "fbdb591af0c47f22be5b6f3fadd828a7c250f57fcd1b8e3dabc07aa3d213c624",
+        "stage": "isolator",
+        "state_id": "isolator.balanced_nominal.all_regions"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_isolator_low_frequency_damped.json",
+        "resolved_state_digest": "8174f81f74b6e996646c62f113f76b385a267dee09a90750fdb1774d956f491a",
+        "sha256": "df4b6e246e95a6048a4de086f23dc3bc5f5b414342b18dd4a765d041dfcadd6d",
+        "stage": "isolator",
+        "state_id": "isolator.low_frequency_damped.all_regions"
+      },
+      {
+        "path": "shakebench_phase_06r5_v6_raw_isolator_high_frequency_light_damping.json",
+        "resolved_state_digest": "4e48f854ae718faf2cce23cdc4164ca1f65cb572d98b10ef38f9ab8f17254f15",
+        "sha256": "d77c5f40b8e48a3ea1bed50e3cd802279992f283ac7af3459b030be22e584266",
+        "stage": "isolator",
+        "state_id": "isolator.high_frequency_light_damping.all_regions"
+      }
+    ]
+  },
+  "payload_sha256": "c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8",
+  "priority": [
+    "c3_nominal",
+    "n6_critical_negative_control",
+    "n6_overdamped_2",
+    "n6_overdamped_4"
+  ],
+  "protocol_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0",
+  "schema_id": "shakebench.phase06f.finalization.contact_selection",
+  "schema_version": 1,
+  "selection_rule": "eligibility_then_minimal_intervention_priority"
+}

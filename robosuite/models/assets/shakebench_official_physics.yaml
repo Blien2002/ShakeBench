@@ -1,13 +1,15 @@
 schema_id: shakebench.official.physics
 schema_version: 1
-profile_id: shakebench.official.physics.v1
+profile_id: shakebench.official.physics.v2
 status: official_immutable
 scoreable: true
-selection_basis: physics_only
-protocol_file: shakebench_selection_protocol.yaml
-protocol_sha256: 9f992b9a7277772604cbdc761e80bb61156dfadb806773042f8ddab36c9b2578
-freeze_commit: phase_06_physics_freeze
-
+selection_basis: phase06f_task_native_physics_only
+protocol_file: shakebench_phase_06f_protocol.yaml
+protocol_sha256: 54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0
+selection_artifact_sha256: c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8
+dependent_manifest_sha256: ed2342fa70ab36f0015fe032b5cca5ce64e39f509f9378a4d598644153adf94d
+evidence_manifest_sha256: 935b01a32f717a868877b51b62715a5613b7e2732d1e0c69271a388e035b9ba6
+registration_commit: de2e60df56bce83dd2867d36e6c2d78b63bb52fd
 physics:
   excitation:
     profile_id: shakebench.authored_v0_candidate
@@ -16,10 +18,10 @@ physics:
     gamma_domain: Gamma_commanded
   timestep:
     physics_timestep_s: 0.0002
-    integrator: implicitfast
+    integrator: Euler
     solver: Newton
     iterations: 100
-    tolerance: 1.0e-10
+    tolerance: 1.0e-12
     candidate_id: dt_nominal
   scheduler:
     control_freq_hz: 20.0
@@ -35,66 +37,119 @@ physics:
     driver_site_name: deck_driver_site
     site_name: deck_site
     mass_kg: 400.0
-    inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332]
-    pos_m: [0.0, 0.0, 0.0]
-    quat_wxyz: [1.0, 0.0, 0.0, 0.0]
-    eq_solref: [0.0004, 0.5]
-    eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    inertia_kg_m2:
+    - 12.12
+    - 14.083333333333334
+    - 26.03333333333333
+    pos_m:
+    - 0.0
+    - 0.0
+    - 0.0
+    quat_wxyz:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    eq_solref:
+    - 0.0004
+    - 0.5
+    eq_solimp:
+    - 0.9
+    - 0.95
+    - 0.001
+    - 0.5
+    - 2.0
     site_size_m: 0.01
     inertial_source: explicit_dynamic_deck_root
   isolator:
-    axis_order: [tx, ty, tz, rx, ry, rz]
+    axis_order:
+    - tx
+    - ty
+    - tz
+    - rx
+    - ry
+    - rz
     candidate_id: low_frequency_damped
-    fn_hz: [4.0, 4.0, 4.0, 3.0, 3.0, 2.0]
-    zeta: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+    fn_hz:
+    - 4.0
+    - 4.0
+    - 4.0
+    - 3.0
+    - 3.0
+    - 2.0
+    zeta:
+    - 0.2
+    - 0.2
+    - 0.2
+    - 0.2
+    - 0.2
+    - 0.2
     mass_kg: 32.0
-    inertia_kg_m2: [0.9696, 1.1363, 2.0867]
+    inertia_kg_m2:
+    - 0.9696
+    - 1.1363
+    - 2.0867
     gravity_m_s2: 9.81
-    travel_limits_m: [0.025, 0.025, 0.025]
-    angle_limits_rad: [0.08726646259971647, 0.08726646259971647, 0.08726646259971647]
-    k: [20212.949813431005, 20212.949813431005, 20212.949813431005, 344.5044633826647, 403.7339333144822, 329.5184560600506]
-    c: [321.6990877275948, 321.6990877275948, 321.6990877275948, 7.310611768609593, 8.567500157457797, 10.488898224393315]
-    springref: [0.0, 0.0, 0.015530637680177088, 0.0, 0.0, 0.0]
+    travel_limits_m:
+    - 0.025
+    - 0.025
+    - 0.025
+    angle_limits_rad:
+    - 0.08726646259971647
+    - 0.08726646259971647
+    - 0.08726646259971647
+    k:
+    - 20212.949813431005
+    - 20212.949813431005
+    - 20212.949813431005
+    - 344.5044633826647
+    - 403.7339333144822
+    - 329.5184560600506
+    c:
+    - 321.6990877275948
+    - 321.6990877275948
+    - 321.6990877275948
+    - 7.310611768609593
+    - 8.567500157457797
+    - 10.488898224393315
+    springref:
+    - 0.0
+    - 0.0
+    - 0.015530637680177088
+    - 0.0
+    - 0.0
+    - 0.0
     preload: nominal_table_only
-  contact:
-    pair_scope: explicit_can_pairs
-    sliding_mu:
-      table_object: 0.30
-      finger_object: 1.00
-    condim: 3
-    torsional_mu: 0.005
-    rolling_mu: 0.0001
-    margin_m: 0.0
-    gap_m: 0.0
-    solref: [0.0004, 1.0]
-    solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
-    interfaces:
-      - can_open_worktable
-      - can_target_bottom
-      - can_target_walls
-      - can_panda_finger_pads
   safety:
     maximum_illegal_penetration_m: 0.0005
     minimum_travel_margin_m: 0.005
     minimum_angle_margin_rad: 0.017453292519943295
     warning_count_max: 0
     unstable_residual: false
-
-evidence:
-  phase02_driver_artifact: tests/shakebench_phase_02r_probe.json
-  phase03_transfer_artifact: tests/shakebench_phase_03_transfer.json
-  phase04_environment_artifact: tests/shakebench_phase_04_environment.json
-  selection_artifact: shakebench_phase_06_selected_candidates.json
-  replay_artifact: shakebench_phase_06_replay_determinism.json
-  driver_gate: pass
-  isolator_gate: pass
-  contact_gate: pass
-  timestep_solver_gate: pass
-  static_equilibrium_gate: pass
-  bounded_gamma_zero_parity: geometry_and_solvability_only
-  task_success_used: false
-  task_sr_used: false
-  controller_modified: false
-
-hash_scope: canonical_json_without_profile_sha256
-profile_sha256: 72dc38077cb706aa1f8d4be9d382321b2183cada114182d2e39f5fcbf6fac414
+  contact:
+    candidate_id: c3_nominal
+    condim: 3
+    sliding_mu:
+      table_object: 0.3
+      finger_object: 1.0
+    torsional_mu: 0.005
+    rolling_mu: 0.0001
+    margin_m: 0.0
+    gap_m: 0.0
+    solref:
+    - 0.0004
+    - 1.0
+    solimp:
+    - 0.9
+    - 0.95
+    - 0.001
+    - 0.5
+    - 2.0
+    pair_scope: explicit_can_pairs
+    friction_encoding: isotropic_pair_5d
+    interfaces:
+    - can_open_worktable
+    - can_target_bottom
+    - can_target_walls
+    - can_panda_finger_pads
+profile_sha256: c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c

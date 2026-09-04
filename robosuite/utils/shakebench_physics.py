@@ -48,8 +48,11 @@ PHASE06R4_STATUS_FILENAME = "shakebench_phase_06r4_v5_status.json"
 PHASE06R5_STATUS_FILENAME = "shakebench_phase_06r5_v6_status.json"
 PHASE06R6_STATUS_FILENAME = "shakebench_phase_06r6_v7_status.json"
 PHASE06R7_STATUS_FILENAME = "shakebench_phase_06r7_v8_status.json"
+PHASE06_FINAL_STATUS_FILENAME = "shakebench_phase_06_final_status.json"
+PHASE06_TO_07_HANDOFF_FILENAME = "shakebench_phase_06_to_07_handoff.json"
+PHASE06F_PROTOCOL_FILENAME = "shakebench_phase_06f_protocol.yaml"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
-OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v1"
+OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 
 
 class PhysicsProfileError(ValueError):
@@ -600,51 +603,30 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             raise PhysicsProfileIntegrityError(
                 "scoreable official physics must be loaded from the packaged canonical asset"
             )
-    # V1 through V6 are archived.  Once a V8 status exists it is the active
-    # publication authority; before V8 registration V7 remains the active
-    # fail-closed gate.  A blocked V8 status must not fall back to an older
-    # profile.
-    v8_status_path = Path(models.assets_root) / PHASE06R7_STATUS_FILENAME
-    v7_status_path = Path(models.assets_root) / PHASE06R6_STATUS_FILENAME
-    v6_status_path = Path(models.assets_root) / PHASE06R5_STATUS_FILENAME
-    if v8_status_path.is_file():
-        status_path = v8_status_path
-        active_phase = "Phase 06R7 V8"
-        active_protocol_filename = SELECTION_PROTOCOL_V8_FILENAME
-    elif v7_status_path.is_file():
-        status_path = v7_status_path
-        active_phase = "Phase 06R6 V7"
-        active_protocol_filename = SELECTION_PROTOCOL_V7_FILENAME
-    elif v6_status_path.is_file():
-        status_path = v6_status_path
-        active_phase = "Phase 06R5 V6"
-        active_protocol_filename = SELECTION_PROTOCOL_V6_FILENAME
-    else:
-        status_path = _asset_path(PHASE06R4_STATUS_FILENAME)
-        active_phase = "Phase 06R4 V5"
-        active_protocol_filename = SELECTION_PROTOCOL_V5_FILENAME
-    try:
-        selection_status = json.loads(status_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise PhysicsProfileIntegrityError(f"{active_phase} selection status is unreadable") from exc
-    if selection_status.get("status") != "PASS":
-        raise PhysicsProfileIntegrityError(
-            f"official physics is blocked until {active_phase} selection passes"
-        )
+    # Phase 06F is the sole publication authority. Historical V1--V8 status
+    # files are audit records and can never activate the official loader.
+    from robosuite.utils.shakebench_physics_finalizer import verify_official_publication_bundle
+
+    bundle = verify_official_publication_bundle(Path(models.assets_root))
+    if bundle.get("passed") is not True:
+        detail = "; ".join(str(error) for error in bundle.get("errors", ()))
+        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F handoff verifier: " + detail)
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
     try:
         payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
     except OSError as exc:
         raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
     profile = _validate_payload(payload, source=str(profile_path), require_official=True)
-    protocol_filename = active_protocol_filename
+    protocol_filename = PHASE06F_PROTOCOL_FILENAME
     try:
         protocol_bytes = _asset_path(protocol_filename).read_bytes()
     except OSError as exc:
         raise PhysicsProfileIntegrityError(f"cannot read active selection protocol: {protocol_filename}") from exc
     expected_protocol_hash = hashlib.sha256(protocol_bytes).hexdigest()
     if profile.payload.get("protocol_sha256") != expected_protocol_hash:
-        raise PhysicsProfileIntegrityError(f"official profile does not authenticate the {active_phase} selection protocol")
+        raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06F selection protocol")
+    if profile.profile_sha256 != bundle.get("profile_sha256"):
+        raise PhysicsProfileIntegrityError("official profile differs from the verified Phase 06F handoff")
     return profile
 
 
@@ -781,6 +763,9 @@ __all__ = [
     "PHASE06R5_STATUS_FILENAME",
     "PHASE06R6_STATUS_FILENAME",
     "PHASE06R7_STATUS_FILENAME",
+    "PHASE06_FINAL_STATUS_FILENAME",
+    "PHASE06_TO_07_HANDOFF_FILENAME",
+    "PHASE06F_PROTOCOL_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",
