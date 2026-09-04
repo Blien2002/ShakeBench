@@ -591,11 +591,18 @@ Can ↔ Panda finger pads:
 3. **Six-axis isolator transfer**：六个自由度各自的单频传递函数与解析解对比，并验证六轴联合激励的 command/deck/table 实际响应；
 4. **Static equilibrium**：验证 32 kg table preload 后的空载 nominal pose、0.349 kg Can 引起的额外静态偏移、target geometry 和 Panda 可达性；
 5. **Timestep/solver convergence**：至少三档 physics timestep，且同时满足频率采样与 constraint time-constant 条件；
-6. **Contact/friction validation**：摩擦斜面或单轴加速度滑移阈值与解析结果对比；
+6. **Contact/friction validation**：official contact 硬门固定为完整编译 tuple 与显式 Can pair 作用域；Can 在 open worktable 和 target bottom 的任务原生 pose 上、`Gamma=0`、zero action 被动 settle `0.50 s`，且最后 `0.10 s` 保持命名支撑接触、线速度 `<=0.02 m/s`、角速度 `<=0.20 rad/s`；非法穿透 `<=0.50 mm`、接触力有限、无 warning/NaN；冻结 `mu=0.30` 的水平面力阈值和单轴滑移 sanity、finger force/penetration envelope、三档 timestep 接触收敛及确定性重放。`0.15 m` free-drop/recovery、斜面 threshold/bracket、placement、free-table slip、in-hand slip 与 contact-loss 只公开为诊断，不参与发布资格或排序；
 7. **Gamma=0 bounded parity**：不要求动态隔振桌与原生静态 robosuite 逐轨迹“等价”；要求相同 robot/controller/task geometry 下的可解性、nominal task poses、成功判据和动作语义在预注册容差内一致，并单独报告动态桌静态响应；
 8. **Safety rejection**：极端频率、Γ、隔振行程、角度和 solver travel 触发 fail-closed 拒绝门；
 9. **Interface-resolved metrics**：按接触接口记录力、冲量、滑移和穿透；
 10. **Cross-process determinism**：同一 state ID 至少由 3 个独立进程重放，比较完整 state/action/metric traces；只在同一进程 reset 重复不算通过。
+
+上述 contact gate 不修改任务成功 evaluator。policy release 后，Can 仍须连续
+`0.50 s` 满足既有 target-region containment、相对速度、无 finger contact、
+target-bottom 支撑和 penetration 条件。standalone `0.15 m` drop 超出无 source
+bin PickPlaceCan 的 reset/release 分布；把它保留为 stress diagnostic 而非发布
+硬门，可避免为人工 fixture 过拟合 contact，同时仍比成熟 benchmark 常见的
+task-native initialization/settling 验证更严格。
 
 ## 9. spike 与旧 ShakeBench 的复用边界
 

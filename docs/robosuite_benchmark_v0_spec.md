@@ -433,9 +433,25 @@ placement、free-table slip、in-hand slip、contact loss、penetration 和 resp
 
 - 至少三档 physics timestep 收敛；
 - 六轴单频和联合激励；
-- static support、斜面和单轴滑移阈值；
+- official contact 硬门使用完整编译 contact tuple 和显式 Can pair 作用域；
+- Can 在 open worktable 与 target bottom 上按任务原生 pose 初始化，在
+  `Gamma=0`、zero action 下被动 settle `0.50 s`；最后 `0.10 s` 必须保持命名
+  支撑接触，线速度 `<=0.02 m/s`、角速度 `<=0.20 rad/s`；
+- 非法穿透 `<=0.50 mm`，接触力有限且无 warning/NaN；
+- 对冻结 `mu=0.30` 运行水平面 horizontal-force threshold 与单轴滑移 sanity；
+- 验证 finger force/penetration envelope、三档 timestep contact convergence
+  和跨进程 deterministic replay；
+- `0.15 m` free-drop/recovery、inclined-plane threshold/bracket、placement、
+  free-table slip、in-hand slip 与 contact-loss 作为公开诊断，不参与发布资格或
+  candidate ordering；
 - 冻结 solver、condim、torsional/rolling friction、contact `solref/solimp`；
 - 验证 8 mm wall 对 solver travel gate 的约束。
+
+该划分遵循成熟 embodied benchmark 冻结 simulator/material 配置并验证
+task-native initialization/settling 的惯例。`0.15 m` 高落体不在无 source bin
+PickPlaceCan 的 reset/release 分布内，不能驱动 contact 过拟合。第 5.4 节任务
+成功规则保持不变：release 后仍需连续 `0.50 s` 满足 containment、相对速度、
+无 finger contact、target-bottom support 和 penetration 条件。
 
 ### 14.3 Controller/gripper pilot
 
@@ -456,8 +472,8 @@ placement、free-table slip、in-hand slip、contact loss、penetration 和 resp
 3. fixed-seed deterministic trajectory；
 4. six-axis driver tracking；
 5. six-axis isolator analytical agreement；
-6. static contact and timestep convergence；
-7. friction threshold validation；
+6. task-native open-worktable/target-bottom settling、contact envelope 与三档 timestep convergence；
+7. level horizontal-force threshold 和 single-axis slip validation；
 8. Gamma=0 task solvability；
 9. success evaluator boundary tests；
 10. V0 ⊂ V1 ⊂ V2 ⊂ V3 key-set and fail-closed permissions；
