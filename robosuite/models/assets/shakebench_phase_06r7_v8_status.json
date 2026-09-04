@@ -1,0 +1,25 @@
+{
+  "adapter_contract_digest": "6f1a98293ae38f9f9035f0d67615efa6106831bf3501519380fdcc781dd00abc",
+  "blocking_stage": "contact",
+  "failure_taxonomy": "evidence_integrity_failure",
+  "feasibility": {
+    "path": "shakebench_phase_06r7_v8_feasibility.json",
+    "sha256": "1baa31c9a3ff44c535e8c179c70bc31bc12c27f5bbf04d0d86dbd7b931cda89c"
+  },
+  "official_profile_publication": "forbidden",
+  "payload_sha256": "0019a53cc813b61416de901cf620883de426225f3cd12b19e68c534c94d91dae",
+  "phase07": "forbidden",
+  "protocol": {
+    "bytes_sha256": "79fced710aede792d9a27baf4f6ab695a6bdfd8fd1df110a4ef7029818a226a4",
+    "normalized_sha256": "d624e84e75802a1b6f93a957096e528e123bf06c7d69812829d85281ab2ed3f5",
+    "path": "shakebench_selection_protocol_v8.yaml"
+  },
+  "reason": "evidence_integrity_failure: winning contact differs from registered parity/replay binding",
+  "schema_id": "shakebench.phase06r7.v8.selection_status",
+  "schema_version": 1,
+  "selection_artifact": {
+    "path": "shakebench_phase_06r7_v8_selected_candidates.json",
+    "sha256": "8becd4682481cf6ea499dc9148795abfac4cca1a9fe6034f4d596d850ffca1cc"
+  },
+  "status": "BLOCKED"
+}

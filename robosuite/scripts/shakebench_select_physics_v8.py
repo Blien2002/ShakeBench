@@ -407,6 +407,9 @@ def _normal_from_trace(normal: Any, *, timestep_s: float, duration_s: float, tai
             value = float(contacts["penetration_m"])
             if not np.all(np.isfinite(linear)) or not np.all(np.isfinite(omega)) or not np.isfinite(value) or value < 0.0:
                 raise ValueError("non-finite raw normal trace value")
+            for contact in contacts.get("contacts", ()):
+                if not isinstance(contact, Mapping) or contact.get("interface") != "can_open_worktable" or {str(contact.get("geom1")), str(contact.get("geom2"))} != {"can_g0", "table_collision"}:
+                    raise ValueError("wrong named normal-contact interface")
         except (KeyError, TypeError, ValueError) as exc:
             errors.append(f"normal trace row {index} is malformed: {exc}")
             continue
@@ -570,7 +573,7 @@ def _v8_contact_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
 
 
 def _verify_v7_noncontact_evidence() -> dict[str, Any]:
-    from robosuite.scripts.shakebench_select_physics_v7 import _verify_v6_inherited_evidence, _verify_v7_reference_rows
+    from robosuite.scripts.shakebench_select_physics_v7 import _verify_v6_inherited_evidence, _verify_v6_reference_rows
 
     v7_protocol, v7_name, v7_hash = __import__("robosuite.scripts.shakebench_select_physics_v7", fromlist=["load_v7_protocol"]).load_v7_protocol(_asset(V7_PROTOCOL_FILENAME))
     __import__("robosuite.scripts.shakebench_select_physics_v7", fromlist=["validate_v7_protocol"]).validate_v7_protocol(v7_protocol, protocol_bytes_hash=v7_hash)
@@ -591,7 +594,7 @@ def _verify_v7_noncontact_evidence() -> dict[str, Any]:
     if selected.get("protocol", {}).get("bytes_sha256") != v7_hash or status.get("protocol", {}).get("bytes_sha256") != v7_hash or feasibility.get("protocol", {}).get("bytes_sha256") != v7_hash:
         errors.append("V7 protocol hash failed")
     inherited = _verify_v6_inherited_evidence()
-    errors.extend(_verify_v7_reference_rows(selected, v7_selected_path, inherited))
+    errors.extend(_verify_v6_reference_rows(selected, v7_selected_path, inherited))
     if errors:
         raise V8ProtocolError("V7 non-contact inheritance failed: " + "; ".join(errors))
     return {"protocol_path": v7_name, "protocol_sha256": v7_hash, "selected_path": v7_selected_path.name, "selected_sha256": file_sha256(v7_selected_path), "status_path": v7_status_path.name, "status_sha256": file_sha256(v7_status_path), "v6_inherited_raw_files": inherited["raw_files"], "selected_driver": "dt_nominal", "selected_isolator": "low_frequency_damped"}
@@ -682,7 +685,7 @@ def _replay_groups(records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 def _v8_contact_score(record: Mapping[str, Any], state: ResolvedProbeState) -> tuple[float, float, str]:
     if state.contact is None:
         return math.inf, math.inf, state.candidate_id
-    _, metrics, _ = _v8_contact_gates(record.get("evidence", {}), state)
+    _, metrics, _ = _v8_contact_gates(record.get("evidence", {}).get("physics", {}), state)
     normal = metrics.get("normal", {})
     incline = metrics.get("incline", {})
     finger = metrics.get("finger", {})
@@ -713,7 +716,8 @@ def _profile_from_v8_state(state: ResolvedProbeState, *, protocol_hash: str, evi
 
 
 def _write_status(output: Path, *, status: str, protocol_hash: str, normalized_hash: str, feasibility_hash: str | None, adapter_digest: str | None, reason: str | None = None, selected_path: Path | None = None, profile: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    value: dict[str, Any] = {"schema_id": "shakebench.phase06r7.v8.selection_status", "schema_version": 1, "status": status, "failure_taxonomy": None if status == "PASS" else ("invalid_protocol_configuration" if reason and reason.startswith("invalid_protocol_configuration") else "physics_gate_failure"), "reason": reason, "blocking_stage": None if status == "PASS" else "contact", "protocol": {"path": PROTOCOL_FILENAME, "bytes_sha256": protocol_hash, "normalized_sha256": normalized_hash}, "feasibility": {"path": FEASIBILITY_FILENAME, "sha256": feasibility_hash}, "adapter_contract_digest": adapter_digest, "official_profile_publication": "PASS" if status == "PASS" else "forbidden", "phase07": "authorized_after_independent_verification" if status == "PASS" else "forbidden"}
+    taxonomy = None if status == "PASS" else ("invalid_protocol_configuration" if reason and reason.startswith("invalid_protocol_configuration") else ("evidence_integrity_failure" if reason and reason.startswith("evidence_integrity_failure") else "physics_gate_failure"))
+    value: dict[str, Any] = {"schema_id": "shakebench.phase06r7.v8.selection_status", "schema_version": 1, "status": status, "failure_taxonomy": taxonomy, "reason": reason, "blocking_stage": None if status == "PASS" else "contact", "protocol": {"path": PROTOCOL_FILENAME, "bytes_sha256": protocol_hash, "normalized_sha256": normalized_hash}, "feasibility": {"path": FEASIBILITY_FILENAME, "sha256": feasibility_hash}, "adapter_contract_digest": adapter_digest, "official_profile_publication": "PASS" if status == "PASS" else "forbidden", "phase07": "authorized_after_independent_verification" if status == "PASS" else "forbidden"}
     if selected_path is not None:
         value["selection_artifact"] = {"path": selected_path.name, "sha256": file_sha256(selected_path)}
     if profile is not None:
@@ -783,7 +787,7 @@ def _run_selection_artifacts(output: Path, protocol: Mapping[str, Any], protocol
     eligible = []
     for record in contact_records:
         state = states[str(record["state_id"])]
-        checks, derived, errors = _v8_contact_gates(record.get("evidence", {}), state)
+        checks, derived, errors = _v8_contact_gates(record.get("evidence", {}).get("physics", {}), state)
         contact_details[state.candidate_id] = {"checks": checks, "derived": derived, "errors": errors}
         if all(checks.values()) and not errors:
             eligible.append(state.candidate_id)
@@ -792,7 +796,7 @@ def _run_selection_artifacts(output: Path, protocol: Mapping[str, Any], protocol
     overall = winning is not None and winning == default_contact and parity_ok and replay_ok
     selected_contact = winning if overall else None
     excluded = [{"stage": "contact", "candidate_id": candidate_id, "reason": "contact_hard_gate_failed", "recomputed_gates": contact_details[candidate_id]["checks"], "diagnostic_errors": contact_details[candidate_id]["errors"], "metrics": contact_details[candidate_id]["derived"]} for candidate_id in sorted(CONTACT_IDS) if candidate_id not in eligible]
-    reason = None if overall else ("physics_gate_failure: no contact candidate passed" if winning is None else "evidence_integrity_failure: final V8 parity/replay/binding gates failed")
+    reason = None if overall else ("physics_gate_failure: no contact candidate passed" if winning is None else ("evidence_integrity_failure: winning contact differs from registered parity/replay binding" if winning != default_contact else "evidence_integrity_failure: final V8 parity/replay gates failed"))
     selected = {"schema_id": SCHEMA_ID, "schema_version": SCHEMA_VERSION, "status": "PASS" if overall else "BLOCKED", "physics_only": True, "protocol": {"path": PROTOCOL_FILENAME, "bytes_sha256": protocol_hash, "normalized_sha256": sha256_json(protocol), "status": protocol.get("status")}, "resolved_state_digest": structure["resolved_state_digest"], "adapter_contract_digest": contract["adapter_contract_digest"], "feasibility": {"path": FEASIBILITY_FILENAME, "sha256": feasibility_hash}, "selection": {"selected_candidate_ids": {"driver": inherited["selected_driver"], "isolator": inherited["selected_isolator"], "contact": selected_contact}, "physics_only": True, "task_success_used": False, "reward_used": False, "controller_outcome_used": False}, "candidate_counts": {"driver": 18, "isolator": 3, "contact": len(contact_records)}, "eligible_counts": {"driver": 3, "isolator": 1, "contact": len(eligible)}, "inherited_v7_noncontact": {"selected_driver": inherited["selected_driver"], "selected_isolator": inherited["selected_isolator"], "v7_contact_selection_inherited": False}, "raw_files": stage_rows, "official_profile": None, "official_profile_alignment": False, "replay_groups": sorted(REPLAY_GROUPS), "blocking_reason": reason, "parity_artifact": {"path": parity_path.name, "sha256": file_sha256(parity_path)}, "determinism_artifact": {"path": determinism_path.name, "sha256": file_sha256(determinism_path)}, "excluded": excluded}
     selected_path = output / SELECTED_FILENAME
     selected["payload_sha256"] = payload_hash(selected)
@@ -859,19 +863,7 @@ def run_v8_selection(*, protocol_path: str | Path | None = None, output_dir: str
         if all(checks.values()) and not errors:
             eligible.append(candidate_id)
     winning = sorted(eligible, key=lambda candidate_id: _v8_contact_score(candidates[candidate_id], states[str(candidates[candidate_id]["state_id"])]))[0] if eligible else None
-    bind = winning if winning is not None else default_contact
-    if winning is not None and winning != default_contact:
-        # Keep the registered binding immutable; write a valid blocked result
-        # after the contact evidence rather than silently changing replay.
-        parity_payload = {"schema_id": SCHEMA_ID + ".parity", "schema_version": SCHEMA_VERSION, "status": "BLOCKED", "protocol_sha256_bytes": protocol_hash, "protocol_sha256_normalized": sha256_json(protocol), "reason": "physics_gate_failure: winning contact differs from registered parity/replay binding"}
-        parity_payload["payload_sha256"] = payload_hash(parity_payload)
-        parity_path = output / PARITY_FILENAME
-        write_json_atomic(parity_path, parity_payload)
-        determinism_payload = {"schema_id": SCHEMA_ID + ".replay_determinism", "schema_version": SCHEMA_VERSION, "status": "BLOCKED", "protocol_sha256_bytes": protocol_hash, "protocol_sha256_normalized": sha256_json(protocol), "groups": {}, "reason": "physics_gate_failure: winning contact differs from registered parity/replay binding"}
-        determinism_payload["payload_sha256"] = payload_hash(determinism_payload)
-        determinism_path = output / DETERMINISM_FILENAME
-        write_json_atomic(determinism_path, determinism_payload)
-        return _run_selection_artifacts(output, protocol, protocol_hash, structure, contract, inherited, contacts, [], [], states, default_contact, feasibility_hash)
+    bind = default_contact
     context["contact_candidate_id"] = bind
     parity = run_v8_stage(protocol, stage="parity", output_dir=output, probe=__import__("robosuite.scripts.shakebench_select_physics_v6", fromlist=["_v6_parity_probe"])._v6_parity_probe, protocol_bytes_hash=protocol_hash, selection_context=context)
     replay = run_v8_stage(protocol, stage="replay", output_dir=output, probe=lambda state: _subprocess_replay_probe(protocol_name, state), protocol_bytes_hash=protocol_hash, selection_context=context)
@@ -964,9 +956,6 @@ def verify_v8_selection_artifact(path: str | Path, *, protocol_path: str | Path 
     states = {state.state_id: state for state in states_tuple}
     try:
         inherited = _verify_v7_noncontact_evidence()
-        from robosuite.scripts.shakebench_select_physics_v7 import _verify_v7_reference_rows
-
-        errors.extend(_verify_v7_reference_rows(selected.get("inherited_v7_noncontact", {}), selected_path, inherited) if False else [])
         if selected.get("inherited_v7_noncontact", {}).get("selected_driver") != inherited["selected_driver"] or selected.get("inherited_v7_noncontact", {}).get("selected_isolator") != inherited["selected_isolator"] or selected.get("inherited_v7_noncontact", {}).get("v7_contact_selection_inherited") is not False:
             errors.append("V8 inherited V7 non-contact metadata mismatch")
     except V8ProtocolError as exc:
@@ -1000,9 +989,9 @@ def verify_v8_selection_artifact(path: str | Path, *, protocol_path: str | Path 
             continue
         record = raw[state.state_id]
         contacts[state.candidate_id] = record
-        checks_for_contact, derived, numeric_errors = _v8_contact_gates(record.get("evidence", {}), state)
+        checks_for_contact, derived, numeric_errors = _v8_contact_gates(record.get("evidence", {}).get("physics", {}), state)
         details[state.candidate_id] = {"checks": checks_for_contact, "derived": derived, "errors": numeric_errors}
-        compiled_ok, compiled_errors = _compiled_contact_matches(record.get("evidence", {}).get("compiled_contact_profile", {}), state)
+        compiled_ok, compiled_errors = _compiled_contact_matches(record.get("evidence", {}).get("physics", {}).get("compiled_contact_profile", {}), state)
         if not compiled_ok:
             errors.extend(f"{state.candidate_id}: {error}" for error in compiled_errors)
         try:
@@ -1010,10 +999,10 @@ def verify_v8_selection_artifact(path: str | Path, *, protocol_path: str | Path 
             independent_ok, independent_errors = _compiled_contact_matches(actual, state)
             if not independent_ok:
                 errors.extend(f"{state.candidate_id}: independent compiled audit failed: {error}" for error in independent_errors)
-            if not _same_json(actual, record.get("evidence", {}).get("compiled_contact_profile", {})):
+            if not _same_json(actual, record.get("evidence", {}).get("physics", {}).get("compiled_contact_profile", {})):
                 errors.append(f"{state.candidate_id}: compiled contact audit changed")
             force = _compile_force_envelope(state)
-            declared = record.get("evidence", {}).get("finger_force_envelope", {})
+            declared = record.get("evidence", {}).get("physics", {}).get("finger_force_envelope", {})
             if force.get("finite_force_envelope_N") != declared.get("finite_force_envelope_N") or force.get("finite_force_envelope_N") != float(state.contact.hard_gates["finger_force_max_N"]):
                 errors.append(f"{state.candidate_id}: force envelope changed")
         except Exception as exc:
@@ -1026,6 +1015,9 @@ def verify_v8_selection_artifact(path: str | Path, *, protocol_path: str | Path 
         errors.append("V8 contact coverage is incomplete")
     if not checks["contact_eligibility"]:
         errors.append("V8 contact hard-gate eligibility failed")
+    registered_contact = str(_mapping(protocol.get("selection"), "selection").get("default", {}).get("contact_candidate_id", ""))
+    if recomputed_contact is not None and recomputed_contact != registered_contact:
+        errors.append("V8 winning contact differs from the registered parity/replay binding")
     parity_rows = [row for row in raw.values() if row.get("stage") == "parity"]
     parity_state = next((state for state in states.values() if state.stage == "parity"), None)
     parity_ok = len(parity_rows) == 1 and parity_state is not None and _parity_eligible(parity_rows[0], parity_state)

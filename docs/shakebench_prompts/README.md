@@ -120,6 +120,7 @@ docs/robosuite_benchmark_design_tree.md
 | 06R4 | `phase_06r4_v5_protocol_execution_contract.md` | 保留 V4 BLOCKED，用同一 resolver 驱动 dry-run 与执行后完成 V5 freeze | all physics gates（当前 driver 通过，组件参数 materialize 缺失导致 BLOCKED） |
 | 06R5 | `phase_06r5_v6_all_stage_contract.md` | 保留 V5 driver 证据，预跑所有 stage adapter 的 V6 解析契约后完成 freeze | all physics gates |
 | 06R6 | `phase_06r6_v7_contact_recovery.md` | 保留 V6 非接触证据，以 recovery/force 诊断选择 V7 接触模型 | all physics gates |
+| 06R7 | `phase_06r7_v8_normal_impact.md` | 保留 V7 证据，校准水平/倾斜 fixture 并选择法向冲击阻尼 | all physics gates |
 | 07 | `phase_07_oracle_controller.md` | shared 7D State Oracle controller | Gamma=0 10/10 dev |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |
 | 09 | `phase_09_knee_official_eval.md` | Gamma* + 400×4 official evaluation | complete paired matrix |

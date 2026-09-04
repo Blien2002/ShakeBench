@@ -197,6 +197,60 @@ status artifact SHA-256 is
 `e5c2cbbcb2fa4468862044943e01d6dbfa7263da4ead19fc57a4d60716105c00`.
 Phase 07 remains forbidden.
 
+## Phase 06R7 / V8 normal-impact result (BLOCKED)
+
+The V8 normal-impact diagnostic and runner were prepared before registration
+in `fd425133`. The raw diagnostic uses no task environment and preserves the
+committed Can mesh, table collision box, Can/table mass and inertia, dynamic
+deck/isolator fixture, V7 contact defaults, and `0.15 m` drop height. It
+records every `0.0002 s` sample through the fixed `0.50 s` horizon, including
+normal force/impulse, penetration, energy, contact loss/re-entry, terminal
+direction and terminal support. The level-first control passed: four named
+table contacts, about `1.57 N` terminal normal force, maximum horizontal speed
+`7.49e-6 m/s`, and displacement `5.99e-7 m`. Five binary refinements produced
+a raw stable/sliding bracket of approximately `[0.003125, 0.00625] rad`; the
+analytic `atan(0.30)` value is comparison-only.
+
+The immutable V8 protocol was registered in `11185fbc`. Its bytes hash is
+`79fced710aede792d9a27baf4f6ab695a6bdfd8fd1df110a4ef7029818a226a4`; its
+resolved-state digest is
+`2ffe7557e4745ac24704d7538654d0eb582d5b37fcd9b832d88fea24d374f0f0`; the
+feasibility artifact SHA-256 is
+`1baa31c9a3ff44c535e8c179c70bc31bc12c27f5bbf04d0d86dbd7b931cda89c`; and
+the no-physics adapter contract covered 39 states, 102 legal bindings and 243
+preparation plans.
+
+V8 independently recomputed V7/V6 non-contact hashes, gates and selected
+values, inheriting exactly `dt_nominal` and `low_frequency_damped` without
+inheriting the V7 contact selection. It newly ran all five normal-response
+candidates, bounded parity, and all four three-process replay groups. Four
+contact candidates passed their raw numeric gates; `n6_slow_overdamped`
+failed the fixed `0.0005 m` penetration gate. The best physical score was
+`n6_overdamped_4`, followed by `n6_overdamped_2`; both had terminal named
+table support and linear speed below `0.005 m/s` in the raw normal fixture.
+
+The protocol's immutable parity/replay rows were pre-bound to
+`n6_overdamped_2`. The independent verifier therefore rejected publication
+when the raw physics score selected `n6_overdamped_4`; it did not silently
+rewrite the binding or publish a profile. The V8 selected/status artifacts
+remain `BLOCKED` with `failure_taxonomy: evidence_integrity_failure`,
+`selection.selected_candidate_ids.contact: null`, and no V8 official-profile
+payload. The selected artifact SHA-256 is
+`8becd4682481cf6ea499dc9148795abfac4cca1a9fe6034f4d596d850ffca1cc`, and the
+status artifact SHA-256 is
+`a0a87da272f0f18278c86b9ef6701caed0651bdb9a0ce81257da0e6ebf3d9559`.
+Phase 07 remains forbidden.
+
+### V8 validation and regression record
+
+- V8-focused normal-impact, V7-inheritance, and loader suite: `40 passed`.
+- Clean sdist (`199.03 MB`) and wheel (`203.27 MB`) include the V8
+  diagnostic, protocol, feasibility, 18 V8 raw contact/parity/replay
+  artifacts, and runner modules; `shakebench_arena.xml` compiles directly.
+- The complete non-renderer regression passed: `474 passed, 58 skipped` in
+  `419.83 s`. The four renderer-dependent collections remain blocked only by
+  the container's missing EGL device/swrast support and are not V8 tests.
+
 ## Phase 06R3 / V4 result (BLOCKED)
 
 V4 structural registration was committed as `80712165`; the protocol and

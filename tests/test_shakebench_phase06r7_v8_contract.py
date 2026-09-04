@@ -19,10 +19,13 @@ from robosuite.scripts.shakebench_diagnose_normal_impact_v8 import (
 from robosuite.scripts.shakebench_select_physics_v7 import _profile_from_state, _resolve_v7, load_v7_protocol
 from robosuite.scripts.shakebench_select_physics_v8 import (
     _compiled_contact_matches,
+    load_v8_protocol,
     _normal_from_trace,
     _incline_from_raw,
     _level_from_raw,
     _compile_contact_audit,
+    validate_v8_protocol,
+    verify_v8_selection_artifact,
 )
 
 
@@ -93,6 +96,11 @@ def test_v8_verifier_rejects_airborne_low_speed_and_trace_mutations():
     assert not errors
     assert airborne["trace"][-1]["contacts"]["contact_count"] == 0
     assert _normal_from_trace(airborne, timestep_s=0.0002, duration_s=0.5, tail_window_s=0.05, penetration_limit_m=PENETRATION_MAX_M, velocity_limit_m_s=1.0, angular_limit_rad_s=ANGULAR_VELOCITY_MAX_RAD_S, support_force_min_N=0.001)[0]["terminal_named_table_support"] is False
+    wrong_interface = copy.deepcopy(normal)
+    contact_index = next(index for index, row in enumerate(wrong_interface["trace"]) if row["contacts"]["contacts"])
+    wrong_interface["trace"][contact_index]["contacts"]["contacts"][0]["interface"] = "can_target_bottom"
+    _, errors = _normal_from_trace(wrong_interface, timestep_s=0.0002, duration_s=0.5, tail_window_s=0.05, penetration_limit_m=PENETRATION_MAX_M, velocity_limit_m_s=VELOCITY_MAX_M_S, angular_limit_rad_s=ANGULAR_VELOCITY_MAX_RAD_S, support_force_min_N=0.001)
+    assert any("interface" in error for error in errors)
 
 
 def test_v8_fake_stable_lower_bracket_and_level_failure_are_rejected():
@@ -114,3 +122,17 @@ def test_v8_candidate_contact_tuple_compiles_exactly_against_real_model():
     compiled = _compile_contact_audit(state)
     passed, errors = _compiled_contact_matches(compiled, state)
     assert passed, errors
+
+
+def test_v8_protocol_and_blocked_selection_preserve_the_frozen_binding():
+    protocol, _, protocol_hash = load_v8_protocol(ASSETS / "shakebench_selection_protocol_v8.yaml")
+    structure = validate_v8_protocol(protocol, protocol_bytes_hash=protocol_hash)
+    assert structure["stage_counts"] == {"driver": 18, "isolator": 3, "contact": 5, "parity": 1, "replay": 12}
+    assert structure["legal_replay_binding_count"] == 102
+    selected = json.loads((ASSETS / "shakebench_phase_06r7_v8_selected_candidates.json").read_text(encoding="utf-8"))
+    assert selected["status"] == "BLOCKED"
+    assert selected["selection"]["selected_candidate_ids"]["contact"] is None
+    result = verify_v8_selection_artifact(ASSETS / "shakebench_phase_06r7_v8_selected_candidates.json", protocol_path=ASSETS / "shakebench_selection_protocol_v8.yaml")
+    assert result["passed"] is False
+    assert result["recomputed_selection"]["contact"] == "n6_overdamped_4"
+    assert any("registered parity/replay binding" in error for error in result["errors"])

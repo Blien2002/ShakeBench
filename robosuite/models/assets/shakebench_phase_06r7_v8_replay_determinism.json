@@ -1,0 +1,181 @@
+{
+  "groups": {
+    "contact": {
+      "complete_trace": true,
+      "metric_digests": [
+        "f1b9c8f83dc6ae959f648e093ee59402025e41ba52510c58950d9d8da0045020",
+        "f1b9c8f83dc6ae959f648e093ee59402025e41ba52510c58950d9d8da0045020",
+        "f1b9c8f83dc6ae959f648e093ee59402025e41ba52510c58950d9d8da0045020"
+      ],
+      "process_count": 3,
+      "process_indices": [
+        1,
+        2,
+        3
+      ],
+      "trace_digests": [
+        "fb03da1c92f79779a04acc67cb0dd4309a693c829dfa4034f0fe816139494f6c",
+        "fb03da1c92f79779a04acc67cb0dd4309a693c829dfa4034f0fe816139494f6c",
+        "fb03da1c92f79779a04acc67cb0dd4309a693c829dfa4034f0fe816139494f6c"
+      ],
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ]
+    },
+    "driver": {
+      "complete_trace": true,
+      "metric_digests": [
+        "2d6b2a7ca44f016cc54fe637bf90142b9a20b64a2ef26041d5fee6adf2a98d67",
+        "2d6b2a7ca44f016cc54fe637bf90142b9a20b64a2ef26041d5fee6adf2a98d67",
+        "2d6b2a7ca44f016cc54fe637bf90142b9a20b64a2ef26041d5fee6adf2a98d67"
+      ],
+      "process_count": 3,
+      "process_indices": [
+        1,
+        2,
+        3
+      ],
+      "trace_digests": [
+        "183598d8335e82c74ff97463bd495c84d987ce33804a9969bfbe3f0943c6f91e",
+        "183598d8335e82c74ff97463bd495c84d987ce33804a9969bfbe3f0943c6f91e",
+        "183598d8335e82c74ff97463bd495c84d987ce33804a9969bfbe3f0943c6f91e"
+      ],
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ]
+    },
+    "gamma_zero_parity": {
+      "complete_trace": true,
+      "metric_digests": [
+        "7689a540f56c808916409f4dfd482e091d2bd74a6f253a751869c8656dd53134",
+        "7689a540f56c808916409f4dfd482e091d2bd74a6f253a751869c8656dd53134",
+        "7689a540f56c808916409f4dfd482e091d2bd74a6f253a751869c8656dd53134"
+      ],
+      "process_count": 3,
+      "process_indices": [
+        1,
+        2,
+        3
+      ],
+      "trace_digests": [
+        "5bc35d4746b5f921adbfe6cac7990045c1b52fce1f9739f650e91d0a4b681137",
+        "5bc35d4746b5f921adbfe6cac7990045c1b52fce1f9739f650e91d0a4b681137",
+        "5bc35d4746b5f921adbfe6cac7990045c1b52fce1f9739f650e91d0a4b681137"
+      ],
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ]
+    },
+    "isolator": {
+      "complete_trace": true,
+      "metric_digests": [
+        "7e9e0343b5622800117965c3bebe9db4e8821966937fe31f29eaa607ea7e0443",
+        "7e9e0343b5622800117965c3bebe9db4e8821966937fe31f29eaa607ea7e0443",
+        "7e9e0343b5622800117965c3bebe9db4e8821966937fe31f29eaa607ea7e0443"
+      ],
+      "process_count": 3,
+      "process_indices": [
+        1,
+        2,
+        3
+      ],
+      "trace_digests": [
+        "87c8c00f447780517aa23cfb46458092afe860ea6caed625984adddd2ba22a35",
+        "87c8c00f447780517aa23cfb46458092afe860ea6caed625984adddd2ba22a35",
+        "87c8c00f447780517aa23cfb46458092afe860ea6caed625984adddd2ba22a35"
+      ],
+      "trace_fields": [
+        "integration_target_time_s",
+        "sample_target_time_s",
+        "integration_application_time_s",
+        "sample_application_time_s",
+        "sample_time_s",
+        "command_pose",
+        "actual_pose",
+        "command_twist",
+        "actual_twist",
+        "command_acceleration",
+        "actual_acceleration",
+        "sample_target_pose",
+        "sample_target_twist",
+        "sample_target_acceleration",
+        "deck_tracking_pose_error",
+        "weld_constraint_residual_raw",
+        "weld_constraint_force_raw",
+        "solver_iterations",
+        "solver_niter",
+        "warning_number_delta",
+        "warning_lastinfo"
+      ]
+    }
+  },
+  "independent_process_count": 3,
+  "payload_sha256": "efe4614507717390ad461f08e4975a989d46a227c02adb78334606ad0224fe57",
+  "protocol_sha256_bytes": "79fced710aede792d9a27baf4f6ab695a6bdfd8fd1df110a4ef7029818a226a4",
+  "protocol_sha256_normalized": "d624e84e75802a1b6f93a957096e528e123bf06c7d69812829d85281ab2ed3f5",
+  "resolved_state_digest": "2ffe7557e4745ac24704d7538654d0eb582d5b37fcd9b832d88fea24d374f0f0",
+  "same_process_reset_used": false,
+  "schema_id": "shakebench.phase06r7.v8.physics_selection.replay_determinism",
+  "schema_version": 8,
+  "status": "PASS"
+}

@@ -1,0 +1,112 @@
+{
+  "excluded": [
+    {
+      "candidate_id": "n6_slow_overdamped",
+      "diagnostic_errors": [],
+      "metrics": {
+        "compiled_errors": [],
+        "convergence_max_relative_force_error": 0.0038943144420502396,
+        "finger": {
+          "maximum_normal_force_N": 1.1011990854641107,
+          "maximum_penetration_m": 9.497389483799029e-06,
+          "minimum_normal_force_N": 0.5737164810089554,
+          "observed_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ],
+          "required_named_pairs": [
+            [
+              "can_g0",
+              "gripper0_right_finger1_pad_collision"
+            ],
+            [
+              "can_g0",
+              "gripper0_right_finger2_pad_collision"
+            ]
+          ]
+        },
+        "finger_errors": [],
+        "incline": {
+          "angle_count": 11,
+          "bracket_width_rad": 0.003125,
+          "declared_resolution_rad": 0.01,
+          "lower_stable_angle_rad": 0.003125,
+          "passed": true,
+          "slip_displacement_threshold_m": 0.0005,
+          "upper_sliding_angle_rad": 0.00625
+        },
+        "incline_errors": [],
+        "level": {
+          "maximum_horizontal_displacement_m": 4.141162236931879e-08,
+          "maximum_horizontal_speed_m_s": 5.523211414300157e-07,
+          "passed": true,
+          "terminal_contact_count": 4,
+          "terminal_normal_force_N": 1.5688141775390245,
+          "warning_count": 0
+        },
+        "level_errors": [],
+        "normal": {
+          "duration_s": 0.4999999999999776,
+          "first_impact_time_s": 0.14620000000000213,
+          "maximum_penetration_m": 0.0005897390541316286,
+          "normal_energy_retained_fraction_max": 0.5398741280975601,
+          "peak_downward_vertical_speed_m_s": 1.4322600000000112,
+          "peak_rebound_vertical_speed_m_s": 0.02373974184030556,
+          "release_time_s": 0.0,
+          "tail_window_max_angular_velocity_rad_s": 2.478178833064532e-05,
+          "tail_window_max_linear_velocity_m_s": 0.005271298118158665,
+          "tail_window_rms_angular_velocity_rad_s": 2.162637589300754e-05,
+          "tail_window_rms_linear_velocity_m_s": 0.004616066798857185,
+          "tail_window_s": 0.05,
+          "terminal_angular_velocity_rad_s": 1.738126864767674e-05,
+          "terminal_contact_count": 4,
+          "terminal_linear_velocity_m_s": 0.004787896038653314,
+          "terminal_named_table_support": true,
+          "terminal_normal_force_N": 1.5596588722391125,
+          "terminal_vertical_velocity_m_s": 0.004787895940061658,
+          "trace_dt_s": 0.0002,
+          "trace_sample_count": 2501,
+          "warning_count": 0
+        },
+        "normal_errors": []
+      },
+      "reason": "contact_hard_gate_failed",
+      "recomputed_gates": {
+        "compiled_profile": true,
+        "finger_force_maximum": true,
+        "finger_force_minimum": true,
+        "finger_penetration": true,
+        "finger_trace": true,
+        "incline_bracket": true,
+        "level_control": true,
+        "normal_terminal_support": true,
+        "normal_trace": true,
+        "penetration": false,
+        "recovery_angular_velocity": true,
+        "recovery_velocity": true,
+        "slip": true,
+        "static_support": true,
+        "timestep_convergence": true,
+        "warnings": true
+      },
+      "stage": "contact"
+    }
+  ],
+  "payload_sha256": "566d6c402967f348db8a86999da575072048b44507f7a4b9178105c5c51a7453",
+  "physics_only": true,
+  "protocol_sha256_bytes": "79fced710aede792d9a27baf4f6ab695a6bdfd8fd1df110a4ef7029818a226a4",
+  "schema_id": "shakebench.phase06r7.v8.physics_selection.excluded",
+  "schema_version": 8,
+  "selected_candidate_ids": {
+    "contact": null,
+    "driver": "dt_nominal",
+    "isolator": "low_frequency_damped"
+  },
+  "status": "PASS"
+}

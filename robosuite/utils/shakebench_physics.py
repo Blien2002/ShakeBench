@@ -40,12 +40,14 @@ SELECTION_PROTOCOL_V4_FILENAME = "shakebench_selection_protocol_v4.yaml"
 SELECTION_PROTOCOL_V5_FILENAME = "shakebench_selection_protocol_v5.yaml"
 SELECTION_PROTOCOL_V6_FILENAME = "shakebench_selection_protocol_v6.yaml"
 SELECTION_PROTOCOL_V7_FILENAME = "shakebench_selection_protocol_v7.yaml"
+SELECTION_PROTOCOL_V8_FILENAME = "shakebench_selection_protocol_v8.yaml"
 PHASE06R_STATUS_FILENAME = "shakebench_phase_06r_status.json"
 PHASE06R2_STATUS_FILENAME = "shakebench_phase_06r2_status.json"
 PHASE06R3_STATUS_FILENAME = "shakebench_phase_06r3_v4_status.json"
 PHASE06R4_STATUS_FILENAME = "shakebench_phase_06r4_v5_status.json"
 PHASE06R5_STATUS_FILENAME = "shakebench_phase_06r5_v6_status.json"
 PHASE06R6_STATUS_FILENAME = "shakebench_phase_06r6_v7_status.json"
+PHASE06R7_STATUS_FILENAME = "shakebench_phase_06r7_v8_status.json"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v1"
 
@@ -580,13 +582,18 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             raise PhysicsProfileIntegrityError(
                 "scoreable official physics must be loaded from the packaged canonical asset"
             )
-    # V1 through V5 are archived.  Once a V7 status exists it is the active
-    # publication authority; before V7 registration V6 remains the active
-    # fail-closed gate.  A blocked V7 status must not fall back to an older
+    # V1 through V6 are archived.  Once a V8 status exists it is the active
+    # publication authority; before V8 registration V7 remains the active
+    # fail-closed gate.  A blocked V8 status must not fall back to an older
     # profile.
+    v8_status_path = Path(models.assets_root) / PHASE06R7_STATUS_FILENAME
     v7_status_path = Path(models.assets_root) / PHASE06R6_STATUS_FILENAME
     v6_status_path = Path(models.assets_root) / PHASE06R5_STATUS_FILENAME
-    if v7_status_path.is_file():
+    if v8_status_path.is_file():
+        status_path = v8_status_path
+        active_phase = "Phase 06R7 V8"
+        active_protocol_filename = SELECTION_PROTOCOL_V8_FILENAME
+    elif v7_status_path.is_file():
         status_path = v7_status_path
         active_phase = "Phase 06R6 V7"
         active_protocol_filename = SELECTION_PROTOCOL_V7_FILENAME
@@ -755,11 +762,13 @@ __all__ = [
     "OFFICIAL_PHYSICS_PROFILE_ID",
     "PHASE06R5_STATUS_FILENAME",
     "PHASE06R6_STATUS_FILENAME",
+    "PHASE06R7_STATUS_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",
     "SELECTION_PROTOCOL_V6_FILENAME",
     "SELECTION_PROTOCOL_V7_FILENAME",
+    "SELECTION_PROTOCOL_V8_FILENAME",
     "PhysicsProfile",
     "PhysicsProfileError",
     "PhysicsProfileIntegrityError",
