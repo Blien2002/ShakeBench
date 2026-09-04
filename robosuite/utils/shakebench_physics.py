@@ -379,7 +379,25 @@ class PhysicsProfile:
         """Return explicit MuJoCo pair attributes for one contact interface."""
 
         sliding = _number("sliding_mu", sliding_mu, nonnegative=True)
-        friction = (sliding, self.contact_torsional_mu, self.contact_rolling_mu, self.contact_rolling_mu, self.contact_rolling_mu)
+        if self.contact.get("friction_encoding") == "isotropic_pair_5d":
+            friction = (
+                sliding,
+                sliding,
+                self.contact_torsional_mu,
+                self.contact_rolling_mu,
+                self.contact_rolling_mu,
+            )
+        else:
+            # Historical V1--V8 profiles retain their byte-for-byte compiled
+            # encoding. Phase 06F's v2 profile opts into the explicit 5-D
+            # isotropic pair representation above.
+            friction = (
+                sliding,
+                self.contact_torsional_mu,
+                self.contact_rolling_mu,
+                self.contact_rolling_mu,
+                self.contact_rolling_mu,
+            )
         return {
             "friction": " ".join(format(value, ".17g") for value in friction),
             "condim": str(self.contact_condim),
