@@ -1,0 +1,238 @@
+{
+  "adapter_contract": {
+    "adapter_contract_digest": "5358275933dbf515e987cb7225b24cbd5dfafab0c3d3990d342678cc1bfb954e",
+    "backend": "NoPhysicsBackend",
+    "candidate_ids": [
+      "c3_nominal",
+      "n6_critical_negative_control",
+      "n6_overdamped_2",
+      "n6_overdamped_4"
+    ],
+    "mujoco_calls": 0,
+    "plans": [
+      {
+        "candidate_id": "c3_nominal",
+        "stages": [
+          "compiled_pairs",
+          "open_settle",
+          "target_settle",
+          "level_force",
+          "single_axis_slip",
+          "finger_envelope",
+          "three_dt"
+        ]
+      },
+      {
+        "candidate_id": "n6_critical_negative_control",
+        "stages": [
+          "compiled_pairs",
+          "open_settle",
+          "target_settle",
+          "level_force",
+          "single_axis_slip",
+          "finger_envelope",
+          "three_dt"
+        ]
+      },
+      {
+        "candidate_id": "n6_overdamped_2",
+        "stages": [
+          "compiled_pairs",
+          "open_settle",
+          "target_settle",
+          "level_force",
+          "single_axis_slip",
+          "finger_envelope",
+          "three_dt"
+        ]
+      },
+      {
+        "candidate_id": "n6_overdamped_4",
+        "stages": [
+          "compiled_pairs",
+          "open_settle",
+          "target_settle",
+          "level_force",
+          "single_axis_slip",
+          "finger_envelope",
+          "three_dt"
+        ]
+      }
+    ],
+    "protocol_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
+  },
+  "commands": {
+    "adapter_contract": {
+      "exit_code": 0
+    },
+    "dry_run_all_winners": {
+      "exit_code": 0
+    },
+    "validate": {
+      "exit_code": 0
+    }
+  },
+  "dry_run": {
+    "branches": [
+      {
+        "all_rows_bound": true,
+        "manifest_sha256": "f9ab6c9a54e9c142ce07dcf76cd67fbd519f107474cc64fd783b0fb2ca4c0f65",
+        "selection_artifact_sha256": "08bad734ae504e99441497d5685ae3e9d3003dd37e2a58d6a0bc31fbd6cc4b45",
+        "state_count": 14,
+        "state_digest": "97f4e0c3ad50881dd7dc334a3077623903a73293dff9a349278d1a8a53a8cea4",
+        "winner": "c3_nominal"
+      },
+      {
+        "all_rows_bound": true,
+        "manifest_sha256": "fe18de7b420f536c0d3eeddf9934c6cda37f5a5b343e40fca115314800856bbc",
+        "selection_artifact_sha256": "3fb31e22c928cefeb7e4d7f29fbe22dcf7272da14919658b1ae5534949d890b1",
+        "state_count": 14,
+        "state_digest": "7e344f8028c03709146936dcbdc218d65b698a413b3e39948579e508ba0adaa8",
+        "winner": "n6_critical_negative_control"
+      },
+      {
+        "all_rows_bound": true,
+        "manifest_sha256": "5245cf6662908faa39a779e23c0b5a5d605aed83e02d0ba9bc7d477c37a2c369",
+        "selection_artifact_sha256": "0d7721e29c7dc8ffe36cd97e5522fecd0e8fc54727ba0d8292e2699a3381f6f9",
+        "state_count": 14,
+        "state_digest": "625b51eeece796fd458844140785e1b866526ffdd6698ae3eeb3b81301d8523f",
+        "winner": "n6_overdamped_2"
+      },
+      {
+        "all_rows_bound": true,
+        "manifest_sha256": "790400085dc7d1695364e8660e7d46e915f6f80382c8a2b1311e325e82e7bdf2",
+        "selection_artifact_sha256": "a083982e7aad2c43be659b957d542fa2cc64f43dc87b519b40f96cdbae4a065e",
+        "state_count": 14,
+        "state_digest": "90d02fa743ac38eda1989e7cf7cbbff61d209abee2e110d1b09fcc1bcee211a9",
+        "winner": "n6_overdamped_4"
+      }
+    ],
+    "candidate_count": 4,
+    "mujoco_calls": 0,
+    "protocol_sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0",
+    "source_authentication": {
+      "authenticated": [
+        {
+          "kind": "inherited_protocol",
+          "path": "shakebench_selection_protocol_v6.yaml",
+          "sha256": "835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a"
+        },
+        {
+          "kind": "inherited_selected",
+          "path": "shakebench_phase_06r5_v6_selected_candidates.json",
+          "sha256": "0800feb4347a6f35bdd5babd0c02ee03d826280196a059d610349188a92da1a5"
+        },
+        {
+          "kind": "inherited_status",
+          "path": "shakebench_phase_06r5_v6_status.json",
+          "sha256": "f885ab9456e7a2780e8eb0a10ce52fc528853e66367a3884a0cb1740122e07f7"
+        },
+        {
+          "kind": "inherited_feasibility",
+          "path": "shakebench_phase_06r5_v6_feasibility.json",
+          "sha256": "41c9930474443d56798cfbc4b77675faf49a3e0df503286c69d011600a8ac38a"
+        },
+        {
+          "candidate_id": "c3_nominal",
+          "kind": "candidate_source",
+          "path": "shakebench_phase_06r5_v6_raw_contact_c3_nominal.json",
+          "sha256": "779e85dd1b79b89597761bd184b92b9355257aab5efd4716ad11e3329ce238f2"
+        },
+        {
+          "candidate_id": "n6_critical_negative_control",
+          "kind": "candidate_source",
+          "path": "shakebench_phase_06r7_v8_raw_contact_n6_critical_negative_control.json",
+          "sha256": "5326d92241e1fec0d1c89dbcea78f88f6ddece70e4ca9f152a764225d7d6cc2a"
+        },
+        {
+          "candidate_id": "n6_overdamped_2",
+          "kind": "candidate_source",
+          "path": "shakebench_phase_06r7_v8_raw_contact_n6_overdamped_2.json",
+          "sha256": "f0c33b465425738f222dc0774970a9c03d77019b7c54ba4c14435330d637b9cd"
+        },
+        {
+          "candidate_id": "n6_overdamped_4",
+          "kind": "candidate_source",
+          "path": "shakebench_phase_06r7_v8_raw_contact_n6_overdamped_4.json",
+          "sha256": "20f85177653d190344d9bc30fa3a0c3ee94ae0032e9e5339c8b7f0695d837deb"
+        }
+      ],
+      "candidate_tuple_count": 4
+    }
+  },
+  "mujoco_calls": 0,
+  "payload_sha256": "462aff141414f690df9e29b23ab3574c60fc5242635bd3a7c5cc4df695e04409",
+  "protocol": {
+    "path": "shakebench_phase_06f_protocol.yaml",
+    "sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
+  },
+  "schema_id": "shakebench.phase06f.feasibility",
+  "schema_version": 1,
+  "source_authentication": {
+    "authenticated": [
+      {
+        "kind": "inherited_protocol",
+        "path": "shakebench_selection_protocol_v6.yaml",
+        "sha256": "835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a"
+      },
+      {
+        "kind": "inherited_selected",
+        "path": "shakebench_phase_06r5_v6_selected_candidates.json",
+        "sha256": "0800feb4347a6f35bdd5babd0c02ee03d826280196a059d610349188a92da1a5"
+      },
+      {
+        "kind": "inherited_status",
+        "path": "shakebench_phase_06r5_v6_status.json",
+        "sha256": "f885ab9456e7a2780e8eb0a10ce52fc528853e66367a3884a0cb1740122e07f7"
+      },
+      {
+        "kind": "inherited_feasibility",
+        "path": "shakebench_phase_06r5_v6_feasibility.json",
+        "sha256": "41c9930474443d56798cfbc4b77675faf49a3e0df503286c69d011600a8ac38a"
+      },
+      {
+        "candidate_id": "c3_nominal",
+        "kind": "candidate_source",
+        "path": "shakebench_phase_06r5_v6_raw_contact_c3_nominal.json",
+        "sha256": "779e85dd1b79b89597761bd184b92b9355257aab5efd4716ad11e3329ce238f2"
+      },
+      {
+        "candidate_id": "n6_critical_negative_control",
+        "kind": "candidate_source",
+        "path": "shakebench_phase_06r7_v8_raw_contact_n6_critical_negative_control.json",
+        "sha256": "5326d92241e1fec0d1c89dbcea78f88f6ddece70e4ca9f152a764225d7d6cc2a"
+      },
+      {
+        "candidate_id": "n6_overdamped_2",
+        "kind": "candidate_source",
+        "path": "shakebench_phase_06r7_v8_raw_contact_n6_overdamped_2.json",
+        "sha256": "f0c33b465425738f222dc0774970a9c03d77019b7c54ba4c14435330d637b9cd"
+      },
+      {
+        "candidate_id": "n6_overdamped_4",
+        "kind": "candidate_source",
+        "path": "shakebench_phase_06r7_v8_raw_contact_n6_overdamped_4.json",
+        "sha256": "20f85177653d190344d9bc30fa3a0c3ee94ae0032e9e5339c8b7f0695d837deb"
+      }
+    ],
+    "candidate_tuple_count": 4
+  },
+  "status": "PASS",
+  "validation": {
+    "candidate_ids": [
+      "c3_nominal",
+      "n6_critical_negative_control",
+      "n6_overdamped_2",
+      "n6_overdamped_4"
+    ],
+    "dependent_template_count": 14,
+    "groups": [
+      "contact",
+      "driver",
+      "gamma_zero_parity",
+      "gamma_zero_parity_replay",
+      "isolator",
+      "selected_diagnostics"
+    ]
+  }
+}

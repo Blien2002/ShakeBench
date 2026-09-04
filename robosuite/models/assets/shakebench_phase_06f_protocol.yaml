@@ -1,0 +1,243 @@
+schema_id: shakebench.phase06f.physics_selection_protocol
+schema_version: 1
+phase: 06F
+status: pre_registered
+immutable_after_registration: true
+selection_authority: physics_probes_only
+protocol_filename: shakebench_phase_06f_protocol.yaml
+registration_commit: git_commit_containing_protocol_and_feasibility
+
+scope:
+  forbidden_selection_inputs: [task_success, reward, success_evaluator, controller_outcome, state_tier_ranking, policy_observation, Gamma_star, drop_stress_score, incline_result]
+  allowed_selection_inputs: [verified_driver_evidence, verified_isolator_evidence, raw_mujoco_contact_evidence]
+
+inherited_evidence:
+  selected_driver: dt_nominal
+  selected_isolator: low_frequency_damped
+  contact_selection_inherited: false
+  protocol: {path: shakebench_selection_protocol_v6.yaml, sha256: 835cabd4b47650ebd7362f127f35dcd0729457963e399bc748947620c972322a}
+  selected: {path: shakebench_phase_06r5_v6_selected_candidates.json, sha256: 0800feb4347a6f35bdd5babd0c02ee03d826280196a059d610349188a92da1a5}
+  status: {path: shakebench_phase_06r5_v6_status.json, sha256: f885ab9456e7a2780e8eb0a10ce52fc528853e66367a3884a0cb1740122e07f7}
+  feasibility: {path: shakebench_phase_06r5_v6_feasibility.json, sha256: 41c9930474443d56798cfbc4b77675faf49a3e0df503286c69d011600a8ac38a}
+
+contact_candidates:
+  - candidate_id: c3_nominal
+    source: {path: shakebench_phase_06r5_v6_raw_contact_c3_nominal.json, sha256: 779e85dd1b79b89597761bd184b92b9355257aab5efd4716ad11e3329ce238f2}
+    condim: 3
+    sliding_mu: {table_object: 0.30, finger_object: 1.00}
+    torsional_mu: 0.005
+    rolling_mu: 0.0001
+    margin_m: 0.0
+    gap_m: 0.0
+    solref: [0.0004, 1.0]
+    solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    iterations: 100
+    interfaces: [can_open_worktable, can_target_bottom, can_target_walls, can_panda_finger_pads]
+    pair_scope: explicit_can_pairs
+    output: shakebench_phase_06f_raw_contact_c3_nominal.json
+  - candidate_id: n6_critical_negative_control
+    source: {path: shakebench_phase_06r7_v8_raw_contact_n6_critical_negative_control.json, sha256: 5326d92241e1fec0d1c89dbcea78f88f6ddece70e4ca9f152a764225d7d6cc2a}
+    condim: 6
+    sliding_mu: {table_object: 0.30, finger_object: 1.00}
+    torsional_mu: 0.005
+    rolling_mu: 0.001
+    margin_m: 0.0
+    gap_m: 0.0
+    solref: [0.0004, 1.0]
+    solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    iterations: 100
+    interfaces: [can_open_worktable, can_target_bottom, can_target_walls, can_panda_finger_pads]
+    pair_scope: explicit_can_pairs
+    output: shakebench_phase_06f_raw_contact_n6_critical_negative_control.json
+  - candidate_id: n6_overdamped_2
+    source: {path: shakebench_phase_06r7_v8_raw_contact_n6_overdamped_2.json, sha256: f0c33b465425738f222dc0774970a9c03d77019b7c54ba4c14435330d637b9cd}
+    condim: 6
+    sliding_mu: {table_object: 0.30, finger_object: 1.00}
+    torsional_mu: 0.005
+    rolling_mu: 0.001
+    margin_m: 0.0
+    gap_m: 0.0
+    solref: [0.0004, 2.0]
+    solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    iterations: 100
+    interfaces: [can_open_worktable, can_target_bottom, can_target_walls, can_panda_finger_pads]
+    pair_scope: explicit_can_pairs
+    output: shakebench_phase_06f_raw_contact_n6_overdamped_2.json
+  - candidate_id: n6_overdamped_4
+    source: {path: shakebench_phase_06r7_v8_raw_contact_n6_overdamped_4.json, sha256: 20f85177653d190344d9bc30fa3a0c3ee94ae0032e9e5339c8b7f0695d837deb}
+    condim: 6
+    sliding_mu: {table_object: 0.30, finger_object: 1.00}
+    torsional_mu: 0.005
+    rolling_mu: 0.001
+    margin_m: 0.0
+    gap_m: 0.0
+    solref: [0.0004, 4.0]
+    solimp: [0.9, 0.95, 0.001, 0.5, 2.0]
+    iterations: 100
+    interfaces: [can_open_worktable, can_target_bottom, can_target_walls, can_panda_finger_pads]
+    pair_scope: explicit_can_pairs
+    output: shakebench_phase_06f_raw_contact_n6_overdamped_4.json
+
+selection:
+  primary: eligibility
+  secondary: minimal_intervention_priority
+  minimal_intervention_priority: [c3_nominal, n6_critical_negative_control, n6_overdamped_2, n6_overdamped_4]
+  binding_rule: contact_candidate_id = selection.contact_winner
+  drop_stress_score_used: false
+
+contact:
+  task_native_states:
+    open_worktable: {xy_m: [-0.10, -0.13], support_top_z_m: 0.80}
+    target_bottom: {xy_m: [-0.10, 0.17], support_top_z_m: 0.812}
+  gamma: 0.0
+  action: zero
+  settle_duration_s: 0.50
+  final_window_s: 0.10
+  slip_initial_speed_m_s: 0.05
+  slip_duration_s: 0.50
+  finger_load_duration_s: 0.10
+  timestep_candidates_s: [0.0001, 0.000125, 0.0002]
+  force_threshold:
+    fixture: raw_mujoco_task_geometry_level_horizontal_body_com_force
+    reference_mu: 0.30
+    mass_kg: 0.349
+    gravity_m_s2: 9.81
+    analytic_reference: F_mu = reference_mu * mass_kg * gravity_m_s2
+    force_factors: [0.0, 0.5, 0.8, 1.0, 1.2, 1.5]
+    plateau_duration_s: 0.25
+    reset_to_identical_settled_state_each_plateau: true
+    static_displacement_max_m: 0.0005
+    monotonic_tolerance_m: 1.0e-7
+    bracket_relative_tolerance: 0.50
+  hard_gates:
+    named_support_final_window_required: true
+    linear_speed_max_m_s: 0.02
+    angular_speed_max_rad_s: 0.20
+    maximum_illegal_penetration_m: 0.0005
+    finite_contact_forces_required: true
+    warning_count_max: 0
+    transverse_drift_max_m: 0.0005
+    slip_final_speed_max_m_s: 0.05
+    finger_force_min_N: 0.001
+    finger_force_max_N: 40.0
+    finger_penetration_max_m: 0.0005
+    timestep_trace_relative_error_max: 0.10
+  public_diagnostics_not_gates: [drop_15cm_recovery, inclined_plane_threshold_bracket, placement, free_table_slip, in_hand_slip, contact_loss]
+
+parity:
+  gamma: 0.0
+  zero_action: true
+  duration_s: 1.0
+  action_dimension: 7
+  control_frequency_hz: 20.0
+  worktable_mass_kg: 32.0
+  can_mass_kg: 0.349
+  target_inner_xy_m: [0.164, 0.144]
+  target_outer_xy_m: [0.18, 0.16]
+  dynamic_residual_report_only: true
+
+dependent_manifest_template:
+  - group: gamma_zero_parity
+    contact_binding: selection.contact_winner
+    state_id_template: parity.gamma_zero.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_parity_gamma_zero_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: driver
+    process_index: 1
+    contact_binding: selection.contact_winner
+    state_id_template: replay.driver.process_1.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_driver_process_1_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: driver
+    process_index: 2
+    contact_binding: selection.contact_winner
+    state_id_template: replay.driver.process_2.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_driver_process_2_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: driver
+    process_index: 3
+    contact_binding: selection.contact_winner
+    state_id_template: replay.driver.process_3.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_driver_process_3_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: isolator
+    process_index: 1
+    contact_binding: selection.contact_winner
+    state_id_template: replay.isolator.process_1.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_isolator_process_1_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: isolator
+    process_index: 2
+    contact_binding: selection.contact_winner
+    state_id_template: replay.isolator.process_2.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_isolator_process_2_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: isolator
+    process_index: 3
+    contact_binding: selection.contact_winner
+    state_id_template: replay.isolator.process_3.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_isolator_process_3_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: contact
+    process_index: 1
+    contact_binding: selection.contact_winner
+    state_id_template: replay.contact.process_1.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_contact_process_1_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: contact
+    process_index: 2
+    contact_binding: selection.contact_winner
+    state_id_template: replay.contact.process_2.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_contact_process_2_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: contact
+    process_index: 3
+    contact_binding: selection.contact_winner
+    state_id_template: replay.contact.process_3.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_contact_process_3_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: gamma_zero_parity_replay
+    process_index: 1
+    contact_binding: selection.contact_winner
+    state_id_template: replay.gamma_zero_parity.process_1.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_gamma_zero_parity_process_1_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: gamma_zero_parity_replay
+    process_index: 2
+    contact_binding: selection.contact_winner
+    state_id_template: replay.gamma_zero_parity.process_2.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_gamma_zero_parity_process_2_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: gamma_zero_parity_replay
+    process_index: 3
+    contact_binding: selection.contact_winner
+    state_id_template: replay.gamma_zero_parity.process_3.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_raw_replay_gamma_zero_parity_process_3_{contact_candidate_id}_{selection_artifact_sha256}.json
+  - group: selected_diagnostics
+    contact_binding: selection.contact_winner
+    state_id_template: diagnostics.drop_incline.{contact_candidate_id}.{selection_artifact_sha256}
+    output_template: shakebench_phase_06f_selected_diagnostics_{contact_candidate_id}_{selection_artifact_sha256}.json
+
+replay:
+  process_count: 3
+  groups: [driver, isolator, contact, gamma_zero_parity_replay]
+  compare: complete_trace_digest_and_metric_digest
+  same_process_reset_allowed: false
+
+failure_taxonomy: [invalid_protocol_configuration, physics_gate_failure, infrastructure_failure, evidence_integrity_failure]
+retry_policy: {infrastructure_crash: retry_same_state_config_once, repeated_failure: blocked, replacement_candidate_or_seed: forbidden}
+
+official_profile:
+  profile_id: shakebench.official.physics.v2
+  output: shakebench_official_physics.yaml
+  physics_template:
+    excitation: {profile_id: shakebench.authored_v0_candidate, authored_spectrum_version: candidate-2026-08-30, f_max_hz: 8.87, gamma_domain: Gamma_commanded}
+    timestep: {physics_timestep_s: 0.0002, integrator: Euler, solver: Newton, iterations: 100, tolerance: 1.0e-12, candidate_id: dt_nominal}
+    scheduler: {control_freq_hz: 20.0, control_steps: 250, post_integration_refresh: true, command_write_phase: pre_step_left_limit, sample_phase: post_step_right_limit}
+    deck:
+      {driver_body_name: deck_driver, body_name: deck, freejoint_name: deck_freejoint, weld_name: deck_weld, driver_site_name: deck_driver_site, site_name: deck_site, mass_kg: 400.0, inertia_kg_m2: [12.12, 14.083333333333334, 26.033333333333332], pos_m: [0.0, 0.0, 0.0], quat_wxyz: [1.0, 0.0, 0.0, 0.0], eq_solref: [0.0004, 0.5], eq_solimp: [0.9, 0.95, 0.001, 0.5, 2.0], site_size_m: 0.01, inertial_source: explicit_dynamic_deck_root}
+    isolator:
+      {axis_order: [tx, ty, tz, rx, ry, rz], candidate_id: low_frequency_damped, fn_hz: [4.0, 4.0, 4.0, 3.0, 3.0, 2.0], zeta: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2], mass_kg: 32.0, inertia_kg_m2: [0.9696, 1.1363, 2.0867], gravity_m_s2: 9.81, travel_limits_m: [0.025, 0.025, 0.025], angle_limits_rad: [0.08726646259971647, 0.08726646259971647, 0.08726646259971647], k: [20212.949813431005, 20212.949813431005, 20212.949813431005, 344.5044633826647, 403.7339333144822, 329.5184560600506], c: [321.6990877275948, 321.6990877275948, 321.6990877275948, 7.310611768609593, 8.567500157457797, 10.488898224393315], springref: [0.0, 0.0, 0.015530637680177088, 0.0, 0.0, 0.0], preload: nominal_table_only}
+    safety: {maximum_illegal_penetration_m: 0.0005, minimum_travel_margin_m: 0.005, minimum_angle_margin_rad: 0.017453292519943295, warning_count_max: 0, unstable_residual: false}
+
+phase07_handoff:
+  schema_id: shakebench.phase06.to_phase07_handoff
+  output: shakebench_phase_06_to_07_handoff.json
+  final_status: shakebench_phase_06_final_status.json
+  package_hashes: {}
+
+outputs:
+  feasibility: shakebench_phase_06f_feasibility.json
+  contact_selection: shakebench_phase_06f_contact_selection.json
+  dependent_manifest: shakebench_phase_06f_dependent_manifest.json
+  final_status: shakebench_phase_06_final_status.json
+  handoff: shakebench_phase_06_to_07_handoff.json
+  report: docs/phase_06f_final_physics_report.md
