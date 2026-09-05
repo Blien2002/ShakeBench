@@ -1,0 +1,342 @@
+schema_id: shakebench.phase06fr2.semantic_protocol
+schema_version: 1
+phase: 06F-R2
+status: pre_registered
+immutable_after_registration: true
+registration_commit: recorded_in_evidence_commit
+binding:
+  profile_id: shakebench.official.physics.v2
+  profile_sha256: c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c
+  driver_candidate_id: dt_nominal
+  isolator_candidate_id: low_frequency_damped
+  contact_candidate_id: c3_nominal
+  selection_or_physics_ranking: forbidden
+historical_phase06f:
+  protocol_sha256: 54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0
+  selection_sha256: fe3532ac3f03bc7f71f77da3473ef2d4f60b478df77ddf6e41364ec22610aba1
+  profile_sha256: c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c
+historical_phase06fr:
+  protocol_sha256: 80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006
+  handoff_sha256: 08057379f7ffd0282273499df4536fb1bf1d22fb1ac237567ce0f27ef6ea00bd
+trace_schema:
+  id: shakebench.phase06fr.real_environment_trace
+  version: 1
+  expected_samples_by_timestep: {0.0001: 5000, 0.000125: 4000, 0.0002: 2500}
+  required_fields: [time_s, can_pose_worktable, can_twist_worktable, can_pose_target, can_twist_target, worktable_pose_deck, worktable_twist_deck, worktable_acceleration_deck, deck_pose, deck_twist, deck_acceleration, contacts, penetration_m, support_force_N, tangential_impulse_Ns, normal_impulse_Ns, normalized_action, decoded_action, clipped_action, applied_control, warning_number, finite_state]
+convergence:
+  common_grid_hz: 200
+  compare_timestep_s: [0.0001, 0.000125]
+  reference_timestep_s: 0.0002
+  fields: [can_pose_worktable, can_twist_worktable, worktable_pose_deck, worktable_twist_deck, worktable_acceleration_deck, contacts.named_support_contact, penetration_m, normal_impulse_Ns, tangential_impulse_Ns, support_force_N]
+  tolerances: {position_absolute_m: 0.0005, orientation_absolute_rad: 0.01, velocity_absolute_m_s: 0.05, angular_velocity_absolute_rad_s: 0.20, relative_metric_max: 0.10, impulse_absolute_Ns: 0.05, force_rms_absolute_N: 0.50}
+parity:
+  path: shakebench_phase_06fr_raw_parity_gamma_zero.json
+  evaluator_contract_hash: phase04_vibration_success_evaluator
+  action_dimension: 7
+  control_frequency_hz: 20.0
+  profile_sha256: c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c
+replay:
+  process_count: 3
+  groups: [parity, contact]
+  complete_trace_required: true
+  process_indices: [1, 2, 3]
+evidence:
+  - path: shakebench_phase_06f_protocol.yaml
+    file_sha256: 54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0
+    payload_sha256: null
+    schema_id: 
+    schema_version: null
+    identity: 
+  - path: shakebench_phase_06f_feasibility.json
+    file_sha256: 92a75667e345ee9145d94df1748f1f64706e29772c47296c4ba5fa3bc30b7855
+    payload_sha256: 462aff141414f690df9e29b23ab3574c60fc5242635bd3a7c5cc4df695e04409
+    schema_id: shakebench.phase06f.feasibility
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06f_contact_selection.json
+    file_sha256: fe3532ac3f03bc7f71f77da3473ef2d4f60b478df77ddf6e41364ec22610aba1
+    payload_sha256: c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8
+    schema_id: shakebench.phase06f.finalization.contact_selection
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06f_dependent_manifest.json
+    file_sha256: 3a50be6c84fc5d9b4c4efb6dfccc373ba7ed4bbc683dac177772ce437b9da582
+    payload_sha256: ed2342fa70ab36f0015fe032b5cca5ce64e39f509f9378a4d598644153adf94d
+    schema_id: shakebench.phase06f.finalization.dependent_manifest
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06_final_status.json
+    file_sha256: 12de5a4cb5a61ecea1fc2e8e7bf3659d1623891c61d5391b62b38566fcb6b2a9
+    payload_sha256: 480350211db0bb89e34f652f8c6670e1d3e2dda1b49325573069688036e599b8
+    schema_id: shakebench.phase06.final_status
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06_to_07_handoff.json
+    file_sha256: cb91f5badf4e424ab9e2275f80644e9416215cca9edc6cf2e459640588b0082c
+    payload_sha256: e81668f24797b45200e6f7ee80ba020a8f1a19a0eaba7499ee3339b38c253b08
+    schema_id: shakebench.phase06.to_phase07_handoff
+    schema_version: 1
+    identity: 
+  - path: shakebench_official_physics.yaml
+    file_sha256: d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674
+    payload_sha256: null
+    schema_id: 
+    schema_version: null
+    identity: 
+  - path: shakebench_phase_06fr_protocol.yaml
+    file_sha256: 80b62f4af50d4c0f0b0f0037d7d663fc52a8037fef44de19131f89006a336006
+    payload_sha256: null
+    schema_id: 
+    schema_version: null
+    identity: 
+  - path: shakebench_phase_06fr_feasibility.json
+    file_sha256: 8ff72e445145d46cff4f5ed2d259f4a02fe7775b03a9db47d11b6d06f1d1f481
+    payload_sha256: 71415c620e5a4da095a4fac5a3f563a205ceb2e809257cc772aca78c555995dc
+    schema_id: shakebench.phase06fr.feasibility
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_status.json
+    file_sha256: e85b140884911d50924ee691f98dcfa21ccc0c2ed5415c1fb595e250e713f04c
+    payload_sha256: 98e98cddf6c7e7c81ae4c6702a793473dee8a63968d2932fe87b0952bb150594
+    schema_id: shakebench.phase06fr.status
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_handoff.json
+    file_sha256: 08057379f7ffd0282273499df4536fb1bf1d22fb1ac237567ce0f27ef6ea00bd
+    payload_sha256: a5fa1cdec932b32fa92fb0f522fbfef941b0bb1ab9cd10b7920ded98b57dca72
+    schema_id: shakebench.phase06fr.handoff
+    schema_version: 2
+    identity: 
+  - path: shakebench_phase_06fr_convergence.json
+    file_sha256: b26e7a670352aaa9d9c1f3818adde9b31d7235dc163d889cea16be4dd9e8fc84
+    payload_sha256: ff53ea139f768614d1d7c78f39650674fe2fc5e55d56e65d9d3f9ca8e7e89e44
+    schema_id: shakebench.phase06fr.transient_convergence
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_parity_gamma_zero.json
+    file_sha256: e1ef187190a2d504cfcafe1edbd61c12ed131869cbe519c14295d371c9498c65
+    payload_sha256: 145ac82ba6119f518da388d4a8c2ac89d7625a6e6cf86632b2661b62ffee1be9
+    schema_id: shakebench.phase06fr.parity
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_package_evidence.json
+    file_sha256: bd8d4f41ae6d625b6b993bd5932a8f7b6490dad87727264acf0cf6375e4df745
+    payload_sha256: f5e2b30806cdfd79983efbb97ea22f1f2dc5d16d42951746d7d2862b72fc422d
+    schema_id: shakebench.phase06fr.package_evidence
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_open_dt_fine.json
+    file_sha256: 455d45eb80ed43af1cec9f08c0022b04c57f9c283d3578a35db72c20587d46a1
+    payload_sha256: 7e09de39e0b1c04a008a77e476134dd28560d06eb2ea1e03a155cffd887aba46
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_open_dt_medium.json
+    file_sha256: 7b636b8fb23fb51455f9ad144c1dfaa15800897159e18f24e0465fc93109030c
+    payload_sha256: 329e303b31455dc85f0f4fc6e1197868f7322ba474d6bc61a1ed840d7afc526d
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_open_dt_nominal.json
+    file_sha256: c96f0d32f9fcfb1852ad8dbae78ddf0b1cea11de220f79959d7ea8ef1e6dba9d
+    payload_sha256: f4c455ee965affb5d3561c5478762d789a8d23ef1c7a34e1b500a8bb858dd14d
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_target_dt_fine.json
+    file_sha256: 82adfe82ae171822695a6762e76f1856cf0e5f6f8857a0a872a14d7063cb0e4a
+    payload_sha256: 183c8914f4761328f825086e41739f99da8637bd7dbd0710d0fb76c41a1cc4e3
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_target_dt_medium.json
+    file_sha256: 6a06e2741cc841112fcdceb6b97d197d05384846c1b9cd0c94f38c8f055cd73f
+    payload_sha256: ebffe2d4cb6943e7c1065763994c5e1a7a6f916225bafe89f8bdcff4fb626a31
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_real_target_dt_nominal.json
+    file_sha256: ed458fc1f424446eb2948cc67bb5415314c40e9db29a6780c7917198672fc1fa
+    payload_sha256: d6eea7721d134ba9fe1e070506c77ceab52b9f58d1fa12cb63e29e2464b857c3
+    schema_id: shakebench.phase06fr.real_settling
+    schema_version: 1
+    identity: 
+  - path: shakebench_phase_06fr_raw_replay_contact_process_1.json
+    file_sha256: 2ab677becd7419ed62744084a5c606455b5a5a6f3c05b8dce76057e047acfb44
+    payload_sha256: 0b0144dfdc253bbc5c682c7a445defa66ddf74b537bcd5243932ce0a8b2b48b7
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: contact
+  - path: shakebench_phase_06fr_raw_replay_contact_process_2.json
+    file_sha256: cdafda6c2205e6f5730f4acff301219fc2ddf3d8db90967c93858f0c452cd905
+    payload_sha256: e4a1cd558f39e5b7a0f46c4b5364e5374f2ba771273eca43b7475588b9dbe31b
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: contact
+  - path: shakebench_phase_06fr_raw_replay_contact_process_3.json
+    file_sha256: 50f2d4ba8c55c888c6cb9c501dd93c88cbd14009f85c7bc763570f3163e55715
+    payload_sha256: c219b964c1bb2024668b59cf774c1c9dd9404e28d749afc0d6dc56c56da9bdc9
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: contact
+  - path: shakebench_phase_06fr_raw_replay_parity_process_1.json
+    file_sha256: 446591a22d38a94a214f6d33a0c1baee1249d4eef48df1e9240bd1f1ca5bf2d6
+    payload_sha256: 4a79017486021572252478df92f43b507e6c92a29c33c506b81de2ae32c2c34c
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: parity
+  - path: shakebench_phase_06fr_raw_replay_parity_process_2.json
+    file_sha256: 663c142f4d30273812a0160b3b9d5124aa734790a079c64fb2c830fa9fdfdbf4
+    payload_sha256: 6d9a7c8df52e3bf734e80a3234c33153bf7ee0a255c5daae149ebd93f1d16b7c
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: parity
+  - path: shakebench_phase_06fr_raw_replay_parity_process_3.json
+    file_sha256: 6b4ecacffc1c39e51b9be957a0a1aa13172f069f07c1e5928eebf67abba2768c
+    payload_sha256: 8fd3c7e8a17ceca21a2c1a79f1922d96cde61a0c457ca260034f749047df26dc
+    schema_id: shakebench.phase06fr.complete_replay
+    schema_version: 1
+    identity: parity
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_empty.json
+    file_sha256: cf1ad9039ed0ccab0cdba9d1d0f3b0daba360172c4a146b9a304f93034963829
+    payload_sha256: 79e4d3a13cb9ec533cb5910e56adf359a8d379da6b36be0e66f0e7d18b7645fd
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_15.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_panda_reference.json
+    file_sha256: adfff22005b6480f3a9cb37296de96ced7388776cb49693cf7f88c72ab1511d6
+    payload_sha256: 04d98a3fe66d236a97402aa67b2be0d424e121c0bbbb8f74869de9252f27a339
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_15.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_empty.json
+    file_sha256: 2a6709eb012c5c27d790e3da51a6719bd2d26e946fa5cb822f213a6a7c4c1fba
+    payload_sha256: 746efd971c7b6e892d3d848cf02430d0c8aef98e6986563f47a3f0d7a61cb7b5
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_30.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_30_panda_reference.json
+    file_sha256: bedde4e2906befc14f18687c5a6f7be4fff2bc56f3f8e5799a616e52aa4e945e
+    payload_sha256: 639611bfc1c8cbf89d965b10bb15cee13ef90a46b3007e0120cdda8b78c62395
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_30.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_empty.json
+    file_sha256: dee6650cdf2259d20ac3b7affdbae701cb77043743da350f11bc18a142818587
+    payload_sha256: 4fc340fd2cbc7a756cd02ad599c792695777ec0f9eb4c2601c95a57e5ec8519d
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_50.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_50_panda_reference.json
+    file_sha256: 96db7ac04754004092279859b476b519fa122e17277644015b68518f76dd3bd8
+    payload_sha256: 049cf2668b9bb9b3bba526c0b2a55cb78c7da339c1f83626189eae3ed342de07
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_fine.gamma_0_50.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_empty.json
+    file_sha256: ae91c0015dd13241433d943649a22c8e4842e09a01cdecdbf57ce02cef4f5268
+    payload_sha256: 16a7cacd51bfb395fb44431cd683f81c94813c06fcee8a82d82390a29f935290
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_15.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_15_panda_reference.json
+    file_sha256: af8178516760077cac7f0dfeaf49a722350524b1844f64bb5cf695723f37e128
+    payload_sha256: b53fd545d534d5ed6d755a3a05a6c87cb9a2a79790cfcad866eb2ddbea1c8618
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_15.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_empty.json
+    file_sha256: 697286ac3ddf996601f3c34b6f9505ae6c41f403c9bedc2935c4fe563818d716
+    payload_sha256: a258715ad059c643ff2e131a776573f470feeb670a3caf85a2cd33c616d0f656
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_30.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_30_panda_reference.json
+    file_sha256: e3c804396174f86766d352074e3f951713203a7bedb244381434b18346ac348b
+    payload_sha256: 504ae4ad618a82b1c29c5237b8eaac33cfafb8fba8bcfa0304abf462f5bbbfd9
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_30.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_empty.json
+    file_sha256: c204e3890e76002f77d1ae411baddd13a4563681f4f1a6284493c19318120500
+    payload_sha256: 955fe00e9762fe6b95c8173e522ac71e80db79a5e3bed0a4c6d36a56b6b51f2f
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_50.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_medium_gamma_0_50_panda_reference.json
+    file_sha256: 128f53440399888225ead27996592e0092232ad49e79ea26bf26b9b8fcc6d1aa
+    payload_sha256: 7ef8f24fd29c38468faca7e7e224fa6e2ac00a01069a81bda4d626652b4e3a11
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_medium.gamma_0_50.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_empty.json
+    file_sha256: 6a6fb434a1b4d6bc7cae6c836571383f99496c730b96bf8b85831d757f795d27
+    payload_sha256: 397501e32278ef6ae6df1f49489f4b458a04181ad70153277bb8b2d3601ecc4f
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_15.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_15_panda_reference.json
+    file_sha256: bc02f87fc97539ee11860b72155fff5929f1b89bf1dbd5e4012a44701385afe4
+    payload_sha256: bf3a91be73441fa1022ab6ac14788e5725632dcc240dec924c24420d04a710d0
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_15.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json
+    file_sha256: 52b33d84a08ee47d013127d35ef0d976d414f06ba7a2fea476aba4dc74222249
+    payload_sha256: 89df90d436b9786957011dcb3b0abfbbc9a543fa9a85c1f69599432b7304ccf3
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_30.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_panda_reference.json
+    file_sha256: 19b9d608560dd6587e2007aac65f50b037cac63cb1a4db740a4e8656513e352b
+    payload_sha256: 30f63100aae47851c6e04582ed600faa5e8f59bc649bc0eb1680544eeb34e4d9
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_30.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_empty.json
+    file_sha256: 264eaea7292b9e25eac6678f818e92fe99a939edba49e99bf00f4b088012f6db
+    payload_sha256: 277c9c9de5df04684f420dfca0bf492cfa52812eb7327341ab7cf4a78c5fe1a1
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_50.empty
+  - path: shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_50_panda_reference.json
+    file_sha256: 9725e04358f56d6e9c2a6fcd3cf443d5b994b50c9942e6ab0754dfe5f6bb24c9
+    payload_sha256: 5c405a4298f22cdd6945f63b154b75e80a374d486b0921730fd381810d4aaede
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: driver.dt_nominal.gamma_0_50.panda_reference
+  - path: shakebench_phase_06r5_v6_raw_isolator_balanced_nominal.json
+    file_sha256: fbdb591af0c47f22be5b6f3fadd828a7c250f57fcd1b8e3dabc07aa3d213c624
+    payload_sha256: 75b477d6ac45039e73b7ec1bcc5feeb9e2b0ca8c5e8a6b6b17cee967be1470f4
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: isolator.balanced_nominal.all_regions
+  - path: shakebench_phase_06r5_v6_raw_isolator_high_frequency_light_damping.json
+    file_sha256: d77c5f40b8e48a3ea1bed50e3cd802279992f283ac7af3459b030be22e584266
+    payload_sha256: 3c63e2781a79788093a3b850ca7fc3923327ba1476d4774d05fb6e377cc95a8e
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: isolator.high_frequency_light_damping.all_regions
+  - path: shakebench_phase_06r5_v6_raw_isolator_low_frequency_damped.json
+    file_sha256: df4b6e246e95a6048a4de086f23dc3bc5f5b414342b18dd4a765d041dfcadd6d
+    payload_sha256: cfaede3de09810b4dcbddfd646aaceb47f581af3fa3992e57324e70569c45c2e
+    schema_id: shakebench.phase06r5.v6.physics_selection.raw
+    schema_version: 6
+    identity: isolator.low_frequency_damped.all_regions
+
+  - path: shakebench_phase_06fr2_convergence.json
+    file_sha256: deferred_until_semantic_execution
+    payload_sha256: deferred_until_semantic_execution
+    schema_id: shakebench.phase06fr2.semantic_convergence
+    schema_version: 1
+    identity: semantic_transient_convergence
+    deferred: true
+coverage:
+  required_real_states: 6
+  required_replay_states: 6
+  required_inherited_raw_states: 21
+semantic_outputs:
+  convergence: shakebench_phase_06fr2_convergence.json
+  status: shakebench_phase_06fr2_status.json
+  handoff: shakebench_phase_06fr2_handoff.json
+  anchor: shakebench_phase_06fr2_anchor.json

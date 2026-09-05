@@ -1,0 +1,9 @@
+{
+  "schema_id": "shakebench.phase06fr2.feasibility",
+  "schema_version": 1,
+  "status": "PASS",
+  "protocol_sha256": "80cddbc8cf2ca2984336fb54ec197a427aedf597e80735300a11e4f73318a2fc",
+  "mujoco_calls": 0,
+  "dry_run": {"path_binding": true, "trace_decoder": true, "coverage": true, "semantic_verifier": true},
+  "payload_sha256": "5ef1ab3fdbf7d9286df430b217bd09555f45f3cbd6d891815b56fb4f6f64ea8b"
+}
