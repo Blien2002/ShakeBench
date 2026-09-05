@@ -13,7 +13,7 @@
 在 import controller、创建环境或读取任何 Phase 07 state 之前，只运行：
 
 ```bash
-python -m robosuite.scripts.shakebench_handoff_remediation --verify
+python -m robosuite.scripts.shakebench_handoff_semantic_remediation --verify
 ```
 
 这个单一 verifier 必须验证

@@ -54,6 +54,9 @@ PHASE06F_PROTOCOL_FILENAME = "shakebench_phase_06f_protocol.yaml"
 PHASE06FR_STATUS_FILENAME = "shakebench_phase_06fr_status.json"
 PHASE06FR_HANDOFF_FILENAME = "shakebench_phase_06fr_handoff.json"
 PHASE06FR_PROTOCOL_FILENAME = "shakebench_phase_06fr_protocol.yaml"
+PHASE06FR2_PROTOCOL_FILENAME = "shakebench_phase_06fr2_protocol.yaml"
+PHASE06FR2_STATUS_FILENAME = "shakebench_phase_06fr2_status.json"
+PHASE06FR2_HANDOFF_FILENAME = "shakebench_phase_06fr2_handoff.json"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 
@@ -620,6 +623,11 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
     if remediation.get("passed") is not True:
         detail = "; ".join(str(error) for error in remediation.get("errors", ()))
         raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F-R remediation handoff: " + detail)
+    from robosuite.utils.shakebench_handoff_semantic import verify_phase06fr2_handoff
+
+    semantic = verify_phase06fr2_handoff(Path(models.assets_root))
+    if semantic.passed is not True:
+        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F-R2 semantic handoff: " + "; ".join(semantic.errors))
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
     try:
         payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
@@ -778,6 +786,9 @@ __all__ = [
     "PHASE06FR_STATUS_FILENAME",
     "PHASE06FR_HANDOFF_FILENAME",
     "PHASE06FR_PROTOCOL_FILENAME",
+    "PHASE06FR2_PROTOCOL_FILENAME",
+    "PHASE06FR2_STATUS_FILENAME",
+    "PHASE06FR2_HANDOFF_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",
