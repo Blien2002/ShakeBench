@@ -1,0 +1,277 @@
+{
+  "comparisons": {
+    "open_worktable": {
+      "0.0001": {
+        "metrics": {
+          "can_pose_worktable": {
+            "max_absolute": 1.1749487646395787e-05,
+            "max_relative": 5.874469875852523e-07,
+            "passed": true
+          },
+          "can_twist_worktable": {
+            "max_absolute": 5.874469875851557e-07,
+            "max_relative": 0.0019625282245436058,
+            "passed": true
+          },
+          "contacts.named_support_contact": {
+            "max_absolute": 0,
+            "passed": true
+          },
+          "cumulative_normal_impulse_Ns": {
+            "difference": 0.03423999269715417,
+            "passed": true
+          },
+          "cumulative_support_force_N": {
+            "difference": 1.613693836333141e-06,
+            "passed": true
+          },
+          "cumulative_tangential_impulse_Ns": {
+            "difference": 3.8198367343660714e-05,
+            "passed": true
+          },
+          "normal_impulse_Ns": {
+            "max_absolute": 0.00034593180548516127,
+            "max_relative": 0.9999941184820029,
+            "passed": true
+          },
+          "penetration_m": {
+            "max_absolute": 4.1792828477777186e-10,
+            "max_relative": 0.00041792828477777187,
+            "passed": true
+          },
+          "support_force_N": {
+            "max_absolute": 0.0001559195724740725,
+            "max_relative": 4.507207864614491e-05,
+            "passed": true
+          },
+          "tangential_impulse_Ns": {
+            "max_absolute": 1.251606805764597e-06,
+            "max_relative": 0.9985010422137284,
+            "passed": true
+          },
+          "worktable_acceleration_deck": {
+            "max_absolute": 0.00022156316368790387,
+            "max_relative": 2.244812464971747e-05,
+            "passed": true
+          },
+          "worktable_pose_deck": {
+            "max_absolute": 1.0933838086035473e-06,
+            "max_relative": 4.172614998201865e-07,
+            "passed": true
+          },
+          "worktable_twist_deck": {
+            "max_absolute": 8.227695828458845e-06,
+            "max_relative": 0.0004493197662790091,
+            "passed": true
+          }
+        },
+        "passed": true
+      },
+      "0.000125": {
+        "metrics": {
+          "can_pose_worktable": {
+            "max_absolute": 9.486646126694266e-06,
+            "max_relative": 4.7430776210904654e-07,
+            "passed": true
+          },
+          "can_twist_worktable": {
+            "max_absolute": 4.7430776210896555e-07,
+            "max_relative": 0.0015845965918661255,
+            "passed": true
+          },
+          "contacts.named_support_contact": {
+            "max_absolute": 0,
+            "passed": true
+          },
+          "cumulative_normal_impulse_Ns": {
+            "difference": 0.025680001449298613,
+            "passed": true
+          },
+          "cumulative_support_force_N": {
+            "difference": 1.2099007316024313e-06,
+            "passed": true
+          },
+          "cumulative_tangential_impulse_Ns": {
+            "difference": 2.8645457004275495e-05,
+            "passed": true
+          },
+          "normal_impulse_Ns": {
+            "max_absolute": 0.0002594486639818774,
+            "max_relative": 0.5999964733557692,
+            "passed": true
+          },
+          "penetration_m": {
+            "max_absolute": 3.379317262171777e-10,
+            "max_relative": 0.0003379317262171777,
+            "passed": true
+          },
+          "support_force_N": {
+            "max_absolute": 0.00012519451824122285,
+            "max_relative": 3.619033351114844e-05,
+            "passed": true
+          },
+          "tangential_impulse_Ns": {
+            "max_absolute": 9.385006074006991e-07,
+            "max_relative": 0.5990715205618641,
+            "passed": true
+          },
+          "worktable_acceleration_deck": {
+            "max_absolute": 0.00016618877440864924,
+            "max_relative": 1.68377382562332e-05,
+            "passed": true
+          },
+          "worktable_pose_deck": {
+            "max_absolute": 9.8843121241195e-07,
+            "max_relative": 4.172428220511699e-07,
+            "passed": true
+          },
+          "worktable_twist_deck": {
+            "max_absolute": 6.169230571387817e-06,
+            "max_relative": 0.0003369174508823962,
+            "passed": true
+          }
+        },
+        "passed": true
+      }
+    },
+    "target_bottom": {
+      "0.0001": {
+        "metrics": {
+          "can_pose_worktable": {
+            "max_absolute": 4.984655584002155e-06,
+            "max_relative": 2.490719020574208e-07,
+            "passed": true
+          },
+          "can_twist_worktable": {
+            "max_absolute": 2.490719020573507e-07,
+            "max_relative": 0.0008126856822323362,
+            "passed": true
+          },
+          "contacts.named_support_contact": {
+            "max_absolute": 0,
+            "passed": true
+          },
+          "cumulative_normal_impulse_Ns": {
+            "difference": 0.03423994373147611,
+            "passed": true
+          },
+          "cumulative_support_force_N": {
+            "difference": 5.010813595163199e-07,
+            "passed": true
+          },
+          "cumulative_tangential_impulse_Ns": {
+            "difference": 5.4519715235855464e-05,
+            "passed": true
+          },
+          "normal_impulse_Ns": {
+            "max_absolute": 0.0003466669445885433,
+            "max_relative": 0.9999930482686917,
+            "passed": true
+          },
+          "penetration_m": {
+            "max_absolute": 2.1680083586104954e-10,
+            "max_relative": 0.00021680083586104955,
+            "passed": true
+          },
+          "support_force_N": {
+            "max_absolute": 7.801678792684896e-05,
+            "max_relative": 2.2504668181645854e-05,
+            "passed": true
+          },
+          "tangential_impulse_Ns": {
+            "max_absolute": 1.7823665872474292e-06,
+            "max_relative": 0.9984892820457107,
+            "passed": true
+          },
+          "worktable_acceleration_deck": {
+            "max_absolute": 0.0002880633242416256,
+            "max_relative": 2.9186638194461272e-05,
+            "passed": true
+          },
+          "worktable_pose_deck": {
+            "max_absolute": 1.2976849709199443e-06,
+            "max_relative": 4.7684801341867e-07,
+            "passed": true
+          },
+          "worktable_twist_deck": {
+            "max_absolute": 1.0712442631086259e-05,
+            "max_relative": 0.0004481776263592002,
+            "passed": true
+          }
+        },
+        "passed": true
+      },
+      "0.000125": {
+        "metrics": {
+          "can_pose_worktable": {
+            "max_absolute": 4.794099807741923e-06,
+            "max_relative": 2.9802342991701737e-07,
+            "passed": true
+          },
+          "can_twist_worktable": {
+            "max_absolute": 2.3961092787737424e-07,
+            "max_relative": 0.0007818705781146418,
+            "passed": true
+          },
+          "contacts.named_support_contact": {
+            "max_absolute": 0,
+            "passed": true
+          },
+          "cumulative_normal_impulse_Ns": {
+            "difference": 0.02567996827967846,
+            "passed": true
+          },
+          "cumulative_support_force_N": {
+            "difference": 3.7606046632276957e-07,
+            "passed": true
+          },
+          "cumulative_tangential_impulse_Ns": {
+            "difference": 4.088505718817065e-05,
+            "passed": true
+          },
+          "normal_impulse_Ns": {
+            "max_absolute": 0.0002599999831556301,
+            "max_relative": 0.5999958313473841,
+            "passed": true
+          },
+          "penetration_m": {
+            "max_absolute": 1.9647868082187305e-10,
+            "max_relative": 0.00019647868082187307,
+            "passed": true
+          },
+          "support_force_N": {
+            "max_absolute": 5.84999291528554e-05,
+            "max_relative": 1.6874863413366385e-05,
+            "passed": true
+          },
+          "tangential_impulse_Ns": {
+            "max_absolute": 1.336490102347121e-06,
+            "max_relative": 0.599070446785998,
+            "passed": true
+          },
+          "worktable_acceleration_deck": {
+            "max_absolute": 0.0002160684241711429,
+            "max_relative": 2.1892077264342964e-05,
+            "passed": true
+          },
+          "worktable_pose_deck": {
+            "max_absolute": 1.2615925364802524e-06,
+            "max_relative": 5.364636363177604e-07,
+            "passed": true
+          },
+          "worktable_twist_deck": {
+            "max_absolute": 8.032333096713671e-06,
+            "max_relative": 0.0003360614020364586,
+            "passed": true
+          }
+        },
+        "passed": true
+      }
+    }
+  },
+  "errors": [],
+  "passed": true,
+  "payload_sha256": "564d656737a7fb82aea73d51b894f987b6ee9f5130b5890115472bb9445c71a6",
+  "schema_id": "shakebench.phase06fr2.semantic_convergence",
+  "schema_version": 1
+}

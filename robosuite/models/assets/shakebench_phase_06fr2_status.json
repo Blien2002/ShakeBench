@@ -1,0 +1,13 @@
+{
+  "anchor_path": "shakebench_phase_06fr2_anchor.json",
+  "evidence_count": 48,
+  "feasibility_sha256": "78683bb16bd38c385203d6a77176b4665ed6f4572693a58d9c63a8335b18635f",
+  "payload_sha256": "5aa95d9f4be467a59d612c6eb7d64313c492fed827f07b2bea3053a228a4f856",
+  "phase07_authorized": true,
+  "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+  "protocol_sha256": "80cddbc8cf2ca2984336fb54ec197a427aedf597e80735300a11e4f73318a2fc",
+  "schema_id": "shakebench.phase06fr2.status",
+  "schema_version": 1,
+  "semantic_convergence_sha256": "564d656737a7fb82aea73d51b894f987b6ee9f5130b5890115472bb9445c71a6",
+  "status": "PASS"
+}
