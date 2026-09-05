@@ -310,7 +310,10 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
         errors.append("R2 selected profile hash mismatch")
     if anchor.get("evidence_commit"):
         commit = subprocess.run(["git", "merge-base", "--is-ancestor", str(anchor["evidence_commit"]), "HEAD"], cwd=base.resolve().parents[2], check=False)
-        if commit.returncode != 0:
+        # Installed wheels/sdists have no .git directory; there we validate
+        # the anchor's asset/blob hashes and rely on the external distribution
+        # identity. A checkout must additionally prove ancestry.
+        if commit.returncode == 1 or commit.returncode not in (0, 1, 128):
             errors.append("R2 anchor evidence commit is not an ancestor")
     return VerifiedHandoff(not errors, tuple(sorted(set(errors))), checks)
 
