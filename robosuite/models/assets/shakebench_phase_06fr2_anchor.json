@@ -1,0 +1,10 @@
+{
+  "schema_id": "shakebench.phase06fr2.anchor",
+  "schema_version": 1,
+  "evidence_commit": "76aa2615",
+  "protocol": {"path": "shakebench_phase_06fr2_protocol.yaml", "sha256": "80cddbc8cf2ca2984336fb54ec197a427aedf597e80735300a11e4f73318a2fc"},
+  "status": {"path": "shakebench_phase_06fr2_status.json", "sha256": "0b3dac29c08ef693eba9d599c2d9fa1a756a6831a52b6f4890473c033231a169"},
+  "handoff": {"path": "shakebench_phase_06fr2_handoff.json", "sha256": "4cc83107000a12c85f1aa1b8f89dfa547566d556fa0dc75b3a0a274c6d429e79"},
+  "official_profile": {"path": "shakebench_official_physics.yaml", "sha256": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674"},
+  "payload_sha256": "e5beb8a1d888679aaabc2e2e77b5281ff084aae73562f02ccc4b4c13c8129a35"
+}

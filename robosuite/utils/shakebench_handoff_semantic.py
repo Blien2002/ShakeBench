@@ -309,7 +309,7 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
     if handoff.get("selected_profile", {}).get("sha256") != HISTORICAL_PROFILE_SHA256:
         errors.append("R2 selected profile hash mismatch")
     if anchor.get("evidence_commit"):
-        commit = subprocess.run(["git", "merge-base", "--is-ancestor", str(anchor["evidence_commit"]), "HEAD"], cwd=base.resolve().parents[3], check=False)
+        commit = subprocess.run(["git", "merge-base", "--is-ancestor", str(anchor["evidence_commit"]), "HEAD"], cwd=base.resolve().parents[2], check=False)
         if commit.returncode != 0:
             errors.append("R2 anchor evidence commit is not an ancestor")
     return VerifiedHandoff(not errors, tuple(sorted(set(errors))), checks)
