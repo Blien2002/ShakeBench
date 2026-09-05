@@ -38,7 +38,7 @@ cannot pass.
 
 Verification record:
 
-- R2 semantic/adversarial tests: `14 passed` in the final focused run;
+- R2 semantic/adversarial tests: `4 passed` in the final focused semantic suite;
 - prior Phase 06F-R focused/profile tests remain passing;
 - full non-renderer lane: `495 passed, 58 skipped, 7 deselected`;
 - three fresh semantic verifier calls: all exit `0`;
