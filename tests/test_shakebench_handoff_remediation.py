@@ -30,10 +30,10 @@ def test_remediation_protocol_and_historical_bundle_are_fail_closed():
     protocol, _, protocol_hash = load_protocol(ASSETS / "shakebench_phase_06fr_protocol.yaml")
     validation = validate_protocol(protocol, protocol_hash)
     assert validation["mujoco_calls"] == 0
-    result = verify_remediation_bundle(ASSETS, require_pass=False)
+    result = verify_remediation_bundle(ASSETS, require_pass=True)
     assert result["passed"], result["errors"]
     status = json.loads((ASSETS / "shakebench_phase_06fr_status.json").read_text())
-    assert status["status"] == "BLOCKED"
+    assert status["status"] == "PASS"
 
 
 def test_real_environment_trace_negative_cases_reject_middle_sample_dtype_and_forged_complete():
