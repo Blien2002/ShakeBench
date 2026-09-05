@@ -24,10 +24,9 @@ def _protocol():
     return yaml.safe_load((ASSETS / "shakebench_phase_06fr2_protocol.yaml").read_text(encoding="utf-8"))
 
 
-def test_r2_handoff_is_fail_closed_before_status_and_anchor_exist():
+def test_r2_handoff_semantic_bundle_passes_after_anchor_generation():
     result = verify_phase06fr2_handoff(ASSETS)
-    assert result.passed is False
-    assert result.errors
+    assert result.passed, result.errors
 
 
 def test_gamma_zero_parity_is_recomputed_from_raw_trace_values():

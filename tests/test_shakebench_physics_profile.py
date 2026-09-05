@@ -84,6 +84,13 @@ def test_official_loader_accepts_only_an_isolated_packaged_pass_fixture(tmp_path
         "verify_remediation_bundle",
         lambda root, require_pass=True: {"passed": True, "errors": []},
     )
+    import robosuite.utils.shakebench_handoff_semantic as semantic
+
+    monkeypatch.setattr(
+        semantic,
+        "verify_phase06fr2_handoff",
+        lambda root: type("Verified", (), {"passed": True, "errors": ()})(),
+    )
     profile = load_official_physics_profile()
     assert profile.scoreable is True
     assert profile.status == "official_immutable"
