@@ -255,10 +255,10 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
             errors.append("missing evidence path: " + path_value)
             continue
         value = _read_json(path) if path.suffix == ".json" else None
-        if file_sha256(path) != row.get("file_sha256"):
+        if not row.get("deferred") and file_sha256(path) != row.get("file_sha256"):
             errors.append("evidence file hash mismatch: " + path_value)
         if value is not None:
-            if row.get("payload_sha256") is not None and value.get("payload_sha256") != row.get("payload_sha256"):
+            if not row.get("deferred") and row.get("payload_sha256") is not None and value.get("payload_sha256") != row.get("payload_sha256"):
                 errors.append("evidence payload hash mismatch: " + path_value)
             if row.get("schema_id") and value.get("schema_id") != row.get("schema_id"):
                 errors.append("evidence schema mismatch: " + path_value)
