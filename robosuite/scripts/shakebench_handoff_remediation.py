@@ -676,7 +676,7 @@ def publish_pass(root: str | Path | None = None) -> dict[str, Any]:
         "historical_phase06f": protocol["historical_phase06f"], "real_environment_evidence": real_refs,
         "convergence": {"path": "shakebench_phase_06fr_convergence.json", "sha256": file_sha256(base / "shakebench_phase_06fr_convergence.json")},
         "parity": {"path": parity_path.name, "sha256": file_sha256(parity_path)}, "replays": replay_refs,
-        "inherited_raw_verified": inherited, "package_evidence": {"path": "shakebench_phase_06fr_package_evidence.json", "sha256": None},
+        "inherited_raw_verified": inherited, "package_evidence": {"path": "shakebench_phase_06fr_package_evidence.json", "sha256": file_sha256(base / "shakebench_phase_06fr_package_evidence.json") if (base / "shakebench_phase_06fr_package_evidence.json").is_file() else None},
     }
     handoff_payload["status_sha256"] = status_payload["payload_sha256"]
     handoff_payload["payload_sha256"] = artifact_hash(handoff_payload)

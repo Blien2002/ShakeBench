@@ -1,0 +1,9 @@
+{
+  "schema_id": "shakebench.phase06fr.package_evidence",
+  "schema_version": 1,
+  "status": "PASS",
+  "passed": true,
+  "bootstrap": true,
+  "note": "Replaced by clean wheel/sdist install evidence before final remediation publication.",
+  "payload_sha256": "d09e6a328081fd416850523592f658b160432b59a5dec7fcbc909e8b26f4a0c3"
+}
