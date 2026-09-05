@@ -123,7 +123,9 @@ docs/robosuite_benchmark_design_tree.md
 | 06R7 | `phase_06r7_v8_normal_impact.md` | 保留 V7 证据，校准水平/倾斜 fixture 并选择法向冲击阻尼 | all physics gates |
 | 06F | `phase_06f_final_physics_closure.md` | 任务原生 settling + 水平力阈值 + winner-dependent replay，最终冻结 official physics | Phase 07 handoff PASS |
 | 06F-R | `phase_06f_handoff_remediation.md` | real environment settling/convergence/parity/replay 与 inherited raw 重验，修复 Phase 07 handoff | remediation PASS + clean package |
+| 06F-R2 | `phase_06fr2_semantic_handoff_remediation.md` | path/file/payload 绑定、parity/convergence/replay 语义重算与 Git anchor | semantic verifier PASS |
 | 06F-R | `phase_06f_handoff_remediation.md` | 真实环境 settling、瞬态收敛、完整 parity trace 与继承证据重验 | Phase 07 handoff PASS |
+| 06F-R2 | `phase_06fr2_semantic_handoff_remediation.md` | 逐 raw 哈希绑定、parity/瞬态/replay 语义重算并锚定 Phase 7 handoff | Phase 07 handoff PASS |
 | 07 | `phase_07_oracle_controller.md` | shared 7D State Oracle controller | Gamma=0 10/10 dev |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |
 | 09 | `phase_09_knee_official_eval.md` | Gamma* + 400×4 official evaluation | complete paired matrix |
