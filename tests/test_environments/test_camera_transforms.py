@@ -7,10 +7,13 @@ that the values are close.
 import random
 
 import numpy as np
+import pytest
 
 import robosuite
 import robosuite.utils.camera_utils as CU
 from robosuite.controllers import load_composite_controller_config
+
+pytestmark = pytest.mark.renderer
 
 
 def test_camera_transforms():

@@ -51,6 +51,9 @@ PHASE06R7_STATUS_FILENAME = "shakebench_phase_06r7_v8_status.json"
 PHASE06_FINAL_STATUS_FILENAME = "shakebench_phase_06_final_status.json"
 PHASE06_TO_07_HANDOFF_FILENAME = "shakebench_phase_06_to_07_handoff.json"
 PHASE06F_PROTOCOL_FILENAME = "shakebench_phase_06f_protocol.yaml"
+PHASE06FR_STATUS_FILENAME = "shakebench_phase_06fr_status.json"
+PHASE06FR_HANDOFF_FILENAME = "shakebench_phase_06fr_handoff.json"
+PHASE06FR_PROTOCOL_FILENAME = "shakebench_phase_06fr_protocol.yaml"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 
@@ -611,6 +614,12 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
     if bundle.get("passed") is not True:
         detail = "; ".join(str(error) for error in bundle.get("errors", ()))
         raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F handoff verifier: " + detail)
+    from robosuite.scripts.shakebench_handoff_remediation import verify_remediation_bundle
+
+    remediation = verify_remediation_bundle(Path(models.assets_root), require_pass=True)
+    if remediation.get("passed") is not True:
+        detail = "; ".join(str(error) for error in remediation.get("errors", ()))
+        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F-R remediation handoff: " + detail)
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
     try:
         payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
@@ -766,6 +775,9 @@ __all__ = [
     "PHASE06_FINAL_STATUS_FILENAME",
     "PHASE06_TO_07_HANDOFF_FILENAME",
     "PHASE06F_PROTOCOL_FILENAME",
+    "PHASE06FR_STATUS_FILENAME",
+    "PHASE06FR_HANDOFF_FILENAME",
+    "PHASE06FR_PROTOCOL_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",

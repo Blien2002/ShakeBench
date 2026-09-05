@@ -8,7 +8,7 @@
 - Phase 00 基线 commit：`5ce6643f3092639d08f7b0f90ed1c6a84f50552c`；Phase 01 初始实现 commit：`d1db196e061e8795cbdde8064ddb9cf71b1d492c`。
 - 只依据随仓的 design tree、v0 spec、phase prompts 和 Phase 00 integration map；没有读取或复制外部目录/实现。
 - 本阶段 runtime path 只依赖 NumPy 与本仓库的配置 envelope；没有导入 Torch、Isaac、MuJoCo 或环境注册路径。
-- Python 支持策略：新增代码要求 Python `>=3.7`，因为使用 `from __future__ import annotations` 和 dataclasses；`setup.py` 与 Black target 已同步，不再声明 Python `>=3`。
+- Python 支持策略：仓库实际使用 PEP 604 union 与内建泛型语法，官方声明最低 Python 版本为 `>=3.10`；`setup.py`、Black target 和 remediation import smoke 保持一致。
 
 ## 2. 实际产出
 

@@ -6,6 +6,8 @@ import pytest
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 
+pytestmark = pytest.mark.renderer
+
 
 def is_display_available() -> bool:
     return "DISPLAY" in os.environ or "WAYLAND_DISPLAY" in os.environ

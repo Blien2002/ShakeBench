@@ -9,8 +9,11 @@ This runs some basic sanity checks on the environment, namely, checking that:
 Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
 import numpy as np
+import pytest
 
 import robosuite as suite
+
+pytestmark = pytest.mark.renderer
 
 
 def test_all_environments():
