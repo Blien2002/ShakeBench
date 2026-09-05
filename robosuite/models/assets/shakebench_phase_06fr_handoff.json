@@ -106,13 +106,13 @@
   },
   "package_evidence": {
     "path": "shakebench_phase_06fr_package_evidence.json",
-    "sha256": "f5add2a6356852103ff4ecf3b4ebb9aa0d40730cffcf6367d04b4257354c409b"
+    "sha256": "bd8d4f41ae6d625b6b993bd5932a8f7b6490dad87727264acf0cf6375e4df745"
   },
   "parity": {
     "path": "shakebench_phase_06fr_raw_parity_gamma_zero.json",
     "sha256": "e1ef187190a2d504cfcafe1edbd61c12ed131869cbe519c14295d371c9498c65"
   },
-  "payload_sha256": "760cfea3de5a43e5f28f661b6fba33974410506be24dc6f5e683cbdfd793cd96",
+  "payload_sha256": "a5fa1cdec932b32fa92fb0f522fbfef941b0bb1ab9cd10b7920ded98b57dca72",
   "phase07_authorized": true,
   "protocol": {
     "path": "shakebench_phase_06fr_protocol.yaml",

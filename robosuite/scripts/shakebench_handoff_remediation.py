@@ -704,7 +704,7 @@ def write_package_evidence(wheel: str | Path, sdist: str | Path, output: str | P
         fields = line.split()
         if len(fields) != 4 or fields[1] != HISTORICAL_PROFILE_SHA256 or fields[2] != "8" or fields[3] != "0.349":
             raise RemediationError(f"{label} smoke output mismatch: {line}")
-        return {"artifact": artifact.name, "artifact_sha256": file_sha256(artifact), "profile_id": fields[0], "profile_sha256": fields[1], "pair_count": int(fields[2]), "can_mass_kg": float(fields[3])}
+        return {"artifact": artifact.name, "profile_id": fields[0], "profile_sha256": fields[1], "pair_count": int(fields[2]), "can_mass_kg": float(fields[3])}
 
     payload = seal_artifact({"schema_id": "shakebench.phase06fr.package_evidence", "schema_version": 1, "status": "PASS", "wheel": smoke(Path(wheel), "wheel"), "sdist": smoke(Path(sdist), "sdist"), "passed": True})
     write_json_atomic(_asset("shakebench_phase_06fr_package_evidence.json") if output is None else Path(output), payload)
