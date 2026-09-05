@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import shutil
 from pathlib import Path
 
 from robosuite.models import assets_root
@@ -13,6 +15,7 @@ from robosuite.utils.shakebench_handoff_semantic import (
     verify_gamma_zero_parity,
     verify_phase06fr2_handoff,
 )
+from robosuite.utils.shakebench_physics_finalizer import artifact_hash
 
 
 ASSETS = Path(assets_root)
@@ -55,3 +58,29 @@ def test_convergence_recomputes_cumulative_impulse_not_one_step_force():
     mutated = copy.deepcopy(records)
     mutated[("open_worktable", 0.0001)]["trace"][2499]["normal_impulse_Ns"] += 1.0
     assert recompute_convergence(protocol, mutated)["passed"] is False
+
+
+def test_handoff_file_hash_binding_rejects_payload_rehashed_only(tmp_path):
+    import yaml
+
+    protocol = yaml.safe_load((ASSETS / "shakebench_phase_06fr2_protocol.yaml").read_text())
+    names = {row["path"] for row in protocol["evidence"]}
+    names.update({"shakebench_phase_06fr2_protocol.yaml", "shakebench_phase_06fr2_status.json", "shakebench_phase_06fr2_handoff.json", "shakebench_phase_06fr2_anchor.json", "shakebench_selection_protocol_v6.yaml", "shakebench_phase_06r5_v6_selected_candidates.json", "shakebench_phase_06r5_v6_status.json", "shakebench_phase_06r5_v6_feasibility.json"})
+    for name in names:
+        source = ASSETS / name
+        destination = tmp_path / name
+        if destination.exists():
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        os.symlink(source, destination)
+    baseline = verify_phase06fr2_handoff(tmp_path)
+    assert baseline.passed, baseline.errors
+    mutated_path = tmp_path / "shakebench_phase_06fr_raw_real_open_dt_nominal.json"
+    mutated = json.loads(mutated_path.read_text())
+    mutated_path.unlink()
+    mutated["trace"][100]["penetration_m"] += 0.0001
+    mutated["payload_sha256"] = artifact_hash(mutated)
+    mutated_path.write_text(json.dumps(mutated), encoding="utf-8")
+    failed = verify_phase06fr2_handoff(tmp_path)
+    assert failed.passed is False
+    assert any("file hash mismatch" in error for error in failed.errors)

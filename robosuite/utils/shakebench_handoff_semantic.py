@@ -245,6 +245,10 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
             errors.append(name + " payload hash mismatch")
     listed = protocol.get("evidence", [])
     seen = set()
+    handoff_evidence = {str(row.get("path")): row for row in handoff.get("evidence", []) if isinstance(row, Mapping)}
+    protocol_paths = {str(row.get("path")) for row in listed}
+    if set(handoff_evidence) != protocol_paths:
+        errors.append("handoff evidence list does not exactly match protocol coverage")
     for row in listed:
         path_value = str(row.get("path", ""))
         if path_value in seen:
@@ -262,6 +266,9 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
                 errors.append("evidence payload hash mismatch: " + path_value)
             if row.get("schema_id") and value.get("schema_id") != row.get("schema_id"):
                 errors.append("evidence schema mismatch: " + path_value)
+        handoff_row = handoff_evidence.get(path_value)
+        if handoff_row is None or (not row.get("deferred") and handoff_row.get("file_sha256") != row.get("file_sha256")) or (not row.get("deferred") and handoff_row.get("payload_sha256") != row.get("payload_sha256")):
+            errors.append("handoff evidence binding mismatch: " + path_value)
     checks["evidence_coverage"] = len(seen) == len(listed)
     inherited = verify_inherited_raw(base)
     if not inherited.get("passed"):
