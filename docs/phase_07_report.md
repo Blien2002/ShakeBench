@@ -1,4 +1,20 @@
-# Phase 07R5 final handoff: repository slimming and release audit
+# Phase 07R6 current conclusion: publication integrity closure
+
+Status: **BLOCKED_BY_PHASE_07R6_PUBLICATION_INTEGRITY**; `phase08_authorized=false`.
+
+The R6 implementation is in progress from a fresh clone of the R5 handoff
+`5fe46051d1c1cbe5a748c9330b5e338fd563df15`.  The final authority will be the
+R6 manifest, detached release manifest, embedded content index, and executable
+handoff verifier.  No Phase 8 implementation, knee state, or official state is
+run by this phase.
+
+The frozen science identity is unchanged: controller
+`shakebench.reference_oracle.v3` (`60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c`),
+official physics `shakebench.official.physics.v2`
+(`c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c`), and
+dev-state asset (`07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6`).
+
+# Historical Phase 07R5 final handoff: repository slimming and release audit
 
 Status: **PASS**; `phase08_authorized=true`.
 

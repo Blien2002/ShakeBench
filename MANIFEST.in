@@ -9,5 +9,5 @@ recursive-include robosuite/scripts *
 recursive-exclude robosuite/models/assets *raw*.json
 recursive-exclude robosuite/models/assets *diagnostic*.json
 recursive-exclude robosuite/models/assets *selected_diagnostics*.json
-include robosuite/models/assets/shakebench_phase_06r2_raw_driver_dt_medium.json
-include robosuite/models/assets/shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json
+global-exclude __pycache__/*
+global-exclude *.py[cod]

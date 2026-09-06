@@ -22,7 +22,6 @@ from robosuite.scripts.shakebench_handoff_remediation import verify_inherited_ra
 from robosuite.utils.shakebench_artifacts import file_sha256, verify_payload_hash
 from robosuite.utils.shakebench_physics_finalizer import artifact_hash, canonical_json
 
-
 PROTOCOL_FILENAME = "shakebench_phase_06fr2_protocol.yaml"
 STATUS_FILENAME = "shakebench_phase_06fr2_status.json"
 HANDOFF_FILENAME = "shakebench_phase_06fr2_handoff.json"
@@ -87,7 +86,19 @@ def _valid_trace(trace: Any, protocol: Mapping[str, Any], *, expected_samples: i
             errors.append(f"trace row {index} is missing required fields")
             continue
         times.append(float(row["time_s"]))
-        for field in ("normalized_action", "decoded_action", "clipped_action", "applied_control", "deck_pose", "deck_twist", "deck_acceleration", "worktable_pose_deck", "worktable_twist_deck", "worktable_acceleration_deck", "warning_number"):
+        for field in (
+            "normalized_action",
+            "decoded_action",
+            "clipped_action",
+            "applied_control",
+            "deck_pose",
+            "deck_twist",
+            "deck_acceleration",
+            "worktable_pose_deck",
+            "worktable_twist_deck",
+            "worktable_acceleration_deck",
+            "warning_number",
+        ):
             array = np.asarray(row[field])
             if array.dtype.kind not in {"f", "i", "b"} or not np.all(np.isfinite(array.astype(float))):
                 errors.append(f"trace row {index} dtype/finite failure: {field}")
@@ -126,7 +137,9 @@ def _pose_orientation_error(a: Any, b: Any) -> float:
     return float(2.0 * math.acos(float(np.clip(dot, -1.0, 1.0))))
 
 
-def recompute_convergence(protocol: Mapping[str, Any], records: Mapping[tuple[str, float], Mapping[str, Any]]) -> dict[str, Any]:
+def recompute_convergence(
+    protocol: Mapping[str, Any], records: Mapping[tuple[str, float], Mapping[str, Any]]
+) -> dict[str, Any]:
     comparisons = {}
     errors = []
     fields = protocol["convergence"]["fields"]
@@ -146,11 +159,13 @@ def recompute_convergence(protocol: Mapping[str, Any], records: Mapping[tuple[st
                         errors.append(f"{support}/{dt}/{field}")
                     continue
                 path = field.split(".")
+
                 def get(row):
                     value = row
                     for key in path:
                         value = value[key]
                     return value
+
                 a = np.asarray([_flatten(get(row)) for row in selected], dtype=float)
                 b = np.asarray([_flatten(get(row)) for row in finer], dtype=float)
                 max_abs = float(np.max(np.abs(a - b)))
@@ -164,7 +179,10 @@ def recompute_convergence(protocol: Mapping[str, Any], records: Mapping[tuple[st
                     absolute = float(protocol["convergence"]["tolerances"]["velocity_absolute_m_s"])
                 if "impulse" in field:
                     absolute = float(protocol["convergence"]["tolerances"]["impulse_absolute_Ns"])
-                passed = bool(max_abs <= absolute or relative <= float(protocol["convergence"]["tolerances"]["relative_metric_max"]))
+                passed = bool(
+                    max_abs <= absolute
+                    or relative <= float(protocol["convergence"]["tolerances"]["relative_metric_max"])
+                )
                 metrics[field] = {"max_absolute": max_abs, "max_relative": relative, "passed": passed}
                 if not passed:
                     errors.append(f"{support}/{dt}/{field}")
@@ -180,22 +198,52 @@ def recompute_convergence(protocol: Mapping[str, Any], records: Mapping[tuple[st
                     a = np.sqrt(np.mean(a[-20:] ** 2))
                     b = np.sqrt(np.mean(b[-20:] ** 2))
                     absolute = float(protocol["convergence"]["tolerances"]["force_rms_absolute_N"])
-                denominator = max(float(np.max(np.abs(np.asarray(b))),), 1.0e-6) if np.ndim(b) else max(abs(float(b)), 1.0e-6)
+                denominator = (
+                    max(
+                        float(
+                            np.max(np.abs(np.asarray(b))),
+                        ),
+                        1.0e-6,
+                    )
+                    if np.ndim(b)
+                    else max(abs(float(b)), 1.0e-6)
+                )
                 difference = float(np.max(np.abs(a - b))) if np.ndim(a) else abs(float(a) - float(b))
-                passed = bool(difference <= absolute or difference / denominator <= float(protocol["convergence"]["tolerances"]["relative_metric_max"]))
+                passed = bool(
+                    difference <= absolute
+                    or difference / denominator <= float(protocol["convergence"]["tolerances"]["relative_metric_max"])
+                )
                 metrics["cumulative_" + metric_name] = {"difference": difference, "passed": passed}
                 if not passed:
                     errors.append(f"{support}/{dt}/cumulative_{metric_name}")
-            support_comparisons[str(dt)] = {"metrics": metrics, "passed": not any(error.startswith(f"{support}/{dt}/") for error in errors)}
+            support_comparisons[str(dt)] = {
+                "metrics": metrics,
+                "passed": not any(error.startswith(f"{support}/{dt}/") for error in errors),
+            }
         comparisons[support] = support_comparisons
-    return {"schema_id": "shakebench.phase06fr2.semantic_convergence", "schema_version": 1, "comparisons": comparisons, "errors": errors, "passed": not errors}
+    return {
+        "schema_id": "shakebench.phase06fr2.semantic_convergence",
+        "schema_version": 1,
+        "comparisons": comparisons,
+        "errors": errors,
+        "passed": not errors,
+    }
 
 
-def verify_gamma_zero_parity(trace: Sequence[Mapping[str, Any]], metadata: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[str, Any]:
+def verify_gamma_zero_parity(
+    trace: Sequence[Mapping[str, Any]], metadata: Mapping[str, Any], protocol: Mapping[str, Any]
+) -> dict[str, Any]:
     errors = _valid_trace(trace, protocol, expected_samples=2500)
-    if metadata.get("profile_id") != "shakebench.official.physics.v2" or metadata.get("profile_sha256") != HISTORICAL_PROFILE_SHA256:
+    if (
+        metadata.get("profile_id") != "shakebench.official.physics.v2"
+        or metadata.get("profile_sha256") != HISTORICAL_PROFILE_SHA256
+    ):
         errors.append("parity profile binding mismatch")
-    if metadata.get("timestep_s") != 0.0002 or metadata.get("control_frequency_hz") != 20.0 or metadata.get("action_dimension") != 7:
+    if (
+        metadata.get("timestep_s") != 0.0002
+        or metadata.get("control_frequency_hz") != 20.0
+        or metadata.get("action_dimension") != 7
+    ):
         errors.append("parity scheduler/action binding mismatch")
     for row in trace:
         for key in ("normalized_action", "decoded_action", "clipped_action"):
@@ -221,7 +269,15 @@ def verify_gamma_zero_parity(trace: Sequence[Mapping[str, Any]], metadata: Mappi
     target = metadata.get("target_geometry", {})
     if tuple(target.get("inner_xy_m", ())) != (0.164, 0.144) or tuple(target.get("outer_xy_m", ())) != (0.18, 0.16):
         errors.append("parity target geometry bound failed")
-    expected_thresholds = {"hold_duration_s": 0.5, "max_relative_linear_speed_m_s": 0.02, "max_relative_angular_speed_rad_s": 0.2, "max_illegal_penetration_m": 0.0005, "target_bottom_support_force_threshold_N": 0.001, "target_bottom_support_z_tolerance_m": 0.0005, "containment_epsilon_m": 1.0e-12}
+    expected_thresholds = {
+        "hold_duration_s": 0.5,
+        "max_relative_linear_speed_m_s": 0.02,
+        "max_relative_angular_speed_rad_s": 0.2,
+        "max_illegal_penetration_m": 0.0005,
+        "target_bottom_support_force_threshold_N": 0.001,
+        "target_bottom_support_z_tolerance_m": 0.0005,
+        "containment_epsilon_m": 1.0e-12,
+    }
     if metadata.get("success_thresholds") != expected_thresholds:
         errors.append("parity success threshold mapping failed")
     return {"passed": not errors, "errors": sorted(set(errors))}
@@ -238,7 +294,11 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
         anchor = _read_json(base / ANCHOR_FILENAME)
     except Exception as exc:
         return VerifiedHandoff(False, (f"R2 handoff unreadable: {exc}",), {})
-    if handoff.get("status") != "PASS" or status.get("status") != "PASS" or handoff.get("phase07_authorized") is not True:
+    if (
+        handoff.get("status") != "PASS"
+        or status.get("status") != "PASS"
+        or handoff.get("phase07_authorized") is not True
+    ):
         errors.append("R2 status/handoff is not PASS")
     for name, payload in (("status", status), ("handoff", handoff), ("anchor", anchor)):
         if payload.get("payload_sha256") != artifact_hash(payload):
@@ -262,12 +322,20 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
         if not row.get("deferred") and file_sha256(path) != row.get("file_sha256"):
             errors.append("evidence file hash mismatch: " + path_value)
         if value is not None:
-            if not row.get("deferred") and row.get("payload_sha256") is not None and value.get("payload_sha256") != row.get("payload_sha256"):
+            if (
+                not row.get("deferred")
+                and row.get("payload_sha256") is not None
+                and value.get("payload_sha256") != row.get("payload_sha256")
+            ):
                 errors.append("evidence payload hash mismatch: " + path_value)
             if row.get("schema_id") and value.get("schema_id") != row.get("schema_id"):
                 errors.append("evidence schema mismatch: " + path_value)
         handoff_row = handoff_evidence.get(path_value)
-        if handoff_row is None or (not row.get("deferred") and handoff_row.get("file_sha256") != row.get("file_sha256")) or (not row.get("deferred") and handoff_row.get("payload_sha256") != row.get("payload_sha256")):
+        if (
+            handoff_row is None
+            or (not row.get("deferred") and handoff_row.get("file_sha256") != row.get("file_sha256"))
+            or (not row.get("deferred") and handoff_row.get("payload_sha256") != row.get("payload_sha256"))
+        ):
             errors.append("handoff evidence binding mismatch: " + path_value)
     checks["evidence_coverage"] = len(seen) == len(listed)
     inherited = verify_inherited_raw(base)
@@ -304,9 +372,12 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
         for index in (1, 2, 3):
             path = base / f"shakebench_phase_06fr_raw_replay_{group}_process_{index}.json"
             if path.is_file():
-                replay = _read_json(path); rows.append(replay)
+                replay = _read_json(path)
+                rows.append(replay)
                 replay_errors = _valid_trace(replay.get("trace"), protocol, expected_samples=2500)
-                if replay.get("complete_trace") is not True or replay.get("trace_digest") != _trace_digest(replay.get("trace", ())):
+                if replay.get("complete_trace") is not True or replay.get("trace_digest") != _trace_digest(
+                    replay.get("trace", ())
+                ):
                     replay_errors.append("complete trace digest/flag failed")
                 errors.extend(f"{group}/{index}: {error}" for error in replay_errors)
             else:
@@ -316,7 +387,13 @@ def verify_phase06fr2_handoff(asset_root: str | Path | None = None) -> VerifiedH
     if handoff.get("selected_profile", {}).get("sha256") != HISTORICAL_PROFILE_SHA256:
         errors.append("R2 selected profile hash mismatch")
     if anchor.get("evidence_commit"):
-        commit = subprocess.run(["git", "merge-base", "--is-ancestor", str(anchor["evidence_commit"]), "HEAD"], cwd=base.resolve().parents[2], check=False)
+        commit = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", str(anchor["evidence_commit"]), "HEAD"],
+            cwd=base.resolve().parents[2],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
         # Installed wheels/sdists have no .git directory; there we validate
         # the anchor's asset/blob hashes and rely on the external distribution
         # identity. A checkout must additionally prove ancestry.

@@ -135,6 +135,7 @@ robosuite/models/assets/demonstrations_private
 /out/phase07r3/
 /out/phase07r4/
 /out/phase07r5/
+/out/phase07r6/
 
 # Codex-local session configuration and checkpoints are never project history.
 .codex/

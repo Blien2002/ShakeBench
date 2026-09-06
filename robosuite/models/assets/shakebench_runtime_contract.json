@@ -8,13 +8,16 @@
     "shakebench_phase_06fr2_handoff.json": "4cc83107000a12c85f1aa1b8f89dfa547566d556fa0dc75b3a0a274c6d429e79",
     "shakebench_phase_06fr2_protocol.yaml": "80cddbc8cf2ca2984336fb54ec197a427aedf597e80735300a11e4f73318a2fc",
     "shakebench_phase_06fr2_status.json": "0b3dac29c08ef693eba9d599c2d9fa1a756a6831a52b6f4890473c033231a169",
+    "shakebench_history_rewrite_map_v2.json": "551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493",
     "shakebench_official_physics.yaml": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674",
     "shakebench_states_dev.json": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
   },
   "contract_id": "shakebench.runtime.publication.v1",
   "history_rewrite": {
-    "map_path": "docs/shakebench_history_rewrite_map_v1.json",
-    "map_sha256": "7e60da6dccfb4d7a216368e53ca6fbd2c0d5d8572d95a847dcf96f560aa0713d",
+    "map_path": "docs/shakebench_history_rewrite_map_v2.json",
+    "asset_filename": "shakebench_history_rewrite_map_v2.json",
+    "map_sha256": "551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493",
+    "schema_version": 2,
     "status": "complete"
   },
   "package_contract": {
@@ -33,6 +36,13 @@
     "asset_filename": "shakebench_phase_06f_protocol.yaml",
     "sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
   },
+  "science_bindings": {
+    "controller_profile_id": "shakebench.reference_oracle.v3",
+    "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+    "official_physics_profile_id": "shakebench.official.physics.v2",
+    "official_physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+    "dev_state_asset_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
+  },
   "schema_id": "shakebench.runtime.publication_contract",
   "schema_version": 1,
   "selected_tuple": {
@@ -42,5 +52,5 @@
     "task": "VibrationPickPlaceCan",
     "robot": "Panda"
   },
-  "payload_sha256": "3154652809679fe98ef35abfdbc66d2126c42af6de74a4dc6af9f27572eb0c8a"
+  "payload_sha256": "748b745d67feca159334b4135378c620cecf83d4d715f2a20d8d0cee6a62e0e6"
 }

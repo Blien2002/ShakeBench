@@ -1,0 +1,48 @@
+{
+  "phase": "07R6",
+  "status": "BLOCKED_BY_PHASE_07R6_PUBLICATION_INTEGRITY",
+  "phase08_authorized": false,
+  "final_commit": null,
+  "final_commit_role": null,
+  "handoff_rule": "final_commit must be an ancestor of the commit containing this manifest",
+  "protected_science": {
+    "controller_profile_id": "shakebench.reference_oracle.v3",
+    "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+    "official_physics_profile_id": "shakebench.official.physics.v2",
+    "official_physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+    "dev_state_asset_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
+  },
+  "dev_state_anchor": {
+    "pre_history_rewrite_commit": "dd6fe2edb6384ccdb5116be44f07592b4864e377",
+    "rewritten_commit": "08626ea5a5e107df503e266be9065b929d47f882",
+    "asset_path": "robosuite/models/assets/shakebench_states_dev.json",
+    "asset_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
+  },
+  "history_rewrite_map": {
+    "path": "docs/shakebench_history_rewrite_map_v2.json",
+    "sha256": "551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493"
+  },
+  "runtime_contract": {
+    "path": "robosuite/models/assets/shakebench_runtime_contract.json",
+    "sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210"
+  },
+  "package_evidence": {
+    "path": "out/phase07r6/package_evidence_final.json",
+    "sha256": "96a1236e95c2676cd58eec9a9effdc9d6a73d85b1a0b26060d2b5bb8b4d2dcbb",
+    "wheel_filename": "robosuite-1.5.2-py3-none-any.whl",
+    "wheel_bytes": 158067288,
+    "wheel_sha256": "8e25320cc0d0f47b10c22a9040b5e8324af9105504d812bf6fdffa51542a6f0a",
+    "sdist_filename": "robosuite-1.5.2.tar.gz",
+    "sdist_bytes": 156844459,
+    "sdist_sha256": "65075a1b1ff3f12e1d475fbdf4533be9fa5125e10333ed93456e0d09aa14c75b"
+  },
+  "release": {
+    "tag": "shakebench-evidence-v0-2026-09-r6",
+    "archive_filename": "shakebench-evidence-v0-2026-09-r6.tar.zst",
+    "archive_url": "https://github.com/Blien2002/ShakeBench/releases/download/shakebench-evidence-v0-2026-09-r6/shakebench-evidence-v0-2026-09-r6.tar.zst",
+    "release_manifest": "docs/shakebench_evidence_release_manifest_v1.json",
+    "content_index": "docs/shakebench_evidence_index_v1.json",
+    "history_rewrite_map": "docs/shakebench_history_rewrite_map_v2.json",
+    "removed_path_list": "docs/shakebench_evidence_removed_paths_v1.txt"
+  }
+}

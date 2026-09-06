@@ -38,8 +38,10 @@ setup(
     # contract for the complete asset tree.
     package_data={
         "robosuite": [
-            "models/assets/*.yaml",
-            "models/assets/*.json",
+            "models/assets/shakebench_official_physics.yaml",
+            "models/assets/shakebench_runtime_contract.json",
+            "models/assets/shakebench_history_rewrite_map_v2.json",
+            "models/assets/shakebench_states_dev.json",
         ],
     },
     eager_resources=["*"],

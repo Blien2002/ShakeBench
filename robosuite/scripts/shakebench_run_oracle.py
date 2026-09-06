@@ -50,7 +50,13 @@ EPISODE_SCHEMA_ID = "shakebench.phase07.oracle_episode"
 EPISODE_SCHEMA_VERSION = 4
 DETERMINISM_SCHEMA_ID = "shakebench.phase07.determinism_manifest"
 DETERMINISM_SCHEMA_VERSION = 4
-DEV_STATE_ANCHOR_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
+DEV_STATE_PRE_HISTORY_REWRITE_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
+DEV_STATE_REWRITTEN_COMMIT = "08626ea5a5e107df503e266be9065b929d47f882"
+DEV_STATE_ANCHOR_REWRITE = {
+    DEV_STATE_PRE_HISTORY_REWRITE_COMMIT: DEV_STATE_REWRITTEN_COMMIT,
+}
+# Compatibility name: new provenance must use the rewritten anchor.
+DEV_STATE_ANCHOR_COMMIT = DEV_STATE_REWRITTEN_COMMIT
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 OFFICIAL_PHYSICS_PROFILE_SHA256 = "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
 TERMINATION_CATEGORIES = {
@@ -154,6 +160,8 @@ def _dev_state_anchor(path: str | Path | None = None) -> dict[str, Any]:
     payload = verification["payload"]
     return {
         "commit": DEV_STATE_ANCHOR_COMMIT,
+        "pre_history_rewrite_commit": DEV_STATE_PRE_HISTORY_REWRITE_COMMIT,
+        "rewritten_commit": DEV_STATE_REWRITTEN_COMMIT,
         "asset": PHASE07_DEV_STATE_FILENAME,
         "file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "payload_sha256": payload["artifact_lock"]["payload_sha256"],
@@ -161,6 +169,30 @@ def _dev_state_anchor(path: str | Path | None = None) -> dict[str, Any]:
         "root_seed": payload["generator"]["root_seed"],
         "state_count": len(payload["states"]),
     }
+
+
+def _dev_state_anchor_match(value: Any, expected: Mapping[str, Any]) -> tuple[bool, str]:
+    """Match current provenance or resolve the immutable pre-rewrite form.
+
+    Existing raw R5 artifacts intentionally retain the old commit string.  We
+    accept that exact historical shape only through the explicit frozen map;
+    newly generated artifacts always carry both anchors and use the rewritten
+    SHA as ``commit``.
+    """
+
+    if _values_equal(value, expected, atol=0.0):
+        return True, "rewritten"
+    if not isinstance(value, Mapping):
+        return False, "invalid"
+    historical = dict(expected)
+    historical.pop("pre_history_rewrite_commit", None)
+    historical.pop("rewritten_commit", None)
+    historical["commit"] = next(iter(DEV_STATE_ANCHOR_REWRITE))
+    if DEV_STATE_ANCHOR_REWRITE.get(historical["commit"]) == expected.get("rewritten_commit") and _values_equal(
+        value, historical, atol=0.0
+    ):
+        return True, "pre_history_rewrite_resolved"
+    return False, "invalid"
 
 
 def verify_phase07_r4_manifest(path: str | Path = "docs/phase_07_r4_manifest.json") -> dict[str, Any]:
@@ -733,7 +765,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     if not _finite_json(payload):
         errors.append("nonfinite JSON")
     expected_anchor = _dev_state_anchor()
-    if not _values_equal(payload.get("dev_state_anchor"), expected_anchor, atol=0.0):
+    anchor_matches, anchor_mode = _dev_state_anchor_match(payload.get("dev_state_anchor"), expected_anchor)
+    if not anchor_matches:
         errors.append("dev-state anchor")
     if not _values_equal(
         payload.get("physics_authority"),
@@ -1018,6 +1051,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "errors": sorted(set(errors)),
         "run_id": payload.get("run_id"),
         "trace_count": sum(len(row.get("trace", ())) for row in episodes if isinstance(row, Mapping)),
+        "dev_state_anchor_mode": anchor_mode,
     }
 
 

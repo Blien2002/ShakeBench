@@ -6,7 +6,7 @@ import argparse
 import hashlib
 import json
 from collections.abc import Mapping
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any, Optional
 
 
@@ -51,7 +51,7 @@ def _json_bindings(path: Path) -> dict[str, Any]:
         if isinstance(item, Mapping):
             selected = {
                 name: item[name]
-                for name in ("profile_id", "profile_sha256", "profile_id", "sha256")
+                for name in ("profile_id", "profile_sha256", "sha256")
                 if name in item and isinstance(item[name], (str, int, float, bool))
             }
             if selected:
@@ -90,6 +90,7 @@ def build_index(
     path_list_sha256: str,
     history_map_sha256: str | None = None,
     archive_sha256: str | None = None,
+    archive_format: str = "tar.zst",
 ) -> dict[str, Any]:
     root = Path(stage_root)
     index_member = Path("index/evidence_index_v1.json")
@@ -116,7 +117,10 @@ def build_index(
         files.append(record)
 
     index: dict[str, Any] = {
-        "archive_format": "tar.zst",
+        # The outer archive is authenticated only by the detached release
+        # manifest.  Keeping this compatibility field null avoids an archive
+        # -> index -> archive hash cycle.
+        "archive_format": archive_format,
         "archive_release_tag": archive_release_tag,
         "archive_sha256": archive_sha256,
         "expected_asset_url": expected_asset_url,
@@ -126,6 +130,7 @@ def build_index(
         "schema_id": "shakebench.evidence.index",
         "schema_version": 1,
     }
+    index["file_count"] = len(files)
     index["index_sha256"] = hashlib.sha256(_canonical(index).encode("utf-8")).hexdigest()
     destination = Path(output)
     destination.parent.mkdir(parents=True, exist_ok=True)
