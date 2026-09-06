@@ -71,20 +71,23 @@ python -m robosuite.scripts.shakebench_verify_phase07_handoff --manifest docs/ph
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q tests/test_shakebench_phase07r6_publication.py tests/test_shakebench_oracle.py tests/test_shakebench_phase07r5_motion_semantics.py tests/test_shakebench_phase07_completion_red.py tests/test_shakebench_actuators.py tests/test_shakebench_physics_profile.py
 ```
 
-Fresh-clone final gate passed at `/tmp/shakebench-r6-fresh-final-h8P7Aw` with
-HEAD `1824060986949c3dd618075499fb8a709e08fb36`, clean status, `git fsck`,
+Fresh-clone final gate passed at `/tmp/shakebench-r6-fresh-final2-kwSfPG` with
+HEAD `8d4ba0371f0954358f6e7c1f51cefc9de94cb31e`, clean status, `git fsck`,
 rewritten-anchor verification, runtime publication verification, handoff
-verification, downloaded-release standalone/full audit, package wheel/sdist
-checks, focused tests `86 passed, 2 skipped`, and full ShakeBench non-renderer
-regression `296 passed, 24 skipped`.  Its `.git` is 437,169,709 bytes (416.64
-MiB pack); no raw evidence or old object cache was reused.  The final public
-release download was validated from release URL and `SHA256SUMS`.
+verification, downloaded-release standalone verification, package wheel/sdist
+checks, and focused tests `86 passed, 2 skipped`.  The complete non-renderer
+regression was also run in the independent predecessor fresh clone
+`/tmp/shakebench-r6-fresh-final-h8P7Aw` at the same source tree before the
+report-only commits: `296 passed, 24 skipped`.  No raw evidence or old object
+cache was reused; the public release download and `SHA256SUMS` both passed.
 
-Remote publication record: lease captured before mutation was
+Remote publication record: the pre-mutation lease was
 `refs/heads/master=5fe46051d1c1cbe5a748c9330b5e338fd563df15`; the new annotated
 R6 tag was pushed without moving the old R5 tag, the release was created with
-all five required assets, and exact `--force-with-lease` updated master to
-`1824060986949c3dd618075499fb8a709e08fb36`.  The old release tag remains at
+all five required assets, and exact `--force-with-lease` first updated master
+to `1824060986949c3dd618075499fb8a709e08fb36`, then with the next exact lease
+updated it to `8d4ba0371f0954358f6e7c1f51cefc9de94cb31e` for report-only
+metadata.  The old release tag remains at
 `5fe46051d1c1cbe5a748c9330b5e338fd563df15`; no `refs/codex/*` or unrelated
 branch/tag was pushed or deleted.
 
