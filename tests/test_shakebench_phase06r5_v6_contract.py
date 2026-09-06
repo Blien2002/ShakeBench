@@ -16,8 +16,8 @@ from robosuite.models import assets_root
 from robosuite.scripts.shakebench_select_physics_v6 import (
     PROTOCOL_FILENAME,
     RAW_PREFIX,
-    _select_contact_or_none,
     _official_profile_reference,
+    _select_contact_or_none,
     adapter_contract,
     dry_run_manifest,
     load_v6_protocol,
@@ -36,7 +36,7 @@ from robosuite.utils.shakebench_protocol_v6 import (
     V6ProtocolStateError,
     resolve_all_protocol_states_v6,
 )
-
+from tests.shakebench_test_helpers import evidence_asset
 
 ASSETS = Path(assets_root)
 PROTOCOL = ASSETS / PROTOCOL_FILENAME
@@ -59,7 +59,9 @@ def test_v6_protocol_resolves_all_stages_and_derived_parameters():
     assert structure["stage_counts"] == {"driver": 18, "isolator": 3, "contact": 3, "parity": 1, "replay": 12}
     assert len(states) == 37
     assert {state.stage for state in states} == {"driver", "isolator", "contact", "parity", "replay"}
-    isolator = next(state for state in states if state.stage == "isolator" and state.candidate_id == "low_frequency_damped")
+    isolator = next(
+        state for state in states if state.stage == "isolator" and state.candidate_id == "low_frequency_damped"
+    )
     assert isolator.isolator is not None
     assert isolator.isolator.fn_hz == (4.0, 4.0, 4.0, 3.0, 3.0, 2.0)
     assert isolator.isolator.k[2] == pytest.approx(20212.949813431005, abs=1e-12)
@@ -119,7 +121,14 @@ def test_v6_adapter_contract_uses_no_physics_backend_and_subprocess(tmp_path):
     path = tmp_path / "protocol.yaml"
     _write(path, protocol)
     completed = subprocess.run(
-        [sys.executable, "-m", "robosuite.scripts.shakebench_select_physics_v6", "--protocol", str(path), "--adapter-contract"],
+        [
+            sys.executable,
+            "-m",
+            "robosuite.scripts.shakebench_select_physics_v6",
+            "--protocol",
+            str(path),
+            "--adapter-contract",
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -150,8 +159,15 @@ def test_dry_run_digest_is_stable_and_v6_does_not_consume_v5_raw_files():
     first = dry_run_manifest(protocol)
     second = dry_run_manifest(protocol)
     assert first["resolved_state_digest"] == second["resolved_state_digest"]
-    assert all(path.name.startswith(RAW_PREFIX) for path in [Path(item["output"]) for item in first["states"] for item in [item["common"]]])
-    v5 = sorted(ASSETS.glob("shakebench_phase_06r4_v5_raw_driver_*.json"))
+    assert all(
+        path.name.startswith(RAW_PREFIX)
+        for path in [Path(item["output"]) for item in first["states"] for item in [item["common"]]]
+    )
+    v5 = sorted(
+        evidence_asset("shakebench_phase_06r4_v5_raw_driver_dt_fine_gamma_0_15_empty.json").parent.glob(
+            "shakebench_phase_06r4_v5_raw_driver_*.json"
+        )
+    )
     assert len(v5) == 18
 
 

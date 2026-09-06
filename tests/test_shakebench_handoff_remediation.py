@@ -21,24 +21,26 @@ from robosuite.scripts.shakebench_handoff_remediation import (
 )
 from robosuite.utils.shakebench_artifacts import file_sha256
 from robosuite.utils.shakebench_physics_finalizer import artifact_hash
-
+from tests.shakebench_test_helpers import evidence_asset, evidence_root
 
 ASSETS = Path(assets_root)
 
 
 def test_remediation_protocol_and_historical_bundle_are_fail_closed():
-    protocol, _, protocol_hash = load_protocol(ASSETS / "shakebench_phase_06fr_protocol.yaml")
+    evidence_asset("shakebench_phase_06fr_raw_real_open_dt_nominal.json")
+    root = evidence_root()
+    protocol, _, protocol_hash = load_protocol(root / "shakebench_phase_06fr_protocol.yaml")
     validation = validate_protocol(protocol, protocol_hash)
     assert validation["mujoco_calls"] == 0
-    result = verify_remediation_bundle(ASSETS, require_pass=True)
+    result = verify_remediation_bundle(root, require_pass=True)
     assert result["passed"], result["errors"]
-    status = json.loads((ASSETS / "shakebench_phase_06fr_status.json").read_text())
+    status = json.loads((root / "shakebench_phase_06fr_status.json").read_text())
     assert status["status"] == "PASS"
 
 
 def test_real_environment_trace_negative_cases_reject_middle_sample_dtype_and_forged_complete():
-    protocol, _, _ = load_protocol(ASSETS / "shakebench_phase_06fr_protocol.yaml")
-    source = json.loads((ASSETS / "shakebench_phase_06fr_raw_real_open_dt_nominal.json").read_text())
+    protocol, _, _ = load_protocol(evidence_root() / "shakebench_phase_06fr_protocol.yaml")
+    source = json.loads(evidence_asset("shakebench_phase_06fr_raw_real_open_dt_nominal.json").read_text())
     assert verify_trace(source, protocol)["passed"]
     missing = copy.deepcopy(source)
     missing["trace"].pop(len(missing["trace"]) // 2)
@@ -58,9 +60,9 @@ def test_real_environment_trace_negative_cases_reject_middle_sample_dtype_and_fo
 
 
 def test_equal_terminal_summary_with_different_transient_is_rejected():
-    protocol, _, _ = load_protocol(ASSETS / "shakebench_phase_06fr_protocol.yaml")
-    selected = json.loads((ASSETS / "shakebench_phase_06fr_raw_real_open_dt_nominal.json").read_text())
-    finer = json.loads((ASSETS / "shakebench_phase_06fr_raw_real_open_dt_fine.json").read_text())
+    protocol, _, _ = load_protocol(evidence_root() / "shakebench_phase_06fr_protocol.yaml")
+    selected = json.loads(evidence_asset("shakebench_phase_06fr_raw_real_open_dt_nominal.json").read_text())
+    finer = json.loads(evidence_asset("shakebench_phase_06fr_raw_real_open_dt_fine.json").read_text())
     mutated = copy.deepcopy(finer)
     mutated["trace"][2499]["penetration_m"] += 0.01
     result = compare_transient_traces(selected, mutated, protocol)
@@ -77,11 +79,11 @@ def test_inherited_raw_mutation_and_missing_file_are_detected(tmp_path):
         "shakebench_phase_06r5_v6_status.json",
         "shakebench_phase_06r5_v6_feasibility.json",
     ):
-        shutil.copy2(ASSETS / name, tmp_path / name)
-    selected = json.loads((ASSETS / "shakebench_phase_06r5_v6_selected_candidates.json").read_text())
+        shutil.copy2(evidence_asset(name), tmp_path / name)
+    selected = json.loads(evidence_asset("shakebench_phase_06r5_v6_selected_candidates.json").read_text())
     for row in selected["raw_files"]:
         if row.get("stage") in {"driver", "isolator"}:
-            shutil.copy2(ASSETS / row["path"], tmp_path / row["path"])
+            shutil.copy2(evidence_asset(row["path"]), tmp_path / row["path"])
     baseline = verify_inherited_raw(tmp_path)
     assert baseline["passed"], baseline["errors"]
     mutation_path = tmp_path / "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json"
@@ -89,6 +91,6 @@ def test_inherited_raw_mutation_and_missing_file_are_detected(tmp_path):
     mutated["evidence"]["metrics"]["max_weld_residual"] = 999.0
     mutation_path.write_text(json.dumps(mutated), encoding="utf-8")
     assert verify_inherited_raw(tmp_path)["passed"] is False
-    shutil.copy2(ASSETS / "shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json", mutation_path)
+    shutil.copy2(evidence_asset("shakebench_phase_06r5_v6_raw_driver_dt_nominal_gamma_0_30_empty.json"), mutation_path)
     mutation_path.unlink()
     assert verify_inherited_raw(tmp_path)["passed"] is False

@@ -2,3 +2,12 @@ recursive-include robosuite/controllers/config/ *
 recursive-include robosuite/demos *
 recursive-include robosuite/models/assets/ *
 recursive-include robosuite/scripts *
+
+# Phase 06/07 raw traces are release evidence and are verified only through
+# an explicit external evidence archive.  Runtime profiles, compact manifests,
+# meshes, textures, and small fixtures remain package-owned.
+recursive-exclude robosuite/models/assets *raw*.json
+recursive-exclude robosuite/models/assets *diagnostic*.json
+recursive-exclude robosuite/models/assets *selected_diagnostics*.json
+include robosuite/models/assets/shakebench_phase_06r2_raw_driver_dt_medium.json
+include robosuite/models/assets/shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json

@@ -8,26 +8,30 @@ from pathlib import Path
 import pytest
 
 from robosuite.models import assets_root
-from robosuite.scripts.shakebench_select_physics_v6 import load_v6_protocol, _resolve
+from robosuite.scripts.shakebench_select_physics_v6 import _resolve, load_v6_protocol
 from robosuite.scripts.shakebench_select_physics_v7 import (
     _compile_contact_audit,
     _compile_force_envelope,
     _compiled_contact_matches,
     _finger_from_trace,
     _recovery_from_trace,
+    _verify_v6_inherited_evidence,
     load_v7_protocol,
     validate_v7_protocol,
     verify_v7_selection_artifact,
-    _verify_v6_inherited_evidence,
 )
-
+from tests.shakebench_test_helpers import evidence_asset, evidence_root
 
 ASSETS = Path(assets_root)
-DIAGNOSTIC = ASSETS / "shakebench_phase_06r6_v7_contact_recovery_diagnostic.json"
+DIAGNOSTIC_NAME = "shakebench_phase_06r6_v7_contact_recovery_diagnostic.json"
+
+
+def _diagnostic() -> dict:
+    return json.loads(evidence_asset(DIAGNOSTIC_NAME).read_text(encoding="utf-8"))
 
 
 def test_v7_diagnostic_is_design_only_and_freezes_recovery_convention():
-    payload = json.loads(DIAGNOSTIC.read_text(encoding="utf-8"))
+    payload = _diagnostic()
     assert payload["status"] == "DESIGN_EVIDENCE_ONLY"
     assert payload["selection_authority"] is False
     assert payload["scoreable"] is False
@@ -50,7 +54,7 @@ def test_v7_diagnostic_is_design_only_and_freezes_recovery_convention():
 
 
 def test_v7_diagnostic_derives_finite_force_envelope_and_rejects_v6_midpoint_load():
-    payload = json.loads(DIAGNOSTIC.read_text(encoding="utf-8"))
+    payload = _diagnostic()
     for candidate in payload["candidates"]:
         envelope = candidate["finger_force_envelope"]
         assert envelope["finite_force_envelope_N"] == pytest.approx(40.0)
@@ -62,7 +66,7 @@ def test_v7_diagnostic_derives_finite_force_envelope_and_rejects_v6_midpoint_loa
 
 
 def test_v7_recovery_verifier_rejects_timestamp_mutation_and_wrong_interface():
-    payload = json.loads(DIAGNOSTIC.read_text(encoding="utf-8"))
+    payload = _diagnostic()
     candidate = payload["candidates"][0]
     gates = {"recovery_duration_s": 0.50, "tail_window_s": 0.05}
     result, errors = _recovery_from_trace(candidate["recovery_trace"], timestep_s=0.0002, gates=gates)
@@ -80,7 +84,11 @@ def test_v7_recovery_verifier_rejects_timestamp_mutation_and_wrong_interface():
 
 def test_v7_compiled_profile_and_force_envelope_are_independently_auditable():
     protocol, _, protocol_hash = load_v6_protocol(ASSETS / "shakebench_selection_protocol_v6.yaml")
-    state = next(state for state in _resolve(protocol, protocol_bytes_hash=protocol_hash) if state.stage == "contact" and state.candidate_id == "c3_nominal")
+    state = next(
+        state
+        for state in _resolve(protocol, protocol_bytes_hash=protocol_hash)
+        if state.stage == "contact" and state.candidate_id == "c3_nominal"
+    )
     compiled = _compile_contact_audit(state)
     passed, errors = _compiled_contact_matches(compiled, state)
     assert passed, errors
@@ -90,13 +98,15 @@ def test_v7_compiled_profile_and_force_envelope_are_independently_auditable():
 
 
 def test_v7_inheritance_rejects_historical_v6_contact_selection_and_keeps_noncontact():
-    inherited = _verify_v6_inherited_evidence()
+    evidence_asset("shakebench_phase_06r5_v6_raw_driver_dt_fine_gamma_0_15_empty.json")
+    inherited = _verify_v6_inherited_evidence(evidence_root())
     assert inherited["selected_driver"] == "dt_nominal"
     assert inherited["selected_isolator"] == "low_frequency_damped"
     assert len(inherited["raw_files"]) == 21
 
 
 def test_v7_protocol_is_frozen_after_diagnostic_and_expands_only_contact():
+    evidence_asset(DIAGNOSTIC_NAME)
     protocol, _, protocol_hash = load_v7_protocol(ASSETS / "shakebench_selection_protocol_v7.yaml")
     structure = validate_v7_protocol(protocol, protocol_bytes_hash=protocol_hash)
     assert structure["stage_counts"] == {"driver": 18, "isolator": 3, "contact": 7, "parity": 1, "replay": 12}
@@ -107,7 +117,12 @@ def test_v7_protocol_is_frozen_after_diagnostic_and_expands_only_contact():
 
 
 def test_v7_blocked_artifact_is_independently_verified_with_null_contact():
-    result = verify_v7_selection_artifact(ASSETS / "shakebench_phase_06r6_v7_selected_candidates.json", protocol_path=ASSETS / "shakebench_selection_protocol_v7.yaml")
+    evidence_asset("shakebench_phase_06r6_v7_raw_replay_driver_process_1.json")
+    root = evidence_root()
+    result = verify_v7_selection_artifact(
+        root / "shakebench_phase_06r6_v7_selected_candidates.json",
+        protocol_path=root / "shakebench_selection_protocol_v7.yaml",
+    )
     assert result["passed"] is False
     assert result["recomputed_selection"]["contact"] is None
     assert result["checks"]["contact_coverage"] is True

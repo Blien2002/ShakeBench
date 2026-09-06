@@ -2,7 +2,29 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import numpy as np
+import pytest
+
+from robosuite.models import assets_root
+
+
+def evidence_root() -> Path:
+    """Return the explicit full-audit root, or the package compact root."""
+
+    configured = os.environ.get("SHAKEBENCH_EVIDENCE_ROOT")
+    return Path(configured) if configured else Path(assets_root)
+
+
+def evidence_asset(name: str) -> Path:
+    """Resolve an evidence member and skip raw-dependent tests if absent."""
+
+    path = evidence_root() / name
+    if not path.is_file():
+        pytest.skip(f"full evidence archive required: {name}")
+    return path
 
 
 def build_tier_observation(

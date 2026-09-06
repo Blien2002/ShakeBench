@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from robosuite.models import assets_root
 import robosuite.utils.shakebench_physics as physics
+from robosuite.models import assets_root
 from robosuite.utils.shakebench_driver_measurement import DriverMeasurementPlan
 from robosuite.utils.shakebench_physics import (
     OFFICIAL_PHYSICS_PROFILE_FILENAME,
@@ -20,7 +20,7 @@ from robosuite.utils.shakebench_physics import (
     make_probe_physics_profile,
     physics_profile_hash,
 )
-
+from tests.shakebench_test_helpers import evidence_asset
 
 ASSETS = Path(assets_root)
 
@@ -42,9 +42,7 @@ def _temporary_official_fixture(tmp_path: Path) -> Path:
         }
     )
     payload["profile_sha256"] = physics_profile_hash(payload)
-    (tmp_path / OFFICIAL_PHYSICS_PROFILE_FILENAME).write_text(
-        yaml.safe_dump(payload, sort_keys=True), encoding="utf-8"
-    )
+    (tmp_path / OFFICIAL_PHYSICS_PROFILE_FILENAME).write_text(yaml.safe_dump(payload, sort_keys=True), encoding="utf-8")
     (tmp_path / "shakebench_phase_06r4_v5_status.json").write_text(
         json.dumps(
             {
@@ -69,9 +67,20 @@ def test_packaged_phase06f_publication_loads_only_after_handoff_verification():
 def test_official_loader_accepts_only_an_isolated_packaged_pass_fixture(tmp_path, monkeypatch):
     fixture = _temporary_official_fixture(tmp_path)
     monkeypatch.setattr(physics.models, "assets_root", str(fixture))
-    import robosuite.utils.shakebench_physics_finalizer as finalizer
+    import robosuite.utils.shakebench_runtime_verifier as runtime_verifier
 
     expected = yaml.safe_load((fixture / OFFICIAL_PHYSICS_PROFILE_FILENAME).read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        runtime_verifier,
+        "verify_runtime_publication_bundle",
+        lambda root: {
+            "passed": True,
+            "errors": [],
+            "profile_sha256": expected["profile_sha256"],
+        },
+    )
+    import robosuite.utils.shakebench_physics_finalizer as finalizer
+
     monkeypatch.setattr(
         finalizer,
         "verify_official_publication_bundle",
@@ -115,7 +124,7 @@ def test_v3_protocol_and_raw_evidence_are_unchanged_and_blocked():
         "8175160da40e66d39b85f2f3dccf75338d713b309b7612a968f053fbe808fbee"
     )
     status = json.loads((ASSETS / "shakebench_phase_06r2_status.json").read_text(encoding="utf-8"))
-    raw = json.loads((ASSETS / "shakebench_phase_06r2_raw_driver_dt_medium.json").read_text(encoding="utf-8"))
+    raw = json.loads(evidence_asset("shakebench_phase_06r2_raw_driver_dt_medium.json").read_text(encoding="utf-8"))
     assert status["status"] == "BLOCKED"
     assert status["failure_taxonomy"] == "invalid_protocol_configuration"
     assert raw["record_count"] == 1
@@ -142,9 +151,7 @@ def test_bounded_measurement_contract_and_capacity_evidence():
     plan = DriverMeasurementPlan(physics_timestep_s=0.0001, cadence_hz=200.0)
     assert plan.refresh_stride == 50
     assert plan.sample_dt_s == pytest.approx(0.005, abs=1e-15)
-    artifact = json.loads(
-        (ASSETS / "shakebench_phase_06r2_capacity_preflight.json").read_text(encoding="utf-8")
-    )
+    artifact = json.loads((ASSETS / "shakebench_phase_06r2_capacity_preflight.json").read_text(encoding="utf-8"))
     assert artifact["passed"] is True
     assert artifact["selection_input"] is False
     assert artifact["mujoco_step_count"] == 347200
@@ -162,14 +169,18 @@ def test_v4_status_is_blocked_and_first_v4_raw_artifact_is_preserved():
     assert status["status"] == "BLOCKED"
     assert status["failure_taxonomy"] == "invalid_protocol_configuration"
     assert (ASSETS / "shakebench_selection_protocol_v4.yaml").exists()
-    raw = ASSETS / "shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json"
+    raw = evidence_asset("shakebench_phase_06r3_v4_raw_driver_dt_fine_gamma_0_15_empty.json")
     assert raw.is_file()
     assert json.loads(raw.read_text(encoding="utf-8"))["state_id"] == "driver.dt_fine.gamma_0_15.empty"
 
 
 def test_v5_driver_matrix_is_preserved_but_active_status_is_blocked():
     status = json.loads((ASSETS / "shakebench_phase_06r4_v5_status.json").read_text(encoding="utf-8"))
-    files = sorted(ASSETS.glob("shakebench_phase_06r4_v5_raw_driver_*.json"))
+    files = sorted(
+        evidence_asset("shakebench_phase_06r4_v5_raw_driver_dt_fine_gamma_0_15_empty.json").parent.glob(
+            "shakebench_phase_06r4_v5_raw_driver_*.json"
+        )
+    )
     assert status["status"] == "BLOCKED"
     assert status["failure_taxonomy"] == "invalid_protocol_configuration"
     assert len(files) == 18

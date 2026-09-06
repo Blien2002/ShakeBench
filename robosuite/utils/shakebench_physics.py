@@ -18,18 +18,17 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Optional
-import xml.etree.ElementTree as ET
 
 import numpy as np
 
 from robosuite import models
 from robosuite.utils.shakebench_isolator import AXES, IsolatorConfig, derive_isolator_parameters
-
 
 PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
 PHYSICS_PROFILE_SCHEMA_VERSION = 1
@@ -158,7 +157,9 @@ def _number(name: str, value: Any, *, positive: bool = False, nonnegative: bool 
     return result
 
 
-def _vector(name: str, value: Any, length: int, *, positive: bool = False, nonnegative: bool = False) -> tuple[float, ...]:
+def _vector(
+    name: str, value: Any, length: int, *, positive: bool = False, nonnegative: bool = False
+) -> tuple[float, ...]:
     if isinstance(value, (str, bytes)):
         raise PhysicsProfileError(f"{name} must contain {length} finite values")
     try:
@@ -176,7 +177,9 @@ def _vector(name: str, value: Any, length: int, *, positive: bool = False, nonne
 
 def _same_vector(actual: Any, expected: Any, *, atol: float = 1.0e-12) -> bool:
     try:
-        return bool(np.allclose(np.asarray(actual, dtype=float), np.asarray(expected, dtype=float), rtol=0.0, atol=atol))
+        return bool(
+            np.allclose(np.asarray(actual, dtype=float), np.asarray(expected, dtype=float), rtol=0.0, atol=atol)
+        )
     except (TypeError, ValueError):
         return False
 
@@ -516,7 +519,10 @@ class PhysicsProfile:
             raise PhysicsProfileError("table/object sliding friction must remain 0.30")
         if self.contact["sliding_mu"]["finger_object"] != 1.00:
             raise PhysicsProfileError("finger/object sliding friction must remain 1.00")
-        if any(_number(f"contact.{name}", getattr(self, f"contact_{name}"), nonnegative=True) < 0.0 for name in ("torsional_mu", "rolling_mu", "margin_m", "gap_m")):
+        if any(
+            _number(f"contact.{name}", getattr(self, f"contact_{name}"), nonnegative=True) < 0.0
+            for name in ("torsional_mu", "rolling_mu", "margin_m", "gap_m")
+        ):
             raise PhysicsProfileError("contact friction/margin/gap must be non-negative")
         expected_control_steps = 1.0 / (self.control_freq_hz * self.model_timestep_s)
         if self.control_steps != round(expected_control_steps) or not np.isclose(
@@ -600,7 +606,12 @@ def _validate_payload(payload: Mapping[str, Any], *, source: str, require_offici
 
 
 def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsProfile:
-    """Load and verify the package-owned official profile."""
+    """Load and verify the package-owned official profile.
+
+    Runtime loading authenticates only package-owned compact assets.  Full
+    Phase 06 raw-evidence recomputation is intentionally opt-in through the
+    release audit CLI.
+    """
 
     if path is not None:
         requested = Path(path).resolve()
@@ -609,25 +620,12 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             raise PhysicsProfileIntegrityError(
                 "scoreable official physics must be loaded from the packaged canonical asset"
             )
-    # Phase 06F is the sole publication authority. Historical V1--V8 status
-    # files are audit records and can never activate the official loader.
-    from robosuite.utils.shakebench_physics_finalizer import verify_official_publication_bundle
+    from robosuite.utils.shakebench_runtime_verifier import verify_runtime_publication_bundle
 
-    bundle = verify_official_publication_bundle(Path(models.assets_root))
-    if bundle.get("passed") is not True:
-        detail = "; ".join(str(error) for error in bundle.get("errors", ()))
-        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F handoff verifier: " + detail)
-    from robosuite.scripts.shakebench_handoff_remediation import verify_remediation_bundle
-
-    remediation = verify_remediation_bundle(Path(models.assets_root), require_pass=True)
-    if remediation.get("passed") is not True:
-        detail = "; ".join(str(error) for error in remediation.get("errors", ()))
-        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F-R remediation handoff: " + detail)
-    from robosuite.utils.shakebench_handoff_semantic import verify_phase06fr2_handoff
-
-    semantic = verify_phase06fr2_handoff(Path(models.assets_root))
-    if semantic.passed is not True:
-        raise PhysicsProfileIntegrityError("official physics is blocked by the Phase 06F-R2 semantic handoff: " + "; ".join(semantic.errors))
+    runtime = verify_runtime_publication_bundle(Path(models.assets_root))
+    if runtime.get("passed") is not True:
+        detail = "; ".join(str(error) for error in runtime.get("errors", ()))
+        raise PhysicsProfileIntegrityError("official physics is blocked by the runtime publication contract: " + detail)
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
     try:
         payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
@@ -642,8 +640,8 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
     expected_protocol_hash = hashlib.sha256(protocol_bytes).hexdigest()
     if profile.payload.get("protocol_sha256") != expected_protocol_hash:
         raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06F selection protocol")
-    if profile.profile_sha256 != bundle.get("profile_sha256"):
-        raise PhysicsProfileIntegrityError("official profile differs from the verified Phase 06F handoff")
+    if profile.profile_sha256 != runtime.get("profile_sha256"):
+        raise PhysicsProfileIntegrityError("official profile differs from the verified runtime publication contract")
     return profile
 
 
@@ -748,9 +746,7 @@ def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
             raise PhysicsProfileError(f"cannot read physics profile: {profile_path}") from exc
         resolved = _validate_payload(payload, source=str(profile_path), require_official=False)
         if resolved.scoreable:
-            raise PhysicsProfileIntegrityError(
-                "external physics profile paths must be explicitly non-scoreable"
-            )
+            raise PhysicsProfileIntegrityError("external physics profile paths must be explicitly non-scoreable")
         return resolved
     if isinstance(profile, Mapping):
         payload = dict(profile)

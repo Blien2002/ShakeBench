@@ -8,6 +8,8 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
+
 from robosuite.models import assets_root
 from robosuite.scripts.shakebench_handoff_remediation import load_protocol as load_r1_protocol
 from robosuite.utils.shakebench_handoff_semantic import (
@@ -16,7 +18,7 @@ from robosuite.utils.shakebench_handoff_semantic import (
     verify_phase06fr2_handoff,
 )
 from robosuite.utils.shakebench_physics_finalizer import artifact_hash
-
+from tests.shakebench_test_helpers import evidence_asset, evidence_root
 
 ASSETS = Path(assets_root)
 
@@ -24,17 +26,18 @@ ASSETS = Path(assets_root)
 def _protocol():
     import yaml
 
-    return yaml.safe_load((ASSETS / "shakebench_phase_06fr2_protocol.yaml").read_text(encoding="utf-8"))
+    return yaml.safe_load((evidence_root() / "shakebench_phase_06fr2_protocol.yaml").read_text(encoding="utf-8"))
 
 
 def test_r2_handoff_semantic_bundle_passes_after_anchor_generation():
-    result = verify_phase06fr2_handoff(ASSETS)
+    evidence_asset("shakebench_phase_06fr_raw_parity_gamma_zero.json")
+    result = verify_phase06fr2_handoff(evidence_root())
     assert result.passed, result.errors
 
 
 def test_gamma_zero_parity_is_recomputed_from_raw_trace_values():
     protocol = _protocol()
-    parity = json.loads((ASSETS / "shakebench_phase_06fr_raw_parity_gamma_zero.json").read_text(encoding="utf-8"))
+    parity = json.loads(evidence_asset("shakebench_phase_06fr_raw_parity_gamma_zero.json").read_text(encoding="utf-8"))
     assert verify_gamma_zero_parity(parity["trace"], parity["parity"], protocol)["passed"]
     mutated = copy.deepcopy(parity["trace"])
     mutated[100]["decoded_action"][0] = 1.0
@@ -52,7 +55,9 @@ def test_convergence_recomputes_cumulative_impulse_not_one_step_force():
     records = {}
     for support_token, support in (("open", "open_worktable"), ("target", "target_bottom")):
         for token, dt in (("dt_fine", 0.0001), ("dt_medium", 0.000125), ("dt_nominal", 0.0002)):
-            records[(support, dt)] = json.loads((ASSETS / f"shakebench_phase_06fr_raw_real_{support_token}_{token}.json").read_text())
+            records[(support, dt)] = json.loads(
+                evidence_asset(f"shakebench_phase_06fr_raw_real_{support_token}_{token}.json").read_text()
+            )
     result = recompute_convergence(protocol, records)
     assert result["passed"]
     mutated = copy.deepcopy(records)
@@ -63,11 +68,22 @@ def test_convergence_recomputes_cumulative_impulse_not_one_step_force():
 def test_handoff_file_hash_binding_rejects_payload_rehashed_only(tmp_path):
     import yaml
 
-    protocol = yaml.safe_load((ASSETS / "shakebench_phase_06fr2_protocol.yaml").read_text())
+    protocol = yaml.safe_load((evidence_root() / "shakebench_phase_06fr2_protocol.yaml").read_text())
     names = {row["path"] for row in protocol["evidence"]}
-    names.update({"shakebench_phase_06fr2_protocol.yaml", "shakebench_phase_06fr2_status.json", "shakebench_phase_06fr2_handoff.json", "shakebench_phase_06fr2_anchor.json", "shakebench_selection_protocol_v6.yaml", "shakebench_phase_06r5_v6_selected_candidates.json", "shakebench_phase_06r5_v6_status.json", "shakebench_phase_06r5_v6_feasibility.json"})
+    names.update(
+        {
+            "shakebench_phase_06fr2_protocol.yaml",
+            "shakebench_phase_06fr2_status.json",
+            "shakebench_phase_06fr2_handoff.json",
+            "shakebench_phase_06fr2_anchor.json",
+            "shakebench_selection_protocol_v6.yaml",
+            "shakebench_phase_06r5_v6_selected_candidates.json",
+            "shakebench_phase_06r5_v6_status.json",
+            "shakebench_phase_06r5_v6_feasibility.json",
+        }
+    )
     for name in names:
-        source = ASSETS / name
+        source = evidence_asset(name)
         destination = tmp_path / name
         if destination.exists():
             continue
