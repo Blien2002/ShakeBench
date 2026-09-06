@@ -2,8 +2,9 @@
 
 Status: **PASS**; `phase08_authorized=true`.  The R6 implementation commit is
 `a87a87c3540b85894343ad49e95b6ed598b7f7b5`; the metadata handoff commit is
-the commit containing this report and manifest, and the implementation commit
-is verified as its ancestor by
+`1824060986949c3dd618075499fb8a709e08fb36` and the later fresh-clone record
+commit is `4133f31f2b9fc2f7fb51803a020ddd970802d0aa`.  The implementation
+commit is verified as an ancestor of the metadata handoff by
 `robosuite.scripts.shakebench_verify_phase07_handoff`.
 
 The work started from a new `--no-local` clone of remote R5 handoff
