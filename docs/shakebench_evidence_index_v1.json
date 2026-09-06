@@ -1,7 +1,7 @@
 {
   "archive_format": "tar.zst",
   "archive_release_tag": "shakebench-evidence-v0-2026-09",
-  "archive_sha256": null,
+  "archive_sha256": "803d7e9a1bd8163511acd5e9c3a6741b232df52d792deb2bf3fc9658c54be3af",
   "expected_asset_url": "https://github.com/Blien2002/ShakeBench/releases/download/shakebench-evidence-v0-2026-09/shakebench-evidence-v0-2026-09.tar.zst",
   "files": [
     {
@@ -5650,6 +5650,18 @@
       "phase_status": "authoritative",
       "sha256": "2a2eb4137b51fdeec13bfe1665c2fddd1d75aeba18cc740aa9357c33dabeddcb",
       "size": 54138
+    },
+    {
+      "archive_group": "release",
+      "archive_member": "evidence/phase07/out/phase07r5/package_evidence_slim_final.json",
+      "bindings": {
+        "schema_id": "shakebench.phase07.package_evidence",
+        "schema_version": 1
+      },
+      "original_path": "out/phase07r5/package_evidence_slim_final.json",
+      "phase_status": "authoritative",
+      "sha256": "5c51d2dae9b71a8774056b0448ae99c1b4e479af7949c1cad8915ecdcb543cbb",
+      "size": 52851
     },
     {
       "archive_group": "release",
@@ -34878,16 +34890,16 @@
       "archive_member": "history_rewrite/commit-map",
       "original_path": "history_rewrite/commit-map",
       "phase_status": "build evidence",
-      "sha256": "8a61e522badc4df751d279ca581371a142b7aa164a873575e867ede66d183286",
-      "size": 70
+      "sha256": "181a4f8aba24c39c633d9637775fe74e4785b52c14e9e46d51516ecfad64b0be",
+      "size": 109597
     },
     {
       "archive_group": "release",
       "archive_member": "history_rewrite/ref-map",
       "original_path": "history_rewrite/ref-map",
       "phase_status": "build evidence",
-      "sha256": "e2e3da46266ecf503f53111325f7a06848efaccd40f99e8560bec20ca1a43bab",
-      "size": 67
+      "sha256": "b55663d22bf2534572c164f8e9be9d8504100e43a6e492a2ca70d5be3b83cbeb",
+      "size": 186
     },
     {
       "archive_group": "release",
@@ -34910,12 +34922,12 @@
           "profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c"
         },
         "phase": "07R5",
-        "status": "BLOCKED_BY_PHASE_07R5_FINAL_COMMIT_HANDOFF"
+        "status": "PASS"
       },
       "original_path": "docs/phase_07_r5_manifest.json",
       "phase_status": "authoritative",
-      "sha256": "b250a1f66a687313be202153cee876bf495810b96bfec1809b33e04d8a93f353",
-      "size": 8635
+      "sha256": "90a23d3dc3e41d33b27eb89794936cf1fc293a0774cb102df1bee41ab7a34d50",
+      "size": 8798
     },
     {
       "archive_group": "release",
@@ -34942,8 +34954,8 @@
       "size": 46017
     }
   ],
-  "history_rewrite_map_sha256": "8a61e522badc4df751d279ca581371a142b7aa164a873575e867ede66d183286",
-  "index_sha256": "ba1f58dba1a9b30819c2814d2dd5f0a5d4d57afbfa720cf013ee3eebe1311e49",
+  "history_rewrite_map_sha256": "7e60da6dccfb4d7a216368e53ca6fbd2c0d5d8572d95a847dcf96f560aa0713d",
+  "index_sha256": "7b92cae0ad4433c10f2e17e29b5a02e978eb925f759d7f3256695490e62f1252",
   "path_list_sha256": "acf4a5fbbd08b6fa02264def85115600ac515a31f85c31f893e48a7c0547fe3a",
   "schema_id": "shakebench.evidence.index",
   "schema_version": 1

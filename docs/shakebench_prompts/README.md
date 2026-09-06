@@ -121,7 +121,7 @@ reproduction     从 raw evidence 独立重算 PASS/FAIL 的命令
 
 ## 阶段索引
 
-当前权威状态是 **Phase 07R5 MOTION SEMANTICS CLOSED / FINAL COMMIT HANDOFF BLOCKED**。
+当前权威状态是 **Phase 07R5 PASS / PHASE 08 AUTHORIZED**。
 06/06R–06R7 的 BLOCKED 结论是中间方案的历史记录，只用于 provenance。
 
 R4 controller core 已完成并由 compact manifest 独立验证：state 002 成功、V0/Gamma=0 为
@@ -129,13 +129,10 @@ R4 controller core 已完成并由 compact manifest 独立验证：state 002 成
 R5 已完成 motion capability、公共 SE(3) 相对运动、共同 typed estimate、causal preview、
 最终 Gamma diagnostics、matched、determinism、actuator、package 和 ablation evidence。
 
-当前只剩 final commit handoff：工作树包含进入本轮前的既有未提交修改，需明确提交边界并绑定
-`docs/phase_07_r5_manifest.json` 后才授权 Phase 08。不得读取或运行 knee/official states。
-
-远程仓库已因历史 raw evidence 达到数百 MB，单独 final-commit handoff 不能缩小已存在的 blob。
-下一步运行 `phase_07r5_repository_slimming_and_handoff.md`：先外置 evidence、拆分 runtime/full
-audit、在隔离 clone 重写明确的 ShakeBench refs 并迁移 Git anchors，再完成 R5 两提交 handoff
-和 force-with-lease。完成后才进入 Phase 08。
+repository slimming、external evidence archive、runtime/full-audit split、isolated history
+rewrite 和精确 lease handoff 已完成；`docs/phase_07_r5_manifest.json` 已绑定 rewritten
+implementation commit `64039dbc77ac5becc67f8b9f33860d7bf12372ac`，因此 Phase 08 已授权。
+不得把 Phase 08 implementation 混入本次 handoff。
 
 | 阶段 | Prompt | 直接修改重点 | 硬门 |
 |---:|---|---|---|

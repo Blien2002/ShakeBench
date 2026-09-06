@@ -1,6 +1,63 @@
-# Phase 07R5 current conclusion: Oracle Motion Semantics closure
+# Phase 07R5 final handoff: repository slimming and release audit
 
-Status: **BLOCKED_BY_PHASE_07R5_FINAL_COMMIT_HANDOFF**
+Status: **PASS**; `phase08_authorized=true`.
+
+The rewritten implementation/evidence commit is
+`64039dbc77ac5becc67f8b9f33860d7bf12372ac`, and it is an ancestor of the
+metadata handoff commit at the current rewritten `HEAD` (the exact handoff
+SHA is intentionally resolved with `git rev-parse HEAD`, avoiding a
+self-reference inside its own report).
+
+Repository slimming and archive audit completed with:
+
+- release tag: `shakebench-evidence-v0-2026-09`
+- release asset URL: `https://github.com/Blien2002/ShakeBench/releases/download/shakebench-evidence-v0-2026-09/shakebench-evidence-v0-2026-09.tar.zst`
+- archive SHA-256: `803d7e9a1bd8163511acd5e9c3a6741b232df52d792deb2bf3fc9658c54be3af`
+- archive index SHA-256: `7b92cae0ad4433c10f2e17e29b5a02e978eb925f759d7f3256695490e62f1252`
+- history rewrite map SHA-256: `7e60da6dccfb4d7a216368e53ca6fbd2c0d5d8572d95a847dcf96f560aa0713d`
+- removed-path list SHA-256: `acf4a5fbbd08b6fa02264def85115600ac515a31f85c31f893e48a7c0547fe3a`
+- removed-path records: 153 total (140 tracked Phase 06 raw/diagnostic/replay paths; 13 checkpoint-only `out/phase07*` paths); two small regression fixtures remain package-owned.
+
+The final archive standalone member check and full audit both passed. Full audit
+recomputed the Phase 06 publication/remediation/semantic handoffs, R5
+authoritative traces and three-process determinism; runtime verification and
+clean slim wheel/sdist installation passed without the raw archive.
+
+Size comparison:
+
+| artifact | before | after |
+|---|---:|---:|
+| original workspace `.git` | 1.1 GiB | retained unchanged locally for recovery |
+| source clone pack | — | 487.69 MiB |
+| rewritten clone `.git` | — | 418 MiB / 416.54 MiB pack |
+| wheel | 237,393,264 bytes | 158,309,617 bytes |
+| sdist | 231,075,827 bytes | 157,083,410 bytes |
+
+Final slim package hashes are wheel
+`3303860a82cad8ce2f1f7ae635bc1a75b1f7583d05a19f2513a3da954cdcdd34`, sdist
+`d82284c5fed7e117927f5101f5989078902db783a2bdf547b7dc7661ffaa8dbb`, and
+package evidence JSON `0b5a7cc232acad37d187db9d0282ec8f48ed9f3b8dc2928a09a0b1b565d54b15`.
+
+The original workspace retains raw evidence and the repository-outside backup
+at `/tmp/shakebench_repo_slimming_backup_20260906T135736Z/`. Its complete
+bundle SHA-256 is
+`4871a3ce3092d9a6f77cea457137cc4c13282a4391fbc85d10f68722d4827b27`.
+The remote lease captured before mutation was
+`refs/heads/master=dd6fe2edb6384ccdb5116be44f07592b4864e377`; only the rewritten
+default branch and the new evidence release tag are authorized for push. Local
+`refs/codex/*` and unrelated upstream refs were not pushed or rewritten.
+
+Recovery commands:
+
+```text
+git clone /tmp/shakebench_repo_slimming_backup_20260906T135736Z/pre-rewrite-all.bundle recovery
+tar -I zstd -xf /tmp/shakebench_repo_slimming_backup_20260906T135736Z/tracked-shakebench-raw.tar.zst
+python -m robosuite.scripts.shakebench_audit_evidence --evidence-archive shakebench-evidence-v0-2026-09.tar.zst
+```
+
+# Historical Phase 07R5 motion-semantics conclusion
+
+Historical pre-handoff status: **BLOCKED_BY_PHASE_07R5_FINAL_COMMIT_HANDOFF**
 
 R4 entry is independently verified by `docs/phase_07_r4_manifest.json` and the
 new R4 entry replay at `out/phase07r5/r4_entry_replay.json`.  The compact R4

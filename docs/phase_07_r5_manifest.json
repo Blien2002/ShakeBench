@@ -1,6 +1,6 @@
 {
   "phase": "07R5",
-  "status": "BLOCKED_BY_PHASE_07R5_FINAL_COMMIT_HANDOFF",
+  "status": "PASS",
   "protected_claims": [
     "V0-V3 estimates describe one typed relative-support quantity",
     "shared control law is tier-invariant and capability limits are applied after compensation",
@@ -103,6 +103,8 @@
     "wheel_sha256": "49ad8c9d3d0a40d384bba193a76068522f5fb1881b1800ed59d67ded44711d08",
     "sdist_sha256": "43153808a796e292f537afc4712e7fdef1373ce828f09935dce9110c5f4829f8"
   },
-  "final_commit": null,
-  "phase08_authorized": false
+  "final_commit": "64039dbc77ac5becc67f8b9f33860d7bf12372ac",
+  "phase08_authorized": true,
+  "final_commit_role": "rewritten_implementation_and_evidence_commit",
+  "handoff_rule": "final_commit must be an ancestor of the commit containing this manifest"
 }

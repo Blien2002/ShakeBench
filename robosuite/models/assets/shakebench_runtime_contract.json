@@ -14,8 +14,8 @@
   "contract_id": "shakebench.runtime.publication.v1",
   "history_rewrite": {
     "map_path": "docs/shakebench_history_rewrite_map_v1.json",
-    "map_sha256": null,
-    "status": "pending"
+    "map_sha256": "7e60da6dccfb4d7a216368e53ca6fbd2c0d5d8572d95a847dcf96f560aa0713d",
+    "status": "complete"
   },
   "package_contract": {
     "full_audit_requires_explicit_evidence": true,
@@ -42,5 +42,5 @@
     "task": "VibrationPickPlaceCan",
     "robot": "Panda"
   },
-  "payload_sha256": "ef6f00aa8df20d8fdf9f90a4c5096ef5937fb46e115edf7d73114370fa016155"
+  "payload_sha256": "3154652809679fe98ef35abfdbc66d2126c42af6de74a4dc6af9f27572eb0c8a"
 }
