@@ -15,7 +15,6 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-
 PHASE07_DEV_STATE_SCHEMA_ID = "shakebench.phase07.dev_states"
 PHASE07_DEV_STATE_SCHEMA_VERSION = 1
 PHASE07_DEV_STATE_GENERATOR_ID = "shakebench.sha256_uniform.v1"

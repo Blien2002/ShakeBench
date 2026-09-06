@@ -19,6 +19,7 @@ from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.shakebench_deck import DeckDriver, DeckDriverConfig, audit_compiled_deck_model
+from robosuite.utils.shakebench_excitation import ExcitationProgram
 from robosuite.utils.shakebench_metrics import (
     CANONICAL_CAN_COLLISION_ENVELOPE,
     CANONICAL_CAN_COM_M,
@@ -37,6 +38,7 @@ from robosuite.utils.shakebench_metrics import (
     extract_can_collision_envelope,
     frame_world_position,
 )
+from robosuite.utils.shakebench_oracle import WorktableTaskContext
 from robosuite.utils.shakebench_physics import PhysicsProfileError, resolve_physics_profile
 from robosuite.utils.shakebench_privilege import (
     PRIVILEGED_NAMESPACE,
@@ -54,11 +56,10 @@ from robosuite.utils.shakebench_providers import (
 )
 from robosuite.utils.shakebench_sensors import (
     CANONICAL_IMU_PROFILE,
-    CanonicalIMU,
     IMU_DT_S,
+    CanonicalIMU,
     ShakeBenchSensorError,
 )
-from robosuite.utils.shakebench_excitation import ExcitationProgram
 
 CAN_START_XY_M = (-0.10, -0.13)
 TARGET_CENTER_XY_M = (-0.10, 0.17)
@@ -248,6 +249,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self._compiled_contract = None
         self.metrics = None
         self.success_evaluator = VibrationSuccessEvaluator(DEFAULT_SUCCESS_THRESHOLDS)
+        self._last_success_evaluation = None
 
         if deck_config is not None and not isinstance(deck_config, DeckDriverConfig):
             raise ValueError("deck_config must be a DeckDriverConfig")
@@ -706,7 +708,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             )
 
         @sensor(modality=task_modality)
-        def goal_center_robot_base(obs_cache):
+        def goal_frame_pos_robot_base(obs_cache):
             target_world = frame_world_position(
                 self.sim,
                 self.arena.worktable_body_name,
@@ -715,26 +717,26 @@ class VibrationPickPlaceCan(ManipulationEnv):
             return np.asarray(_world_to_robot_base(target_world), dtype=np.float32)
 
         @sensor(modality=task_modality)
-        def goal_half_extents_robot_base(obs_cache):
+        def goal_frame_quat_robot_base(obs_cache):
+            worktable_id = self.sim.model.body_name2id(self.arena.worktable_body_name)
+            target_rotation_world = np.asarray(self.sim.data.xmat[worktable_id], dtype=float).reshape(3, 3)
+            base_rotation_world = np.asarray(
+                self.sim.data.get_body_xmat(self.robot_base_body_name), dtype=float
+            ).reshape(3, 3)
+            # ``T.mat2quat`` already returns xyzw. A second conversion treats
+            # it as wxyz and corrupts identity into [0, 0, 1, 0].
+            return np.asarray(T.mat2quat(base_rotation_world.T.dot(target_rotation_world)), dtype=np.float32)
+
+        @sensor(modality=task_modality)
+        def goal_inner_half_extents_target(obs_cache):
             return np.asarray(
                 (self.target_inner_xy_m[0] / 2.0, self.target_inner_xy_m[1] / 2.0),
                 dtype=np.float32,
             )
 
         @sensor(modality=task_modality)
-        def goal_z_bounds_robot_base(obs_cache):
-            target_world = frame_world_position(
-                self.sim,
-                self.arena.worktable_body_name,
-                frame_local_origin_m=self.metrics.target_frame_local_origin_m,
-            )
-            worktable_id = self.sim.model.body_name2id(self.arena.worktable_body_name)
-            worktable_rotation = np.asarray(self.sim.data.xmat[worktable_id], dtype=float).reshape(3, 3)
-            wall_height = float(self.arena.target_container_spec["wall_height_m"])
-            top_world = target_world + worktable_rotation.dot(np.asarray((0.0, 0.0, wall_height)))
-            return np.asarray(
-                (_world_to_robot_base(target_world)[2], _world_to_robot_base(top_world)[2]), dtype=np.float32
-            )
+        def goal_z_bounds_target(obs_cache):
+            return np.asarray((0.0, float(self.arena.target_container_spec["wall_height_m"])), dtype=np.float32)
 
         @sensor(modality=task_modality)
         def goal_orientation_mask(obs_cache):
@@ -751,9 +753,10 @@ class VibrationPickPlaceCan(ManipulationEnv):
             ("robot0_fingertip_pos_robot_base", fingertip_pos_robot_base),
             ("can_pos_robot_base", can_pos_robot_base),
             ("can_quat_robot_base", can_quat_robot_base),
-            ("goal_center_robot_base", goal_center_robot_base),
-            ("goal_half_extents_robot_base", goal_half_extents_robot_base),
-            ("goal_z_bounds_robot_base", goal_z_bounds_robot_base),
+            ("goal_frame_pos_robot_base", goal_frame_pos_robot_base),
+            ("goal_frame_quat_robot_base", goal_frame_quat_robot_base),
+            ("goal_inner_half_extents_target", goal_inner_half_extents_target),
+            ("goal_z_bounds_target", goal_z_bounds_target),
             ("goal_orientation_mask", goal_orientation_mask),
         )
         for name, sensor_fn in state_sensors:
@@ -802,6 +805,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         if self.metrics is not None:
             self.metrics.reset()
         self.success_evaluator.reset()
+        self._last_success_evaluation = None
 
     def _pre_action(self, action, policy_step=False):
         if self.observation_tier is not None and policy_step:
@@ -893,22 +897,21 @@ class VibrationPickPlaceCan(ManipulationEnv):
     def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
         if self.metrics is None:
             return
-        # DeckDriver keeps its full-rate response trace.  Task/contact
-        # metrics are sampled at the policy boundary (20 Hz by contract),
-        # which is sufficient for the 0.50 s success window and avoids doing
-        # expensive collision-mesh support-point extraction for every internal
-        # model step.
-        if self._control_steps and (self._physics_step_index + 1) % self._control_steps != 0:
-            return
-        snapshot = self.metrics.update(self.sim, time_s=sample_time_s)
-        evaluation = self.success_evaluator.evaluate(snapshot.success_snapshot, time_s=sample_time_s)
-        self.metrics.attach_success(evaluation)
+        # Success is a physics-step contract.  Keep the full diagnostic report
+        # at 20 Hz, but update the small evaluator input on every substep.
+        self._last_success_evaluation = self.success_evaluator.evaluate(
+            self.metrics.success_snapshot(self.sim), time_s=sample_time_s
+        )
+        if not self._control_steps or (self._physics_step_index + 1) % self._control_steps == 0:
+            self.metrics.update(self.sim, time_s=sample_time_s)
+            self.metrics.attach_success(self._last_success_evaluation)
 
     def _sample_metrics(self):
         if self.metrics is None:
             raise ShakeBenchMetricsError("metrics are unavailable before model construction")
         snapshot = self.metrics.update(self.sim, time_s=float(self.sim.data.time))
         evaluation = self.success_evaluator.evaluate(snapshot.success_snapshot, time_s=float(self.sim.data.time))
+        self._last_success_evaluation = evaluation
         return self.metrics.attach_success(evaluation)
 
     def target_frame_world_position(self):
@@ -957,6 +960,40 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "policy_rate_hz": float(self.control_freq),
             }
         target_spec = self.arena.target_container_spec
+        compiled_robot_base_pose_in_deck = (
+            None if self._imu_mount_audit is None else self._imu_mount_audit.get("robot_base_pose_in_deck")
+        )
+        if compiled_robot_base_pose_in_deck is None and hasattr(self, "sim"):
+            raw_model = getattr(self.sim.model, "_model", self.sim.model)
+            base_id = int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_BODY, self.robot_base_body_name))
+            if base_id >= 0:
+                compiled_robot_base_pose_in_deck = np.concatenate(
+                    (
+                        np.asarray(raw_model.body_pos[base_id], dtype=float),
+                        np.asarray(raw_model.body_quat[base_id], dtype=float),
+                    )
+                )
+        if compiled_robot_base_pose_in_deck is None:
+            compiled_robot_base_position = (0.0, 0.0, 0.0)
+            compiled_robot_base_quaternion = (1.0, 0.0, 0.0, 0.0)
+        else:
+            compiled_robot_base_pose_in_deck = np.asarray(compiled_robot_base_pose_in_deck, dtype=float)
+            if compiled_robot_base_pose_in_deck.shape != (7,):
+                raise ShakeBenchMetricsError("compiled robot-base pose in deck must have seven values")
+            compiled_robot_base_position = tuple(compiled_robot_base_pose_in_deck[:3])
+            compiled_robot_base_quaternion = tuple(compiled_robot_base_pose_in_deck[3:])
+        task_context = WorktableTaskContext(
+            worktable_size_xy_m=tuple(np.asarray(self.table_full_size, dtype=float)[:2]),
+            target_frame_origin_in_worktable_m=tuple(self.metrics.target_frame_local_origin_m),
+            table_surface_z_in_worktable_m=float(self.arena.table_half_size[2]),
+            can_collision_radius_m=float(self.can_collision_envelope.support_radius_m),
+            can_collision_lower_support_m=float(self.can_collision_envelope.lower_support_z_m),
+            can_collision_upper_support_m=float(self.can_collision_envelope.upper_support_z_m),
+            finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
+            support_topology_id="deck_robot_base_plus_isolated_worktable",
+            deck_to_robot_base_position_m=compiled_robot_base_position,
+            deck_to_robot_base_quaternion_wxyz=compiled_robot_base_quaternion,
+        )
         return {
             "observation_tier": self.observation_tier,
             "policy_rate_hz": float(self.control_freq),
@@ -997,6 +1034,23 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 ),
             },
             "target_container": target_spec,
+            "task_context": task_context.to_dict(),
+            "task_context_sha256": task_context.sha256,
+            "support_motion": {
+                "semantic_quantity": "worktable_relative_to_robot_base_motion",
+                "frame": "robot_base",
+                "reference_point": "target_origin",
+                "deck_to_robot_base_pose_in_deck": np.concatenate(
+                    (
+                        np.asarray(task_context.deck_to_robot_base_position_m, dtype=float),
+                        np.asarray(task_context.deck_to_robot_base_quaternion_wxyz, dtype=float),
+                    )
+                ).tolist(),
+                "isolator_fn_hz": self.arena.isolator_parameters.fn_hz,
+                "isolator_zeta": self.arena.isolator_parameters.zeta,
+                "isolator_k": self.arena.isolator_parameters.stiffness,
+                "isolator_c": self.arena.isolator_parameters.damping,
+            },
             "support_topology_id": "deck_robot_base_plus_isolated_worktable",
             "success_semantics": "phase04_vibration_success_evaluator",
         }

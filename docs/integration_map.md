@@ -184,7 +184,7 @@ python -m robosuite.scripts.shakebench_cli validate-config <config.json>
 
 ## 8. 明确不在 Phase 00/02 的工作
 
-Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/inertia authority、target-local support metrics、单一 contact-loss schema 和 success evaluator；Phase 05/05R 已实现 State tiers、robot-base IMU、exact policy boundary、continuous timeline、signed int16 与 privileged isolation；仍未实现 oracle controller、committed states 或 scorecard；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 02R4 已完成 Panda/base-inclusive provisional audit，Phase 03R 已完成 transfer/default/payload/visual physics gates，但 deck/isolator/contact mass/inertia、eq_solref/eq_solimp 和 physics timestep 仍未由 Phase 06 official freeze。
+Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/inertia authority、target-local support metrics、单一 contact-loss schema 和 success evaluator；Phase 05/05R 已实现 State tiers、robot-base IMU、exact policy boundary、continuous timeline、signed int16 与 privileged isolation；Phase 07 已实现完整公共 target frame、physics-step success accumulator、shared 7D Oracle controller/runner，并以前移的 dev-only 预注册修复十状态依赖环；official/knee states 和 scorecard 仍归 Phase 08；没有复制任何外部 package；没有新建目录；没有改 package name/version。Phase 06F-R2 已冻结 official physics。
 
 Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。Phase 03R 已通过 XML default、18 格复数 transfer、64-line joint spectrum、4 格 payload COM sensitivity 和 visual invariance gates，故 `phase04_handoff=PASS`。最终 isolator operating point、contact/task runtime 和 official freeze 仍属于后续阶段。当前 Phase 02/03 artifacts 只能通过只读 verifier 或带 reason 的显式 update 变更。
 

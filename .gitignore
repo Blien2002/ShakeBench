@@ -128,3 +128,13 @@ MUJOCO_LOG.TXT
 
 # private demonstration files
 robosuite/models/assets/demonstrations_private
+
+# ShakeBench Phase 07 raw rollout evidence is release-data, not Git history.
+/out/phase07_invalidated/
+/out/phase07r2/
+/out/phase07r3/
+/out/phase07r4/
+/out/phase07r5/
+
+# Codex-local session configuration and checkpoints are never project history.
+.codex/

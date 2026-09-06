@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from unittest import mock
+
 import numpy as np
 import pytest
-from unittest import mock
 
 import robosuite
 import robosuite.utils.transform_utils as T
@@ -14,12 +15,12 @@ from robosuite.utils.shakebench_providers import (
     COMMON_STATE_KEYS,
     TIER_ADDED_KEYS,
     TIER_POLICY_KEYS,
+    RigidBodyState,
     ShakeBenchProviderError,
     V3Provider,
-    RigidBodyState,
     make_vibration_provider,
-    reconstruct_authored_motion,
     policy_keys_for_tier,
+    reconstruct_authored_motion,
     relative_pose_twist_acceleration,
 )
 from robosuite.utils.shakebench_sensors import (
@@ -78,7 +79,10 @@ def test_real_environment_observations_add_only_the_declared_tier_fields():
             assert "qpos" not in observations
             assert observations["robot0_eef_pos_robot_base"].shape == (3,)
             assert observations["robot0_eef_quat_robot_base"].shape == (4,)
-            assert observations["goal_half_extents_robot_base"].shape == (2,)
+            assert observations["goal_frame_pos_robot_base"].shape == (3,)
+            assert observations["goal_frame_quat_robot_base"].shape == (4,)
+            assert observations["goal_inner_half_extents_target"].shape == (2,)
+            assert observations["goal_z_bounds_target"].shape == (2,)
             assert observations["goal_orientation_mask"].dtype == np.bool_
             if tier != "V0":
                 assert env.vibration_provider.imu_body_name == "robot0_base"
@@ -244,6 +248,28 @@ def test_state_policy_boundary_remains_exact_with_renderer_flags():
         assert "robot0_joint_acc" not in stepped
         assert "robot0_proprio-state" not in stepped
         assert "shakebench_task-state" not in stepped
+    finally:
+        env.close()
+
+
+def test_public_goal_frame_matches_the_evaluator_target_frame_convention():
+    env = _make_env("V0")
+    try:
+        observation = env.reset()
+        target_world = env.target_frame_world_position()
+        base_id = env.sim.model.body_name2id(env.robot_base_body_name)
+        base_position = np.asarray(env.sim.data.xpos[base_id], dtype=float)
+        base_rotation = np.asarray(env.sim.data.xmat[base_id], dtype=float).reshape(3, 3)
+        table_id = env.sim.model.body_name2id(env.worktable_body_name)
+        target_rotation = np.asarray(env.sim.data.xmat[table_id], dtype=float).reshape(3, 3)
+        np.testing.assert_allclose(
+            observation["goal_frame_pos_robot_base"], base_rotation.T.dot(target_world - base_position), atol=1e-7
+        )
+        # ``mat2quat`` is already xyzw; converting it again would reinterpret
+        # the components as wxyz and invalidate the public target frame.
+        expected_quat = T.mat2quat(base_rotation.T.dot(target_rotation))
+        np.testing.assert_allclose(observation["goal_frame_quat_robot_base"], expected_quat, atol=1e-7)
+        np.testing.assert_allclose(observation["goal_z_bounds_target"], (0.0, 0.035), atol=1e-7)
     finally:
         env.close()
 

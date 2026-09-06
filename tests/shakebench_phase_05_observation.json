@@ -15,9 +15,10 @@
       "robot0_fingertip_pos_robot_base",
       "can_pos_robot_base",
       "can_quat_robot_base",
-      "goal_center_robot_base",
-      "goal_half_extents_robot_base",
-      "goal_z_bounds_robot_base",
+      "goal_frame_pos_robot_base",
+      "goal_frame_quat_robot_base",
+      "goal_inner_half_extents_target",
+      "goal_z_bounds_target",
       "goal_orientation_mask"
     ],
     "V1": [
@@ -31,9 +32,10 @@
       "robot0_fingertip_pos_robot_base",
       "can_pos_robot_base",
       "can_quat_robot_base",
-      "goal_center_robot_base",
-      "goal_half_extents_robot_base",
-      "goal_z_bounds_robot_base",
+      "goal_frame_pos_robot_base",
+      "goal_frame_quat_robot_base",
+      "goal_inner_half_extents_target",
+      "goal_z_bounds_target",
       "goal_orientation_mask",
       "deck_imu_window",
       "deck_imu_dt_s"
@@ -49,9 +51,10 @@
       "robot0_fingertip_pos_robot_base",
       "can_pos_robot_base",
       "can_quat_robot_base",
-      "goal_center_robot_base",
-      "goal_half_extents_robot_base",
-      "goal_z_bounds_robot_base",
+      "goal_frame_pos_robot_base",
+      "goal_frame_quat_robot_base",
+      "goal_inner_half_extents_target",
+      "goal_z_bounds_target",
       "goal_orientation_mask",
       "deck_imu_window",
       "deck_imu_dt_s",
@@ -73,9 +76,10 @@
       "robot0_fingertip_pos_robot_base",
       "can_pos_robot_base",
       "can_quat_robot_base",
-      "goal_center_robot_base",
-      "goal_half_extents_robot_base",
-      "goal_z_bounds_robot_base",
+      "goal_frame_pos_robot_base",
+      "goal_frame_quat_robot_base",
+      "goal_inner_half_extents_target",
+      "goal_z_bounds_target",
       "goal_orientation_mask",
       "deck_imu_window",
       "deck_imu_dt_s",
@@ -173,6 +177,6 @@
   "artifact_lock": {
     "update_reason": "Phase 05R: close robot-base IMU, exact policy boundary, continuous timeline, signed int16 and immutable privilege contract",
     "previous_payload_sha256": "d28610885f44c8c11c88dc74fff4553929de949306954c6f9b659fba95561c3c",
-    "payload_sha256": "aa8b0e02d8399a719bdcc7ab54493d3d9adfdece87590ad1c2c57e7608cab799"
+    "payload_sha256": "9d1f7455f3903321d911cebc4a1c1a2746d6cdff22e213d42db7320453286dfc"
   }
 }

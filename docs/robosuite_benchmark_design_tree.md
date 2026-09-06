@@ -273,6 +273,7 @@ Can 碰撞几何的水平投影完整位于有墙目标容器内边界
 - 目标容器冻结为 ShakeBench `shallow_storage_bin`：外平面 `0.18 × 0.16 m`、壁厚 `0.008 m`、内平面 `0.164 × 0.144 m`、壁高 `0.035 m`、底厚 `0.012 m`；由一个底板和四个 MJCF box collider 构成；
 - 目标容器与工作台属于同一个 isolated rigid assembly，不新增自由度或隐藏质量；
 - 成功稳定门冻结为：连续 `0.50 s` 保持水平 containment、Can 相对目标箱线速度 `<0.02 m/s`、相对角速度 `<0.20 rad/s`、无 finger–Can contact、由目标底板支撑、非法穿透 `<0.50 mm`；
+- 离散仿真中的“连续”按每个 internal physics step 定义；policy-rate observation 和报告可以降采样，但任一 substep 违反成功子条件都必须重置候选窗口；
 - 成功只在完整连续窗口通过后锁存；释放后的瞬时弹跳不得立即计为成功。
 
 ### 4.4 nominal task layout — DECIDED（Q42）
@@ -375,23 +376,24 @@ Can pose in robot-base frame
 goal region in robot-base frame
 ```
 
-目标应表示为 region，而不是伪造唯一 target pose：
+目标应表示为带当前 frame pose 的 region，而不是伪造唯一 Can target pose。公共字段必须足以把 robot-base 中的点和位姿变换到当前 target-container local frame：
 
 ```text
-goal_center_b
-goal_half_extents
-goal_z_bounds
-orientation_constraint / mask
+goal_frame_pos_robot_base       float32[3]
+goal_frame_quat_robot_base      float32[4], xyzw
+goal_inner_half_extents_target  float32[2]
+goal_z_bounds_target            float32[2]
+goal_orientation_mask           bool[3]
 ```
 
-raw table pose/twist 不进入 State 公共字段，因为：
+当前 goal frame pose 是完成移动目标任务所需的 task geometry，向所有 V0–V3 公开。它不等同于完整 support state：
 
-- table pose 会泄漏 V2 的 `q`；
-- table twist 会泄漏 V2 的 `qdot`；
-- acceleration 会直接替代 V1/V2；
-- 只给 State 又会让 Vision/State 差异同时包含任务感知和振动感知。
+- 不公开 raw deck pose 或 raw table pose 的支撑链分解；
+- 不公开 table/deck twist 或 acceleration；
+- V2 仍独占当前 realized deck state 与 table-relative-to-deck pose/twist/acceleration；
+- V0 可以从连续 task geometry 间接推断部分扰动，这与“无专用振动 channel”的定义一致。
 
-实时 Can 与 goal region 的 robot-base 表达已经提供完成任务所需的相对几何。完整 support state 应进入 V2 或单独 diagnostic lane。
+实时 Can 与完整 goal frame/region 已提供完成任务所需的相对几何。完整 support state 应进入 V2 或单独 diagnostic lane。
 
 该轨道使用 task-state truth，因此在论文中应明确称为 `State Oracle-Control Track`，不能暗示已经解决视觉感知。未来 Vision 消融不得与 State 数字无标记混排或求平均。
 
@@ -528,6 +530,15 @@ target-container geometry and success semantics
 - gripper actuator force、接触预载和关闭语义；
 - OSC 增益与输出缩放；
 - 控制器参数是否成为 task context metadata。
+
+### 6.3 Phase 07 controller development — DECIDED
+
+- 只使用 10 个 dev state IDs，可在 Phase 06 已验证的 `Gamma_commanded={0.00,0.15,0.30}` 上开发同一个共享 controller；
+- `Gamma=0` 的 State-V0 10/10 是 nominal solvability 硬门；
+- 正 Gamma 开发只用于暴露移动目标、延迟补偿、抓持与恢复实现问题，其成功率、tier 排序、slip 和恢复次数是诊断，不是 Phase 07 发布资格；
+- 同一 controller profile、TaskExecutive、gains、rate、gripper、horizon 和 recovery budget 同时应用于 V0–V3；
+- 不读取 knee/official states，不扫描 Gamma 选择有利排序，不以预期的 `V3>V2>V1>V0` 作为实现目标；
+- slip、短暂 contact loss 和 placement rebound 保持诊断语义；在 horizon 和 safety 合同允许时，reference controller 可以恢复，最终 success 仍只由环境 evaluator 判定。
 
 ## 7. 摩擦与工件因子
 

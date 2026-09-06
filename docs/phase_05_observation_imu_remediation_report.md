@@ -45,6 +45,13 @@ V3 = V2 + (line_accel_amplitude, line_omega_rad_s,
            ramp_type, ramp_duration_s, program_frame)
 ```
 
+Phase 07 replaced the ambiguous public goal center/extents/z fields with the
+single scoreable target-frame schema shared verbatim by V0--V3:
+`goal_frame_pos_robot_base`, `goal_frame_quat_robot_base` (xyzw),
+`goal_inner_half_extents_target`, `goal_z_bounds_target`, and
+`goal_orientation_mask`. The current target frame is task geometry, not a V2
+support-state channel; V0 still has no dedicated vibration signal.
+
 Stock joint acceleration, joint sin/cos, gripper qpos/qvel aliases, modality
 aggregates、world-frame EEF/object fields 均不会越过 policy boundary。legacy
 `observation_tier=None` 仍保留上游行为。每个最终 policy value 都是

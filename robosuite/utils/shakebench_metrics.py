@@ -558,9 +558,7 @@ def _collision_source_hash(model: Any, geom_names: tuple[str, ...]) -> str:
                 mesh_id = int(model.geom_dataid[geom_id])
                 start = int(model.mesh_vertadr[mesh_id])
                 count = int(model.mesh_vertnum[mesh_id])
-                geometry["mesh_vertices"] = np.asarray(
-                    model.mesh_vert[start : start + count], dtype=float
-                ).tolist()
+                geometry["mesh_vertices"] = np.asarray(model.mesh_vert[start : start + count], dtype=float).tolist()
             geometries.append(geometry)
         payload = {
             "algorithm": CAN_COLLISION_ENVELOPE_ALGORITHM_VERSION,
@@ -894,8 +892,7 @@ def collect_contact_metrics(
     ]
     target_bottom_support_force = float(
         sum(
-            max(0.0, float(support_rotation.T.dot(record.force_on_can_world_N)[2]))
-            for record in target_bottom_contacts
+            max(0.0, float(support_rotation.T.dot(record.force_on_can_world_N)[2])) for record in target_bottom_contacts
         )
     )
     return ContactReport(
@@ -1326,7 +1323,9 @@ def audit_contact_pairs(
                 raise ShakeBenchMetricsError("compiled contact pair does not expose torsional/rolling friction")
             if isotropic_pair_5d:
                 if friction.size != 5 or not np.allclose(friction[:2], expected_mu, rtol=0.0, atol=tolerance):
-                    raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} is not isotropic in both sliding directions")
+                    raise ShakeBenchMetricsError(
+                        f"contact pair {geom1!r}, {geom2!r} is not isotropic in both sliding directions"
+                    )
                 if not np.isclose(friction[2], expected_torsional_mu, rtol=0.0, atol=tolerance):
                     raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
                 if not np.allclose(friction[3:], expected_rolling_mu, rtol=0.0, atol=tolerance):
@@ -1486,6 +1485,8 @@ class ShakeBenchMetrics:
         ):
             raise ShakeBenchMetricsError("slip_speed_threshold_m_s must be finite and non-negative")
         self.slip_speed_threshold_m_s = float(slip_speed_threshold_m_s)
+        self._compiled_can_body_points: Optional[np.ndarray] = None
+        self._compiled_can_model_identity: Optional[int] = None
         self.reset()
 
     def reset(self) -> None:
@@ -1550,6 +1551,80 @@ class ShakeBenchMetrics:
         }
         return driver_response, table_response
 
+    def _success_primitive(self, model: Any, raw_data: Any) -> tuple[PoseTwist, np.ndarray, ContactReport]:
+        """Shared compiled-geometry/contact extraction for success and reports."""
+
+        sim_view = self._as_sim_or_model(model, raw_data)
+        worktable_body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, self.worktable_body_name)
+        worktable_rotation = np.asarray(raw_data.xmat[worktable_body_id], dtype=float).reshape(3, 3)
+        can_target = can_pose_twist_in_frame(
+            sim_view,
+            self.can_body_name,
+            self.worktable_body_name,
+            frame_local_origin_m=self.target_frame_local_origin_m,
+        )
+        model_identity = id(model)
+        if self._compiled_can_body_points is None or self._compiled_can_model_identity != model_identity:
+            body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, self.can_body_name)
+            points = []
+            for geom_name in self.can_geom_names:
+                geom_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_GEOM, geom_name)
+                if int(model.geom_bodyid[geom_id]) != body_id:
+                    raise ShakeBenchMetricsError(
+                        f"collision geom {geom_name!r} is not attached to body {self.can_body_name!r}"
+                    )
+                points.append(_mesh_vertices_in_body_frame(model, geom_id))
+            if not points:
+                raise ShakeBenchMetricsError("at least one compiled Can collision geom is required")
+            self._compiled_can_body_points = np.concatenate(points, axis=0)
+            self._compiled_can_model_identity = model_identity
+        body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, self.can_body_name)
+        body_rotation = np.asarray(raw_data.xmat[body_id], dtype=float).reshape(3, 3)
+        body_position = np.asarray(raw_data.xpos[body_id], dtype=float)
+        world_points = body_position + self._compiled_can_body_points.dot(body_rotation.T)
+        frame_position, frame_rotation, _, _ = _frame_world_pose_twist(
+            model, raw_data, self.worktable_body_name, self.target_frame_local_origin_m
+        )
+        support_points_target = (world_points - frame_position).dot(frame_rotation)
+        contacts = collect_contact_metrics(
+            sim_view,
+            can_geom_names=self.can_geom_names,
+            table_geom_names=self.table_geom_names,
+            target_bottom_geom_names=self.target_bottom_geom_names,
+            target_wall_geom_names=self.target_wall_geom_names,
+            finger_pad_geom_names=self.finger_pad_geom_names,
+            dt_s=self.dt_s,
+            support_frame_rotation=worktable_rotation,
+        )
+        return can_target, support_points_target, contacts
+
+    def _success_snapshot_from_primitive(
+        self, can_target: PoseTwist, support_points_target: np.ndarray, contacts: ContactReport
+    ) -> SuccessSnapshot:
+        return SuccessSnapshot(
+            support_points_target_xy=support_points_target[:, :2],
+            target_inner_half_extents_m=tuple(self.target_inner_half_extents_m),
+            target_bottom_contact_present=contacts.target_bottom_contact_present,
+            target_bottom_support_force_N=contacts.target_bottom_support_force_N,
+            lower_support_z_m=float(np.min(support_points_target[:, 2])),
+            finger_can_contact_present=contacts.finger_can_contact_present,
+            relative_linear_speed_m_s=float(np.linalg.norm(can_target.linear_velocity_m_s)),
+            relative_angular_speed_rad_s=float(np.linalg.norm(can_target.angular_velocity_rad_s)),
+            illegal_penetration_m=contacts.max_penetration_m,
+        )
+
+    def success_snapshot(self, sim_or_model: Any, data: Any = None) -> SuccessSnapshot:
+        """Return only the evaluator inputs for one internal physics step.
+
+        This deliberately avoids the stateful diagnostic/report assembly in
+        :meth:`update`.  The environment calls it at the physics rate so that
+        a one-substep loss of containment, support, finger release, velocity,
+        or penetration resets the continuous-success candidate window.
+        """
+
+        model, raw_data = _raw_model_data(sim_or_model, data)
+        return self._success_snapshot_from_primitive(*self._success_primitive(model, raw_data))
+
     @staticmethod
     def _as_sim_or_model(model: Any, data: Any) -> Any:
         class _SimView:
@@ -1571,35 +1646,12 @@ class ShakeBenchMetrics:
             self.reset()
 
         sim_view = self._as_sim_or_model(model, raw_data)
-        worktable_body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, self.worktable_body_name)
-        worktable_rotation = np.asarray(raw_data.xmat[worktable_body_id], dtype=float).reshape(3, 3)
         can = {
             "robot_base": can_pose_twist_in_frame(sim_view, self.can_body_name, self.robot_base_body_name),
             "worktable": can_pose_twist_in_frame(sim_view, self.can_body_name, self.worktable_body_name),
-            "target": can_pose_twist_in_frame(
-                sim_view,
-                self.can_body_name,
-                self.worktable_body_name,
-                frame_local_origin_m=self.target_frame_local_origin_m,
-            ),
         }
-        support_points_target = collision_support_points_in_frame(
-            sim_view,
-            self.can_body_name,
-            self.can_geom_names,
-            self.worktable_body_name,
-            frame_local_origin_m=self.target_frame_local_origin_m,
-        )
-        contacts = collect_contact_metrics(
-            sim_view,
-            can_geom_names=self.can_geom_names,
-            table_geom_names=self.table_geom_names,
-            target_bottom_geom_names=self.target_bottom_geom_names,
-            target_wall_geom_names=self.target_wall_geom_names,
-            finger_pad_geom_names=self.finger_pad_geom_names,
-            dt_s=self.dt_s,
-            support_frame_rotation=worktable_rotation,
-        )
+        can_target_primitive, support_points_target, contacts = self._success_primitive(model, raw_data)
+        can["target"] = can_target_primitive
         if self._initial_can_worktable_xy is None:
             self._initial_can_worktable_xy = can["worktable"].position_m[:2].copy()
         table_slip = float(np.linalg.norm(can["worktable"].position_m[:2] - self._initial_can_worktable_xy))
@@ -1628,22 +1680,9 @@ class ShakeBenchMetrics:
             in_hand_rotation = float(
                 np.linalg.norm(_rotation_vector_from_matrix(initial_rotation.T.dot(current_rotation)))
             )
-        finger_contact_loss_after_grasp = bool(
-            self._had_finger_contact and not contacts.finger_can_contact_present
-        )
+        finger_contact_loss_after_grasp = bool(self._had_finger_contact and not contacts.finger_can_contact_present)
         self._last_finger_contact_loss_after_grasp = finger_contact_loss_after_grasp
-        lower_support_z_m = float(np.min(support_points_target[:, 2]))
-        success_snapshot = SuccessSnapshot(
-            support_points_target_xy=support_points_target[:, :2],
-            target_inner_half_extents_m=tuple(self.target_inner_half_extents_m),
-            target_bottom_contact_present=contacts.target_bottom_contact_present,
-            target_bottom_support_force_N=contacts.target_bottom_support_force_N,
-            lower_support_z_m=lower_support_z_m,
-            finger_can_contact_present=contacts.finger_can_contact_present,
-            relative_linear_speed_m_s=float(np.linalg.norm(can["target"].linear_velocity_m_s)),
-            relative_angular_speed_rad_s=float(np.linalg.norm(can["target"].angular_velocity_rad_s)),
-            illegal_penetration_m=contacts.max_penetration_m,
-        )
+        success_snapshot = self._success_snapshot_from_primitive(can_target_primitive, support_points_target, contacts)
         driver_response, table_response = self._response(model, raw_data)
         self.latest = MetricsSnapshot(
             time_s=time_s,
@@ -1757,9 +1796,7 @@ def verify_phase04_environment_artifact(path: Any) -> dict[str, Any]:
             and envelope.get("source_model_hash") == CANONICAL_CAN_COLLISION_ENVELOPE.source_model_hash
             and envelope.get("extraction_algorithm_version")
             == CANONICAL_CAN_COLLISION_ENVELOPE.extraction_algorithm_version
-            and np.isclose(
-                envelope.get("height_m"), CANONICAL_CAN_COLLISION_ENVELOPE.height_m, rtol=0.0, atol=1e-12
-            )
+            and np.isclose(envelope.get("height_m"), CANONICAL_CAN_COLLISION_ENVELOPE.height_m, rtol=0.0, atol=1e-12)
             and np.isclose(
                 envelope.get("support_radius_m"),
                 CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m,
@@ -1773,14 +1810,13 @@ def verify_phase04_environment_artifact(path: Any) -> dict[str, Any]:
             CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m,
             CANONICAL_CAN_COLLISION_ENVELOPE.height_m,
         )
-        checks["inertia_placement_authority"] = (
-            np.allclose(compiled_can.get("inertia_kg_m2"), expected_inertia, rtol=0.0, atol=1e-15)
-            and np.isclose(
-                compiled_can.get("placement_correction_z_offset_m"),
-                -CANONICAL_CAN_COLLISION_ENVELOPE.lower_support_z_m,
-                rtol=0.0,
-                atol=1e-12,
-            )
+        checks["inertia_placement_authority"] = np.allclose(
+            compiled_can.get("inertia_kg_m2"), expected_inertia, rtol=0.0, atol=1e-15
+        ) and np.isclose(
+            compiled_can.get("placement_correction_z_offset_m"),
+            -CANONICAL_CAN_COLLISION_ENVELOPE.lower_support_z_m,
+            rtol=0.0,
+            atol=1e-12,
         )
         schemas = payload.get("schemas", {})
         checks["support_contact_schema"] = schemas.get("support_contact_schema_version") == 2 and schemas.get(

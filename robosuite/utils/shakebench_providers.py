@@ -8,9 +8,9 @@ state history.  Runtime truth needed for evaluation is collected separately by
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from collections.abc import Mapping
 from typing import Any, Iterable, Optional
 
 import mujoco
@@ -19,15 +19,14 @@ import numpy as np
 from robosuite.utils.shakebench_excitation import ExcitationProgram, MotionSample, build_excitation_program
 from robosuite.utils.shakebench_sensors import (
     CANONICAL_IMU_PROFILE,
+    GRAVITY_WORLD_M_S2,
     CanonicalIMU,
     CanonicalIMUProfile,
-    GRAVITY_WORLD_M_S2,
     ShakeBenchSensorError,
     _matrix_to_quaternion_wxyz,
     _normalise_quaternion_wxyz,
     _quat_wxyz_to_matrix,
 )
-
 
 OBSERVATION_TIERS = ("V0", "V1", "V2", "V3")
 COMMON_STATE_KEYS = (
@@ -41,9 +40,10 @@ COMMON_STATE_KEYS = (
     "robot0_fingertip_pos_robot_base",
     "can_pos_robot_base",
     "can_quat_robot_base",
-    "goal_center_robot_base",
-    "goal_half_extents_robot_base",
-    "goal_z_bounds_robot_base",
+    "goal_frame_pos_robot_base",
+    "goal_frame_quat_robot_base",
+    "goal_inner_half_extents_target",
+    "goal_z_bounds_target",
     "goal_orientation_mask",
 )
 V0_POLICY_KEYS = ()
@@ -94,10 +94,16 @@ POLICY_FIELD_CONTRACT = MappingProxyType(
         "robot0_fingertip_pos_robot_base": {"shape": (6,), "dtype": "float32", "units": "m", "frame": "robot_base"},
         "can_pos_robot_base": {"shape": (3,), "dtype": "float32", "units": "m", "frame": "robot_base"},
         "can_quat_robot_base": {"shape": (4,), "dtype": "float32", "units": "unitless", "frame": "robot_base"},
-        "goal_center_robot_base": {"shape": (3,), "dtype": "float32", "units": "m", "frame": "robot_base"},
-        "goal_half_extents_robot_base": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "robot_base"},
-        "goal_z_bounds_robot_base": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "robot_base"},
-        "goal_orientation_mask": {"shape": (3,), "dtype": "bool", "units": "unitless", "frame": "robot_base"},
+        "goal_frame_pos_robot_base": {"shape": (3,), "dtype": "float32", "units": "m", "frame": "robot_base"},
+        "goal_frame_quat_robot_base": {
+            "shape": (4,),
+            "dtype": "float32",
+            "units": "unitless",
+            "frame": "robot_base_xyzw",
+        },
+        "goal_inner_half_extents_target": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "target"},
+        "goal_z_bounds_target": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "target"},
+        "goal_orientation_mask": {"shape": (3,), "dtype": "bool", "units": "unitless", "frame": "target"},
         "deck_imu_window": {"shape": (10, 6), "dtype": "float32", "units": "m/s2,rad/s", "frame": "sensor"},
         "deck_imu_dt_s": {"shape": (), "dtype": "float32", "units": "s", "frame": "acquisition_time"},
         "deck_pose_in_nominal_frame": {"shape": (7,), "dtype": "float32", "units": "m,unitless", "frame": "nominal"},

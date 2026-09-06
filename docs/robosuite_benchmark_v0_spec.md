@@ -167,6 +167,7 @@ illegal penetration < 0.50 mm
 ```
 
 - 全部量在 target-container/worktable local frame 中计算。
+- 离散仿真中的连续窗口按每个 internal physics step 计算；任一 substep 违反子条件都重置候选窗口，policy-rate observation 与报告可以降采样。
 - containment 使用 collision geometry 的水平支撑点，不用 COM-only、visual mesh 或 world AABB。
 - shallow container 不要求整个 Can 低于箱壁。
 - v0 不要求特定最终朝向。
@@ -242,7 +243,19 @@ Can pose in robot-base frame
 goal region in robot-base frame
 ```
 
-goal region 表示为 center、half-extents、z bounds 和 orientation mask，不伪造唯一 target pose。
+goal region 使用以下完整公共 schema，不伪造唯一 Can target pose：
+
+```text
+goal_frame_pos_robot_base       float32[3]
+goal_frame_quat_robot_base      float32[4], xyzw
+goal_inner_half_extents_target  float32[2]
+goal_z_bounds_target            float32[2]
+goal_orientation_mask           bool[3]
+```
+
+当前 goal frame pose 是完成移动、倾斜目标任务所需的 task geometry，所有 V0–V3
+共享。raw deck/table 支撑链分解、twist 和 acceleration 仍按 V2 权限提供。V0 可以从
+连续 task geometry 间接推断部分扰动；其定义是没有专用振动 channel。
 
 ### 9.1 Vibration information tiers
 
@@ -456,6 +469,10 @@ PickPlaceCan 的 reset/release 分布内，不能驱动 contact 过拟合。第 
 ### 14.3 Controller/gripper pilot
 
 - Gamma=0 acquisition、lift、transport、place、release 全链通过；
+- 只用 10 个 dev state IDs，可在 Phase 06 已验证的 `Gamma_commanded={0.00,0.15,0.30}`
+  上开发；Gamma=0 State-V0 10/10 是 nominal solvability 硬门；
+- positive-Gamma success、tier 排序、slip 和 recovery 是诊断，不作为 controller freeze
+  硬门；不读取 knee/official states 或扫描 Gamma 选择有利结果；
 - 冻结 OSC gains、output scale、gripper actuator force/position semantics；
 - 验证 actuator applied force，而不只检查配置值；
 - 共享 controller 在 V0–V3 不发生隐式分叉。

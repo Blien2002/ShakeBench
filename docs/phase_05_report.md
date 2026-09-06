@@ -32,8 +32,11 @@ mode so existing camera and stock robosuite calls retain their previous API.
 
 Every explicit tier shares robot joint position/velocity, robot-base EEF pose,
 gripper state, wrist force/torque, fingertip positions, Can pose in robot-base,
-and the goal region (`center`, horizontal half-extents, z bounds, and an
-orientation mask). Raw deck/table state is absent from V0 and V1.
+and the complete target frame: `goal_frame_pos_robot_base`,
+`goal_frame_quat_robot_base` (xyzw), target-local half-extents/z bounds, and
+an orientation mask. This Phase 07 semantic remediation replaces the former
+center-only goal fields so policies can transform into a rotated target frame.
+Raw deck/table state is absent from V0 and V1.
 
 The dedicated additions are exactly:
 

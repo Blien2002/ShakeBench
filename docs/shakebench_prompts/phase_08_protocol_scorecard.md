@@ -38,6 +38,11 @@ robosuite/models/assets/shakebench_states_official.json
 robosuite/models/assets/shakebench_states_knee.json
 ```
 
+Phase 07 dependency remediation has already pre-registered
+`shakebench_states_dev.json`. Phase 08 must authenticate and reuse those exact
+10 IDs/payloads, then generate only the 400 official and 100 knee states. It
+must not regenerate the dev subset.
+
 该目录随 wheel/sdist 发布（MANIFEST.in 已递归打包），不新建子目录。
 
 ## CommittedState
