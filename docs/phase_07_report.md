@@ -1,18 +1,85 @@
 # Phase 07R6 current conclusion: publication integrity closure
 
-Status: **BLOCKED_BY_PHASE_07R6_PUBLICATION_INTEGRITY**; `phase08_authorized=false`.
+Status: **PASS**; `phase08_authorized=true`.  The R6 implementation commit is
+`a87a87c3540b85894343ad49e95b6ed598b7f7b5`; the metadata handoff commit is
+the commit containing this report and manifest, and the implementation commit
+is verified as its ancestor by
+`robosuite.scripts.shakebench_verify_phase07_handoff`.
 
-The R6 implementation is in progress from a fresh clone of the R5 handoff
-`5fe46051d1c1cbe5a748c9330b5e338fd563df15`.  The final authority will be the
-R6 manifest, detached release manifest, embedded content index, and executable
-handoff verifier.  No Phase 8 implementation, knee state, or official state is
-run by this phase.
-
-The frozen science identity is unchanged: controller
-`shakebench.reference_oracle.v3` (`60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c`),
+The work started from a new `--no-local` clone of remote R5 handoff
+`5fe46051d1c1cbe5a748c9330b5e338fd563df15`.  No Phase 8 implementation, knee
+state, or official state was run.  Frozen science identity is unchanged:
+controller `shakebench.reference_oracle.v3`
+(`60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c`),
 official physics `shakebench.official.physics.v2`
 (`c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c`), and
-dev-state asset (`07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6`).
+dev-state asset
+(`07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6`).
+
+## R6 anchors and publication authority
+
+- Dev-state anchor: pre-rewrite `dd6fe2edb6384ccdb5116be44f07592b4864e377`; rewritten
+  `08626ea5a5e107df503e266be9065b929d47f882`; asset bytes are unchanged.
+- Release tag: `shakebench-evidence-v0-2026-09-r6`.
+- Archive URL: `https://github.com/Blien2002/ShakeBench/releases/download/shakebench-evidence-v0-2026-09-r6/shakebench-evidence-v0-2026-09-r6.tar.zst`.
+- Archive: 80,628,665 bytes; SHA-256
+  `dda863dd9941a498f0702b88105a7b50bceb523d59b7fc29cd48a2cdc9596553`.
+- Embedded content-index bytes SHA-256
+  `8fce997866776189951ce5f01b3c35ffc3fa427c369fb1e1b997c0a4b28b26c9`;
+  index self-hash `aa2a66cb9ea80c62099fa4b1931a7f11a4074e1856e7dcc061c1bd652de155e2`.
+- Detached release manifest SHA-256
+  `0ab68826456e0e930c57b9963a690a3e7a2782767ef344db738eef3f20f2c494`.
+- History rewrite map v2 SHA-256
+  `551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493`.
+- Removed-path list SHA-256
+  `acf4a5fbbd08b6fa02264def85115600ac515a31f85c31f893e48a7c0547fe3a`;
+  153 removed paths are unreachable from current master history.
+
+The archive contains 138 ordinary members and 787,291,027 uncompressed bytes.
+The prior R5 archive staging contained 3,760 members and 5,680,661,604
+uncompressed bytes, including 3,372 package-install members, 511 pycache/pyc
+members, two wheel copies, and two sdist copies.  R6 contains zero members in
+each of those categories, and no large-file SHA duplicate group.
+
+The sole package evidence is
+`out/phase07r6/package_evidence_final.json` (SHA-256
+`16ef61e4d39728550eac08e039e59b466ccb055c0bf68f262cc9fbee4f99f14d`).  Its
+wheel is 158,067,472 bytes (`0dc0bfc24e4469bc77e3cd45be83371aad8235b8a744ca01c08ec8cdca37c6fc`)
+and its sdist is 156,844,472 bytes
+(`03b5d65b8c6ba3aab954cc5f0e98713f7bb96ee7f102b3076d9311c00b4bae4f`).
+Both clean installs passed official-profile loading and no-renderer reset.
+
+## R6 verification record
+
+The following all passed: archive preflight; standalone archive verification;
+detached release-manifest binding; full Phase 06 official/remediation/semantic
+numeric audit; Phase 07 R5 authoritative, matched, positive-Gamma diagnostic,
+and three-process determinism verification; runtime map mutation tests;
+package false-positive and clean wheel/sdist tests; focused Phase 07 tests;
+Black, isort, and `git diff --check`.  The archive builder checks absolute or
+traversal paths, symlink/hardlink/device members, unindexed/duplicate members,
+package/install/build/cache/wheel/sdist leakage, and disk space before
+extraction.  All temporary extraction and install roots were cleaned.
+
+Commands used:
+
+```text
+python robosuite/scripts/shakebench_verify_evidence_archive.py <archive> --release-manifest docs/shakebench_evidence_release_manifest_v1.json --expected-sha256 dda863dd9941a498f0702b88105a7b50bceb523d59b7fc29cd48a2cdc9596553 --repo-index docs/shakebench_evidence_index_v1.json --rewrite-map docs/shakebench_history_rewrite_map_v2.json --removed-path-list docs/shakebench_evidence_removed_paths_v1.txt
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m robosuite.scripts.shakebench_audit_evidence --evidence-archive <archive> --release-manifest docs/shakebench_evidence_release_manifest_v1.json --expected-archive-sha256 dda863dd9941a498f0702b88105a7b50bceb523d59b7fc29cd48a2cdc9596553 --repo-root <fresh clone>
+python -m robosuite.scripts.shakebench_verify_phase07_handoff --manifest docs/phase_07_r6_manifest.json --rewrite-map docs/shakebench_history_rewrite_map_v2.json --release-manifest docs/shakebench_evidence_release_manifest_v1.json --package-evidence out/phase07r6/package_evidence_final.json
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q tests/test_shakebench_phase07r6_publication.py tests/test_shakebench_oracle.py tests/test_shakebench_phase07r5_motion_semantics.py tests/test_shakebench_phase07_completion_red.py tests/test_shakebench_actuators.py tests/test_shakebench_physics_profile.py
+```
+
+The clean-clone gate and remote lease/push result are recorded below after
+publication.  Repository `.git` usage at this stage is 437,489,690 bytes
+(416.54 MiB pack); the original recovery workspace remains unchanged.
+
+Backup and recovery: `/tmp/shakebench_repo_slimming_backup_20260906T135736Z/`,
+pre-rewrite bundle SHA-256
+`4871a3ce3092d9a6f77cea457137cc4c13282a4391fbc85d10f68722d4827b27`.
+Recover with `git clone /tmp/shakebench_repo_slimming_backup_20260906T135736Z/pre-rewrite-all.bundle recovery`
+and restore raw tracked evidence with
+`tar -I zstd -xf /tmp/shakebench_repo_slimming_backup_20260906T135736Z/tracked-shakebench-raw.tar.zst`.
 
 # Historical Phase 07R5 final handoff: repository slimming and release audit
 
