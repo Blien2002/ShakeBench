@@ -85,9 +85,11 @@ Remote publication record: the pre-mutation lease was
 `refs/heads/master=5fe46051d1c1cbe5a748c9330b5e338fd563df15`; the new annotated
 R6 tag was pushed without moving the old R5 tag, the release was created with
 all five required assets, and exact `--force-with-lease` first updated master
-to `1824060986949c3dd618075499fb8a709e08fb36`, then with the next exact lease
-updated it to `8d4ba0371f0954358f6e7c1f51cefc9de94cb31e` for report-only
-metadata.  The old release tag remains at
+to `1824060986949c3dd618075499fb8a709e08fb36`, then with subsequent exact
+leases recorded report-only metadata through `091b5b61b828aa82f7bd50a1edf0d257078364d`.
+The final report is the current report-only HEAD (resolve it with
+`git rev-parse HEAD`); no science, release authority, or package bytes changed.
+The old release tag remains at
 `5fe46051d1c1cbe5a748c9330b5e338fd563df15`; no `refs/codex/*` or unrelated
 branch/tag was pushed or deleted.
 
