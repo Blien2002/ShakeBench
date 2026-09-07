@@ -5,9 +5,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
+
+HEX64 = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 def _canonical(value: Any) -> str:
@@ -46,6 +49,28 @@ def _json_bindings(path: Path) -> dict[str, Any]:
     ):
         if key in value and isinstance(value[key], (str, int, float, bool)):
             bindings[key] = value[key]
+    digest_values: dict[str, set[str]] = {"payload_sha256": set(), "trace_sha256": set(), "trace_whole_digest": set()}
+
+    def collect_digests(node: Any) -> None:
+        if isinstance(node, Mapping):
+            for key, item in node.items():
+                if key in digest_values:
+                    if not isinstance(item, str) or not HEX64.fullmatch(item):
+                        raise ValueError(f"{path}: malformed {key}; expected a 64-character hexadecimal digest")
+                    digest_values[key].add(item.lower())
+                else:
+                    collect_digests(item)
+        elif isinstance(node, list):
+            for item in node:
+                collect_digests(item)
+
+    collect_digests(value)
+    for key, values in digest_values.items():
+        if len(values) > 1:
+            raise ValueError(f"{path}: multiple conflicting {key} values cannot be represented by one index binding")
+        if values:
+            bindings[key] = next(iter(values))
+
     for key in ("physics_authority", "controller_profile", "physics_profile", "selected_profile"):
         item = value.get(key)
         if isinstance(item, Mapping):

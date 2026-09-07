@@ -168,6 +168,7 @@ implementation commit `64039dbc77ac5becc67f8b9f33860d7bf12372ac`，因此 Phase 
 | 07R4 | `phase_07r4_grasp_trajectory_closure.md` | frozen grasp anchor、collision-free approach、actual table bounds、edge-safe recovery | R5 entry evidence |
 | 07R5 | `phase_07r5_oracle_motion_semantics_closure.md` | phase capability、relative kinematics、共同 estimate contract、causal preview | Phase 08 handoff PASS |
 | 07R5-H | `phase_07r5_repository_slimming_and_handoff.md` | external evidence archive、runtime/full audit split、history/anchor migration、final handoff | Phase 08 authorized + slim remote |
+| 07R6.1 | `phase_07r6_1_gate_hardening.md` | package authority、detached R6 binding、Git/tag ancestry、root audit 和 index binding hardening | fail-closed gate + final Phase 8 authorization |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |
 | 09 | `phase_09_knee_official_eval.md` | Gamma* + 400×4 official evaluation | complete paired matrix |
 | 10 | `phase_10_release_audit.md` | clean-room ShakeBench-fork release audit | no release blocker |

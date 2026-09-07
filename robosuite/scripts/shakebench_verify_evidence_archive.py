@@ -261,6 +261,25 @@ def _read_json(path: Path, description: str) -> dict[str, Any]:
     return value
 
 
+def _root_regular_members(root: Path) -> list[str]:
+    """Enumerate the actual regular files in an extracted evidence root."""
+
+    if not root.is_dir():
+        raise ArchiveVerificationError(f"evidence root is missing: {root}")
+    members: list[str] = []
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise ArchiveVerificationError(f"evidence root contains a symlink: {path.relative_to(root)}")
+        if not path.is_file():
+            continue
+        try:
+            member = normalize_member(path.relative_to(root).as_posix())
+        except (OSError, ValueError) as exc:
+            raise ArchiveVerificationError(f"cannot enumerate evidence root member: {path}") from exc
+        members.append(member)
+    return sorted(members)
+
+
 def _verify_index(
     root: Path,
     *,
@@ -320,7 +339,7 @@ def _verify_index(
             errors.append("SHA-256 mismatch: " + member)
     if INDEX_MEMBER in indexed:
         errors.append("content index must not index itself")
-    actual = set(regular_members or [])
+    actual = set(_root_regular_members(root) if regular_members is None else regular_members)
     actual.discard(INDEX_MEMBER)
     missing = sorted(indexed - actual)
     extra = sorted(actual - indexed)
@@ -403,13 +422,16 @@ def verify_root(
     repo_map: Path | None = None,
     repo_removed_path_list: Path | None = None,
 ) -> dict[str, Any]:
-    index, indexed = _verify_index(
-        root,
-        regular_members=regular_members,
-        repo_index=repo_index,
-        repo_map=repo_map,
-        repo_removed_path_list=repo_removed_path_list,
-    )
+    try:
+        index, indexed = _verify_index(
+            root,
+            regular_members=regular_members,
+            repo_index=repo_index,
+            repo_map=repo_map,
+            repo_removed_path_list=repo_removed_path_list,
+        )
+    except (ArchiveVerificationError, OSError, TypeError, ValueError) as exc:
+        return {"passed": False, "errors": [str(exc)], "members": 0}
     return {"passed": True, "errors": [], "index_sha256": index.get("index_sha256"), "members": len(indexed)}
 
 

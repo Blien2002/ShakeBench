@@ -82,6 +82,11 @@ def _verify_index(
     repo_map: Path | None = None,
     repo_removed_path_list: Path | None = None,
 ) -> dict[str, Any]:
+    if regular_members is None:
+        try:
+            regular_members = archive_verifier._root_regular_members(root)
+        except archive_verifier.ArchiveVerificationError as exc:
+            raise EvidenceAuditError(str(exc)) from exc
     try:
         index, _ = archive_verifier._verify_index(
             root,
@@ -201,6 +206,7 @@ def audit_archive(
         return {"passed": False, "errors": ["detached release authority is required"]}
     actual_archive_sha256 = _sha256_file(archive_path)
     errors: list[str] = []
+    release_authority_verified = expected_archive_sha256 is not None
     if expected_archive_sha256 is not None and actual_archive_sha256 != expected_archive_sha256:
         errors.append("actual archive SHA-256 differs from expected SHA-256")
     repo_index, repo_map, repo_removed = _repo_metadata(Path(repo_root) if repo_root else None)
@@ -232,6 +238,8 @@ def audit_archive(
                     package_member = str(release.get("package_evidence", {}).get("path", ""))
                     if package_member and not (temporary / package_member).is_file():
                         errors.append("release manifest package evidence is missing from archive")
+                    else:
+                        release_authority_verified = True
                 except (archive_verifier.ArchiveVerificationError, OSError, TypeError, ValueError) as exc:
                     errors.append(str(exc))
             scientific = _run_scientific_audit(temporary)
@@ -247,6 +255,7 @@ def audit_archive(
         "archive": str(archive_path),
         "archive_sha256": actual_archive_sha256,
         "index_sha256": index.get("index_sha256"),
+        "release_authority_verified": release_authority_verified and not errors,
         "scientific": scientific,
     }
     return result
@@ -278,6 +287,8 @@ def audit_root(
         "errors": errors,
         "evidence_root": str(root_path),
         "index_sha256": index.get("index_sha256"),
+        "release_authority_verified": False,
+        "scientific_only": True,
         "scientific": scientific,
     }
 
@@ -291,8 +302,19 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--release-manifest", type=Path, default=None)
     parser.add_argument("--repo-root", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--scientific-only", action="store_true")
     args = parser.parse_args(argv)
-    if args.expected_archive_sha256 is None and args.release_manifest is None:
+    if args.evidence_root is not None and not args.scientific_only:
+        result = {"passed": False, "errors": ["--evidence-root requires --scientific-only"]}
+    elif args.evidence_root is not None and (
+        args.expected_archive_sha256 is not None or args.release_manifest is not None
+    ):
+        result = {
+            "passed": False,
+            "errors": ["scientific-only root audit cannot claim release authority"],
+            "release_authority_verified": False,
+        }
+    elif args.evidence_archive is not None and args.expected_archive_sha256 is None and args.release_manifest is None:
         result = {
             "passed": False,
             "errors": [
@@ -309,8 +331,6 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         result = audit_root(
             args.evidence_root,
-            expected_archive_sha256=args.expected_archive_sha256,
-            release_manifest=args.release_manifest,
             repo_root=args.repo_root,
         )
     rendered = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
