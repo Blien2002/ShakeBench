@@ -1,8 +1,8 @@
 {
   "phase": "07R6.1",
-  "status": "BLOCKED_BY_PHASE_07R6_1_GATE_HARDENING",
-  "phase08_authorized": false,
-  "final_commit": null,
+  "status": "PASS",
+  "phase08_authorized": true,
+  "final_commit": "3665be44f78ff738797f9d5fc8df3d040859bd4f",
   "final_commit_role": "gate_hardening_implementation_commit",
   "handoff_rule": "final_commit must be an ancestor of the commit containing this manifest",
   "pre_implementation_head": "72229245031abf6819824e55c391503f117005d9",
@@ -53,13 +53,13 @@
   "package_evidence": {
     "path": "out/phase07r6_1/package_evidence_final.json",
     "archive_member": "provenance/package_evidence_final.json",
-    "sha256": null,
-    "wheel_filename": null,
-    "wheel_bytes": null,
-    "wheel_sha256": null,
-    "sdist_filename": null,
-    "sdist_bytes": null,
-    "sdist_sha256": null
+    "sha256": "3569e409a183040be11de3f22bab22f7f9bd242de22260cf0cc33ac61724dd01",
+    "wheel_filename": "robosuite-1.5.2-py3-none-any.whl",
+    "wheel_bytes": 158071340,
+    "wheel_sha256": "fc55870b3a0d6d2a89c96ac72aec85f969587d7c2f5e3a665a66943441c5b891",
+    "sdist_filename": "robosuite-1.5.2.tar.gz",
+    "sdist_bytes": 156804958,
+    "sdist_sha256": "5dd808d0b3767d309fb212e460b0f3d17b989d2a693b3aceca26bfd3ee4ae7b7"
   },
   "gate_release": {
     "tag": "shakebench-gate-v0-2026-09-r6-1",

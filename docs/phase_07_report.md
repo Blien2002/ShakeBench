@@ -1,3 +1,51 @@
+# Phase 07R6.1 current conclusion: gate hardening and final authorization
+
+Status: **PASS**; `phase08_authorized=true`.  The gate-hardening implementation
+commit is `3665be44f78ff738797f9d5fc8df3d040859bd4f`; the metadata handoff
+commit is intentionally resolved with `git rev-parse HEAD` after the handoff,
+so the report does not self-reference its own commit.  The implementation
+commit is required to be an ancestor of that handoff by the executable
+Phase 07R6.1 verifier.
+
+R6 authority remains frozen: implementation `a87a87c3540b85894343ad49e95b6ed598b7f7b5`,
+metadata handoff/tag commit `1824060986949c3dd618075499fb8a709e08fb36`, R6 tag
+`shakebench-evidence-v0-2026-09-r6`, detached release manifest SHA-256
+`0ab68826456e0e930c57b9963a690a3e7a2782767ef344db738eef3f20f2c494`, archive
+SHA-256 `dda863dd9941a498f0702b88105a7b50bceb523d59b7fc29cd48a2cdc9596553`,
+content index SHA-256 `8fce997866776189951ce5f01b3c35ffc3fa427c369fb1e1b997c0a4b28b26c9`,
+history map SHA-256 `551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493`,
+and removed-path list SHA-256 `acf4a5fbbd08b6fa02264def85115600ac515a31f85c31f893e48a7c0547fe3a`.
+
+R6.1 uses gate tag `shakebench-gate-v0-2026-09-r6-1`, manifest SHA-256
+`1b492500fad9db49da2a22a939b78d01a93eb8107744c539c2b1a8bf3c0e3f84`, and
+gate release manifest SHA-256 `bd651b5d924dde4f652a41249ea0f319c0865c9a9bc8f56f1e1d81ffc1f68faa`.
+The sole package authority is `out/phase07r6_1/package_evidence_final.json`
+(SHA-256 `3569e409a183040be11de3f22bab22f7f9bd242de22260cf0cc33ac61724dd01`):
+the wheel is 158071340 bytes (`fc55870b3a0d6d2a89c96ac72aec85f969587d7c2f5e3a665a66943441c5b891`)
+and the sdist is 156804958 bytes (`5dd808d0b3767d309fb212e460b0f3d17b989d2a693b3aceca26bfd3ee4ae7b7`).
+
+The package gate validates clean wheel and sdist installs, official profile
+loading, no-renderer reset, runtime map bindings, no network/raw-archive
+access, exact module paths under install roots, and source-checkout isolation.
+The handoff gate requires package evidence explicitly or reads the same member
+from a safely validated gate archive; omitted, malformed, duplicate, false,
+source-leaking, or hash-mutated evidence fails closed.  The root audit is
+scientific-only and reports `release_authority_verified=false`; only original
+archive bytes plus detached authority can authorize release evidence.  Index
+bindings now preserve declared payload/trace digests and reject malformed
+64-hex values.
+
+Verification results are preserved in the R6.1 gate release assets and the
+post-handoff `out/phase07r6_1` attestation.  The focused gate/R6/Oracle suite
+passed `95` tests with `2` skips; all ShakeBench non-renderer tests passed
+`293` with `24` skips; the complete available non-renderer set passed `562`
+with `82` skips.  Three environment tests that request offscreen EGL are
+explicitly renderer-dependent in this container because `swrast_dri.so` and
+OSMesa are unavailable.  Archive standalone verification, full R6 scientific
+audit, scientific-only root audit, Black, isort, `git diff --check`, clean
+package smoke, and the final fresh-clone verifier are PASS before Phase 8 work
+begins.
+
 # Phase 07R6 current conclusion: publication integrity closure
 
 Status: **PASS**; `phase08_authorized=true`.  The R6 implementation commit is
