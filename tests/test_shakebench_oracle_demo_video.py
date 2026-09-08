@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from robosuite.demos.demo_shakebench_oracle_video import annotate_frame, build_parser
+from robosuite.demos.demo_shakebench_oracle_video import _task_close_camera, annotate_frame, build_parser
 
 
 def test_demo_defaults_are_a_fixed_reproducible_scenario():
@@ -34,3 +34,11 @@ def test_overlay_preserves_frame_contract_and_adds_status_pixels():
     assert rendered.dtype == np.uint8
     assert np.any(rendered != 0)
     assert not np.shares_memory(rendered, source)
+
+
+def test_task_close_camera_frames_the_workspace_from_a_fixed_free_view():
+    camera = _task_close_camera()
+    np.testing.assert_allclose(camera.lookat, [0.08, 0.0, 0.24])
+    assert camera.distance == 1.55
+    assert camera.azimuth == 140.0
+    assert camera.elevation == -25.0

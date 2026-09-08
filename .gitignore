@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files Retained historical checkout; active development runs from this project root.
 __pycache__/
 *.py[cod]
 *$py.class
@@ -143,3 +143,6 @@ robosuite/models/assets/demonstrations_private
 
 # Codex-local session configuration and checkpoints are never project history.
 .codex/
+
+# Retained historical checkout; active development runs from this project root.
+/out/integration/

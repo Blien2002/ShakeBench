@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 from pathlib import Path
 
@@ -12,6 +13,7 @@ import pytest
 from robosuite.environments.manipulation.vibration_pick_place_can import VibrationPickPlaceCan
 from robosuite.models.arenas import ShakeBenchArena
 from robosuite.utils.shakebench_deck import DeckDriverConfig
+from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_scene import (
     SceneConfigError,
     audit_compiled_scene,
@@ -95,6 +97,32 @@ def test_compiled_inventory_binds_platen_and_supports_to_their_frames():
     assert audit.visual_geoms["shakebench_table_lower_mount_plate_0"]["frame"] == "dynamic_deck"
     assert audit.visual_geoms["shakebench_stewart_outer_0"]["frame"] == "world"
     assert audit.visual_geoms["shakebench_stewart_rod_0"]["frame"] == "dynamic_deck"
+
+
+@pytest.mark.parametrize("geometry_profile", ["canonical", "direct_mount_v1"])
+def test_table_feet_clear_deck_through_isolator_travel(geometry_profile):
+    if geometry_profile == "canonical":
+        arena = ShakeBenchArena()
+    else:
+        geometry = load_geometry_profile(geometry_profile)
+        arena = ShakeBenchArena(
+            table_offset=geometry["table_top_pos_m"], scene_config=geometry_scene_path(geometry_profile)
+        )
+    model, data = _arena_deck_model(arena)
+    joints = [model.joint(f"isolator_{axis}") for axis in ("tx", "ty", "tz", "rx", "ry", "rz")]
+    poses = [np.zeros(6), [0, 0, -0.003, 0, 0, 0], *itertools.product(*(joint.range for joint in joints))]
+    for pose in poses:
+        for joint, value in zip(joints, pose):
+            data.qpos[joint.qposadr] = value
+        mujoco.mj_forward(model, data)
+        deck = model.geom("shakebench_platen_surface")
+        deck_top = data.geom(deck.id).xpos[2] + deck.size[2]
+        for index in range(4):
+            for part in ("foot", "leg"):
+                geom = model.geom(f"shakebench_table_upper_{part}_{index}")
+                world = data.geom(geom.id)
+                bottom = world.xpos[2] - np.abs(world.xmat.reshape(3, 3)[2]) @ geom.size
+                assert bottom > deck_top, (geometry_profile, geom.name, pose, bottom - deck_top)
 
 
 def test_visual_switch_preserves_name_based_physics_signature():

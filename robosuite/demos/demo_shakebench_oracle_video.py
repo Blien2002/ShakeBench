@@ -35,6 +35,19 @@ DEMO_SCHEMA_ID = "shakebench.oracle_demo_video"
 DEFAULT_STATE_ID = "shakebench-dev-v0-000"
 DEFAULT_OUTPUT = Path("out/demo/shakebench_oracle_v0_gamma015.mp4")
 PRESENTATION_CAMERA = "presentation"
+TASK_CLOSE_CAMERA = "task_close"
+
+
+def _task_close_camera() -> mujoco.MjvCamera:
+    """Return a benchmark-style close third-person view of the task workspace."""
+
+    camera = mujoco.MjvCamera()
+    camera.type = mujoco.mjtCamera.mjCAMERA_FREE
+    camera.lookat[:] = (0.08, 0.0, 0.24)
+    camera.distance = 1.55
+    camera.azimuth = 140.0
+    camera.elevation = -25.0
+    return camera
 
 
 class FFmpegVideoWriter:
@@ -184,12 +197,13 @@ class VideoObserver:
         self.wrist_inset = wrist_inset
         scene_config = scene_config or load_scene_visual_config()
         camera_names = {str(camera["name"]) for camera in scene_config.section("cameras").values()}
-        camera_names.add(WRIST_CAMERA)
+        camera_names.update((WRIST_CAMERA, TASK_CLOSE_CAMERA))
         if camera == PRESENTATION_CAMERA:
             camera = str(scene_config.section("cameras")["overview"]["name"])
         if camera not in camera_names:
             raise ValueError(f"camera must be one of {sorted(camera_names)} or {PRESENTATION_CAMERA!r}")
         self.camera = camera
+        self.render_camera: str | mujoco.MjvCamera = _task_close_camera() if camera == TASK_CLOSE_CAMERA else camera
         self.output.parent.mkdir(parents=True, exist_ok=True)
         self.writer = FFmpegVideoWriter(output, width=width, height=height, fps=fps)
         self.renderer: mujoco.Renderer | None = None
@@ -219,7 +233,7 @@ class VideoObserver:
             )
         self.renderer.update_scene(
             env.sim.data._data,
-            camera=self.camera,
+            camera=self.render_camera,
             scene_option=self.scene_option,
         )
         raw = self.renderer.render().copy()
@@ -305,7 +319,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--camera",
         default=PRESENTATION_CAMERA,
-        help="Scene camera name, robot0_eye_in_hand for wrist, or 'presentation' for the scene overview",
+        help=(
+            "Scene camera name, robot0_eye_in_hand for wrist, 'presentation' for the scene overview, "
+            "or 'task_close' for a close benchmark-style task view"
+        ),
     )
     parser.add_argument("--width", type=int, default=int(render_config["default_width"]))
     parser.add_argument("--height", type=int, default=int(render_config["default_height"]))
@@ -422,6 +439,7 @@ __all__ = [
     "DEMO_SCHEMA_ID",
     "FFmpegVideoWriter",
     "PRESENTATION_CAMERA",
+    "TASK_CLOSE_CAMERA",
     "VideoObserver",
     "annotate_frame",
     "build_parser",

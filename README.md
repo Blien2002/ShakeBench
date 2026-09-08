@@ -1,3 +1,8 @@
+> **ShakeBench 当前开发入口（2026-09-08）**：Phase 7.5 改造场景及 Phase 8 协议已整合至本项目根目录。
+> 历史副本已删除，后续请在当前目录运行。改造场景使用 `geometry_profile="direct_mount_v1"`；视频 CLI 默认采用该场景。
+> 腕部相机演示：`MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m robosuite.demos.demo_shakebench_oracle_video --wrist-inset --output out/demo/shakebench_direct_mount_wrist.mp4`。
+> [整合记录](docs/phase07_5a_main_integration.md) · [相机用法](docs/demos.md#shakebench-wrist-camera)
+
 # robosuite
 
 ![gallery of_environments](docs/images/gallery.png)

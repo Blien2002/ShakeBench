@@ -713,13 +713,19 @@ def _table_support_geometry(arena: Any, config: SceneVisualConfig) -> dict[str, 
     support_z = float(table["support_plane_z_m"])
     top_world_z = table_world_z - float(table["leg_top_clearance_m"]) - table_half[2]
     points = [tuple(float(value) for value in point) for point in table["leg_centers_xy_m"]]
-    leg_bottom_world_z = support_z + float(table["foot_plate_size_m"][-1]) / 2.0
+    # Seat the moving foot on the upper isolator sleeve, above the deck-side
+    # base plate. Seating both plates on support_z makes them coincide at rest
+    # and sends the upper plate through the deck during downward relative travel.
+    foot_bottom_world_z = float(table["upper_sleeve_center_z_m"]) + float(table["upper_sleeve_half_height_m"])
+    foot_height = float(table["foot_plate_size_m"][-1])
+    leg_bottom_world_z = foot_bottom_world_z + foot_height
     leg_half_height = (top_world_z - leg_bottom_world_z) / 2.0
     if leg_half_height <= 0.0:
         raise SceneConfigError("table upper legs have no positive height")
     return {
         "table_world_z": table_world_z,
         "support_z": support_z,
+        "foot_center_world_z": foot_bottom_world_z + foot_height / 2.0,
         "top_world_z": top_world_z,
         "leg_centers_xy": points,
         "leg_center_world_z": (top_world_z + leg_bottom_world_z) / 2.0,
@@ -922,6 +928,167 @@ def _get_or_append_body(worldbody: ET.Element, name: str, pos: Iterable[float] =
     body = _visual_body(name, pos)
     worldbody.append(body)
     return body
+
+
+def _build_table_finish(arena, platen_body, table, envelope, platen_center_z, geom_names):
+    """Author two-part isolator covers and bolted, non-contact table details.
+
+    Rubber boots and anchors belong to the deck; the short insert, cap and
+    frame hardware belong to the isolated table. The insert is concealed
+    inside the boot at rest, leaving overlap for relative motion.
+    """
+    names = []
+    steel = (0.43, 0.47, 0.50, 1.0)
+    frame = (0.12, 0.155, 0.18, 1.0)
+    rubber = (0.075, 0.082, 0.09, 1.0)
+    dark = (0.035, 0.041, 0.045, 1.0)
+    base_size = np.asarray(table["lower_plate_size_m"], dtype=float)
+    cap_size = np.asarray(table["foot_plate_size_m"], dtype=float)
+    cap_bottom = envelope["foot_center_world_z"] - cap_size[2] / 2
+    base_top = envelope["support_z"] + base_size[2]
+    boot_top = cap_bottom - 0.012
+    boot_height = boot_top - base_top
+    if boot_height <= 0:
+        raise SceneConfigError("table isolator boot requires clearance between its base plate and upper cap")
+    boot_radius = min(float(table["lower_sleeve_radius_m"]), min(base_size[:2]) * 0.43)
+
+    def emit(parent, name, kind, size, pos, rgba=steel, axis=None, material="shakebench_frame_metal"):
+        geom = _visual_geom(
+            name,
+            kind,
+            size,
+            pos,
+            rgba=rgba,
+            material=material,
+            quat=None if axis is None else _quat_from_z_axis(axis),
+        )
+        _append_unique_geom(parent, geom, geom_names)
+        names.append(name)
+
+    def bolt(parent, name, pos, axis=(0, 0, 1), radius=0.004):
+        pos, axis = np.asarray(pos), np.asarray(axis)
+        emit(parent, name + "_washer", "cylinder", (radius * 1.45, 0.0007), pos, axis=axis)
+        emit(parent, name, "cylinder", (radius, 0.0016), pos + axis * 0.002, axis=axis)
+        emit(parent, name + "_socket", "cylinder", (radius * 0.48, 0.00015), pos + axis * 0.0037, dark, axis)
+
+    # A legible powder coat on the existing square-tube frame.
+    for geom in arena.table_body.findall("./geom"):
+        name = geom.get("name", "")
+        if name.startswith("shakebench_table_upper_"):
+            geom.set("rgba", _fmt(frame))
+
+    for index, (x, y) in enumerate(envelope["leg_centers_xy"]):
+        deck_x, deck_y = x + arena.center_pos[0], y + arena.center_pos[1]
+        lower = "shakebench_table_lower_mount_"
+        upper = "shakebench_table_upper_"
+        base = platen_body.find(f"./geom[@name='{lower}plate_{index}']")
+        base.set("rgba", _fmt((0.25, 0.28, 0.31, 1.0)))
+        core = platen_body.find(f"./geom[@name='{lower}sleeve_{index}']")
+        core.set("pos", _fmt((deck_x, deck_y, (base_top + boot_top) / 2 - platen_center_z)))
+        core.set("size", _fmt((boot_radius * 0.76, boot_height / 2)))
+        core.set("rgba", _fmt(rubber))
+        for rib in range(5):
+            z = base_top + boot_height * (rib + 0.5) / 5 - platen_center_z
+            emit(
+                platen_body,
+                f"{lower}boot_rib_{index}_{rib}",
+                "ellipsoid",
+                (boot_radius, boot_radius, boot_height / 8),
+                (deck_x, deck_y, z),
+                rubber,
+                material="shakebench_mount_rubber",
+            )
+        for end, z in (("bottom", base_top + 0.002), ("top", boot_top - 0.002)):
+            emit(
+                platen_body,
+                f"{lower}boot_band_{index}_{end}",
+                "cylinder",
+                (boot_radius * 0.87, 0.002),
+                (deck_x, deck_y, z - platen_center_z),
+                dark,
+            )
+        for corner, (sx, sy) in enumerate(itertools.product((-1, 1), repeat=2)):
+            bolt(
+                platen_body,
+                f"{lower}anchor_{index}_{corner}",
+                (
+                    deck_x + sx * (base_size[0] / 2 - 0.008),
+                    deck_y + sy * (base_size[1] / 2 - 0.008),
+                    base_top - platen_center_z + 0.0007,
+                ),
+            )
+        cap = arena.table_body.find(f"./geom[@name='{upper}foot_{index}']")
+        cap.set("rgba", _fmt((0.29, 0.33, 0.36, 1.0)))
+        insert = arena.table_body.find(f"./geom[@name='{upper}sleeve_{index}']")
+        insert.set("pos", _fmt((x, y, cap_bottom - 0.012 - envelope["table_world_z"])))
+        insert.set("size", _fmt((boot_radius * 0.62, 0.012)))
+        insert.set("material", "shakebench_bolt_metal")
+        insert.set("rgba", _fmt(steel))
+        for corner, (sx, sy) in enumerate(itertools.product((-1, 1), repeat=2)):
+            bolt(
+                arena.table_body,
+                f"{upper}cap_bolt_{index}_{corner}",
+                (
+                    x + sx * (cap_size[0] / 2 - 0.008),
+                    y + sy * (cap_size[1] / 2 - 0.007),
+                    cap_bottom + cap_size[2] - envelope["table_world_z"] + 0.0007,
+                ),
+                radius=0.003,
+            )
+        # Flush cheek plates on two outside faces of each leg, below the apron.
+        for axis_index, sign in ((0, np.sign(x)), (1, np.sign(y))):
+            pos = np.array((x, y, -0.095))
+            pos[axis_index] += sign * 0.0265
+            size = np.array((0.023, 0.023, 0.034))
+            size[axis_index] = 0.0015
+            prefix = f"{upper}joint_plate_{index}_{axis_index}"
+            emit(arena.table_body, prefix, "box", size, pos, (0.22, 0.26, 0.29, 1.0))
+            axis = np.eye(3)[axis_index] * sign
+            for row, z in enumerate((-0.079, -0.112)):
+                bolt_pos = pos + axis * 0.0022
+                bolt_pos[2] = z
+                bolt(arena.table_body, f"{prefix}_bolt_{row}", bolt_pos, axis, radius=0.0035)
+
+    hx, hy, hz = envelope["table_half"]
+    # Slim protective strips sit on the sides of the slab, below its task face.
+    for axis_index, half in ((0, hx), (1, hy)):
+        for sign in (-1, 1):
+            # The canonical pedestal meets the slab's left edge exactly;
+            # leave that installation interface flush without added trim.
+            if table["layout_variant"] == "A" and axis_index == 0 and sign == -1:
+                continue
+            pos = np.array((0.0, 0.0, -hz + 0.008))
+            pos[axis_index] = sign * (half + 0.001)
+            size = np.array((hx, hy, 0.007))
+            size[axis_index] = 0.001
+            emit(arena.table_body, f"shakebench_table_upper_edge_{axis_index}_{sign}", "box", size, pos, steel)
+    # A recessed-looking identification plate on the front apron, with rivets.
+    front_y = -hy - float(table["frame_y_offset_m"]) - float(table["frame_half_thickness_m"])
+    emit(
+        arena.table_body,
+        "shakebench_table_upper_badge",
+        "box",
+        (0.039, 0.001, 0.012),
+        (0, front_y - 0.001, -0.055),
+        steel,
+    )
+    emit(
+        arena.table_body,
+        "shakebench_table_upper_badge_inset",
+        "box",
+        (0.028, 0.0003, 0.008),
+        (0, front_y - 0.0022, -0.055),
+        dark,
+    )
+    for x in (-0.034, 0.034):
+        bolt(
+            arena.table_body,
+            f"shakebench_table_upper_badge_rivet_{x}",
+            (x, front_y - 0.002, -0.055),
+            (0, -1, 0),
+            0.0015,
+        )
+    return names
 
 
 def _build_detailed_guardrails(arena, body, pit, geom_names):
@@ -1481,7 +1648,14 @@ def _build_scene_visuals(
             geom_names,
         )
         visual_geoms.append(name)
-    crossbrace_z = float(table["crossbrace_z_local_m"])
+    # Keep the lower stretcher attached to the legs above the isolator caps.
+    crossbrace_z = max(
+        float(table["crossbrace_z_local_m"]),
+        envelope["foot_center_world_z"]
+        + upper_plate_size[2] / 2
+        + 2 * float(table["crossbrace_half_thickness_m"])
+        - envelope["table_world_z"],
+    )
     for name, size, pos in (
         (
             "shakebench_table_upper_crossbrace_front",
@@ -1543,7 +1717,7 @@ def _build_scene_visuals(
         )
         visual_geoms.append(leg_name)
         foot_name = f"shakebench_table_upper_foot_{index}"
-        foot_z = float(table["support_plane_z_m"]) + upper_plate_size[2] / 2.0 - envelope["table_world_z"]
+        foot_z = envelope["foot_center_world_z"] - envelope["table_world_z"]
         _append_unique_geom(
             arena.table_body,
             _visual_geom(
@@ -1572,6 +1746,8 @@ def _build_scene_visuals(
             geom_names,
         )
         visual_geoms.append(sleeve_name)
+
+    visual_geoms.extend(_build_table_finish(arena, platen_body, table, envelope, platen_center_z, geom_names))
 
     for equipment in room["equipment"]:
         body = _visual_body(equipment["name"], equipment["pos_m"])
@@ -2371,7 +2547,9 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
                 values.append(float(upper_bound[2] if upper else lower[2]))
         return (max(values) if upper else min(values)) if values else None
 
-    table_bottom = extrema("shakebench_table_upper_foot_")
+    # The lower plate is the table support's installation datum on the deck;
+    # the moving upper foot is seated on top of the isolator sleeve.
+    table_bottom = extrema("shakebench_table_lower_mount_plate_")
     platen_top = extrema("shakebench_platen_surface", upper=True)
     mount_bottom = None
     mount_names = []
@@ -2403,7 +2581,7 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
         "platen_nominal_top_z_m": platen_top,
         "configured_platen_nominal_top_z_m": configured_top,
         "derived_platen_nominal_top_z_m": derived_top,
-        "derivation_rule": "max of compiled worktable-foot and robot-mount lowest support points",
+        "derivation_rule": "max of compiled worktable lower-mount plate and robot-mount lowest support points",
         "derivation_inputs_z_m": derivation_inputs,
         "derived_vs_compiled_platen_top_error_m": (
             None if derived_top is None or platen_top is None else float(platen_top - derived_top)
