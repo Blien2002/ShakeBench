@@ -139,6 +139,7 @@ robosuite/models/assets/demonstrations_private
 /out/phase07_5a/
 /out/phase07_5a_requalification/
 /out/demo/
+/out/qualitative_gamma_diagnostics/
 
 # Codex-local session configuration and checkpoints are never project history.
 .codex/
