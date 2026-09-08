@@ -79,6 +79,8 @@ DEFAULT_CONTACT_TORSIONAL_MU = 0.005
 DEFAULT_CONTACT_ROLLING_MU = 0.0001
 DEFAULT_DECK_EQ_SOLREF = (2.0 * DEFAULT_MODEL_TIMESTEP_S, 0.5)
 CAN_CONTACT_BIT = 2
+WRIST_CAMERA = "robot0_eye_in_hand"
+DEFAULT_CAMERA_NAMES = ("agentview", WRIST_CAMERA)
 
 
 def _finite_vector(name: str, value: Iterable[float], length: int) -> tuple[float, ...]:
@@ -145,7 +147,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         ignore_done=False,
         hard_reset=True,
         load_model_on_init=True,
-        camera_names="agentview",
+        camera_names=DEFAULT_CAMERA_NAMES,
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,

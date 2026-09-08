@@ -25,6 +25,7 @@ import cv2
 import mujoco
 import numpy as np
 
+from robosuite.environments.manipulation.vibration_pick_place_can import WRIST_CAMERA
 from robosuite.scripts.shakebench_run_oracle import load_dev_states, run_episode
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController
@@ -169,6 +170,7 @@ class VideoObserver:
         state_id: str,
         policy_rate_hz: float,
         scene_config=None,
+        wrist_inset: bool = False,
     ) -> None:
         self.output = output
         self.camera = camera
@@ -179,8 +181,10 @@ class VideoObserver:
         self.gamma = gamma
         self.state_id = state_id
         self.policy_rate_hz = policy_rate_hz
+        self.wrist_inset = wrist_inset
         scene_config = scene_config or load_scene_visual_config()
         camera_names = {str(camera["name"]) for camera in scene_config.section("cameras").values()}
+        camera_names.add(WRIST_CAMERA)
         if camera == PRESENTATION_CAMERA:
             camera = str(scene_config.section("cameras")["overview"]["name"])
         if camera not in camera_names:
@@ -205,8 +209,11 @@ class VideoObserver:
     ) -> None:
         del observation
         if self.renderer is None:
+            model = env.sim.model._model
+            model.vis.global_.offwidth = max(model.vis.global_.offwidth, self.width)
+            model.vis.global_.offheight = max(model.vis.global_.offheight, self.height)
             self.renderer = mujoco.Renderer(
-                env.sim.model._model,
+                model,
                 height=self.height,
                 width=self.width,
             )
@@ -216,6 +223,26 @@ class VideoObserver:
             scene_option=self.scene_option,
         )
         raw = self.renderer.render().copy()
+        if self.wrist_inset:
+            self.renderer.update_scene(
+                env.sim.data._data,
+                camera=WRIST_CAMERA,
+                scene_option=self.scene_option,
+            )
+            inset_width = max(1, self.width // 3)
+            inset_height = max(1, self.height // 3)
+            inset = cv2.resize(self.renderer.render(), (inset_width, inset_height), interpolation=cv2.INTER_AREA)
+            raw[-inset_height:, -inset_width:] = inset
+            cv2.putText(
+                raw,
+                "WRIST",
+                (self.width - inset_width + 4, self.height - inset_height + 16),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
         metrics = env.get_metrics()
         self.last_step = step
         self.last_phase = _phase_label(controller)
@@ -278,13 +305,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--camera",
         default=PRESENTATION_CAMERA,
-        help="MuJoCo camera name, or 'presentation' for the fixed ShakeBench overview",
+        help="Scene camera name, robot0_eye_in_hand for wrist, or 'presentation' for the scene overview",
     )
     parser.add_argument("--width", type=int, default=int(render_config["default_width"]))
     parser.add_argument("--height", type=int, default=int(render_config["default_height"]))
     parser.add_argument("--fps", type=int, default=int(render_config["default_fps"]))
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--geometry-profile", choices=("canonical", "direct_mount_v1"), default="direct_mount_v1")
+    parser.add_argument("--wrist-inset", action="store_true", help="Overlay a synchronized wrist view at bottom right")
     return parser
 
 
@@ -308,6 +336,7 @@ def main(argv: list[str] | None = None) -> int:
         state_id=args.state_id,
         policy_rate_hz=profile.policy_rate_hz,
         scene_config=scene_config,
+        wrist_inset=args.wrist_inset,
     )
     try:
         episode = run_episode(
@@ -338,6 +367,8 @@ def main(argv: list[str] | None = None) -> int:
         "source": {
             "base_commit": _git_head(),
             "worktree_dirty": _git_dirty(),
+            "project_root": str(Path(__file__).resolve().parents[2]),
+            "robosuite_module": str(Path(__file__).resolve().parents[1] / "__init__.py"),
             "demo_script_sha256": _sha256(Path(__file__)),
             "oracle_runner_sha256": _sha256(Path(run_episode.__code__.co_filename)),
         },
@@ -350,6 +381,7 @@ def main(argv: list[str] | None = None) -> int:
             "fps": args.fps,
             "camera": observer.camera,
             "camera_request": args.camera,
+            "wrist_inset_camera": WRIST_CAMERA if args.wrist_inset else None,
         },
         "episode": {
             "state_id": args.state_id,

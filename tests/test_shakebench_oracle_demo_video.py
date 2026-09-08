@@ -13,6 +13,8 @@ def test_demo_defaults_are_a_fixed_reproducible_scenario():
     assert args.gamma == 0.15
     assert args.state_id == "shakebench-dev-v0-000"
     assert args.camera == "presentation"
+    assert args.geometry_profile == "direct_mount_v1"
+    assert args.wrist_inset is False
     assert args.fps == 20
 
 

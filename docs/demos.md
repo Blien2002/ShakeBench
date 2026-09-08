@@ -175,6 +175,62 @@ The `demo_video_recording.py` script shows how to record a video of robot roll-o
 $ python demo_video_recording.py --environment Lift --robots Panda
 ```
 
+### ShakeBench wrist camera
+
+ShakeBench uses the upstream Panda camera `robot0_eye_in_hand`, mounted on
+`robot0_right_hand` with a 75 degree vertical field of view. It follows the
+wrist through arm and deck motion. See [benchmark references](wrist_camera_research.md)
+for the robosuite, LIBERO, and robomimic conventions used here.
+
+Enable visual observations to receive both the external and wrist RGB images
+by default (256×256, uint8). Depth is optional; its values are the standard
+MuJoCo normalized depth buffer, not metres. Use
+`robosuite.utils.camera_utils.get_real_depth_map(env.sim, depth)` for metric depth.
+
+```python
+import robosuite
+
+env = robosuite.make(
+    "VibrationPickPlaceCan",
+    geometry_profile="direct_mount_v1",
+    observation_tier=None,
+    use_camera_obs=True,
+    has_offscreen_renderer=True,
+    camera_depths=True,
+)
+try:
+    obs = env.reset()
+    external_rgb = obs["agentview_image"]
+    wrist_rgb = obs["robot0_eye_in_hand_image"]
+    wrist_depth = obs["robot0_eye_in_hand_depth"]
+finally:
+    env.close()
+```
+
+Set `camera_names="robot0_eye_in_hand"` for wrist only, or `"agentview"` for
+external only. Per-camera size/depth lists follow `camera_names` order; the
+default order is external, then wrist. Images follow robosuite's configured
+`IMAGE_CONVENTION`; the default `opengl` has its origin at the bottom left.
+For top-left image viewers, flip the first axis once if using that convention.
+
+The V0–V3 State protocols still require `use_camera_obs=False`. For those
+rollouts, render the camera separately using the oracle video demo:
+
+```bash
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m \
+  robosuite.demos.demo_shakebench_oracle_video \
+  --wrist-inset --output out/demo/shakebench_with_wrist.mp4
+
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m \
+  robosuite.demos.demo_shakebench_oracle_video \
+  --camera robot0_eye_in_hand --width 512 --height 512 \
+  --output out/demo/shakebench_wrist_only.mp4
+```
+
+The inset and overview render the same simulation state, and the JSON video
+metadata records the inset camera. Neither image is passed to the State oracle.
+Adding the view does not add mass, collisions, or new robot joints.
+
 ### Rendering Options
 The `demo_renderers.py` script shows how to use different renderers with the simulation environments. Our current version supports the default MuJoCo renderer. More information about these renderers can be found in the [Renderer](modules/renderers) module. Example:
 ```sh
