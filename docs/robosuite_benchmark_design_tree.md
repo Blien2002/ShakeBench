@@ -54,6 +54,12 @@ prescribed shaker excitation
 - 工作台与机器人不完全共模运动。
 - 自由工件不能成为工作台的运动学子体；工件运动只能由重力、接触和抓取产生。
 
+场景外观与上述物理拓扑分开认证。Phase 7.5A 的可见实验室、地坑/安全边界、振动
+platen、shaker foundation、六杆、控制柜和急停由 `shakebench_scene_visual_v1.json`
+统一授权：platen 与上部杆件属于 dynamic deck，工作台上部框架属于 isolated
+worktable，基础/下部杆件属于 world。它们均是 display-only primitive，不改变这棵
+物理拓扑，也不能通过视觉杆件增加并联约束。
+
 ### 2.2 隔振器抽象 — DECIDED
 
 - 使用可解释的 canonical 六自由度线性模型。
@@ -250,6 +256,12 @@ table-relative-to-robot support state
 - 使用仓库确定性生成并有 SHA-256 记录的 `phenolic_bench_dark_1k.jpg`；
 - 在脚板与振动甲板之间增加清晰可见的隔振支座，避免视觉上仍表现为刚性螺栓直连；
 - 视觉 frame 与螺栓可以是 collision-free MJCF primitives，不得暗中改变 canonical 惯性。
+
+完整实验室线索（platen、pit、safety border、guardrails、shaker foundation、Stewart
+segments、control cabinet、emergency stop）在 Phase 7.5A 恢复；这不是把历史 Isaac/USD
+场景当作运行时依赖。桌面仍保持上述 canonical 尺寸，桌腿采用 geometry variant A 的
+稳定矩形布局并通过独立 clearance gate；过去报告中“完全没有迁移”的说法应理解为
+此前只完成 partial worktable integration。
 
 物理 tabletop 尺寸参考 ShakeBench，冻结为 `0.65 × 0.60 × 0.06 m`。原实现顶部质量 45 kg、四条腿各 3 kg，但这些质量来自 kinematic 场景，不作为已验证真值；canonical 总质量和惯量重新定义。
 
@@ -607,6 +619,11 @@ Can ↔ Panda finger pads:
 8. **Safety rejection**：极端频率、Γ、隔振行程、角度和 solver travel 触发 fail-closed 拒绝门；
 9. **Interface-resolved metrics**：按接触接口记录力、冲量、滑移和穿透；
 10. **Cross-process determinism**：同一 state ID 至少由 3 个独立进程重放，比较完整 state/action/metric traces；只在同一进程 reset 重复不算通过。
+11. **Scene restoration and clearance**：scene config/hash、frame ownership、display-only
+    mass/contact/joint isolation、canonical support plane、visual↔visual 候选、
+    visual↔collision-proxy 候选和 active physical contacts 分开记录；nominal 与预注册
+    safe excitation pose samples 不得出现未列入白名单的 penetration 或悬空。有限采样
+    只支持有限覆盖声明，不构成连续几何证明。
 
 上述 contact gate 不修改任务成功 evaluator。policy release 后，Can 仍须连续
 `0.50 s` 满足既有 target-region containment、相对速度、无 finger contact、
@@ -638,6 +655,17 @@ task-native initialization/settling 验证更严格。
 - 旧 privilege group / Oracle 实现。
 
 正式结论仍是：接受 spike 的物理路线，不接受 spike 的现成产品化资格。
+
+### 9.3 Phase 7.5A 场景复用边界
+
+- 复用的是原 ShakeBench 的布局、工业造型、材质线索和相机意图；以仓内 phenolic/steel/floor
+  纹理和 MJCF primitives 重建，不复制 Isaac Lab、USD、远程 Omniverse 资产或 backup 路径。
+- 物理层继续复用已冻结的 deck driver、Panda mount、worktable 惯性、6-DoF isolator、Can
+  contact 和 success evaluator；新增视觉层默认 `group=1, contype=0, conaffinity=0,
+  density=0`，不增加 body mass、joint、weld、actuator 或 task contact。
+- geometry variant A 只调整 non-contact 桌架和 deck-side mount；旧 10 个 dev state 的
+  ID/seed/pose/payload 不变，scene hash 进入 run metadata。若未来采用 B/C/B-size，必须
+  新建并绑定 geometry/physics profile，Phase 8/9 拒绝与 A 或旧 R6.1 结果混合。
 
 ## 10. 未决问题索引与依赖
 

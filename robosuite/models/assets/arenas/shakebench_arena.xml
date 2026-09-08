@@ -3,34 +3,39 @@
   <option gravity="0 0 -9.81" />
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256" />
-    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="shakebench_texplane" />
+    <texture file="../textures/shakebench_epoxy_floor_cool_gray_1k.png" type="2d" name="shakebench_texplane" />
     <material name="shakebench_floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="shakebench_texplane" texuniform="true" />
-    <!-- Deterministic PNG transcode of the committed
-         ../textures/shakebench_phenolic_bench_dark_1k.jpg source;
-         MuJoCo's packaged loader accepts PNG but not this JPEG on the probe
-         platform. The source SHA is recorded in docs/phase_03_report.md. -->
+    <!-- Display geometry and material values are selected by the
+         shakebench_scene.py authority after this source asset is loaded. -->
     <texture file="../textures/shakebench_phenolic_bench_dark_1k.png" type="2d" name="shakebench_phenolic" />
     <material name="shakebench_phenolic_bench" reflectance="0.05" shininess="0.18" specular="0.25" texrepeat="3 3" texture="shakebench_phenolic" texuniform="true" />
     <texture file="../textures/steel-brushed.png" type="cube" name="shakebench_steel" />
     <material name="shakebench_frame_metal" reflectance="0.35" shininess="0.45" specular="0.45" texrepeat="1 1" texture="shakebench_steel" />
     <material name="shakebench_mount_rubber" rgba="0.055 0.065 0.075 1" reflectance="0.02" shininess="0.08" specular="0.1" />
     <material name="shakebench_bolt_metal" rgba="0.28 0.30 0.32 1" reflectance="0.55" shininess="0.7" specular="0.65" />
+    <texture file="../textures/shakebench_platen_threaded_holes_1k.png" type="2d" name="shakebench_platen_tex" />
+    <material name="shakebench_floor_slab" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="shakebench_texplane" texuniform="true" />
+    <texture file="../textures/shakebench_industrial_wall_light_gray_1k.png" type="2d" name="shakebench_wall_tex" />
+    <material name="shakebench_wall" texture="shakebench_wall_tex" rgba="1 1 1 1" reflectance="0.02" shininess="0.1" specular="0.1" />
+    <material name="shakebench_foundation" rgba="0.05 0.053 0.055 1" reflectance="0.25" shininess="0.3" specular="0.3" />
+    <material name="shakebench_actuator_outer" rgba="0.06 0.065 0.067 1" reflectance="0.3" shininess="0.35" specular="0.35" />
+    <material name="shakebench_actuator_rod" rgba="0.16 0.165 0.17 1" reflectance="0.45" shininess="0.5" specular="0.45" />
+    <material name="shakebench_joint" rgba="0.04 0.043 0.045 1" reflectance="0.25" shininess="0.3" specular="0.3" />
+    <material name="shakebench_platen_surface" rgba="0.72 0.75 0.78 1" reflectance="0.35" shininess="0.45" specular="0.45" texture="shakebench_platen_tex" texrepeat="3 2" texuniform="true" />
+    <material name="shakebench_platen_edge" rgba="0.12 0.14 0.16 1" reflectance="0.35" shininess="0.45" specular="0.45" texture="shakebench_steel" texrepeat="1 1" texuniform="true" />
+    <material name="shakebench_cabinet" rgba="0.075 0.085 0.095 1" reflectance="0.18" shininess="0.25" specular="0.25" />
+    <material name="shakebench_cabinet_light" rgba="0.26 0.28 0.29 1" reflectance="0.25" shininess="0.35" specular="0.35" />
+    <material name="shakebench_emergency" rgba="0.82 0.055 0.035 1" reflectance="0.2" shininess="0.25" specular="0.25" />
   </asset>
   <worldbody>
-    <geom condim="3" group="1" material="shakebench_floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane" />
-    <!-- Visual laboratory walls. They are intentionally non-contact. -->
-    <geom conaffinity="0" contype="0" group="1" material="shakebench_frame_metal" name="shakebench_wall_left" pos="-2.2 0 1.5" size="0.01 2.2 1.5" type="box" />
-    <geom conaffinity="0" contype="0" group="1" material="shakebench_frame_metal" name="shakebench_wall_right" pos="2.2 0 1.5" size="0.01 2.2 1.5" type="box" />
-    <geom conaffinity="0" contype="0" group="1" material="shakebench_frame_metal" name="shakebench_wall_back" pos="0 2.2 1.5" size="2.2 0.01 1.5" type="box" />
-
+    <!-- Keep this physical plane for the original contact semantics. The
+         scene layer hides it and adds non-contact slabs around a visual pit. -->
+    <geom condim="3" group="0" material="shakebench_floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane" rgba="1 1 1 0" />
     <!--
-      The worktable body origin is its COM and elastic centre.  It is a
-      direct world child in this source arena so the Phase 02 role-based
-      processor can reparent it under the generated dynamic deck before
-      compilation.
+      The worktable body origin is its COM and elastic centre. It remains a
+      direct source-world child until the role-based deck processor runs.
     -->
     <body name="worktable" pos="0 0 0.77">
-      <!-- Three translational and three rotational relative coordinates. -->
       <joint name="isolator_tx" type="slide" pos="0 0 0" axis="1 0 0" limited="true" range="-0.025 0.025" stiffness="31582.734083485946" damping="201.06192982974676" springref="0" />
       <joint name="isolator_ty" type="slide" pos="0 0 0" axis="0 1 0" limited="true" range="-0.025 0.025" stiffness="31582.734083485946" damping="201.06192982974676" springref="0" />
       <joint name="isolator_tz" type="slide" pos="0 0 0" axis="0 0 1" limited="true" range="-0.025 0.025" stiffness="31582.734083485946" damping="201.06192982974676" springref="0.009939608115313336" />
@@ -38,50 +43,15 @@
       <joint name="isolator_ry" type="hinge" pos="0 0 0" axis="0 1 0" limited="true" range="-0.08726646259971647 0.08726646259971647" stiffness="1121.483148095784" damping="7.139583464548164" springref="0" />
       <joint name="isolator_rz" type="hinge" pos="0 0 0" axis="0 0 1" limited="true" range="-0.08726646259971647 0.08726646259971647" stiffness="2059.490350375316" damping="13.111122780491645" springref="0" />
       <inertial pos="0 0 0" mass="32" diaginertia="0.9696 1.1363 2.0867" />
-
-      <!-- Canonical tabletop: the only contact geometry in this arena. -->
+      <!-- Canonical tabletop: the only arena contact geometry. -->
       <geom name="table_collision" type="box" size="0.325 0.30 0.03" pos="0 0 0" group="0" friction="1 0.005 0.0001" />
       <geom name="table_visual" type="box" size="0.325 0.30 0.03" pos="0 0 0" group="1" conaffinity="0" contype="0" material="shakebench_phenolic_bench" />
       <site name="table_top" type="sphere" pos="0 0 0.03" size="0.001" rgba="0 0 0 0" />
-
-      <!-- Dark square-tube tabletop frame and lower cross-braces. -->
-      <geom name="shakebench_frame_front" type="box" size="0.325 0.018 0.025" pos="0 -0.282 -0.055" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_frame_back" type="box" size="0.325 0.018 0.025" pos="0 0.282 -0.055" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_frame_left" type="box" size="0.018 0.264 0.025" pos="-0.307 0 -0.055" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_frame_right" type="box" size="0.018 0.264 0.025" pos="0.307 0 -0.055" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_crossbrace_front" type="box" size="0.26 0.014 0.014" pos="0 -0.24 -0.62" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_crossbrace_back" type="box" size="0.26 0.014 0.014" pos="0 0.24 -0.62" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_crossbrace_left" type="box" size="0.014 0.20 0.014" pos="-0.26 0 -0.62" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_crossbrace_right" type="box" size="0.014 0.20 0.014" pos="0.26 0 -0.62" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-
-      <!-- Four square-tube legs and foot plates; all display-only. -->
-      <geom name="shakebench_leg_front_left" type="box" size="0.025 0.025 0.37" pos="-0.275 -0.235 -0.385" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_leg_front_right" type="box" size="0.025 0.025 0.37" pos="0.275 -0.235 -0.385" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_leg_back_left" type="box" size="0.025 0.025 0.37" pos="-0.275 0.235 -0.385" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_leg_back_right" type="box" size="0.025 0.025 0.37" pos="0.275 0.235 -0.385" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_foot_front_left" type="box" size="0.075 0.060 0.008" pos="-0.275 -0.235 -0.765" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_foot_front_right" type="box" size="0.075 0.060 0.008" pos="0.275 -0.235 -0.765" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_foot_back_left" type="box" size="0.075 0.060 0.008" pos="-0.275 0.235 -0.765" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-      <geom name="shakebench_foot_back_right" type="box" size="0.075 0.060 0.008" pos="0.275 0.235 -0.765" group="1" conaffinity="0" contype="0" material="shakebench_frame_metal" />
-
-      <!-- Clearly visible compliant support mounts, separated from the feet. -->
-      <geom name="shakebench_mount_front_left" type="cylinder" size="0.035 0.055" pos="-0.275 -0.235 -0.70" group="1" conaffinity="0" contype="0" material="shakebench_mount_rubber" />
-      <geom name="shakebench_mount_front_right" type="cylinder" size="0.035 0.055" pos="0.275 -0.235 -0.70" group="1" conaffinity="0" contype="0" material="shakebench_mount_rubber" />
-      <geom name="shakebench_mount_back_left" type="cylinder" size="0.035 0.055" pos="-0.275 0.235 -0.70" group="1" conaffinity="0" contype="0" material="shakebench_mount_rubber" />
-      <geom name="shakebench_mount_back_right" type="cylinder" size="0.035 0.055" pos="0.275 0.235 -0.70" group="1" conaffinity="0" contype="0" material="shakebench_mount_rubber" />
-
-      <!-- Fastener details are visual only and never enter contact physics. -->
-      <geom name="shakebench_bolt_front_left_a" type="cylinder" size="0.008 0.004" pos="-0.325 -0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_front_left_b" type="cylinder" size="0.008 0.004" pos="-0.225 -0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_front_right_a" type="cylinder" size="0.008 0.004" pos="0.225 -0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_front_right_b" type="cylinder" size="0.008 0.004" pos="0.325 -0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_back_left_a" type="cylinder" size="0.008 0.004" pos="-0.325 0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_back_left_b" type="cylinder" size="0.008 0.004" pos="-0.225 0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_back_right_a" type="cylinder" size="0.008 0.004" pos="0.225 0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
-      <geom name="shakebench_bolt_back_right_b" type="cylinder" size="0.008 0.004" pos="0.325 0.255 -0.018" group="1" conaffinity="0" contype="0" material="shakebench_bolt_metal" />
     </body>
-
-    <light name="shakebench_key_light" pos="1.0 -1.0 2.4" dir="-0.3 0.3 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false" />
+    <!-- Explicit deck_visual role; Python fills this body deterministically. -->
+    <body name="shakebench_platen_visual" pos="0 0 -0.031" />
+    <!-- Neutral laboratory lights are authored from scene render.lights. -->
+    <!-- Legacy camera names remain available for existing robosuite callers. -->
     <camera mode="fixed" name="frontview" pos="1.35 -1.25 1.20" quat="0.633 0.312 0.312 0.633" />
     <camera mode="fixed" name="birdview" pos="-0.25 -0.05 2.80" quat="0.7071 0 0 0.7071" />
     <camera mode="fixed" name="agentview" pos="0.75 -0.85 1.10" quat="0.604 0.188 0.188 0.765" />

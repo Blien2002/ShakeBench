@@ -1,88 +1,91 @@
-# Phase 08 Prompt：Committed States、运行协议与配对 Scorecard
+# Phase 08 执行提示词：认证入口、Committed States、CPU Batch 与 Scorecard
 
-你在 `/home/miracle04/Desktop/ShakeBench`（原 robosuite 仓库改名而来）中工作。直接在 `robosuite/utils/` 中实现 state 生成/回放、result manifests、MDE calculator 和单 Gamma scorecard；不运行 knee 或 official evaluation，不新建子文件夹。
+在 `/home/miracle04/Desktop/ShakeBench/.phase07_5a_clean` 工作。Phase 08 的交付是协议、runner、
+scorecard 和 MDE；**不执行** knee scan、100 个 knee rollout 或 400×4 official rollout。
+classic MuJoCo 是唯一 scoreable physics backend。GPU 仅可用于 demo renderer，不能接入科学 runner。
+MJWarp/MJX/Warp/CUDA physics 仅允许未来独立的 `scoreable=false` feasibility，不得替代本阶段 raw 或 authority。
 
-## 前置与必读
+## 1. 唯一入口：先认证 Phase 7.5A
 
-- Phase 07 controller 冻结且 Gamma=0 dev 通过。
-- 读取 `docs/robosuite_benchmark_design_tree.md` committed states、MDE、failure integrity、Gamma knee 和 paired statistics。
+第一条可执行命令必须为：
 
-## 数据合同
-
-```text
-10 dev task states
-400 official task states
-100 knee-calibration episodes
-  = 10 object placements × 10 excitation seed/t0 pairs
+```sh
+python -m robosuite.scripts.shakebench_verify_phase07_5a_handoff \
+  --manifest docs/phase_07_5a_requalification_manifest.json
 ```
 
-三组无交集；Can yaw=0；task XY 在 nominal 周围独立 uniform ±0.02m。不得根据 rollout 成败筛选或替换 state。
+它会验证稳定的 package-owned science authority
+`robosuite/models/assets/shakebench_phase07_5a_requalification.json`、独立绑定最终 manifest 的
+`robosuite/models/assets/shakebench_phase07_5a_final_authority.json`、raw artifact hash、语义 verifier 和
+source inventory。两层 identity 禁止 manifest/authority 哈希循环，也禁止 finalization 改写既有 raw。
+随后在非源码目录做 wheel/sdist clean-install
+smoke，确认 authority、direct scene 和纹理均来自安装根。不得手抄或缓存 geometry hash；应从
+`verify_direct_mount_authority()` 的返回值记录实际值。
 
-## 直接修改落点（不新建目录）
+认证失败时输出 `BLOCKED_BY_PHASE07_5A_HANDOFF` 并停止创建 official/knee state authority，停止
+scoreable batch 和 state authority 写入。不要用候选 evidence、旧 geometry JSON 的 `scoreable`
+字段、旧 scene hash 或历史 report 替代该 verifier。
 
-```text
-robosuite/utils/shakebench_protocol.py
-robosuite/utils/shakebench_scoring.py
-robosuite/scripts/shakebench_generate_states.py
-robosuite/scripts/shakebench_replay_state.py
-robosuite/scripts/shakebench_scorecard.py
-tests/test_shakebench_protocol.py
-tests/test_shakebench_scoring.py
-```
+## 2. 冻结不变量
 
-committed state 数据作为平铺 package-data 文件直接放 `robosuite/models/assets/` 根：
+- 十个 `shakebench_states_dev.json` dev state 原样复用；不重排、不替换、不按结果筛选。
+- 固定 physics timestep 0.0002 s、20 Hz policy、每 policy step 250 internal steps、既有 controller、
+  task geometry、成功阈值、provider 语义和 failure denominator。
+- 不把 renderer pixel、privileged state 或 future realized outcome 送入 State policy。
+- 任何 scene/geometry/controller/physics/dev-state mismatch、非有限数、unknown schema 或 hash mismatch
+  必须 fail closed。
 
-```text
-robosuite/models/assets/shakebench_states_dev.json
-robosuite/models/assets/shakebench_states_official.json
-robosuite/models/assets/shakebench_states_knee.json
-```
+## 3. 当前 Oracle artifact 合同
 
-Phase 07 dependency remediation has already pre-registered
-`shakebench_states_dev.json`. Phase 08 must authenticate and reuse those exact
-10 IDs/payloads, then generate only the 400 official and 100 knee states. It
-must not regenerate the dev subset.
-
-该目录随 wheel/sdist 发布（MANIFEST.in 已递归打包），不新建子目录。
-
-## CommittedState
-
-至少保存 state_id/split/schema、Can worktable-frame pose、target reference、excitation seed/t0/level scale、Gamma commanded、IMU seed/bias seed、task/physics/controller/config hashes 和 provenance。不得保存 future realized contacts/outcomes。
-
-reset/replay 精确恢复 object/support/sensor/program；V0–V3 共享 matched fields 和 seeds。
-
-## EpisodeResult/RunManifest
-
-保存 success subconditions、failure/infrastructure status、three Gamma values、diagnostics、actions、rerun ledger、versions/hashes 和 scoreable flag。
-
-## Scorecard
-
-每 tier：success count/400、SR、95% Wilson、failure histogram、physics violations、missing/reruns。
-
-paired `V1−V0/V2−V1/V3−V2/V3−V0`：Delta SR、fixed-seed 10,000 paired-bootstrap CI、n_gain/n_loss。SR>0.90 或 <0.10 标 ceiling/floor limited；不自动第二主 Gamma。
-
-Integrity：task/controller/physics/policy crash 进入分母；infrastructure crash 只重跑同 state；重复失败使 group incomplete；不生成 valid-only 主 SR。
-
-## Power contract
+新 run/episode 使用 Phase-07 schema v5。顶层必须有：
 
 ```text
-minimum effect = 0.10 Delta SR
-alpha = 0.05 two-sided
-target power >=0.80
-official n=400 paired episodes per tier
+scene_visual, geometry_profile, geometry_authority, scoreable,
+controller_profile, physics_authority, dev_state_anchor
 ```
 
-实现可复现 MDE/power calculator 并输出 assumptions。
+每个 episode 必须重复 scene/geometry/authority/scoreable，另有 task_context + hash、actuator metadata、
+完整 trace + hash、final metrics、success/failure/termination。writer 和 verifier 共用
+`scene_visual_identity()` 与 `geometry_authority_identity()`。不得接受 v4 作为新的 Phase 8 authority。
+determinism projection 必须比较 task/tier/Gamma、scene/geometry/runtime authority、controller/physics、
+task context、actuator metadata、完整 trace、final metrics 和 termination；仅剥离 PID、worker index、
+UUID、wall clock、临时路径等 execution provenance。
 
-## 完成条件
+## 4. Committed states（只生成，不运行）
 
-1. 10/400/100 artifacts 尺寸正确且无交集；
-2. deterministic IDs/hashes/replay 通过；
-3. state corruption 与 unknown schema fail closed；
-4. Wilson/bootstrap/gain-loss/saturation/incomplete synthetic tests 通过；
-5. 400 denominator 在 task failures 下保持；
-6. package artifact 包含平铺在 assets 根的 state 文件；
-7. 输出 `docs/phase_08_report.md`；
-8. 未运行 knee scan 或 1600 official rollouts；未新建目录。
+生成并验证 400 official task states 与 100 knee-calibration states 的冻结 artifact；它们和已有 10 dev
+state 的 ID/payload 必须无交集。每条记录固定 schema/version、state ID、split、Can worktable-frame pose、
+target reference、excitation/IMU seed、Gamma、task/physics/controller/geometry/runtime hashes 与 canonical
+payload hash。禁止把动作、未来 contact、episode outcome 或 wall-clock 信息写入 state。
 
-完成后停止。
+## 5. CPU batch 合同
+
+使用 `spawn`，每 worker 独立 env/controller/RNG，并在数值库 import 前把 OMP/MKL/OpenBLAS/NumExpr
+限制为每 worker 一线程。正式 runner 固定为 2 workers，只用 P-core 首 sibling：
+
+```text
+2=[0,2]
+```
+
+每 job 是不可变 science identity（state/tier/Gamma/horizon 与所有 authority hash）；PID、CPU、attempt、
+hostname、路径、完成顺序和 wall time 只属于 execution provenance。dispatch 前原子落盘 manifest；每 job
+原子 publish，resume/retry 只接收同 job identity，task failure 不重跑，infra failure 记录 ledger 后才可重试。
+
+Phase 7.5B 已实测 1/2/4/8。4 workers 出现 swap 增长，8 workers 两次增长到约 1.6--2.0 GiB，均为
+`resource_limited`；不得自动重试或用于 Phase 8/9。正式 2-worker batch 在禁用 swap 的受控窗口通过，
+使用 `robosuite.scripts.shakebench_cpu_batch` 的 spawn、atomic publish、resume/retry ledger 和稳定聚合。
+
+环境复用仅在 fresh→fresh、fresh→reuse、reuse→reuse（含顺序反转）全部逐字段 parity 和三进程
+determinism 后启用。`hard_reset=False` 已通过一次 full-horizon parity，但仍是待验证候选，当前未保留；
+只有 reset、observation、action、actuator、trace、metrics、success window 和 termination 完全一致才可启用。
+
+只运行 2-worker Phase 8 protocol validation workload，不能替代或偷偷执行 Phase 9 rollout。
+记录 RSS、available RAM、swap、frequency、temperature、P50/P95、jobs/s、sim-seconds/wall-second、
+paired duration 和 scaling efficiency。出现 swap/page fault、OOM 或 thermal throttling 时把该档标记
+`resource_limited`；默认和上限均为稳定的 2 workers。4/8-worker 已有负证据，不得作为默认值。
+
+## 6. Scorecard 与停止条件
+
+实现 EpisodeResult、RunManifest、paired single-Gamma scorecard 与 MDE 的纯合成/contract 测试。保留
+raw result、verdict、retry/duplicate conflict、resource telemetry 和 semantic verifier。不得运行 knee scan
+或正式 rollout；Phase 08 完成后等待用户明确启动 Phase 9。

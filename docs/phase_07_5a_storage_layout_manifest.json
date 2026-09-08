@@ -1,0 +1,54 @@
+{
+  "schema_id": "shakebench.storage_layout_revision",
+  "schema_version": 1,
+  "date": "2026-09-07",
+  "scene_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+  "geometry_metadata_sha256": "a70750e0a6f8cd3615f222525b823d9fcb3418caf0948a15caf61f1bc0336395",
+  "storage_cabinet_pos_m": [
+    -2.2,
+    0.72,
+    0
+  ],
+  "tool_cart_pos_m": [
+    -0.78,
+    2.12,
+    0
+  ],
+  "storage_contents": [
+    "padded accelerometer tray",
+    "coiled signal cable with connectors",
+    "calibration reference weights",
+    "closed laboratory logbook"
+  ],
+  "tests_passed": 19,
+  "clearance_passed": true,
+  "physics_invariance": {
+    "physics_equal": true,
+    "old_signature": "a1849e266a9ac705dba9abec5be8ece9e1443ad173c063cb24198a62141f0591",
+    "new_signature": "a1849e266a9ac705dba9abec5be8ece9e1443ad173c063cb24198a62141f0591",
+    "trace_equal": true,
+    "old_trace_sha256": "be6fafa337268db39e1680ed8c36bd21a13bcc5f37f48bb9f7c83c47370f906d",
+    "new_trace_sha256": "be6fafa337268db39e1680ed8c36bd21a13bcc5f37f48bb9f7c83c47370f906d",
+    "action_steps": 20,
+    "samples": 21,
+    "excluded_metadata": [
+      "scene_visual",
+      "geometry_profile"
+    ]
+  },
+  "visual_reviewed": [
+    "overview",
+    "storage_detail",
+    "cart_detail"
+  ],
+  "prior_controller_issue": "Unchanged; this appearance/layout revision does not claim successful grasping",
+  "phase08_ready": false,
+  "package_smoke": {
+    "package_path": "/tmp/shakebench_storage_layout_package/robosuite/__init__.py",
+    "scene_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+    "headless_environment_created": true,
+    "renderer": "native MuJoCo EGL",
+    "rendered": true,
+    "clearance_passed": true
+  }
+}

@@ -1,6 +1,6 @@
 # ShakeBench integration map
 
-状态：Phase 00 骨架、Phase 01/01R candidate excitation、Phase 02R/02R2/02R3/02R4 dynamic deck remediation、Phase 03 arena/isolator physics-only probes、Phase 03R transfer remediation、Phase 04 task/contact/evaluator、Phase 04R task-contract remediation、Phase 05/05R observation 与 IMU remediation 已实现；Phase 06 physics freeze、Phase 07 controller 及后续 official evaluation 仍 deferred。
+状态：Phase 00 骨架、Phase 01/01R candidate excitation、Phase 02R/02R2/02R3/02R4 dynamic deck remediation、Phase 03 arena/isolator physics-only probes、Phase 03R transfer remediation、Phase 04 task/contact/evaluator、Phase 04R task-contract remediation、Phase 05/05R observation 与 IMU remediation、Phase 06 physics freeze、Phase 07 controller、Phase 7.5A scene restoration/clearance 已实现；Phase 08/09 protocol and official evaluation 仍 deferred。
 审计路径：`/home/miracle04/Desktop/ShakeBench`。  
 审计基线 commit：`02aa46f9`（Phase 02 pushed baseline）。
 
@@ -189,3 +189,19 @@ Phase 04/04R 已实现 Can task、scoped contact pairs、compiled collision/iner
 Phase 01 已实现 authored excitation；Phase 02R3 闭合 dynamic deck 左右极限测量语义，Phase 02R4 又按 physics-only screen 选择 driver 并完成 Panda/base-inclusive load gate，故 `phase03_handoff=PASS`。Phase 03R 已通过 XML default、18 格复数 transfer、64-line joint spectrum、4 格 payload COM sensitivity 和 visual invariance gates，故 `phase04_handoff=PASS`。最终 isolator operating point、contact/task runtime 和 official freeze 仍属于后续阶段。当前 Phase 02/03 artifacts 只能通过只读 verifier 或带 reason 的显式 update 变更。
 
 Phase 01R 将该 excitation 明确标记为 `new authored v0 candidate`；没有可审计的旧 ShakeBench algorithm/reference，因此不宣称 exact reuse。`scoreable=True` 仍需后续 freeze authority。
+
+## 9. Phase 7.5A 场景 authority 与 clearance seam
+
+| 路径 | 职责 | 物理边界 |
+| --- | --- | --- |
+| `robosuite/models/assets/shakebench_scene_visual_v1.json` | 平铺 scene schema/hash、room/pit/platen/Stewart/table-support/camera/material、frame ownership 和 safe envelope | `physics_effect=false`；不覆盖 official physics profile |
+| `robosuite/utils/shakebench_scene.py` | `load_scene_visual_config`、`augment_scene_mjcf`、`audit_compiled_scene`、`scene_clearance_report` 深模块 | visual geoms 零 contact/零 density；报告分开记录 visual↔visual、visual↔collision proxy、active contact |
+| `robosuite/models/arenas/shakebench_arena.py` | 注入 scene config、显式 `deck_visual` role、视觉开关和 arena audit | `worktable` canonical M/I/joints/target contract 不变 |
+| `robosuite/environments/manipulation/vibration_pick_place_can.py` | `deck_visual -> shakebench_platen_visual` role handoff、mount audit、scene metadata、`base_types` 真实传递 | Can 仍为 world free body；deck/worktable topology 不变 |
+| `robosuite/scripts/shakebench_scene_preflight.py` | 无 renderer 的 compiled inventory、safe clearance、visual physics invariance gate | 不运行 knee/official states |
+| `robosuite/demos/demo_shakebench_oracle_video.py` | native EGL/FFmpeg qualitative video；overview/assembly/side cameras | camera pixels 不进入 policy/evaluator/scoreable evidence |
+
+完整实验室视觉是新增用户需求；此前 Phase 03 只冻结了工业 worktable visual 的
+partial integration。Phase 7.5A 的 geometry variant A 只重排 non-contact 桌架和
+deck-side mount，并以 scene hash 绑定后续 run；B/C/B-size 必须另开 geometry/physics
+profile，Phase 8/9 不得混合。

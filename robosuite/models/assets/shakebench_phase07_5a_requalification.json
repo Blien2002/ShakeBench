@@ -1,0 +1,15 @@
+{
+  "schema_id": "shakebench.phase07_5a.science_authority",
+  "schema_version": 1,
+  "status": "EVIDENCE_COLLECTION_AUTHORIZED",
+  "scoreable": true,
+  "phase08_authorized": false,
+  "geometry_profile_id": "direct_mount_v1",
+  "geometry_payload_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+  "scene_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+  "compiled_physics_signature_sha256": "a1849e266a9ac705dba9abec5be8ece9e1443ad173c063cb24198a62141f0591",
+  "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+  "official_physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+  "dev_state_asset_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6",
+  "payload_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4"
+}

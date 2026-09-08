@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
 import xml.etree.ElementTree as ET
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import numpy as np
 
@@ -17,7 +18,12 @@ from robosuite.utils.shakebench_isolator import (
     IsolatorParameters,
     derive_isolator_parameters,
 )
-
+from robosuite.utils.shakebench_scene import (
+    SceneVisualConfig,
+    _set_scene_visual_alpha,
+    augment_scene_mjcf,
+    load_scene_visual_config,
+)
 
 WORKTABLE_BODY_NAME = "worktable"
 WORKTABLE_COLLISION_GEOM_NAME = "table_collision"
@@ -105,6 +111,7 @@ class ShakeBenchArena(Arena):
         visual_layer=None,
         visuals_enabled=None,
         isolation_config=None,
+        scene_config=None,
     ):
         if isolation_config is not None:
             if isolator_config is not None:
@@ -136,6 +143,9 @@ class ShakeBenchArena(Arena):
         self._visual_geom_names = []
         self._target_container_added = False
         self.target_container_geom_names = {}
+        self.scene_config: SceneVisualConfig = (
+            scene_config if isinstance(scene_config, SceneVisualConfig) else load_scene_visual_config(scene_config)
+        )
 
         super().__init__(xml_path_completion(xml))
 
@@ -159,6 +169,8 @@ class ShakeBenchArena(Arena):
         self._refresh_visual_geom_names()
         self.configure_location()
         self.configure_isolator(self.isolator_config)
+        self.scene_inventory = augment_scene_mjcf(self, self.scene_config)
+        self._refresh_visual_geom_names()
         if include_target_container:
             self.add_target_container()
         self.set_visual_layer(self.visual_layer_enabled)
@@ -217,9 +229,7 @@ class ShakeBenchArena(Arena):
             joint.set("range", _fmt((-limits[index], limits[index])))
             expected_type = "slide" if index < 3 else "hinge"
             if joint.get("type") != expected_type:
-                raise ShakeBenchArenaError(
-                    f"isolator joint {joint.get('name')!r} must be type {expected_type!r}"
-                )
+                raise ShakeBenchArenaError(f"isolator joint {joint.get('name')!r} must be type {expected_type!r}")
         return parameters
 
     @property
@@ -238,7 +248,9 @@ class ShakeBenchArena(Arena):
     def deck_body_handles(self) -> dict[str, str]:
         """Return the explicit role-to-body mapping for deck assembly."""
 
-        return {ISOLATED_WORKTABLE_ROLE: self.worktable_body_name}
+        handles = dict(self.scene_inventory.role_handles)
+        handles[ISOLATED_WORKTABLE_ROLE] = self.worktable_body_name
+        return handles
 
     @property
     def role_handles(self) -> dict[str, str]:
@@ -414,6 +426,7 @@ class ShakeBenchArena(Arena):
             else:
                 geom.set("rgba", "1 1 1 0")
         self.visual_layer_enabled = bool(enabled)
+        _set_scene_visual_alpha(self, bool(enabled))
 
     @property
     def visual_geom_names(self) -> tuple[str, ...]:
@@ -504,12 +517,10 @@ class ShakeBenchArena(Arena):
                 "contype": int(raw_model.geom_contype[geom_id]),
                 "conaffinity": int(raw_model.geom_conaffinity[geom_id]),
             }
-        collision_id = int(
-            mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, WORKTABLE_COLLISION_GEOM_NAME)
-        )
+        collision_id = int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, WORKTABLE_COLLISION_GEOM_NAME))
         if collision_id < 0:
             raise ShakeBenchArenaError("compiled model is missing tabletop collision geometry")
-        return {
+        result = {
             "body_name": self.worktable_body_name,
             "body_id": body_id,
             "mass_kg": float(raw_model.body_mass[body_id]),
@@ -533,6 +544,13 @@ class ShakeBenchArena(Arena):
                 "springref": list(self.isolator_parameters.springref),
             },
         }
+        if int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_BODY, "deck")) >= 0:
+            from robosuite.utils.shakebench_scene import audit_compiled_scene, scene_clearance_report
+
+            result["scene"] = audit_compiled_scene(sim_or_model, self.scene_config).to_dict()
+            if hasattr(sim_or_model, "data") or hasattr(sim_or_model, "_data"):
+                result["scene_clearance"] = scene_clearance_report(sim_or_model, self.scene_config).to_dict()
+        return result
 
 
 __all__ = [

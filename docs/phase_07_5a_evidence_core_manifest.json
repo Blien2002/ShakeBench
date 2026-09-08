@@ -1,0 +1,99 @@
+{
+  "artifacts": [
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/v0_gamma000_all_dev.json",
+      "semantic_passed": true,
+      "sha256": "5d726d4283e3a56ae8b7adc57bcbe6f3beda02c9a63c1d3aff290c63369d3744"
+    },
+    {
+      "kind": "determinism",
+      "path": "out/phase07_5a_requalification/final_v5/state000_v0_gamma000_determinism.json",
+      "semantic_passed": true,
+      "sha256": "11257796ca2b89a20b11271df39b9376fa09d0162f75566c5d892491cfc3ed00"
+    },
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/state000_V0_gamma015_smoke.json",
+      "semantic_passed": true,
+      "sha256": "5f1096aaa933112f9b8f5d969e88c7800715fb6c0553f3535168c6f77a121971"
+    },
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/state000_V1_gamma015_smoke.json",
+      "semantic_passed": true,
+      "sha256": "28865ae788b2f82d588077b9726f56c7fde5512398443b9ea537109c85bb5946"
+    },
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/state000_V2_gamma015_smoke.json",
+      "semantic_passed": true,
+      "sha256": "f2f2389e8f0dc18819d788a39186c73441ee58d04c335c08bc8a6c97d819da63"
+    },
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/state000_V3_gamma015_smoke.json",
+      "semantic_passed": true,
+      "sha256": "b7e88f83d694e7eb87e9a04e46b705dc9e9ebf03f7e1e10055c421f85f670121"
+    },
+    {
+      "kind": "oracle_run",
+      "path": "out/phase07_5a_requalification/final_v5/state000_scoreable_probe.json",
+      "semantic_passed": true,
+      "sha256": "feb436eac0040089286f809ca687779e378df1344f09ef8ed51e4a7c45e80fd0"
+    },
+    {
+      "kind": "scene_preflight",
+      "path": "out/phase07_5a_requalification/final_v5/direct_mount_scene_preflight.json",
+      "semantic_passed": true,
+      "sha256": "0702d5ffc02e66fe3fa3b3950da1a27a5e4eab07a300192b84aa2a34828bb0c7"
+    },
+    {
+      "kind": "video",
+      "path": "out/demo/phase07_5a_direct_mount_authorized_v1_v0_gamma015.mp4",
+      "semantic_passed": true,
+      "sha256": "6eabeb479c720dcecafb5373f39f37d62044fba5d38b83d2b24499facec1df7a"
+    },
+    {
+      "kind": "video_sidecar",
+      "path": "out/demo/phase07_5a_direct_mount_authorized_v1_v0_gamma015.json",
+      "semantic_passed": true,
+      "sha256": "c5b8a36f85e7057bbc9955d9f94b77356592a9bedf31ebec7afda91a42cb3677"
+    },
+    {
+      "kind": "video_keyframes",
+      "path": "out/demo/phase07_5a_direct_mount_authorized_v1_v0_gamma015_keyframes.json",
+      "semantic_passed": true,
+      "sha256": "d5857b979d7c8c448a47f9509437f0f07adf0897120bb3172167d6d6f07531c9"
+    },
+    {
+      "kind": "cpu_manifest",
+      "path": "docs/phase_07_5b_manifest.json",
+      "semantic_passed": true,
+      "sha256": "6e95d5fe126e6fe96ec3a021ff4f89320a01b699dbc3c5fe85f50c13c0efb602"
+    },
+    {
+      "kind": "cpu_batch",
+      "path": "out/phase07_5a_requalification/cpu/final_batch_w2_noswap/aggregate.json",
+      "semantic_passed": true,
+      "sha256": "230aeadb151d7f59b3f47ca2c80d2ec874caf121bc78b25de95038012af3c6cd"
+    },
+    {
+      "kind": "test_evidence",
+      "path": "out/phase07_5a_requalification/final_test_evidence.json",
+      "semantic_passed": true,
+      "sha256": "42185df0ffb0e0599937e8ae75a4e11d52302f80e8f82514e48b6139568021df"
+    }
+  ],
+  "package_binding": "excluded_from_core_to_prevent_package-authority hash cycle",
+  "payload_sha256": "9b2c56416de2d88d78062b698004605c551bac37671d10a3600fccec1eb4f2dd",
+  "schema_id": "shakebench.phase07_5a.evidence_core",
+  "schema_version": 1,
+  "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+  "source_inventory": {
+    "path": "docs/phase_07_5a_source_inventory.json",
+    "payload_sha256": "8444e53c1e7dc6010bb029d9b7fcc55aa0aac74ca68c194dbcd789c49aaf356e",
+    "sha256": "6fe5cda7585321cd9f0e999551c9e32dbf69174a1626f0aa3d68f74eb816252d"
+  },
+  "status": "PASS"
+}

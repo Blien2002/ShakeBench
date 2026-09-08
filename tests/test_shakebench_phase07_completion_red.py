@@ -240,16 +240,21 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
     profile = OracleControllerProfile()
     payload = {
         "schema_id": "shakebench.phase07.oracle_run",
-        "schema_version": 3,
+        "schema_version": 5,
         "tier": "V0",
         "gamma_commanded": 0.0,
         "controller_profile": profile.to_dict(),
+        "diagnostic_mode": profile.diagnostic_mode,
         "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
         "dev_state_anchor": _dev_state_anchor("robosuite/models/assets/shakebench_states_dev.json"),
         "physics_authority": {
             "profile_id": "shakebench.official.physics.v2",
             "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         },
+        "scene_visual": episode["scene_visual"],
+        "geometry_profile": episode["geometry_profile"],
+        "geometry_authority": episode["geometry_authority"],
+        "scoreable": episode["scoreable"],
         "episodes": [episode],
     }
     payload["run_id"] = _digest(
@@ -257,6 +262,10 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
             "tier": "V0",
             "gamma_commanded": 0.0,
             "controller_profile": profile.to_dict(),
+            "scene_visual": episode["scene_visual"],
+            "geometry_profile": episode["geometry_profile"],
+            "geometry_authority": episode["geometry_authority"],
+            "scoreable": episode["scoreable"],
             "state_ids": state_ids,
         }
     )

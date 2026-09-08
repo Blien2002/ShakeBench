@@ -124,6 +124,33 @@ def test_shared_profile_and_neutral_estimate_produce_identical_actions():
     assert v0.profile_sha256 == v0_again.profile_sha256
 
 
+def test_safe_approach_transitions_directly_to_lateral_alignment_without_vertical_reversal():
+    controller = ShakeBenchOracleController("V0")
+    observation = _bilateral_grasp_observation()
+    approach = observation["can_pos_robot_base"] + np.array(
+        (0.0, 0.0, controller.profile.approach_height_m), dtype=np.float32
+    )
+    observation["robot0_eef_pos_robot_base"] = approach
+    observation["robot0_fingertip_pos_robot_base"] = np.array(
+        (
+            approach[0],
+            approach[1] - 0.015,
+            approach[2],
+            approach[0],
+            approach[1] + 0.015,
+            approach[2],
+        ),
+        dtype=np.float32,
+    )
+    controller.executive.phase = TaskPhase.APPROACH
+
+    action = controller.action(observation, time_s=0.1)
+
+    assert controller.executive.phase is TaskPhase.LATERAL_ALIGN_ABOVE_CAN
+    assert abs(float(action[2])) < 1.0e-6
+    assert controller.executive.diagnostics()["swept_clearance_certificate"]["passed"]
+
+
 def test_stationary_v1_specific_force_does_not_create_a_gravity_control_bias():
     profile = OracleControllerProfile()
     v0 = ShakeBenchOracleController("V0", profile)

@@ -1857,6 +1857,19 @@ class TaskExecutive:
         self._anchor_clearance_certificate = dict(self.public_tool_clearance_certificate(observation))
         self._anchor_timestamp_s = float(time_s)
 
+    def _begin_lateral_alignment(self, observation: Mapping[str, Any], time_s: float) -> None:
+        """Freeze the Can and enter the already-clear lateral standoff move."""
+
+        self._capture_grasp_anchor(observation, time_s)
+        self._align_stable_samples = 0
+        self._transition(TaskPhase.LATERAL_ALIGN_ABOVE_CAN, time_s)
+        lateral_goal = self._phase_goal(observation)[0]
+        self._last_swept_clearance_certificate = dict(
+            self._swept_clearance_to_goal(observation, lateral_goal, self._anchored_can_base(observation))
+        )
+        if not self._last_swept_clearance_certificate["passed"]:
+            self._recover_or_fail(observation, time_s, "public_tool_clearance")
+
     def _anchored_can_base(self, observation: Mapping[str, Any]) -> np.ndarray:
         if self._anchor_worktable_can_transform is None:
             raise ShakeBenchOracleError("grasp anchor has not been captured")
@@ -2524,8 +2537,11 @@ class TaskExecutive:
             if not self._last_swept_clearance_certificate["passed"]:
                 self._recover_or_fail(observation, time_s, "public_tool_clearance")
                 return
-            self._clearance_start_eef_position = eef.copy()
-            self._transition(TaskPhase.CLEARANCE_LIFT, time_s)
+            # ``approach_height_m`` is itself the certified lateral standoff:
+            # the complete fingertip support points already clear the Can.
+            # An unconditional extra lift here caused a down-up-down reversal
+            # before every nominal grasp without adding a stronger gate.
+            self._begin_lateral_alignment(observation, time_s)
         elif self.phase == TaskPhase.CLEARANCE_LIFT and close and elapsed >= self.profile.clearance_lift_s:
             self._last_swept_clearance_certificate = dict(
                 self._swept_clearance_to_goal(observation, self._phase_goal(observation)[0], can)
@@ -2533,16 +2549,7 @@ class TaskExecutive:
             if not self._last_swept_clearance_certificate["passed"]:
                 self._recover_or_fail(observation, time_s, "public_tool_clearance")
                 return
-            self._capture_grasp_anchor(observation, time_s)
-            self._align_stable_samples = 0
-            self._transition(TaskPhase.LATERAL_ALIGN_ABOVE_CAN, time_s)
-            lateral_goal = self._phase_goal(observation)[0]
-            self._last_swept_clearance_certificate = dict(
-                self._swept_clearance_to_goal(observation, lateral_goal, self._anchored_can_base(observation))
-            )
-            if not self._last_swept_clearance_certificate["passed"]:
-                self._recover_or_fail(observation, time_s, "public_tool_clearance")
-                return
+            self._begin_lateral_alignment(observation, time_s)
         elif self.phase == TaskPhase.LATERAL_ALIGN_ABOVE_CAN and close:
             self._transition(TaskPhase.ALIGN_SETTLE, time_s)
         elif self.phase == TaskPhase.ALIGN_SETTLE:

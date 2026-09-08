@@ -180,7 +180,84 @@ The `demo_renderers.py` script shows how to use different renderers with the sim
 ```sh
 $ python demo_renderers.py --renderer default
 ```
+
 The `--renderer` flag can be set to `mujoco` or `default`
+
+### ShakeBench 场景恢复与 Oracle 视频
+
+`demo_shakebench_oracle_video.py` 使用 package-owned
+`shakebench_scene_visual_v1.json` 的 overview camera，以 native MuJoCo
+EGL renderer 和 FFmpeg 录制定性视频。默认场景是 V0、`Gamma=0.15`、
+`shakebench-dev-v0-000`、1280×720、20 fps；渲染只在展示回调中执行，不进入
+State policy、evaluator 或 scoreable trace。
+
+```sh
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m \
+  robosuite.demos.demo_shakebench_oracle_video \
+  --tier V0 --gamma 0.15 --state-id shakebench-dev-v0-000 \
+  --output out/demo/shakebench_scene_v1.mp4
+```
+
+场景配置同时提供 `shakebench_camera_overview`、`shakebench_camera_assembly`
+和 `shakebench_camera_side`；视频 sidecar 与关键帧 manifest 必须记录 scene
+hash、geometry variant、视频 hash 和 evaluator 结果。旧简化视频保留为历史
+provenance，不由该命令静默覆盖。
+
+### Laboratory appearance and detailed equipment revision
+
+The current scene restores the original neutral laboratory lighting, light-gray
+painted walls, epoxy floor and threaded-hole platen appearance. The control
+rack, instrument bench, tool cart and emergency stop now include chamfered shells,
+fasteners, controls, handles, vents, connectors and caster hardware. The scene
+config owns their geometry, materials and six inspection cameras. The three
+instrument screens remain fixed decorative graphics.
+
+```sh
+MUJOCO_GL=egl python -m robosuite.demos.demo_shakebench_oracle_video \
+  --geometry-profile canonical --output out/demo/phase07_5a_lab_detail_v4_v0_gamma015.mp4
+```
+
+See [visual revision report](phase_07_5a_visual_revision_report.md) for the
+before/after evidence, close-ups and the physics invariance checks. The earlier
+v1/v2 restoration and v3 lighting videos are retained as historical previews.
+
+### Direct mounting and low worktable
+
+The current demo defaults to `--geometry-profile direct_mount_v1`. It uses a
+2.00 × 1.40 m visual platen, Panda directly mounted at the platen surface, and
+a tabletop 0.29 m above it. The physical RethinkMount pedestal, wheels and
+controller box are removed. The new assembly is explicitly non-scoreable until
+its separate scientific acceptance is complete.
+
+```sh
+MUJOCO_GL=egl python -m robosuite.demos.demo_shakebench_oracle_video \
+  --geometry-profile direct_mount_v1 \
+  --output out/demo/phase07_5a_direct_mount_v5_v0_gamma015.mp4
+```
+
+For environment creation use `VibrationPickPlaceCan(robots="Panda",
+geometry_profile="direct_mount_v1", ...)`. Historical scientific runs retain
+the `canonical` default. To reproduce v4's pedestal scene, pass
+`--geometry-profile canonical` to the demo. The new geometry and scene payloads
+are packaged separately and their hashes appear in the sidecar.
+
+### Current scene finish
+
+The current direct-mount appearance uses reduced light accumulation, one indoor
+shadow-casting key, an inward-facing cabinet, joined yellow/black tubular rails,
+and a blank computer monitor. See [scene finish report](phase_07_5a_scene_finish_report.md)
+for the seven inspected views, benchmark lighting sources and physics invariance.
+The v5 task video remains historical failure evidence; no successful new task
+video is claimed for this appearance revision. Use a new output filename for any
+new recording to preserve that provenance.
+
+### Storage and trolley layout
+
+The direct-mount scene now includes a low storage cabinet beside the controller
+rack, with a sensor tray, cable coil, calibration accessories and logbook. The
+maintenance trolley is parked at the rear wall to the left of the computer bench.
+See [storage layout report](phase_07_5a_storage_layout_report.md) for inspected
+views and the unchanged named physics/action trace.
 
 ### Exporting to USD
 Exporting to USD allows users to render **robosuite** trajectories in external renderers such as NVIDIA Omniverse and Blender. In order to export to USD you must install the required dependencies for the exporter.

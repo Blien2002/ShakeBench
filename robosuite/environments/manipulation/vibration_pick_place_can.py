@@ -20,6 +20,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.shakebench_deck import DeckDriver, DeckDriverConfig, audit_compiled_deck_model
 from robosuite.utils.shakebench_excitation import ExcitationProgram
+from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_metrics import (
     CANONICAL_CAN_COLLISION_ENVELOPE,
     CANONICAL_CAN_COM_M,
@@ -53,6 +54,14 @@ from robosuite.utils.shakebench_providers import (
     make_vibration_provider,
     normalize_observation_tier,
     observation_contract_for_tier,
+)
+from robosuite.utils.shakebench_scene import (
+    DECK_VISUAL_BODY_NAME,
+    SceneVisualConfig,
+    audit_compiled_scene,
+    configure_scene_rendering,
+    load_scene_visual_config,
+    scene_clearance_report,
 )
 from robosuite.utils.shakebench_sensors import (
     CANONICAL_IMU_PROFILE,
@@ -149,6 +158,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
         imu_seed=None,
         excitation_program=None,
         privileged_recorder=None,
+        scene_config=None,
+        scene_visual=True,
+        geometry_profile="canonical",
     ):
         requested_robots = list(robots) if isinstance(robots, (list, tuple)) else [robots]
         if requested_robots != ["Panda"]:
@@ -202,8 +214,36 @@ class VibrationPickPlaceCan(ManipulationEnv):
                     )
                 ):
                     raise ValueError("State observation tiers require model_timestep to divide the 5 ms IMU interval")
-        _one_value("base_types", base_types, allowed=("default",))
+        self.geometry_profile = load_geometry_profile(geometry_profile)
+        if self.geometry_profile is not None:
+            geometry = self.geometry_profile
+            if base_types not in ("default", geometry["mount_type"]):
+                raise ValueError("base_types conflicts with the selected geometry profile")
+            if not np.allclose(table_offset, DEFAULT_TABLE_OFFSET_M, atol=1e-12, rtol=0):
+                raise ValueError("table_offset is owned by the selected geometry profile")
+            if scene_config is not None:
+                raise ValueError("scene_config is owned by the selected geometry profile")
+            base_types = geometry["mount_type"]
+            table_offset = geometry["table_top_pos_m"]
+            scene_config = geometry_scene_path(geometry_profile)
+        base_types = _one_value(
+            "base_types",
+            base_types,
+            allowed=("default", "RethinkMount", "RethinkMinimalMount", "NullMount"),
+        )
         _one_value("gripper_types", gripper_types, allowed=("default", "PandaGripper"))
+        self.base_types = base_types
+        self.scene_config: SceneVisualConfig = load_scene_visual_config(scene_config)
+        if (
+            self.geometry_profile is not None
+            and self.scene_config.config_sha256 != self.geometry_profile["scene_sha256"]
+        ):
+            raise ValueError("geometry profile scene hash mismatch")
+        if self.scene_config.geometry_variant != "A" and self.geometry_profile is None:
+            raise ValueError("noncanonical scene requires its explicit geometry_profile")
+        if not isinstance(scene_visual, (bool, np.bool_)):
+            raise ValueError("scene_visual must be boolean")
+        self.scene_visual = bool(scene_visual)
         self.table_full_size = _finite_vector("table_full_size", table_full_size, 3)
         self.table_friction = _finite_vector("table_friction", table_friction, 3)
         self.table_offset = _finite_vector("table_offset", table_offset, 3)
@@ -243,6 +283,8 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self._phase05_last_action = np.zeros(0, dtype=np.float32)
         self._phase05_policy_observation_keys = ()
         self._imu_mount_audit = None
+        self._scene_audit = None
+        self._scene_clearance = None
         self.policy_task_state_frame = "robot_base"
         self.placement_initializer = placement_initializer
         self._requested_load_model_on_init = bool(load_model_on_init)
@@ -286,8 +328,12 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.deck_driver = DeckDriver(
             trajectory=runtime_trajectory,
             config=self.deck_config,
-            body_handles={"isolated_worktable": "worktable", "robot_base": "robot0_base"},
-            required_roles=("isolated_worktable", "robot_base"),
+            body_handles={
+                "isolated_worktable": "worktable",
+                "robot_base": "robot0_base",
+                "deck_visual": DECK_VISUAL_BODY_NAME,
+            },
+            required_roles=("isolated_worktable", "robot_base", "deck_visual"),
         )
         if observation_tier is None:
             self.vibration_provider = None
@@ -315,7 +361,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             robots=requested_robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            base_types="default",
+            base_types=base_types,
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -484,6 +530,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
         super()._load_model()
         if len(self.robots) != 1 or self.robot_names != ["Panda"]:
             raise ValueError("VibrationPickPlaceCan requires exactly one Panda")
+        if self.geometry_profile is not None:
+            initial_qpos = np.asarray(self.geometry_profile["initial_joint_qpos_rad"], dtype=float)
+            if initial_qpos.shape != (7,) or not np.all(np.isfinite(initial_qpos)):
+                raise ValueError("geometry profile initial_joint_qpos_rad must be a finite seven-vector")
+            self.robots[0].init_qpos = initial_qpos.copy()
 
         self.arena = ShakeBenchArena(
             table_full_size=self.table_full_size,
@@ -491,14 +542,18 @@ class VibrationPickPlaceCan(ManipulationEnv):
             table_offset=self.table_offset,
             isolator_config=self.physics_profile.isolator_config(),
             include_target_container=False,
-            visual=True,
+            visual=self.scene_visual,
+            scene_config=self.scene_config,
         )
         self.arena.add_target_container(friction=self.target_container_friction)
         base_position = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
+        if self.geometry_profile is not None:
+            base_position = self.geometry_profile["robot_base_pos_m"]
         self.robots[0].robot_model.set_base_xpos(np.asarray(base_position, dtype=float))
         self.robot_base_body_name = self.robots[0].robot_model.root_body
         if self.robot_base_body_name != "robot0_base":
             raise ValueError("Panda base role changed; refusing implicit deck body lookup")
+        self.robot_mount_type = type(self.robots[0].robot_model.base).__name__
         if type(self.robots[0].gripper["right"]).__name__ != "PandaGripper":
             raise ValueError("VibrationPickPlaceCan requires the standard PandaGripper")
         self.finger_pad_geom_names = tuple(
@@ -533,6 +588,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.can,
         )
+        configure_scene_rendering(self.model.root, self.scene_config)
         self._append_contact_pairs()
         target_spec = self.arena.target_container_spec
         target_frame_local_origin = np.array(
@@ -889,7 +945,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
         # This callback executes after the Phase 02 driver has validated and
         # bound the compiled deck.  It is intentionally an assertion seam, not
         # a recovery path.
+        self._scene_audit = audit_compiled_scene(sim, self.scene_config)
+        self._scene_clearance = scene_clearance_report(sim, self.scene_config)
         self._compiled_contract = self.audit_compiled_model(sim)
+        self._compiled_contract["scene"] = self._scene_audit.to_dict()
+        self._compiled_contract["scene_clearance"] = self._scene_clearance.to_dict()
         if self.vibration_provider is not None:
             self._imu_mount_audit = self.vibration_provider.audit_compiled_mount(sim)
             self._compiled_contract["imu_mount"] = self._imu_mount_audit
@@ -997,6 +1057,24 @@ class VibrationPickPlaceCan(ManipulationEnv):
         return {
             "observation_tier": self.observation_tier,
             "policy_rate_hz": float(self.control_freq),
+            **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
+            "scene_visual": {
+                "scene_id": self.scene_config.scene_id,
+                "config_sha256": self.scene_config.config_sha256,
+                "geometry_variant": self.scene_config.geometry_variant,
+                "physics_effect": self.scene_config.physics_effect,
+                "enabled": self.scene_visual,
+            },
+            "robot_mount": {
+                "requested_base_type": self.base_types,
+                "compiled_mount_type": getattr(self, "robot_mount_type", None),
+                "robot_base_body_name": self.robot_base_body_name,
+                "initial_joint_qpos_rad": (
+                    np.asarray(self.robots[0].init_qpos, dtype=float).tolist()
+                    if self.geometry_profile is not None
+                    else None
+                ),
+            },
             "worktable": {
                 "dimensions_m": list(self.table_full_size),
                 "mass_kg": float(self.arena.isolator_parameters.mass_kg),
@@ -1018,7 +1096,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             "physics_profile": {
                 "profile_id": self.physics_profile.profile_id,
                 "profile_sha256": self.physics_profile.profile_sha256,
-                "scoreable": self.physics_profile.scoreable,
+                "scoreable": self.physics_profile.scoreable and self._geometry_is_scoreable(),
             },
             "imu": {
                 "profile_id": CANONICAL_IMU_PROFILE.profile_id,
@@ -1059,6 +1137,15 @@ class VibrationPickPlaceCan(ManipulationEnv):
         """Return the public static task context as a fresh mapping."""
 
         return self.policy_task_context
+
+    def _geometry_is_scoreable(self):
+        """Authorize canonical or verified direct-mount geometry, never a JSON flag."""
+
+        if self.geometry_profile is None:
+            return True
+        from robosuite.utils.shakebench_authority import direct_mount_scoreable
+
+        return direct_mount_scoreable()
 
     def observation_contract(self):
         """Return the declared public State shape/unit/frame contract."""
@@ -1164,6 +1251,59 @@ class VibrationPickPlaceCan(ManipulationEnv):
             self.deck_driver.role_handles,
         )
         worktable_audit = self.arena.audit_compiled_model(sim_or_model)
+        robot_base_id = int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_BODY, self.robot_base_body_name))
+
+        def body_ancestors(body_id):
+            ancestors = set()
+            current = int(body_id)
+            while current != 0:
+                ancestors.add(current)
+                current = int(raw_model.body_parentid[current])
+            return ancestors
+
+        mount_body_ids = [
+            body_id
+            for body_id in range(int(raw_model.nbody))
+            if body_id != robot_base_id and robot_base_id in body_ancestors(body_id)
+        ]
+        mount_bodies = {}
+        for body_id in mount_body_ids:
+            body_name = mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_BODY, body_id)
+            if body_name is None or not str(body_name).startswith("fixed_mount"):
+                continue
+            mount_bodies[str(body_name)] = {
+                "body_id": body_id,
+                "parent": parent_name(str(body_name)),
+                "mass_kg": float(raw_model.body_mass[body_id]),
+                "inertia_kg_m2": np.asarray(raw_model.body_inertia[body_id], dtype=float).tolist(),
+            }
+        mount_geoms = {}
+        for geom_id in range(int(raw_model.ngeom)):
+            body_id = int(raw_model.geom_bodyid[geom_id])
+            body_name = mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_BODY, body_id)
+            geom_name = mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+            if body_name is None or geom_name is None or not str(body_name).startswith("fixed_mount"):
+                continue
+            mount_geoms[str(geom_name)] = {
+                "body_name": str(body_name),
+                "geom_id": geom_id,
+                "type": int(raw_model.geom_type[geom_id]),
+                "size_m": np.asarray(raw_model.geom_size[geom_id], dtype=float).tolist(),
+                "contype": int(raw_model.geom_contype[geom_id]),
+                "conaffinity": int(raw_model.geom_conaffinity[geom_id]),
+                "world_position_m": np.asarray(self.sim.data.geom_xpos[geom_id], dtype=float).tolist(),
+            }
+        robot_mount_audit = {
+            "requested_base_type": self.base_types,
+            "compiled_mount_type": self.robot_mount_type,
+            "robot_base_body_name": self.robot_base_body_name,
+            "robot_base_pose_in_deck": {
+                "pos_m": np.asarray(raw_model.body_pos[robot_base_id], dtype=float).tolist(),
+                "quat_wxyz": np.asarray(raw_model.body_quat[robot_base_id], dtype=float).tolist(),
+            },
+            "bodies": mount_bodies,
+            "collision_geoms": mount_geoms,
+        }
         result = {
             "topology": {
                 "deck_body": self.deck_config.deck_body_name,
@@ -1190,6 +1330,15 @@ class VibrationPickPlaceCan(ManipulationEnv):
             },
             "contacts": contact_audit,
             "physics_profile": self.physics_profile.audit(),
+            "robot_mount": robot_mount_audit,
+            **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
+            "scene_visual": {
+                "scene_id": self.scene_config.scene_id,
+                "config_sha256": self.scene_config.config_sha256,
+                "geometry_variant": self.scene_config.geometry_variant,
+                "physics_effect": self.scene_config.physics_effect,
+                "enabled": self.scene_visual,
+            },
         }
         if self.vibration_provider is not None:
             result["imu_mount"] = self.vibration_provider.audit_compiled_mount(sim_or_model)

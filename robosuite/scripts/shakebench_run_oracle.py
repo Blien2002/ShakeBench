@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import uuid
+from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
@@ -24,12 +25,14 @@ import numpy as np
 import robosuite
 from robosuite import models
 from robosuite.controllers import load_composite_controller_config
+from robosuite.utils.shakebench_authority import DirectMountAuthorityError, verify_direct_mount_authority
 from robosuite.utils.shakebench_calibration import level_scale_for_gamma
 from robosuite.utils.shakebench_dev_states import (
     PHASE07_DEV_STATE_FILENAME,
     verify_phase07_dev_state_artifact,
 )
 from robosuite.utils.shakebench_excitation import build_excitation_program
+from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_oracle import (
     OracleControllerProfile,
     ShakeBenchOracleController,
@@ -38,6 +41,7 @@ from robosuite.utils.shakebench_oracle import (
     profile_for_diagnostic_mode,
 )
 from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, TIER_POLICY_KEYS, observation_contract_for_tier
+from robosuite.utils.shakebench_scene import load_scene_visual_config
 
 
 class OracleRunError(RuntimeError):
@@ -45,11 +49,11 @@ class OracleRunError(RuntimeError):
 
 
 RUN_SCHEMA_ID = "shakebench.phase07.oracle_run"
-RUN_SCHEMA_VERSION = 4
+RUN_SCHEMA_VERSION = 5
 EPISODE_SCHEMA_ID = "shakebench.phase07.oracle_episode"
-EPISODE_SCHEMA_VERSION = 4
+EPISODE_SCHEMA_VERSION = 5
 DETERMINISM_SCHEMA_ID = "shakebench.phase07.determinism_manifest"
-DETERMINISM_SCHEMA_VERSION = 4
+DETERMINISM_SCHEMA_VERSION = 5
 DEV_STATE_PRE_HISTORY_REWRITE_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
 DEV_STATE_REWRITTEN_COMMIT = "08626ea5a5e107df503e266be9065b929d47f882"
 DEV_STATE_ANCHOR_REWRITE = {
@@ -273,6 +277,34 @@ def verify_phase07_r4_manifest(path: str | Path = "docs/phase_07_r4_manifest.jso
     return {"passed": not errors, "errors": sorted(set(errors)), "checks": checks, "manifest_path": str(manifest_path)}
 
 
+def scene_visual_identity(scene_config) -> dict[str, Any]:
+    """Single writer/verifier representation of the scene visual authority."""
+
+    return {
+        "scene_id": scene_config.scene_id,
+        "config_sha256": scene_config.config_sha256,
+        "geometry_variant": scene_config.geometry_variant,
+        "physics_effect": scene_config.physics_effect,
+    }
+
+
+def geometry_authority_identity(geometry_profile: str, *, allow_unverified: bool = False) -> dict[str, Any]:
+    """Return the only serialized geometry authorization identity."""
+
+    if geometry_profile == "canonical":
+        return {"kind": "canonical", "scoreable": True}
+    try:
+        return {"kind": "phase07_5a", "scoreable": True, "authority": dict(verify_direct_mount_authority())}
+    except DirectMountAuthorityError as exc:
+        if allow_unverified:
+            return {
+                "kind": "phase07_5a",
+                "scoreable": False,
+                "verification": "not_authorized_for_scoreable_run",
+            }
+        raise OracleRunError(f"direct-mount authority failed: {exc}") from exc
+
+
 def _actuator_metadata_from_model(raw_model: Any) -> list[dict[str, Any]]:
     result = []
     for actuator_id in range(int(raw_model.nu)):
@@ -413,8 +445,17 @@ def run_episode(
     gamma_commanded: float,
     profile: OracleControllerProfile,
     horizon_steps: int = 1200,
+    geometry_profile: str = "canonical",
+    allow_unverified_geometry: bool = False,
+    hard_reset: bool = True,
+    step_observer: Callable[[Any, int, Mapping[str, Any], ShakeBenchOracleController], None] | None = None,
 ) -> dict[str, Any]:
-    """Run a public-observation-only episode and retain action/actuator evidence."""
+    """Run a public-observation-only episode and retain action/actuator evidence.
+
+    ``step_observer`` is a qualitative-demo hook. It receives the environment
+    after each policy step, but rendered pixels never enter the controller
+    observation or the scoreable trace.
+    """
 
     state_id = str(state["state_id"])
     seed = int(state.get("seed", 0))
@@ -434,6 +475,7 @@ def run_episode(
         use_camera_obs=False,
         use_object_obs=False,
         physics_profile="official",
+        geometry_profile=geometry_profile,
         observation_tier=tier,
         imu_mode="canonical_noisy_v1",
         excitation_program=program,
@@ -442,8 +484,16 @@ def run_episode(
         horizon=horizon_steps,
         ignore_done=True,
         seed=seed,
+        # This is execution provenance only. It must not change any science
+        # field; Phase 7.5B retains it only after complete episode parity.
+        hard_reset=bool(hard_reset),
     )
     try:
+        scene_identity = scene_visual_identity(env.scene_config)
+        geometry_authority = geometry_authority_identity(geometry_profile, allow_unverified=allow_unverified_geometry)
+        scoreable = bool(env.get_policy_task_context()["physics_profile"]["scoreable"])
+        if scoreable != bool(geometry_authority["scoreable"]):
+            raise OracleRunError("environment and geometry authority scoreability disagree")
         task_context = WorktableTaskContext.from_mapping(env.get_policy_task_context().get("task_context"))
         controller = ShakeBenchOracleController(tier, profile, task_context=task_context)
         observation = env.reset()
@@ -503,6 +553,8 @@ def run_episode(
                 }
             )
             metrics_now = env.get_metrics()
+            if step_observer is not None:
+                step_observer(env, step, observation, controller)
             if (
                 metrics_now["max_illegal_penetration_m"]
                 >= env.physics_profile.physics["safety"]["maximum_illegal_penetration_m"]
@@ -553,6 +605,10 @@ def run_episode(
                 "profile_id": env.physics_profile.profile_id,
                 "profile_sha256": env.physics_profile.profile_sha256,
             },
+            "scene_visual": scene_identity,
+            "geometry_profile": env.geometry_profile,
+            "geometry_authority": geometry_authority,
+            "scoreable": scoreable,
             "state_sha256": _digest(state),
             "success": bool(metrics["success"]["passed"]),
             "failure_reason": failure_reason or controller.executive.failure_reason,
@@ -584,6 +640,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument(
+        "--geometry-profile",
+        choices=("canonical", "direct_mount_v1"),
+        default="canonical",
+        help="explicit assembly profile; direct_mount_v1 remains Phase-07 requalification evidence until authorized",
+    )
+    parser.add_argument(
         "--diagnostic-mode",
         choices=(
             "main",
@@ -613,6 +675,7 @@ def main(argv: list[str] | None = None) -> int:
             args.determinism_manifest,
             state_id=args.state_id,
             horizon_steps=args.horizon_steps,
+            geometry_profile=args.geometry_profile,
         )["exit_code"]
     if args.tier is None or args.gamma is None or args.output is None:
         parser.error("--tier, --gamma, and --output are required for a normal run")
@@ -635,6 +698,12 @@ def main(argv: list[str] | None = None) -> int:
             raise OracleRunError("--limit must be in [1, 10]")
         states = states[: args.limit]
     profile = profile_for_diagnostic_mode(args.diagnostic_mode)
+    geometry_profile = load_geometry_profile(args.geometry_profile)
+    scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))
+    geometry_payload = geometry_profile if geometry_profile is not None else None
+    geometry_authority = geometry_authority_identity(args.geometry_profile)
+    scoreable = bool(geometry_authority["scoreable"])
+    scene_identity = scene_visual_identity(scene_config)
     if args.horizon_steps <= 0:
         raise OracleRunError("--horizon-steps must be positive")
     target = Path(args.output)
@@ -648,6 +717,10 @@ def main(argv: list[str] | None = None) -> int:
                 and partial.get("tier") == args.tier
                 and float(partial.get("gamma_commanded")) == float(args.gamma)
                 and partial.get("controller_profile") == profile.to_dict()
+                and partial.get("scene_visual") == scene_identity
+                and partial.get("geometry_authority") == geometry_authority
+                and partial.get("scoreable") == scoreable
+                and partial.get("geometry_profile") == geometry_payload
                 and isinstance(partial.get("episodes"), list)
             ):
                 episodes = list(partial["episodes"])
@@ -663,6 +736,7 @@ def main(argv: list[str] | None = None) -> int:
                 gamma_commanded=args.gamma,
                 profile=profile,
                 horizon_steps=args.horizon_steps,
+                geometry_profile=args.geometry_profile,
             )
         )
         partial_payload = {
@@ -671,6 +745,10 @@ def main(argv: list[str] | None = None) -> int:
             "tier": args.tier,
             "gamma_commanded": args.gamma,
             "controller_profile": profile.to_dict(),
+            "scene_visual": scene_identity,
+            "geometry_profile": geometry_payload,
+            "geometry_authority": geometry_authority,
+            "scoreable": scoreable,
             "episodes": episodes,
         }
         partial_target.parent.mkdir(parents=True, exist_ok=True)
@@ -690,6 +768,10 @@ def main(argv: list[str] | None = None) -> int:
             "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
             "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256,
         },
+        "scene_visual": scene_identity,
+        "geometry_profile": geometry_payload,
+        "geometry_authority": geometry_authority,
+        "scoreable": scoreable,
         "episodes": episodes,
     }
     payload["run_id"] = _digest(
@@ -697,6 +779,10 @@ def main(argv: list[str] | None = None) -> int:
             "tier": args.tier,
             "gamma_commanded": args.gamma,
             "controller_profile": profile.to_dict(),
+            "scene_visual": payload["scene_visual"],
+            "geometry_profile": geometry_payload,
+            "geometry_authority": geometry_authority,
+            "scoreable": scoreable,
             "state_ids": [episode["state_id"] for episode in episodes],
         }
     )
@@ -707,6 +793,10 @@ def main(argv: list[str] | None = None) -> int:
             or prior.get("tier") != payload["tier"]
             or float(prior.get("gamma_commanded")) != float(payload["gamma_commanded"])
             or prior.get("controller_profile") != payload["controller_profile"]
+            or prior.get("scene_visual") != payload["scene_visual"]
+            or prior.get("geometry_profile") != payload["geometry_profile"]
+            or prior.get("geometry_authority") != payload["geometry_authority"]
+            or prior.get("scoreable") != payload["scoreable"]
         ):
             raise OracleRunError("--merge-into raw run is not compatible with this controller/tier/Gamma")
         replacements = {episode["state_id"]: episode for episode in episodes}
@@ -754,14 +844,28 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         return {"passed": False, "errors": [f"artifact read: {exc}"], "run_id": None}
     if not isinstance(payload, Mapping):
         return {"passed": False, "errors": ["run payload must be an object"], "run_id": None}
-    # A v3 top-level wrapper is accepted only as an explicit migration envelope
-    # around v4 episodes for existing seam tests.  A legacy v3 episode/profile
-    # is still rejected below; it cannot be silently interpreted as R5 data.
-    legacy_wrapper = payload.get("schema_id") == RUN_SCHEMA_ID and payload.get("schema_version") == 3
-    if payload.get("schema_id") != RUN_SCHEMA_ID or (
-        payload.get("schema_version") != RUN_SCHEMA_VERSION and not legacy_wrapper
-    ):
+    if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != RUN_SCHEMA_VERSION:
         errors.append("run schema")
+    required_top_level = {
+        "schema_id",
+        "schema_version",
+        "tier",
+        "gamma_commanded",
+        "controller_profile",
+        "diagnostic_mode",
+        "evaluator_post_complete_settle_s",
+        "dev_state_anchor",
+        "physics_authority",
+        "scene_visual",
+        "geometry_profile",
+        "geometry_authority",
+        "scoreable",
+        "episodes",
+        "run_id",
+        "payload_sha256",
+    }
+    if set(payload) - {"process"} != required_top_level:
+        errors.append("run required fields")
     if not _finite_json(payload):
         errors.append("nonfinite JSON")
     expected_anchor = _dev_state_anchor()
@@ -774,6 +878,31 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         atol=0.0,
     ):
         errors.append("physics authority")
+    expected_scene_visual = None
+    expected_geometry_profile = None
+    expected_geometry_authority = None
+    try:
+        geometry_payload = payload.get("geometry_profile")
+        if geometry_payload is None:
+            geometry_name = "canonical"
+        elif isinstance(geometry_payload, Mapping) and isinstance(geometry_payload.get("profile_id"), str):
+            geometry_name = str(geometry_payload["profile_id"])
+            expected_geometry_profile = load_geometry_profile(geometry_name)
+            if not _values_equal(geometry_payload, expected_geometry_profile, atol=0.0):
+                errors.append("geometry authority")
+        else:
+            raise ValueError("geometry_profile must be null or a profile mapping")
+        scene_config = load_scene_visual_config(geometry_scene_path(geometry_name))
+        expected_scene_visual = scene_visual_identity(scene_config)
+        expected_geometry_authority = geometry_authority_identity(geometry_name)
+        if not _values_equal(payload.get("scene_visual"), expected_scene_visual, atol=0.0):
+            errors.append("scene visual authority")
+        if not _values_equal(payload.get("geometry_authority"), expected_geometry_authority, atol=0.0):
+            errors.append("geometry authorization")
+        if payload.get("scoreable") is not bool(expected_geometry_authority["scoreable"]):
+            errors.append("scoreable authority")
+    except (OSError, TypeError, ValueError):
+        errors.append("scene visual authority unavailable")
     try:
         parsed_profile = _profile_from_payload(payload.get("controller_profile"))
         expected_profile = parsed_profile.to_dict()
@@ -809,6 +938,34 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         expected_ids.append(episode.get("state_id"))
         if episode.get("schema_id") != EPISODE_SCHEMA_ID or episode.get("schema_version") != EPISODE_SCHEMA_VERSION:
             errors.append(prefix + " schema")
+        required_episode_fields = {
+            "schema_id",
+            "schema_version",
+            "state_id",
+            "tier",
+            "gamma_commanded",
+            "horizon_steps",
+            "program",
+            "controller_profile",
+            "task_context",
+            "task_context_sha256",
+            "controller_context_hash",
+            "physics_profile",
+            "scene_visual",
+            "geometry_profile",
+            "geometry_authority",
+            "scoreable",
+            "state_sha256",
+            "success",
+            "failure_reason",
+            "termination_category",
+            "actuators",
+            "metrics",
+            "trace",
+            "trace_sha256",
+        }
+        if set(episode) != required_episode_fields:
+            errors.append(prefix + " required fields")
         tier = episode.get("tier")
         if tier != payload.get("tier") or tier not in TIER_POLICY_KEYS:
             errors.append(prefix + " tier")
@@ -844,6 +1001,16 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             atol=0.0,
         ):
             errors.append(prefix + " physics binding")
+        if expected_scene_visual is not None and not _values_equal(
+            episode.get("scene_visual"), expected_scene_visual, atol=0.0
+        ):
+            errors.append(prefix + " scene visual binding")
+        if not _values_equal(episode.get("geometry_profile"), expected_geometry_profile, atol=0.0):
+            errors.append(prefix + " geometry binding")
+        if not _values_equal(episode.get("geometry_authority"), expected_geometry_authority, atol=0.0):
+            errors.append(prefix + " geometry authority binding")
+        if episode.get("scoreable") is not payload.get("scoreable"):
+            errors.append(prefix + " scoreable binding")
         if not isinstance(episode.get("program"), Mapping) or state is None:
             errors.append(prefix + " program")
         else:
@@ -1043,7 +1210,11 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "gamma_commanded": payload.get("gamma_commanded"),
         "controller_profile": expected_profile,
         "state_ids": expected_ids,
+        "geometry_authority": payload.get("geometry_authority"),
+        "scoreable": payload.get("scoreable"),
     }
+    run_id_basis["scene_visual"] = payload.get("scene_visual")
+    run_id_basis["geometry_profile"] = payload.get("geometry_profile")
     if payload.get("run_id") != _digest(run_id_basis):
         errors.append("run id")
     return {
@@ -1065,6 +1236,14 @@ def _manifest_trace_projection(payload: Mapping[str, Any]) -> list[Any]:
             "success": episode.get("success"),
             "failure_reason": episode.get("failure_reason"),
             "termination_category": episode.get("termination_category"),
+            "scene_visual": episode.get("scene_visual"),
+            "geometry_profile": episode.get("geometry_profile"),
+            "geometry_authority": episode.get("geometry_authority"),
+            "scoreable": episode.get("scoreable"),
+            "task_context": episode.get("task_context"),
+            "task_context_sha256": episode.get("task_context_sha256"),
+            "actuators": episode.get("actuators"),
+            "metrics": episode.get("metrics"),
             "trace": episode.get("trace", []),
         }
         for episode in episodes
@@ -1178,7 +1357,17 @@ def verify_determinism_manifest(path: str | Path) -> dict[str, Any]:
     if len(payloads) == 3:
         first = payloads[0]
         for index, payload in enumerate(payloads[1:], start=1):
-            for key in ("tier", "gamma_commanded", "controller_profile", "physics_authority", "dev_state_anchor"):
+            for key in (
+                "tier",
+                "gamma_commanded",
+                "controller_profile",
+                "physics_authority",
+                "dev_state_anchor",
+                "scene_visual",
+                "geometry_profile",
+                "geometry_authority",
+                "scoreable",
+            ):
                 if not _values_equal(payload.get(key), first.get(key), atol=0.0):
                     errors.append(f"binding mismatch {key} record[{index}]")
             if not _compare_replay_traces(_manifest_trace_projection(first), _manifest_trace_projection(payload)):
@@ -1196,6 +1385,7 @@ def run_determinism_replay(
     *,
     state_id: str = "shakebench-dev-v0-000",
     horizon_steps: int = 1200,
+    geometry_profile: str = "canonical",
 ) -> dict[str, Any]:
     """Launch three fresh Python children and write a compact replay manifest."""
 
@@ -1219,6 +1409,8 @@ def run_determinism_replay(
             state_id,
             "--horizon-steps",
             str(horizon_steps),
+            "--geometry-profile",
+            geometry_profile,
             "--process-index",
             str(process_index),
             "--parent-run-uuid",
@@ -1257,6 +1449,7 @@ def run_determinism_replay(
         "state_id": state_id,
         "tier": "V0",
         "gamma_commanded": 0.0,
+        "geometry_profile": load_geometry_profile(geometry_profile),
         "process_count": 3,
         "records": records,
     }

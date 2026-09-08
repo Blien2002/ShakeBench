@@ -1,0 +1,222 @@
+{
+  "files": [
+    {
+      "bytes": 18941,
+      "path": "docs/shakebench_prompts/phase_07_5c_local_execution_closure.md",
+      "sha256": "23d3842327a8606f58c7f8c01c5a2fa2e725f304b597673d11d7772a43d9c293"
+    },
+    {
+      "bytes": 5689,
+      "path": "docs/shakebench_prompts/phase_08_protocol_scorecard.md",
+      "sha256": "eaec315ad8bf6b584d1c9bd93542b421c4b244277747e7b9066a9f88d76f9980"
+    },
+    {
+      "bytes": 14828,
+      "path": "robosuite/demos/demo_shakebench_oracle_video.py",
+      "sha256": "67f476174f6c55b748b3b51220837f560842b5060cda5a12c175ac84ac5d76d9"
+    },
+    {
+      "bytes": 42904,
+      "path": "robosuite/environments/base.py",
+      "sha256": "e9de303ee220462cd0b1bb77ee4b4efc62459c87382a69f4bf0441ed79697402"
+    },
+    {
+      "bytes": 66906,
+      "path": "robosuite/environments/manipulation/vibration_pick_place_can.py",
+      "sha256": "f4b8b9e58ccc0170c3cf52c191c38e598c5a59776be2240f4d0fa9cb7a0cc6c0"
+    },
+    {
+      "bytes": 27570,
+      "path": "robosuite/environments/robot_env.py",
+      "sha256": "e419e83edc080ae32d39b946e7e20a08d6b1e9344bb3d5fc3e42361d04314656"
+    },
+    {
+      "bytes": 26936,
+      "path": "robosuite/models/arenas/shakebench_arena.py",
+      "sha256": "75d764f290d587cdb6feba47d61fbbd2632c8ee91a39206041db0f4d14de8a4e"
+    },
+    {
+      "bytes": 6122,
+      "path": "robosuite/models/assets/arenas/shakebench_arena.xml",
+      "sha256": "01db3a239bc314b27520cd8fb958edd9378c45d480a056d1f7c3b35053f9a0f0"
+    },
+    {
+      "bytes": 1225,
+      "path": "robosuite/models/assets/shakebench_geometry_direct_mount_v1.json",
+      "sha256": "fa3d3c886668b660c4edb8def36c5dfe37a5bc885dff26815b5e9d87b5a65e1b"
+    },
+    {
+      "bytes": 3447,
+      "path": "robosuite/models/assets/shakebench_official_physics.yaml",
+      "sha256": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674"
+    },
+    {
+      "bytes": 904,
+      "path": "robosuite/models/assets/shakebench_phase07_5a_requalification.json",
+      "sha256": "52396fef5bfc810ee82f167a54c590b582219789d496970b78506961c6a33b0b"
+    },
+    {
+      "bytes": 333160,
+      "path": "robosuite/models/assets/shakebench_scene_direct_mount_v1.json",
+      "sha256": "1e30af787d319b84e6b6f3c068cce0724f2aeee1447f51c9b63bc4e5205bd2eb"
+    },
+    {
+      "bytes": 6909,
+      "path": "robosuite/models/assets/shakebench_states_dev.json",
+      "sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
+    },
+    {
+      "bytes": 603430,
+      "path": "robosuite/models/assets/textures/shakebench_epoxy_floor_cool_gray_1k.png",
+      "sha256": "ca5b0de5fff11c3497fa9edb9bca6d2654ddca6f1949e253df9b09145f9fdaef"
+    },
+    {
+      "bytes": 491907,
+      "path": "robosuite/models/assets/textures/shakebench_industrial_wall_light_gray_1k.png",
+      "sha256": "f9a8a169c72307c5efa5164d8aaeabfc7ef19beee5ad4a6a50425a95a43612b7"
+    },
+    {
+      "bytes": 43352,
+      "path": "robosuite/models/assets/textures/shakebench_platen_threaded_holes_1k.png",
+      "sha256": "76c897d7892270b9abb7943e92885225ddac54ce8ba33889b84ef47581c41663"
+    },
+    {
+      "bytes": 11863,
+      "path": "robosuite/scripts/shakebench_cpu_batch.py",
+      "sha256": "efe6693666cf6a341d1d48f793edd43a9785caf72718cd24d808ec8c76117535"
+    },
+    {
+      "bytes": 69023,
+      "path": "robosuite/scripts/shakebench_run_oracle.py",
+      "sha256": "e1a726db8946189b1e414f9de4d92b0ec25d8b90d19d5283ce20a240cf0c2103"
+    },
+    {
+      "bytes": 7089,
+      "path": "robosuite/scripts/shakebench_scene_preflight.py",
+      "sha256": "320a06eef90372358039bc4f5348b388c73df5378fe5b90a96b824d42d8d1b9a"
+    },
+    {
+      "bytes": 628,
+      "path": "robosuite/scripts/shakebench_verify_phase07_5a_handoff.py",
+      "sha256": "a29cb3d4d96790e7ec3af305ca41956d5243d40f49583683600ae82d6c0b62eb"
+    },
+    {
+      "bytes": 2136,
+      "path": "robosuite/utils/shakebench_artifacts.py",
+      "sha256": "a7fab2e0f6719e4ca7016b2787acf6b93901b3f884d9d2c4e0cca2c2906a1991"
+    },
+    {
+      "bytes": 9355,
+      "path": "robosuite/utils/shakebench_authority.py",
+      "sha256": "7d0d946625cd57c0453dbc6a973f66ade0a01a5fa395315a8b1c7605a8141f8b"
+    },
+    {
+      "bytes": 35188,
+      "path": "robosuite/utils/shakebench_config.py",
+      "sha256": "51fe0feecf13ea28139657c0320e7f79f3d1e1ed3950172b4b953170b900f7d0"
+    },
+    {
+      "bytes": 83095,
+      "path": "robosuite/utils/shakebench_deck.py",
+      "sha256": "7e832b5321ba40892c50bc9e0f3c81f05bfd8a870196dd93db0603eb513ac129"
+    },
+    {
+      "bytes": 40772,
+      "path": "robosuite/utils/shakebench_excitation.py",
+      "sha256": "f55c4a8f9e0cd5db1ec4ec04893c8ac7198d778b6c1c71bb88c71731b3aeb1be"
+    },
+    {
+      "bytes": 3290,
+      "path": "robosuite/utils/shakebench_geometry.py",
+      "sha256": "ed96329b31f610952335d08e9aeae21d678ebd45368a9add4ea1c8b81c3a3b5d"
+    },
+    {
+      "bytes": 9522,
+      "path": "robosuite/utils/shakebench_handoff.py",
+      "sha256": "c2c82108bd1ce4bf4e86efc9fbfd06599f0f68fe0f854a49b9de7153aec81f88"
+    },
+    {
+      "bytes": 85764,
+      "path": "robosuite/utils/shakebench_metrics.py",
+      "sha256": "11b2388bc653e861665a83d32a249f31a366b8b57b4d1be4406113e37eb45f36"
+    },
+    {
+      "bytes": 150101,
+      "path": "robosuite/utils/shakebench_oracle.py",
+      "sha256": "2d612e1a97c98e686b59f11c5d7e9e68f0fd08f64da92c6eb5b2e4ae9b6f71ac"
+    },
+    {
+      "bytes": 34271,
+      "path": "robosuite/utils/shakebench_physics.py",
+      "sha256": "fbcfa0aa70dae5254f3cb72875eaefbce310d0111b1b2c967921113db4097970"
+    },
+    {
+      "bytes": 44591,
+      "path": "robosuite/utils/shakebench_providers.py",
+      "sha256": "c9b040f57a97521ca8bf794544e47f853fb9bcd46b44ddbb672e6d1a30a9ecec"
+    },
+    {
+      "bytes": 121156,
+      "path": "robosuite/utils/shakebench_scene.py",
+      "sha256": "3e03c57796299d6adec8aa1e7b1f4669afc2790dbff76b9e6ad40ee8160c4be7"
+    },
+    {
+      "bytes": 49392,
+      "path": "robosuite/utils/shakebench_sensors.py",
+      "sha256": "147c3574faf7cbb4cba35fe4ad0c36393e98d68cbb5ae7d7361976c31b76d308"
+    },
+    {
+      "bytes": 2500,
+      "path": "setup.py",
+      "sha256": "bff9cd73246b7c946ea0abcadacb2d56d3229d62b76881f9a38312069dba804d"
+    },
+    {
+      "bytes": 3237,
+      "path": "tests/test_renderers/test_all_renderers.py",
+      "sha256": "21b0c0620d1c5855c3da4643d385b306774eb08f9bbe3d35cfd53aa6ee073877"
+    },
+    {
+      "bytes": 3052,
+      "path": "tests/test_shakebench_authority.py",
+      "sha256": "329c947eb780a4ecc95226b6f9ecb3982e57603e9a647ffc4b5f9cc7eb98df75"
+    },
+    {
+      "bytes": 1498,
+      "path": "tests/test_shakebench_cpu_batch.py",
+      "sha256": "d89612498a97f1157be84f3bbbfe97cc5e5a9c72a173827441cd1417e4e81087"
+    },
+    {
+      "bytes": 6634,
+      "path": "tests/test_shakebench_direct_mount.py",
+      "sha256": "229a0df93f4a2c9f5c5cd4627624564756da1d83e2d47421fc488d27cc76666d"
+    },
+    {
+      "bytes": 21916,
+      "path": "tests/test_shakebench_oracle.py",
+      "sha256": "035bd3f72244cc796d189b278dd0dc8ec997e8acc604ff3c94c782e91fd8c190"
+    },
+    {
+      "bytes": 1002,
+      "path": "tests/test_shakebench_oracle_demo_video.py",
+      "sha256": "0b5b102bbb1d283ea637710ffe4649df479aecac9949b8551a1bfdc45fb2eb55"
+    },
+    {
+      "bytes": 21369,
+      "path": "tests/test_shakebench_phase07_completion_red.py",
+      "sha256": "45c5a25dd4dcd7eaf786f09016c024a1dffa7601cbbc662fed1ac6601f616f7d"
+    },
+    {
+      "bytes": 11387,
+      "path": "tests/test_shakebench_scene.py",
+      "sha256": "ff5796b4ab58cdb6282439ab9228ca75593baf0e58de7e0803f939d6c5ed7819"
+    },
+    {
+      "bytes": 2768,
+      "path": "tests/test_shakebench_scene_finishes.py",
+      "sha256": "194c9c711acb914fc15d2489b970b36e4d18edf9fbe12c64622ca69806210199"
+    }
+  ],
+  "payload_sha256": "8444e53c1e7dc6010bb029d9b7fcc55aa0aac74ca68c194dbcd789c49aaf356e",
+  "schema_id": "shakebench.phase07_5a.source_inventory",
+  "schema_version": 1
+}

@@ -1,0 +1,20 @@
+{
+  "schema_id": "shakebench.phase07_5b.cpu_throughput",
+  "schema_version": 3,
+  "status": "PASS_WITH_2_WORKER_LIMIT",
+  "retained_optimizations": [],
+  "default_workers": 2,
+  "default_affinity": [0, 2],
+  "formal_batch": {
+    "path": "out/phase07_5a_requalification/cpu/final_batch_w2_noswap/aggregate.json",
+    "sha256": "230aeadb151d7f59b3f47ca2c80d2ec874caf121bc78b25de95038012af3c6cd",
+    "payload_sha256": "f7b33127a06d7ccab8d8a93db43b150cd34f71d641007e846c3990ba14d9090b",
+    "jobs_s": 0.013276231005099922,
+    "swap_policy": "disabled_during_timed_run_restored_after",
+    "swap_growth_kib": 0
+  },
+  "resource_limited_workers": [4, 8],
+  "hard_reset_false": "diagnostic_parity_passed_not_retained",
+  "classic_mujoco_only": true,
+  "payload_sha256": "00d6d362d832c5fd4c70c69dd481d922fb5098c8645cf4cc28acd4b44e4b51e1"
+}

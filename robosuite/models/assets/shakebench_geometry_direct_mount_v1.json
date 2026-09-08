@@ -1,0 +1,42 @@
+{
+  "schema_id": "shakebench.geometry",
+  "schema_version": 1,
+  "profile_id": "direct_mount_v1",
+  "geometry_variant": "C",
+  "mount_type": "NullMount",
+  "initial_joint_qpos_rad": [
+    0.0,
+    -0.38858314770089614,
+    0.0,
+    -2.2021431362535075,
+    0.0,
+    1.940809223301548,
+    0.7853981633974483
+  ],
+  "initial_eef_pos_robot_base_m": [
+    0.45,
+    0.0,
+    0.55
+  ],
+  "robot_base_pos_m": [
+    -0.47,
+    0,
+    0.009
+  ],
+  "table_top_pos_m": [
+    0.18,
+    0,
+    0.299
+  ],
+  "scene_config": "shakebench_scene_direct_mount_v1.json",
+  "scene_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+  "physics_effect": true,
+  "retained_table_dimensions_m": [
+    0.65,
+    0.6,
+    0.06
+  ],
+  "mass_inertia_policy": "Retain explicit worktable 32 kg and canonical inertia, isolator k/c and deck driver. Remove all RethinkMount mass/inertia/collision; retain Panda link0 mass and collision. Geometry acceptance does not promote official scoreability.",
+  "reference": "Original tabletop is 0.29 m above platen; convert reference Z by -0.071 m. Platen enlarged by user request to 2.00 x 1.40 m.",
+  "payload_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322"
+}

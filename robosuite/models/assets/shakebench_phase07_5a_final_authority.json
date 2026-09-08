@@ -1,0 +1,9 @@
+{
+  "schema_id": "shakebench.phase07_5a.final_authority",
+  "schema_version": 1,
+  "status": "PASS",
+  "phase08_authorized": true,
+  "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+  "final_evidence_manifest_sha256": "9b2c56416de2d88d78062b698004605c551bac37671d10a3600fccec1eb4f2dd",
+  "payload_sha256": "2801075c687d2381c0a94084f720ade9ecb369d66e10fd0f8b13c216a81387c9"
+}

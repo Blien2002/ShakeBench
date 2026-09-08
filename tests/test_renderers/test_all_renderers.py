@@ -76,14 +76,20 @@ def test_mjviewer_renderer():
         renderer="mjviewer",
     )
 
-    env.reset()
+    # ``launch_passive`` owns a native GLFW thread. Closing explicitly is
+    # required so its teardown completes before pytest exits; otherwise a test
+    # can report PASS and still crash the interpreter during finalization.
+    try:
+        env.reset()
 
-    low, high = env.action_spec
+        low, high = env.action_spec
 
-    for i in range(10):
-        action = np.random.uniform(low, high)
-        obs, reward, done, _ = env.step(action)
-        env.render()
+        for i in range(10):
+            action = np.random.uniform(low, high)
+            obs, reward, done, _ = env.step(action)
+            env.render()
+    finally:
+        env.close()
 
 
 def test_offscreen_renderer():

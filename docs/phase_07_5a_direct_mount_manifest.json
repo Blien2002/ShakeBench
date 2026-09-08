@@ -1,0 +1,136 @@
+{
+  "schema_id": "shakebench.phase07_5a.direct_mount_revision",
+  "schema_version": 1,
+  "geometry_profile": {
+    "schema_id": "shakebench.geometry",
+    "schema_version": 1,
+    "profile_id": "direct_mount_v1",
+    "geometry_variant": "C",
+    "scoreable": false,
+    "mount_type": "NullMount",
+    "robot_base_pos_m": [
+      -0.47,
+      0,
+      0.009
+    ],
+    "table_top_pos_m": [
+      0.18,
+      0,
+      0.299
+    ],
+    "scene_config": "shakebench_scene_direct_mount_v1.json",
+    "scene_sha256": "e1920369d0713497796536d6a9eb6579bfcea896cc222430045be49b7b2d1d5b",
+    "physics_effect": true,
+    "retained_table_dimensions_m": [
+      0.65,
+      0.6,
+      0.06
+    ],
+    "mass_inertia_policy": "Retain explicit worktable 32 kg and canonical inertia, isolator k/c and deck driver. Remove all RethinkMount mass/inertia/collision; retain Panda link0 mass and collision. Geometry acceptance does not promote official scoreability.",
+    "reference": "Original tabletop is 0.29 m above platen; convert reference Z by -0.071 m. Platen enlarged by user request to 2.00 x 1.40 m.",
+    "payload_sha256": "69e933679eb7ed8a9595bc6e6390fc2eb411ce0bd059d302f2ddb5f5fac1209c"
+  },
+  "scene_sha256": "e1920369d0713497796536d6a9eb6579bfcea896cc222430045be49b7b2d1d5b",
+  "geometry_variant": "C",
+  "scene_ready": true,
+  "clearance_passed": true,
+  "visual_physics_invariant": true,
+  "science_compatibility": "invalidated",
+  "canonical_profile_preserved": true,
+  "removed_rethink_mount_mass_kg": 274.5941,
+  "old_physics_signature": "f5f5ad4e91b0366e6d7870849858e5d21e17af15d698a6ffd9ac2f99fc01d07f",
+  "new_physics_signature": "a1849e266a9ac705dba9abec5be8ece9e1443ad173c063cb24198a62141f0591",
+  "geometry_tests_passed": 11,
+  "canonical_regression_tests_passed": 37,
+  "payload_preload": {
+    "actual_offset_m": -0.00010840385076042901,
+    "expected_offset_m": -0.00010840385100763608,
+    "absolute_error_m": 2.4720706709967233e-13,
+    "passed": true,
+    "geometry_sha256": "69e933679eb7ed8a9595bc6e6390fc2eb411ce0bd059d302f2ddb5f5fac1209c"
+  },
+  "package_smoke": {
+    "package_path": "/tmp/shakebench_direct_mount_package/robosuite/__init__.py",
+    "scene_sha256": "e1920369d0713497796536d6a9eb6579bfcea896cc222430045be49b7b2d1d5b",
+    "headless_environment_created": true,
+    "renderer": "native MuJoCo EGL",
+    "rendered": true,
+    "clearance_passed": true
+  },
+  "demo_status": "failed",
+  "demo": {
+    "episode": {
+      "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+      "failure_reason": "horizon_exhausted",
+      "gamma_commanded": 0.15,
+      "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+      "scene_visual": {
+        "config_sha256": "e1920369d0713497796536d6a9eb6579bfcea896cc222430045be49b7b2d1d5b",
+        "geometry_variant": "C",
+        "physics_effect": false,
+        "scene_id": "shakebench.scene.direct_mount.v1"
+      },
+      "state_id": "shakebench-dev-v0-000",
+      "steps": 500,
+      "success": false,
+      "termination_category": "horizon_exhausted",
+      "tier": "V0",
+      "trace_sha256": "4dd5ea2fb35fe2f7f7e85dbd3d9f316dc584cdcb9be4ebcae60f2ba2090f4fcc"
+    },
+    "geometry_profile": {
+      "geometry_variant": "C",
+      "mass_inertia_policy": "Retain explicit worktable 32 kg and canonical inertia, isolator k/c and deck driver. Remove all RethinkMount mass/inertia/collision; retain Panda link0 mass and collision. Geometry acceptance does not promote official scoreability.",
+      "mount_type": "NullMount",
+      "payload_sha256": "69e933679eb7ed8a9595bc6e6390fc2eb411ce0bd059d302f2ddb5f5fac1209c",
+      "physics_effect": true,
+      "profile_id": "direct_mount_v1",
+      "reference": "Original tabletop is 0.29 m above platen; convert reference Z by -0.071 m. Platen enlarged by user request to 2.00 x 1.40 m.",
+      "retained_table_dimensions_m": [
+        0.65,
+        0.6,
+        0.06
+      ],
+      "robot_base_pos_m": [
+        -0.47,
+        0,
+        0.009
+      ],
+      "scene_config": "shakebench_scene_direct_mount_v1.json",
+      "scene_sha256": "e1920369d0713497796536d6a9eb6579bfcea896cc222430045be49b7b2d1d5b",
+      "schema_id": "shakebench.geometry",
+      "schema_version": 1,
+      "scoreable": false,
+      "table_top_pos_m": [
+        0.18,
+        0,
+        0.299
+      ]
+    },
+    "qualitative_only": true,
+    "schema_id": "shakebench.oracle_demo_video",
+    "schema_version": 1,
+    "scoreable_evidence": false,
+    "source": {
+      "base_commit": "4238e37cc3b57d626a37f7950df974fc10b0d1e8",
+      "demo_script_sha256": "e5e3d509d9b3f4cad08d5bdcbe0c7ad2bc7b60b1f2adf7f3bad322618377bc04",
+      "oracle_runner_sha256": "73452aab82367bdb5400061df67c07d82f4140268db8ddab82177999a9001e57",
+      "worktree_dirty": true
+    },
+    "video": {
+      "bytes": 1420401,
+      "camera": "shakebench_camera_overview",
+      "camera_request": "presentation",
+      "fps": 20,
+      "height": 720,
+      "path": "out/demo/phase07_5a_direct_mount_v5_v0_gamma015.mp4",
+      "sha256": "f447102bba4ba193a13d9e25c0f81ab11533a4f7c9efe1c2bd1e6d4aabdc82fa",
+      "width": 1280
+    }
+  },
+  "phase08_ready": false,
+  "reason": "Changed mounting mass/inertia, robot and worktable transforms require a new scientific acceptance; historical Phase 6/7 evidence does not cover this geometry.",
+  "demo_verified": false,
+  "task_smoke_passed": false,
+  "controller_adaptation_pending": true,
+  "visual_review": "Reviewed overview, assembly, side and frames 0/100/200/350/499. Can is tipped over; the executive returns to retreat/approach and exhausts 500 steps. No successful placement observed."
+}

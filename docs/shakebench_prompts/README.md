@@ -121,7 +121,8 @@ reproduction     从 raw evidence 独立重算 PASS/FAIL 的命令
 
 ## 阶段索引
 
-当前权威状态是 **Phase 07R5 PASS / PHASE 08 AUTHORIZED**。
+当前权威状态是 **Phase 7.5A direct-mount requalification PASS / PHASE 08 AUTHORIZED**；
+Phase 08 尚未执行。
 06/06R–06R7 的 BLOCKED 结论是中间方案的历史记录，只用于 provenance。
 
 R4 controller core 已完成并由 compact manifest 独立验证：state 002 成功、V0/Gamma=0 为
@@ -169,6 +170,7 @@ implementation commit `64039dbc77ac5becc67f8b9f33860d7bf12372ac`，因此 Phase 
 | 07R5 | `phase_07r5_oracle_motion_semantics_closure.md` | phase capability、relative kinematics、共同 estimate contract、causal preview | Phase 08 handoff PASS |
 | 07R5-H | `phase_07r5_repository_slimming_and_handoff.md` | external evidence archive、runtime/full audit split、history/anchor migration、final handoff | Phase 08 authorized + slim remote |
 | 07R6.1 | `phase_07r6_1_gate_hardening.md` | package authority、detached R6 binding、Git/tag ancestry、root audit 和 index binding hardening | fail-closed gate + final Phase 8 authorization |
+| 07.5A | `phase_07_5a_scene_restoration_and_clearance.md` | 恢复原 ShakeBench 实验室视觉、显式 deck platen role、装配间隙与 scene-clearance gate | scene/frame/clearance/visual-invariance/demo/package gates；direct_mount requalification PASS + Phase 08 authorized |
 | 08 | `phase_08_protocol_scorecard.md` | committed states、MDE、scorecard | replay/stat/integrity gates |
 | 09 | `phase_09_knee_official_eval.md` | Gamma* + 400×4 official evaluation | complete paired matrix |
 | 10 | `phase_10_release_audit.md` | clean-room ShakeBench-fork release audit | no release blocker |

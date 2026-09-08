@@ -5,6 +5,8 @@
 ## 前置硬门
 
 - Phase 00–08 完成；
+- Phase 7.5A 的 `scene_ready`、`clearance_passed`、`demo_verified` 和选定
+  `scene_visual`/`geometry_variant` 已冻结；每个 run 必须绑定该 authority。
 - git working tree clean；
 - dependency/package/physics/controller/task/state/config hashes 冻结；
 - 3-process determinism 通过；
@@ -13,6 +15,10 @@
 - scoreable config 无 `UNFROZEN` 字段。
 
 任一失败即停止。
+
+Phase 9 只接受本阶段选定的 scene/geometry profile。visual-only scene hash
+可以随 run metadata 认证，但不得将不同 geometry profile 的结果放在同一
+scorecard 中；旧 R6/R6.1 release evidence 仍是历史基线，不是本轮测量输入。
 
 ## Measurement纪律
 
