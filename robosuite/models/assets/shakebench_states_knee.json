@@ -1,0 +1,5932 @@
+{
+  "artifact_lock": {
+    "payload_sha256": "56d0940cd66e9fe64d233de088fa47bbd8f1ee088b80dc82e0930242f8e493c0"
+  },
+  "authority_hashes": {
+    "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+    "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+    "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+    "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+    "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+    "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+    "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+  },
+  "dev_state_anchor": {
+    "asset": "shakebench_states_dev.json",
+    "file_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6",
+    "payload_sha256": "2b0924a361182f34f5660a739a027021dfdd335c0b7ba38fc861e2bba589cb9c"
+  },
+  "generator": {
+    "generator_id": "shakebench.sha256_uniform.v1",
+    "mapping": "u64_be(sha256(generator_id:root_seed:split:index:channel)[:8]) / 2**64",
+    "root_seed": 20260908,
+    "selection": "none; deterministic commitment before Phase 09 measurement"
+  },
+  "schema_id": "shakebench.phase08.committed_states",
+  "schema_version": 1,
+  "scoreable": true,
+  "split": "knee",
+  "states": [
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11538391157414381,
+        -0.14439211279453154,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11538391157414381,
+        -0.14439211279453154
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "2e1e58eeaf4a8e2b2f436d4783e0c300013890f70a272cfcc6d77ecaf0653dba",
+      "excitation_seed": 1175976271,
+      "imu_seed": 3651749953,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-000",
+      "t0_s": 0.6746472851410676,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11955990201479373,
+        -0.14505702553069588,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11955990201479373,
+        -0.14505702553069588
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "c843267a182f82a9f55d9475a42823f8e237a0a7daa3bfe1de1fdd235d468c58",
+      "excitation_seed": 1778136321,
+      "imu_seed": 2462665273,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-001",
+      "t0_s": 0.7117962152262943,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.087444141264499,
+        -0.12421148944358401,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.087444141264499,
+        -0.12421148944358401
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "04a7967197714001a1e815917b6509224dd187a9eeff441a922d6252cf3486ef",
+      "excitation_seed": 1848528735,
+      "imu_seed": 1267329793,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-002",
+      "t0_s": 0.6573468175419493,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09300480197187637,
+        -0.12780207780038355,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09300480197187637,
+        -0.12780207780038355
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "62fa8cecbf1d753a962617bd03c94b7e055cfabcf31d292e720c713168c56c7e",
+      "excitation_seed": 2972006184,
+      "imu_seed": 1496405714,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-003",
+      "t0_s": 0.07975676598966203,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08991657334955361,
+        -0.1414145759340982,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08991657334955361,
+        -0.1414145759340982
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "fe9555e00ca11ed2ca76a561185061b11badac80b872b713dc911bff238e7e78",
+      "excitation_seed": 2799182347,
+      "imu_seed": 1349285626,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-004",
+      "t0_s": 0.3643593036080498,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08411311707238987,
+        -0.14365289217198596,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08411311707238987,
+        -0.14365289217198596
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "639679d78e54a0e2d98f9301f1182325b1b0e8f100a5b658320e4e846d8e29f4",
+      "excitation_seed": 3045565716,
+      "imu_seed": 1421135020,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-005",
+      "t0_s": 0.36592336130998804,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09854061381414161,
+        -0.14862984214943215,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09854061381414161,
+        -0.14862984214943215
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "25dcbb344b6978a8f93b8ded4302c899b401d1a8a376669f678a323a805a848a",
+      "excitation_seed": 3083001667,
+      "imu_seed": 1658469973,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-006",
+      "t0_s": 0.2758330028129478,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10320885370477431,
+        -0.11762346094329097,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10320885370477431,
+        -0.11762346094329097
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a055dfa96ba07eae2d00b16788ca61d9711fe453f537a66febe3465e823d1357",
+      "excitation_seed": 1071951727,
+      "imu_seed": 4109914981,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-007",
+      "t0_s": 0.6085280069346305,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10170315148699369,
+        -0.11397158110282864,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10170315148699369,
+        -0.11397158110282864
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "94446670ff307f4ee0132ccf9b66ad63cec2e6d273e26e4c9c30d83c0dc7c044",
+      "excitation_seed": 4173836589,
+      "imu_seed": 3611299872,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-008",
+      "t0_s": 0.4276455203744168,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10808032487535481,
+        -0.11925570488973337,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10808032487535481,
+        -0.11925570488973337
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "88c19ef679d8caee976b4d2835b8b26ee1429df42ce052decc9c86b568c5e543",
+      "excitation_seed": 1443519808,
+      "imu_seed": 3035887915,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-009",
+      "t0_s": 0.5301368133965448,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10228626999947728,
+        -0.1426110081098682,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10228626999947728,
+        -0.1426110081098682
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "069554efac8e02db7c3ca2c9b441467e8d48e326e5aa26d379604cb12783375c",
+      "excitation_seed": 2837419813,
+      "imu_seed": 1682977859,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-010",
+      "t0_s": 0.17355040283841391,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09231651971200486,
+        -0.13617364193997272,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09231651971200486,
+        -0.13617364193997272
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "03bfa387b3cb59d7c2e504efaae3323e225e261936ddfceddb80f2b30ebb7c98",
+      "excitation_seed": 2881904516,
+      "imu_seed": 2219424597,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-011",
+      "t0_s": 0.5117752418018544,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11487138558753625,
+        -0.13803518420823932,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11487138558753625,
+        -0.13803518420823932
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "30b813557ec81497943e4d3ee336544cef73d1d68c9e5613fc03bfa94f867666",
+      "excitation_seed": 477443595,
+      "imu_seed": 3682357234,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-012",
+      "t0_s": 0.7153577961056411,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10549651029690503,
+        -0.14962482015933534,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10549651029690503,
+        -0.14962482015933534
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "48e5f5a828a176f1d98acfdbd3f14d30a7e4afd9d4b8419384cf730d46914fb1",
+      "excitation_seed": 3915047264,
+      "imu_seed": 3299174154,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-013",
+      "t0_s": 0.7842243869329162,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0809446428042731,
+        -0.1334031480339019,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0809446428042731,
+        -0.1334031480339019
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "897f6e183d6904d9c41fe3a38c466938cb0666b1dfd9e2d228ef5116c6f0e14e",
+      "excitation_seed": 840181097,
+      "imu_seed": 1981732783,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-014",
+      "t0_s": 0.3149001394494521,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11433569112471023,
+        -0.12935175381151276,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11433569112471023,
+        -0.12935175381151276
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "d99125b43e53580940685fc81dd28074e8f155260825910d972004d04c587c17",
+      "excitation_seed": 1771406529,
+      "imu_seed": 1581418267,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-015",
+      "t0_s": 0.5622535548751305,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0861713903900053,
+        -0.13945350619587185,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0861713903900053,
+        -0.13945350619587185
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "6b283cc2a09223bf6e04d2a0648640ecfab40edfa521b344cbaa804b6c326a6a",
+      "excitation_seed": 2954396227,
+      "imu_seed": 605487215,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-016",
+      "t0_s": 0.19020793380514028,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08085077880318815,
+        -0.1493934406573146,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08085077880318815,
+        -0.1493934406573146
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "1f0b1657ffb95603f92a18aa470b9ebffff84899fe3d9bbbbd6945d5b171a2dc",
+      "excitation_seed": 3495282653,
+      "imu_seed": 2038182804,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-017",
+      "t0_s": 0.215437140033907,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09209142038716511,
+        -0.12199193335375681,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09209142038716511,
+        -0.12199193335375681
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "eb15a072db17e3aa18c5f3267a25af87d5056119ca39441516317bf659c77cc0",
+      "excitation_seed": 3120051575,
+      "imu_seed": 2696588615,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-018",
+      "t0_s": 0.6638210415371161,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09173515738583128,
+        -0.11727422166767763,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09173515738583128,
+        -0.11727422166767763
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "5c29a01363038d849a49fff33ffbf3289709924668b9f44da4f142cf74246168",
+      "excitation_seed": 3407463928,
+      "imu_seed": 297528452,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-019",
+      "t0_s": 0.8938353399186806,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09857351544883794,
+        -0.14556449906137855,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09857351544883794,
+        -0.14556449906137855
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "c286739e4c528732921eff40d5f218c5872a2662b5aa2405f2fbf5675e98b934",
+      "excitation_seed": 2820645099,
+      "imu_seed": 1850846490,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-020",
+      "t0_s": 0.4511063866449622,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1055168726192157,
+        -0.14576816295039244,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1055168726192157,
+        -0.14576816295039244
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "4a43d913ae118e6adee0a4e6af56401541ebd2969977e96eb0532ec0fb05f721",
+      "excitation_seed": 2617477138,
+      "imu_seed": 646019812,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-021",
+      "t0_s": 0.12905475377840228,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11244836204753708,
+        -0.11901330296589765,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11244836204753708,
+        -0.11901330296589765
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "3671a1123068439c02c28aebd351832217b5b3157f4db9f96078c4c0ae0a354d",
+      "excitation_seed": 2825309715,
+      "imu_seed": 2927321469,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-022",
+      "t0_s": 0.5233363730662596,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11428245461909346,
+        -0.12595156165389315,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11428245461909346,
+        -0.12595156165389315
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "139c797e9df3aaad0494a3e9e57219f934fc18f108b2f0e779a1a2c5c5ba3bc9",
+      "excitation_seed": 3299061218,
+      "imu_seed": 1291636891,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-023",
+      "t0_s": 0.7042551545479471,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08692633417559159,
+        -0.1162292846739416,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08692633417559159,
+        -0.1162292846739416
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b044dd87b39023403be7d09e678c7e4d4ebbba0800a81236f40a2c370d18e27e",
+      "excitation_seed": 661369187,
+      "imu_seed": 2718050129,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-024",
+      "t0_s": 0.5642978755778085,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08519859459091095,
+        -0.13067874352498646,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08519859459091095,
+        -0.13067874352498646
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "074e5722afc25ec3ecbd7d57df24ac81541f9a1715106d30b3e9099da6e57b8e",
+      "excitation_seed": 1702049764,
+      "imu_seed": 2553392439,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-025",
+      "t0_s": 0.4718658023841406,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09639053162304724,
+        -0.12352492543764336,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09639053162304724,
+        -0.12352492543764336
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "8f563c186ae3203e5c97a0210df33e3fadb907993af6ac4fefe227863899ce8f",
+      "excitation_seed": 3617906623,
+      "imu_seed": 378930728,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-026",
+      "t0_s": 0.8957744523701561,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11916348122050908,
+        -0.11897015849583009,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11916348122050908,
+        -0.11897015849583009
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "adfb19ce8badb36b6847ace7e0b582c2cc95ef62f418ef094ff8d6bc6803b3bc",
+      "excitation_seed": 3074868133,
+      "imu_seed": 668851239,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-027",
+      "t0_s": 0.8605103386021096,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08771608602615978,
+        -0.1108183615156992,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08771608602615978,
+        -0.1108183615156992
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "d856ee62f22c44c03bc67bbf22000d0897145cb4c19f0d3562a690f8e676a76c",
+      "excitation_seed": 3460512181,
+      "imu_seed": 2972906598,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-028",
+      "t0_s": 0.9103449031733633,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09934630913924053,
+        -0.1283101728092694,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09934630913924053,
+        -0.1283101728092694
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "f947cec8d12845bae362fe3aa633c508a23a77f74b6e83418ed631cd98a163cf",
+      "excitation_seed": 2921995948,
+      "imu_seed": 605101635,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-029",
+      "t0_s": 0.13477044022800744,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10223526755520151,
+        -0.11478756474102102,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10223526755520151,
+        -0.11478756474102102
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a31f327f6114a066cbf4fc00a9eda93b1c848facc06d3304dc82bc07bd8071db",
+      "excitation_seed": 1270398675,
+      "imu_seed": 3776827573,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-030",
+      "t0_s": 0.8001150565454578,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11141082597683359,
+        -0.12274360779552107,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11141082597683359,
+        -0.12274360779552107
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "86d23da778971828aded4f78005eefde9f98ac820bd23fbfef144078fe8f1f02",
+      "excitation_seed": 2779823280,
+      "imu_seed": 3992693610,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-031",
+      "t0_s": 0.7684305784646542,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10461161034994897,
+        -0.14761798588500719,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10461161034994897,
+        -0.14761798588500719
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "8e003ded37f7d01d61be093a3c6aeb947386cc4c5cb971d321974f5beb75aa9e",
+      "excitation_seed": 3295534772,
+      "imu_seed": 3340002702,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-032",
+      "t0_s": 0.1290821395287553,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0809898342132606,
+        -0.11596205065683052,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0809898342132606,
+        -0.11596205065683052
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "cf7704e39251105d99907543b2f6c1b8a3510d8b983cbefcaed4d2adbdf6d4bc",
+      "excitation_seed": 258254237,
+      "imu_seed": 1426756531,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-033",
+      "t0_s": 0.15570696020838276,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11025231715640707,
+        -0.11806775421039199,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11025231715640707,
+        -0.11806775421039199
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "e7625b7888f7f04c7ca61c90a67ba7ac5149f79c61025cbda9f192554e5a1647",
+      "excitation_seed": 2715948355,
+      "imu_seed": 2741306398,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-034",
+      "t0_s": 0.31907970758753146,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11320391823553219,
+        -0.1287555960829699,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11320391823553219,
+        -0.1287555960829699
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "f46c4ad6b5eed37a5bc45d72948dab3792ef728b889dc12ca6b9d1eeab4d61f0",
+      "excitation_seed": 4187519215,
+      "imu_seed": 3494336184,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-035",
+      "t0_s": 0.9135117013790012,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11602766823477138,
+        -0.14424584810737848,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11602766823477138,
+        -0.14424584810737848
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "685430c372b7e3a49559f162095b75e72ff6fb15db5b2626aa705aabb8f8e79c",
+      "excitation_seed": 442858675,
+      "imu_seed": 338636392,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-036",
+      "t0_s": 0.1840388023884233,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0948032729200308,
+        -0.12830254122868978,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0948032729200308,
+        -0.12830254122868978
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "47816a24408c783d65f8c7599614fa41c51a6c042617bf07aabc31fda941a2d7",
+      "excitation_seed": 3231690186,
+      "imu_seed": 45999239,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-037",
+      "t0_s": 0.4324689799601395,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10389326878529957,
+        -0.11540496284145307,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10389326878529957,
+        -0.11540496284145307
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "ea29634d2d78c81cc6ef3e0a90b0048e645795d40278b3dd96b3a6759db502d2",
+      "excitation_seed": 2115009567,
+      "imu_seed": 1066213005,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-038",
+      "t0_s": 0.5760343324855944,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10509094026126047,
+        -0.1324554124340847,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10509094026126047,
+        -0.1324554124340847
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b20befed063900ec73baf6c6854206e3d7141066c47001ba93c461a898c36755",
+      "excitation_seed": 3940414610,
+      "imu_seed": 4115102076,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-039",
+      "t0_s": 0.07545068548707307,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10479706935797939,
+        -0.1201061812222405,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10479706935797939,
+        -0.1201061812222405
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "0aae24071b670f336b756cbc1d77741edf23e62547b0a4a7d6b8f625aa1e0fae",
+      "excitation_seed": 2696734411,
+      "imu_seed": 1017287571,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-040",
+      "t0_s": 0.6747309398879404,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11676599471524961,
+        -0.14234152410322054,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11676599471524961,
+        -0.14234152410322054
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "57d9219c2f863fd715b24b6efce3284f3db62a0dc3d305d1190be176ccea3191",
+      "excitation_seed": 2401633031,
+      "imu_seed": 2942276814,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-041",
+      "t0_s": 0.366668462950955,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11690235624024456,
+        -0.11785219074078979,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11690235624024456,
+        -0.11785219074078979
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "21aef3422e5a1110f820c615b003c0fe516f5ac476f961a2fcc59fe495bed28f",
+      "excitation_seed": 2025985402,
+      "imu_seed": 130564541,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-042",
+      "t0_s": 0.5354984398538811,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08457042667519186,
+        -0.11773335965916194,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08457042667519186,
+        -0.11773335965916194
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "3ee3798b35d37b7883949c5b3897e4a729866dff70942089c0cc017a21e0efc7",
+      "excitation_seed": 3628929613,
+      "imu_seed": 4181572007,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-043",
+      "t0_s": 0.45809144105794253,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08768425374506522,
+        -0.12558757643696214,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08768425374506522,
+        -0.12558757643696214
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "bfdc66fe9740c23eda8209b147b488fe61a553d10948968de07094cfc7e255ed",
+      "excitation_seed": 375120744,
+      "imu_seed": 3765502372,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-044",
+      "t0_s": 0.42282335922610814,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08780175492410149,
+        -0.126633040521049,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08780175492410149,
+        -0.126633040521049
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "377e18e5f547c653b17ddbbc9120b1b9d2686c1dcd438bf8e221d98c03c5c33f",
+      "excitation_seed": 465967280,
+      "imu_seed": 935582565,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-045",
+      "t0_s": 0.45837678515433694,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09874294968193913,
+        -0.1311600211635209,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09874294968193913,
+        -0.1311600211635209
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "72aba604a0072796db5a14aeac99c897c1fc4b6dca6b89b4a2c5ab10c64b4650",
+      "excitation_seed": 1755928308,
+      "imu_seed": 3271510620,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-046",
+      "t0_s": 0.13647832306729987,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11536668687567969,
+        -0.11819025673264166,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11536668687567969,
+        -0.11819025673264166
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "7b61d7ec80ef083cb3f36d21ebb28e3933794bc15efd3bc663a73db67f23bdab",
+      "excitation_seed": 3292073664,
+      "imu_seed": 3222673902,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-047",
+      "t0_s": 0.6969958308734612,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08640003765686814,
+        -0.14284511569029393,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08640003765686814,
+        -0.14284511569029393
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "63a5beaaffbeeb4b3f3389ab003ef062b5086403c196443136b203b0be4a4c7e",
+      "excitation_seed": 2882021409,
+      "imu_seed": 1649395226,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-048",
+      "t0_s": 0.22055149246111097,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10214206144370439,
+        -0.12001777017463729,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10214206144370439,
+        -0.12001777017463729
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b2bc36c7dc32677c9e465f5852d73e5a3aede6197991e7b90767bffd27a219ed",
+      "excitation_seed": 1871613045,
+      "imu_seed": 7056531,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-049",
+      "t0_s": 0.039431146509269814,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09463567029351326,
+        -0.1370409690622794,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09463567029351326,
+        -0.1370409690622794
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "aa68a4d40eefcf9ca5fda74e5fff76c321205cf68fde673f06ea21e1a5c8445b",
+      "excitation_seed": 3204461379,
+      "imu_seed": 3270831735,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-050",
+      "t0_s": 0.9209682826174574,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1048574188693123,
+        -0.13198990095171048,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1048574188693123,
+        -0.13198990095171048
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "40ce77a2f328fcc76240684d1c5a4670652478d1656f44abf38245177bc505de",
+      "excitation_seed": 46244146,
+      "imu_seed": 1754923034,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-051",
+      "t0_s": 0.4225879769074015,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1034016412943133,
+        -0.12351746095131128,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1034016412943133,
+        -0.12351746095131128
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "1f06ca6d97e8643ba80ea95db8e7e6ae7a6c9586d22b839ca14b2093e7435cdd",
+      "excitation_seed": 1336016608,
+      "imu_seed": 2770468839,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-052",
+      "t0_s": 0.45130616064108914,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1007101627060714,
+        -0.14791891152354902,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1007101627060714,
+        -0.14791891152354902
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "8999f2414e63945d4662369c18ec27298cd082ea2b39c487c3072b232c959d1f",
+      "excitation_seed": 139821044,
+      "imu_seed": 3495913826,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-053",
+      "t0_s": 0.3364279370339814,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0824295940770649,
+        -0.12029407216360061,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0824295940770649,
+        -0.12029407216360061
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "d45b4ff4627d62f948e6624a6f81d73c5b96f5fcc572d30b25666d80de005bd6",
+      "excitation_seed": 4093741108,
+      "imu_seed": 3359695536,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-054",
+      "t0_s": 0.518013216707535,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10199091931550411,
+        -0.12999621053780888,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10199091931550411,
+        -0.12999621053780888
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "c05a6752f41a271027ef3661e4a63fe8cb36cb2790b1356fb92124849671e3cc",
+      "excitation_seed": 3227542501,
+      "imu_seed": 2989486595,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-055",
+      "t0_s": 0.06486095501909842,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08309417506412267,
+        -0.1456479913349651,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08309417506412267,
+        -0.1456479913349651
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "4b91f64b2f9122a0cabc42467aa2d90ff3fe6eb9cf0637446e52b7ae44bd903d",
+      "excitation_seed": 4128010964,
+      "imu_seed": 2775661771,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-056",
+      "t0_s": 0.6593736523828495,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09565563833249642,
+        -0.1442459120956071,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09565563833249642,
+        -0.1442459120956071
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "9ae659ccda5cf07a7b3cc2f9a22f9bcea662be469a7d7a1ba167ffd9f0186e4c",
+      "excitation_seed": 322479372,
+      "imu_seed": 2095286717,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-057",
+      "t0_s": 0.9960059041143032,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1021146701099035,
+        -0.13682101765800844,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1021146701099035,
+        -0.13682101765800844
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "ce96daa6bafb70a492583a8d8b0b5baf2fdc18ec292062493d31d2f4512dd389",
+      "excitation_seed": 2270417193,
+      "imu_seed": 1615752966,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-058",
+      "t0_s": 0.06898960085107514,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10235898384643119,
+        -0.12132635660626567,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10235898384643119,
+        -0.12132635660626567
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a6cbd3df7e369e936957ef82896fb06dfc7d7e3a581e43ccf8a6027379aef73e",
+      "excitation_seed": 679187013,
+      "imu_seed": 2848489382,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-059",
+      "t0_s": 0.4276080249384744,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11518557819223414,
+        -0.14876885612071117,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11518557819223414,
+        -0.14876885612071117
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a6abb053efbc3b6de7b59b5667809c1560f0e22c31865a3a44713cad78459df0",
+      "excitation_seed": 2407220165,
+      "imu_seed": 1707052043,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-060",
+      "t0_s": 0.8472212748291958,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09924723574218647,
+        -0.12815075271528908,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09924723574218647,
+        -0.12815075271528908
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "74d8e1b5c239d6aa8a0e81597ceb469c7f2c836098000c2157b8cb6aff9b15ec",
+      "excitation_seed": 456473324,
+      "imu_seed": 223678435,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-061",
+      "t0_s": 0.36485352312161445,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09748858687432228,
+        -0.14501620729074644,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09748858687432228,
+        -0.14501620729074644
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "6cf316cd7eaf780305fed4a7a1074a5ff5e763eb7a322d2b5a93fab752754da6",
+      "excitation_seed": 2938392821,
+      "imu_seed": 2698416981,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-062",
+      "t0_s": 0.10078258085496548,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09682739951255746,
+        -0.11181162525328739,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09682739951255746,
+        -0.11181162525328739
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "18632564ab7e3fb6c8ddca082328014df8e5dc38644a277b1b292867e9ff27f0",
+      "excitation_seed": 1972108297,
+      "imu_seed": 383592670,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-063",
+      "t0_s": 0.4150994730521058,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1052848515845309,
+        -0.1204098552223273,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1052848515845309,
+        -0.1204098552223273
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "c545478a941f48ffdd64aac48904ab0334d9f0e0d66a9abca5de33ad89b7714d",
+      "excitation_seed": 2931226193,
+      "imu_seed": 2252607695,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-064",
+      "t0_s": 0.39659670071901587,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10476767976160009,
+        -0.11097012561659535,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10476767976160009,
+        -0.11097012561659535
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "7932bbf7ad4dfeb382816477bc2a4b468df53764612d0f55958ed7f153b94346",
+      "excitation_seed": 1897522196,
+      "imu_seed": 3355649125,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-065",
+      "t0_s": 0.937306888349634,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11055139013520741,
+        -0.12845299883126318,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11055139013520741,
+        -0.12845299883126318
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "8c3e58900f01f1c943149f568df10ef33a013233c499ef94dc96a0ca018d3202",
+      "excitation_seed": 1811227938,
+      "imu_seed": 1488547589,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-066",
+      "t0_s": 0.9598163801068241,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11016628317775985,
+        -0.126782212100289,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11016628317775985,
+        -0.126782212100289
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a336f61b563c41787dfe9eba917df8759d06720e30c1e616dfa31ff8b2dc8095",
+      "excitation_seed": 3975771648,
+      "imu_seed": 2255589192,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-067",
+      "t0_s": 0.3305579818222493,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1177486682590625,
+        -0.14151745580157649,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1177486682590625,
+        -0.14151745580157649
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "82fca29a00439132d6e135606f170823ddcf5987dffada8fa5a692ee91bc0cd5",
+      "excitation_seed": 974265344,
+      "imu_seed": 1373344179,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-068",
+      "t0_s": 0.0864594437172229,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08240125381243123,
+        -0.1301408060250374,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08240125381243123,
+        -0.1301408060250374
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "71b4bda791fe515c00ebececef73dfff774ef97166ec2c926ceb80acf8d89a2f",
+      "excitation_seed": 1768314959,
+      "imu_seed": 3817285517,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-069",
+      "t0_s": 0.03494267050750752,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08794725598062224,
+        -0.12484925240805039,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08794725598062224,
+        -0.12484925240805039
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "107b6140be025e693230bad98567af242165c6927f7ecf2cdcaad7a4ba5cfe9b",
+      "excitation_seed": 1300622580,
+      "imu_seed": 1209587504,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-070",
+      "t0_s": 0.871268594486958,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11942047257899377,
+        -0.145150397704597,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11942047257899377,
+        -0.145150397704597
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "24847a94077b7f3d880b4375c4ac8c6ca41b3b5e563e1eed3477280893a9ff24",
+      "excitation_seed": 1335308408,
+      "imu_seed": 2823755734,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-071",
+      "t0_s": 0.6138572116993105,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09051799871340194,
+        -0.1293467014320022,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09051799871340194,
+        -0.1293467014320022
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "bee5cffdd01811abf69ddd3f6a98226fbad312aa71445147a0b97139e1c07115",
+      "excitation_seed": 2726582944,
+      "imu_seed": 1251800419,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-072",
+      "t0_s": 0.575539842905561,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11680508431894235,
+        -0.14357907826125643,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11680508431894235,
+        -0.14357907826125643
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "ce8cf5e391fbfdf6a9b2b24e3e28bb99e5c6b9b1fb782860a20c039d3e6eaf09",
+      "excitation_seed": 787239028,
+      "imu_seed": 4187336868,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-073",
+      "t0_s": 0.284025225614296,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11097763114888577,
+        -0.12323646383451672,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11097763114888577,
+        -0.12323646383451672
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "8cb50728d3958dce7199c872c6faf4c59f7f135e5a9f90c4ee229230f8e4bda3",
+      "excitation_seed": 1150508277,
+      "imu_seed": 3744270016,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-074",
+      "t0_s": 0.9491626783424517,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11818714428446918,
+        -0.11305220175560336,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11818714428446918,
+        -0.11305220175560336
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "04ebdcc7258b2d5e752f0150457f02e1e2fafb60205803cca2d042de3b4abfcf",
+      "excitation_seed": 2081594042,
+      "imu_seed": 635191689,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-075",
+      "t0_s": 0.4748638208907348,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11745860356403812,
+        -0.11226328495362588,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11745860356403812,
+        -0.11226328495362588
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "1b1821d968e41b81150dccea4628104a9f7dec14d0455cad83fc8b9ecb6c28ca",
+      "excitation_seed": 3864378610,
+      "imu_seed": 3582424535,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-076",
+      "t0_s": 0.47148775563185563,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08867596089677697,
+        -0.13832487679189204,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08867596089677697,
+        -0.13832487679189204
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "1c20a380e5c607b451da46388b7c198048ece71bd08b37dd85fa3b86cd2de251",
+      "excitation_seed": 1360483380,
+      "imu_seed": 889355589,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-077",
+      "t0_s": 0.937647298802615,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.0892610901433616,
+        -0.11839739367930642,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.0892610901433616,
+        -0.11839739367930642
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b2d7ad8fd7bcdf0b97b6168f6345df751aed9585497e2ffe22277ea4caa17088",
+      "excitation_seed": 2262563024,
+      "imu_seed": 3990091640,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-078",
+      "t0_s": 0.4300753864539022,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10344786375298262,
+        -0.11650909576835301,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10344786375298262,
+        -0.11650909576835301
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "2eb4c6310f6fe082b3c9035efde5168b1ccb86ada1f70e8bc14ea7aa1608e755",
+      "excitation_seed": 1805921401,
+      "imu_seed": 2851507313,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-079",
+      "t0_s": 0.03372819924941099,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11690490217487232,
+        -0.11453276635989125,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11690490217487232,
+        -0.11453276635989125
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "0aad2cae1269cada4ecdcaa93da8a986f634c95d1cf64840a491fab2ae10ae12",
+      "excitation_seed": 2430224588,
+      "imu_seed": 598616352,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-080",
+      "t0_s": 0.8805796733206834,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09909270391243301,
+        -0.132070431658444,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09909270391243301,
+        -0.132070431658444
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a349664ad2787b9d64b1444e0266c7210670fdc3e7fa88e671dbcbb984ad0ece",
+      "excitation_seed": 1707062605,
+      "imu_seed": 2616753803,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-081",
+      "t0_s": 0.03248081722431748,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11705379992340724,
+        -0.14900827088810487,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11705379992340724,
+        -0.14900827088810487
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "d45ee36f1f0835844e6b6fd5d9fe25667dbc389a7db06c757a856874724dc50b",
+      "excitation_seed": 2650820240,
+      "imu_seed": 2281173402,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-082",
+      "t0_s": 0.5932083146506136,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08638363302629401,
+        -0.1395151512375322,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08638363302629401,
+        -0.1395151512375322
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "08d1cdd1762c19b5a8b7c1071937a92b6c991760ebdf8f1ed894916b4796b775",
+      "excitation_seed": 2179211041,
+      "imu_seed": 629263069,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-083",
+      "t0_s": 0.35527304858052533,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11480186028507508,
+        -0.11197665649859644,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11480186028507508,
+        -0.11197665649859644
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b7da15d6cab6a7f6c23438b7dee79c77c3ba245b6a37583f62446eb605c58a6e",
+      "excitation_seed": 941391386,
+      "imu_seed": 2164422221,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-084",
+      "t0_s": 0.0941212718314787,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10495343715163,
+        -0.14078920891441477,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10495343715163,
+        -0.14078920891441477
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "34c69a6e4073359d8607a92c384eacaeebf5e38f5748da99194f761d6e2eebe8",
+      "excitation_seed": 2559649416,
+      "imu_seed": 1189055576,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-085",
+      "t0_s": 0.5370984651841547,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09517699322082525,
+        -0.13842175629470094,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09517699322082525,
+        -0.13842175629470094
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "f5505a686a93f09ebf4d77b46f4f55650e403b1e0f027540dd328c8a0c47456c",
+      "excitation_seed": 2601135610,
+      "imu_seed": 2854036756,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-086",
+      "t0_s": 0.32393108351514455,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10042532486172248,
+        -0.11111061299732637,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10042532486172248,
+        -0.11111061299732637
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "9dace87c94b853e2102f40a3830a86de5f221fa3603126182eb381e08b48eeb3",
+      "excitation_seed": 1855266289,
+      "imu_seed": 1165974408,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-087",
+      "t0_s": 0.07051800451104726,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08755047011803166,
+        -0.12007282379353387,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08755047011803166,
+        -0.12007282379353387
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "0e531356e2e01fe0d9bcfc7a0e201c1ee4faf54472ceb099cda0ffa694934b8c",
+      "excitation_seed": 4029810027,
+      "imu_seed": 532794646,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-088",
+      "t0_s": 0.07762498864468588,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08939026772368512,
+        -0.12619511131113778,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08939026772368512,
+        -0.12619511131113778
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "aa90b4a9a625e3f4312952e01153b1bb00ad7a18713eeaf0ce1f4db5392c35d2",
+      "excitation_seed": 2025669312,
+      "imu_seed": 3997464422,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-089",
+      "t0_s": 0.9815071169533858,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.11299299657436114,
+        -0.1349363279636719,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.11299299657436114,
+        -0.1349363279636719
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "50d8adaa107b1d2f4964d25745e190c6ebd95cfd888c815584eff6b5497d055a",
+      "excitation_seed": 3441532768,
+      "imu_seed": 4100789887,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-090",
+      "t0_s": 0.47921047324047145,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.1124310169615902,
+        -0.12262510352217411,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.1124310169615902,
+        -0.12262510352217411
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b29e531e31aec46b25eef27977e170dc3aa078c150d971250d1a795afee0960b",
+      "excitation_seed": 1066248514,
+      "imu_seed": 2342010142,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-091",
+      "t0_s": 0.12019387239914762,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10887475044060049,
+        -0.1400814642796669,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10887475044060049,
+        -0.1400814642796669
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "b6663e90e49fb7da41d8f1cefb90bb615a64e7f374572ec63bfc2b82955bde82",
+      "excitation_seed": 3545130737,
+      "imu_seed": 877206825,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-092",
+      "t0_s": 0.8556177092451378,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08557961863351958,
+        -0.13802778207551233,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08557961863351958,
+        -0.13802778207551233
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "226331d878a72a6fee7eaf1c9f16c89ccb831e5026d1202a46a9e83889c5cf6c",
+      "excitation_seed": 168208258,
+      "imu_seed": 507915169,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-093",
+      "t0_s": 0.5578773206087535,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10745353828804291,
+        -0.13527239357566018,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10745353828804291,
+        -0.13527239357566018
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a50887c6df41df241526ff28e29927e87f9bc97638cac1f01634a7561c5e8612",
+      "excitation_seed": 659478266,
+      "imu_seed": 3585606243,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-094",
+      "t0_s": 0.6611833248391484,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09492009324711784,
+        -0.13801529098703,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09492009324711784,
+        -0.13801529098703
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "e484bdd7dc4d62a023053220de51434ec38e586b257ff1b3832874dcd69eddc7",
+      "excitation_seed": 3357701149,
+      "imu_seed": 3384287997,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-095",
+      "t0_s": 0.40425568841469817,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.08986712399421506,
+        -0.12761083350101993,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.08986712399421506,
+        -0.12761083350101993
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "09dfc8b57886310992ee9e0f4a1859a2882ddcf76817bbf97074ef066574383e",
+      "excitation_seed": 312165796,
+      "imu_seed": 2994442447,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-096",
+      "t0_s": 0.22457751890832764,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09729407956816091,
+        -0.1357141190860032,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09729407956816091,
+        -0.1357141190860032
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "a5775d6bae00fcdb21a2b4ad6270354d6881621b8fc7621996c6f05f40c14f1d",
+      "excitation_seed": 3978497533,
+      "imu_seed": 2913440640,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-097",
+      "t0_s": 0.6206157011377552,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.10047677112457444,
+        -0.1253089117173571,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.10047677112457444,
+        -0.1253089117173571
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "2f4d0a692d7e9ffdd8d5dd0e6fad5146bb8c234c29fffc8ab567b11f04ff36d1",
+      "excitation_seed": 21976586,
+      "imu_seed": 182147803,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-098",
+      "t0_s": 0.9540867489370147,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "Gamma": {
+        "commanded": null,
+        "selection": "unselected; Phase 09 knee calibration only"
+      },
+      "authority_hashes": {
+        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "can_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_pose_worktable": [
+        -0.09791333595389208,
+        -0.1363814531549192,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "can_xy_m": [
+        -0.09791333595389208,
+        -0.1363814531549192
+      ],
+      "can_yaw_rad": 0.0,
+      "canonical_payload_sha256": "eae5d5cdb0225f28d84d96d4caac950095d80683a2a7b25e1ccd89ae0d562568",
+      "excitation_seed": 1980605566,
+      "imu_seed": 3800753411,
+      "schema_id": "shakebench.phase08.committed_states.record",
+      "schema_version": 1,
+      "split": "knee",
+      "state_id": "shakebench-knee-v1-099",
+      "t0_s": 0.6065004439153587,
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "status": "frozen"
+}

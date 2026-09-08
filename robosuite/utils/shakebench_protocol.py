@@ -283,3 +283,18 @@ from robosuite.utils.shakebench_protocol_v6 import (  # noqa: E402  (intentional
     resolve_all_protocol_states_v6,
     resolve_protocol_state_v6,
 )
+
+# Phase 08 uses a separate, rollout-free module so the legacy V5 resolver
+# remains byte-for-byte compatible.  Re-export the committed-state boundary
+# here for callers following the integration map's stable import location.
+from robosuite.utils.shakebench_committed_states import (  # noqa: E402
+    KNEE_STATE_COUNT,
+    KNEE_STATE_FILENAME,
+    OFFICIAL_STATE_COUNT,
+    OFFICIAL_STATE_FILENAME,
+    Phase08StateError,
+    build_committed_state_artifact,
+    freeze_committed_state_assets,
+    verify_committed_state_artifact,
+    verify_committed_state_pair,
+)

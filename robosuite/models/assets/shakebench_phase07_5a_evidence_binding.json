@@ -1,0 +1,8 @@
+{
+  "evidence_core_file_sha256": "930e2696b4470de6de0f41f24b7331528bf485fc5c03121b5efc36efdbe4dbf0",
+  "evidence_core_payload_sha256": "9b2c56416de2d88d78062b698004605c551bac37671d10a3600fccec1eb4f2dd",
+  "payload_sha256": "4591ec046115ff8cfe17933f0278c3a434a12e20d4f59dbbe84457f1eab55d70",
+  "requalification_manifest_payload_sha256": "b2d4883ab6e69315dceee874f39ecb4c60e8ec4a00375df0f9b994638f9c0a50",
+  "schema_id": "shakebench.phase07_5a.evidence_binding",
+  "schema_version": 1
+}

@@ -32,6 +32,7 @@ from robosuite.utils.shakebench_dev_states import (
     verify_phase07_dev_state_artifact,
 )
 from robosuite.utils.shakebench_excitation import build_excitation_program
+from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_oracle import (
     OracleControllerProfile,
@@ -148,6 +149,47 @@ def load_dev_states(path: str | Path) -> list[dict[str, Any]]:
             }
         )
     return sorted(result, key=lambda item: item["state_id"])
+
+
+def load_state_asset(path: str | Path) -> dict[str, Any]:
+    """Load one state asset using its authenticated schema, never its filename.
+
+    Dev remains on its frozen Phase-07 verifier. Official and knee assets use
+    the Phase-08 committed-state verifier and retain their complete canonical
+    records at the execution boundary.
+    """
+
+    source = Path(path)
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise OracleRunError(f"state asset read failed: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise OracleRunError("state asset must be an object")
+    if payload.get("schema_id") == "shakebench.phase07.dev_states":
+        states = load_dev_states(source)
+        return {"states": states, "authority": {"kind": "dev", "dev_state_anchor": _dev_state_anchor(source)}}
+    from robosuite.utils.shakebench_committed_states import verify_committed_state_artifact
+
+    split = payload.get("split")
+    if split not in {"official", "knee"}:
+        raise OracleRunError("unknown state asset schema/split")
+    verdict = verify_committed_state_artifact(payload, expected_split=split)
+    if not verdict["passed"]:
+        raise OracleRunError("committed state authority failed: " + ", ".join(verdict["errors"]))
+    states = payload.get("states")
+    if not isinstance(states, list) or not all(isinstance(row, Mapping) for row in states):
+        raise OracleRunError("committed state payload malformed")
+    return {
+        "states": [dict(row) for row in states],
+        "authority": {
+            "kind": "committed",
+            "split": split,
+            "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "asset_payload_sha256": payload["artifact_lock"]["payload_sha256"],
+            "authority_hashes": dict(payload["authority_hashes"]),
+        },
+    }
 
 
 def _default_dev_state_path() -> Path:
@@ -458,7 +500,7 @@ def run_episode(
     """
 
     state_id = str(state["state_id"])
-    seed = int(state.get("seed", 0))
+    seed = int(state.get("excitation_seed", state.get("seed", 0)))
     imu_seed = int(state.get("imu_seed", seed))
     t0_s = float(state.get("t0_s", 0.0))
     gamma_commanded = float(gamma_commanded)
@@ -679,7 +721,8 @@ def main(argv: list[str] | None = None) -> int:
         )["exit_code"]
     if args.tier is None or args.gamma is None or args.output is None:
         parser.error("--tier, --gamma, and --output are required for a normal run")
-    states = load_dev_states(args.states)
+    state_asset = load_state_asset(args.states)
+    states = state_asset["states"]
     if args.state_id is not None and args.state_ids is not None:
         raise OracleRunError("--state-id and --state-ids are mutually exclusive")
     if args.state_id is not None:
@@ -712,22 +755,32 @@ def main(argv: list[str] | None = None) -> int:
     if args.resume and partial_target.exists():
         try:
             partial = json.loads(partial_target.read_text(encoding="utf-8"))
+            partial_verdict = verify_run_artifact(partial_target)
             if (
-                partial.get("schema_id") == RUN_SCHEMA_ID
+                partial_verdict["passed"]
+                and partial.get("schema_id") == RUN_SCHEMA_ID
+                and partial.get("schema_version") == RUN_SCHEMA_VERSION
                 and partial.get("tier") == args.tier
                 and float(partial.get("gamma_commanded")) == float(args.gamma)
                 and partial.get("controller_profile") == profile.to_dict()
+                and partial.get("diagnostic_mode") == profile.diagnostic_mode
+                and partial.get("evaluator_post_complete_settle_s") == profile.completion_evaluator_settle_s
                 and partial.get("scene_visual") == scene_identity
                 and partial.get("geometry_authority") == geometry_authority
                 and partial.get("scoreable") == scoreable
                 and partial.get("geometry_profile") == geometry_payload
+                and partial.get("state_authority") == state_asset["authority"]
+                and partial.get("physics_authority")
+                == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID, "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256}
                 and isinstance(partial.get("episodes"), list)
             ):
                 episodes = list(partial["episodes"])
                 completed_ids = {row.get("state_id") for row in episodes if isinstance(row, Mapping)}
                 states = [state for state in states if state["state_id"] not in completed_ids]
+            else:
+                raise OracleRunError("partial checkpoint failed semantic or science-identity verification")
         except (OSError, TypeError, ValueError, json.JSONDecodeError):
-            episodes = []
+            raise OracleRunError("partial checkpoint is unreadable or unauthenticated")
     for state in states:
         episodes.append(
             run_episode(
@@ -745,16 +798,37 @@ def main(argv: list[str] | None = None) -> int:
             "tier": args.tier,
             "gamma_commanded": args.gamma,
             "controller_profile": profile.to_dict(),
+            "diagnostic_mode": profile.diagnostic_mode,
+            "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
+            "dev_state_anchor": (
+                _dev_state_anchor(args.states) if state_asset["authority"]["kind"] == "dev" else _dev_state_anchor()
+            ),
+            "state_authority": state_asset["authority"],
+            "physics_authority": {
+                "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
+                "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256,
+            },
             "scene_visual": scene_identity,
             "geometry_profile": geometry_payload,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
             "episodes": episodes,
         }
-        partial_target.parent.mkdir(parents=True, exist_ok=True)
-        partial_target.write_text(
-            json.dumps(_json_ready(partial_payload), sort_keys=True, indent=2) + "\n", encoding="utf-8"
+        partial_payload["run_id"] = _digest(
+            {
+                "tier": args.tier,
+                "gamma_commanded": args.gamma,
+                "controller_profile": profile.to_dict(),
+                "scene_visual": scene_identity,
+                "geometry_profile": geometry_payload,
+                "geometry_authority": geometry_authority,
+                "scoreable": scoreable,
+                "state_ids": [episode["state_id"] for episode in episodes],
+                "state_authority": state_asset["authority"],
+            }
         )
+        partial_payload["payload_sha256"] = _digest(partial_payload)
+        write_json_atomic(partial_target, partial_payload)
     payload = {
         "schema_id": RUN_SCHEMA_ID,
         "schema_version": RUN_SCHEMA_VERSION,
@@ -763,7 +837,10 @@ def main(argv: list[str] | None = None) -> int:
         "controller_profile": profile.to_dict(),
         "diagnostic_mode": profile.diagnostic_mode,
         "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
-        "dev_state_anchor": _dev_state_anchor(args.states),
+        "dev_state_anchor": (
+            _dev_state_anchor(args.states) if state_asset["authority"]["kind"] == "dev" else _dev_state_anchor()
+        ),
+        "state_authority": state_asset["authority"],
         "physics_authority": {
             "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
             "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256,
@@ -784,6 +861,7 @@ def main(argv: list[str] | None = None) -> int:
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
             "state_ids": [episode["state_id"] for episode in episodes],
+            "state_authority": payload["state_authority"],
         }
     )
     if args.merge_into is not None:
@@ -817,8 +895,7 @@ def main(argv: list[str] | None = None) -> int:
             "start_timestamp_s": time.time(),
         }
     payload["payload_sha256"] = _digest(payload)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(_json_ready(payload), sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    write_json_atomic(target, payload)
     if partial_target.exists():
         partial_target.unlink()
     print(
@@ -864,14 +941,42 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "run_id",
         "payload_sha256",
     }
-    if set(payload) - {"process"} != required_top_level:
+    if set(payload) - {"process", "state_authority"} != required_top_level:
         errors.append("run required fields")
     if not _finite_json(payload):
         errors.append("nonfinite JSON")
-    expected_anchor = _dev_state_anchor()
-    anchor_matches, anchor_mode = _dev_state_anchor_match(payload.get("dev_state_anchor"), expected_anchor)
-    if not anchor_matches:
-        errors.append("dev-state anchor")
+    state_authority = payload.get("state_authority")
+    committed_split = None
+    if state_authority is None or (isinstance(state_authority, Mapping) and state_authority.get("kind") == "dev"):
+        expected_anchor = _dev_state_anchor()
+        anchor_matches, anchor_mode = _dev_state_anchor_match(payload.get("dev_state_anchor"), expected_anchor)
+        if not anchor_matches:
+            errors.append("dev-state anchor")
+        states_by_id = {row["state_id"]: row for row in load_dev_states(_default_dev_state_path())}
+    elif isinstance(state_authority, Mapping) and state_authority.get("kind") == "committed":
+        committed_split = state_authority.get("split")
+        from robosuite.utils.shakebench_committed_states import KNEE_STATE_FILENAME, OFFICIAL_STATE_FILENAME
+
+        if committed_split not in {"official", "knee"}:
+            errors.append("committed-state split")
+            states_by_id = {}
+        else:
+            asset = Path(models.assets_root) / (
+                OFFICIAL_STATE_FILENAME if committed_split == "official" else KNEE_STATE_FILENAME
+            )
+            try:
+                resolved = load_state_asset(asset)
+                if resolved["authority"] != state_authority:
+                    errors.append("committed-state authority")
+                states_by_id = {row["state_id"]: row for row in resolved["states"]}
+            except OracleRunError as exc:
+                errors.append(f"committed-state authority: {exc}")
+                states_by_id = {}
+        anchor_mode = "committed"
+    else:
+        errors.append("state authority")
+        states_by_id = {}
+        anchor_mode = "invalid"
     if not _values_equal(
         payload.get("physics_authority"),
         {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID, "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256},
@@ -927,7 +1032,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     if not isinstance(episodes, list) or not episodes:
         errors.append("episodes")
         episodes = []
-    states_by_id = {row["state_id"]: row for row in load_dev_states(_default_dev_state_path())}
     seen_state_ids: set[str] = set()
     expected_ids = []
     for episode_index, episode in enumerate(episodes):
@@ -1015,9 +1119,15 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             errors.append(prefix + " program")
         else:
             expected_level = level_scale_for_gamma(
-                float(episode["gamma_commanded"]), seed=state["seed"], t0=state["t0_s"]
+                float(episode["gamma_commanded"]),
+                seed=state.get("excitation_seed", state.get("seed")),
+                t0=state["t0_s"],
             )
-            expected_program = {"seed": state["seed"], "t0_s": state["t0_s"], "level_scale": expected_level}
+            expected_program = {
+                "seed": state.get("excitation_seed", state.get("seed")),
+                "t0_s": state["t0_s"],
+                "level_scale": expected_level,
+            }
             if not _values_equal(episode["program"], expected_program, atol=1.0e-12):
                 errors.append(prefix + " program binding")
         _compare_actuator_metadata(episode.get("actuators"), errors)
@@ -1215,6 +1325,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     }
     run_id_basis["scene_visual"] = payload.get("scene_visual")
     run_id_basis["geometry_profile"] = payload.get("geometry_profile")
+    if state_authority is not None:
+        run_id_basis["state_authority"] = state_authority
     if payload.get("run_id") != _digest(run_id_basis):
         errors.append("run id")
     return {

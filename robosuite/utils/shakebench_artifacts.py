@@ -54,6 +54,7 @@ def write_json_atomic(path: str | Path, payload: Mapping[str, Any]) -> str:
     """Write one JSON artifact atomically and return its file SHA-256."""
 
     destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(destination.name + ".tmp")
     temporary.write_text(
         json.dumps(json_ready(payload), ensure_ascii=False, sort_keys=True, indent=2) + "\n",
