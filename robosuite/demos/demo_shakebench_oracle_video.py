@@ -318,10 +318,9 @@ def main(argv: list[str] | None = None) -> int:
             horizon_steps=args.horizon_steps,
             step_observer=observer,
             geometry_profile=args.geometry_profile,
-            # The final direct-mount visual evidence must use the same frozen
-            # science authority as the raw scoreable episodes.  A pending or
-            # mutated authority fails before rendering rather than yielding a
-            # visually plausible but unauthenticated recording.
+            # Rendering remains bound to the frozen scene so the visual
+            # diagnostic is interpretable, but this code path never emits a
+            # scoreable raw artifact or Phase 9 measurement authority.
             allow_unverified_geometry=False,
         )
     except Exception:
@@ -332,8 +331,9 @@ def main(argv: list[str] | None = None) -> int:
     metadata = {
         "schema_id": DEMO_SCHEMA_ID,
         "schema_version": 1,
-        "qualitative_only": False,
-        "scoreable_evidence": bool(episode["scoreable"]),
+        "qualitative_only": True,
+        "scoreable_evidence": False,
+        "not_phase09_measurement": True,
         "geometry_profile": load_geometry_profile(args.geometry_profile),
         "source": {
             "base_commit": _git_head(),
@@ -369,7 +369,7 @@ def main(argv: list[str] | None = None) -> int:
                 "physics_effect": scene_config.physics_effect,
             },
             "geometry_authority": episode["geometry_authority"],
-            "scoreable": episode["scoreable"],
+            "scoreable": False,
         },
     }
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
