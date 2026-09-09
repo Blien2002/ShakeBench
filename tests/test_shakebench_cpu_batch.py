@@ -8,6 +8,7 @@ from robosuite.scripts.shakebench_cpu_batch import (
     aggregate_payload_hash,
     _percentile,
     _read_key_values,
+    artifact_requires_exact_retry,
     build_jobs,
     build_retry_ledger,
     classify_execution_exception,
@@ -105,6 +106,30 @@ def test_only_explicit_infrastructure_errors_are_retryable_and_ledger_is_bound()
     assert len(ledger["payload_sha256"]) == 64
 
 
+def test_invalid_execution_artifact_requires_one_exact_job_retry():
+    invalid = {
+        "episodes": [
+            {
+                "episode_validity": "invalid",
+                "score_outcome": None,
+                "termination_cause": "invalid_execution",
+            }
+        ]
+    }
+    task_failure = {
+        "episodes": [
+            {
+                "episode_validity": "valid",
+                "score_outcome": "unsuccessful",
+                "termination_cause": "horizon_exhausted",
+            }
+        ]
+    }
+
+    assert artifact_requires_exact_retry(invalid)
+    assert not artifact_requires_exact_retry(task_failure)
+
+
 def test_complete_pass_requires_all_resource_telemetry_and_job_rss():
     snapshot = {
         "mem_available_kib": 1,
@@ -118,7 +143,7 @@ def test_complete_pass_requires_all_resource_telemetry_and_job_rss():
     assert not telemetry_is_complete({**snapshot, "temperatures": []}, snapshot, [{"execution": {"max_rss_kib": 1}}])
 
 
-def test_batch_aggregate_verifier_rejects_rehashed_or_tampered_audit_data(tmp_path):
+def test_batch_aggregate_verifier_rejects_unbound_or_rehashed_audit_data(tmp_path):
     aggregate = {
         "schema_id": "shakebench.phase07_5b.cpu_batch",
         "schema_version": 1,
@@ -131,8 +156,44 @@ def test_batch_aggregate_verifier_rejects_rehashed_or_tampered_audit_data(tmp_pa
     aggregate["payload_sha256"] = aggregate_payload_hash(aggregate)
     path = tmp_path / "aggregate.json"
     path.write_text(__import__("json").dumps(aggregate), encoding="utf-8")
-    assert verify_batch_aggregate(path)["passed"]
+    assert not verify_batch_aggregate(path)["passed"]
 
     aggregate["incomplete_groups"] = ["tampered"]
     path.write_text(__import__("json").dumps(aggregate), encoding="utf-8")
     assert not verify_batch_aggregate(path)["passed"]
+
+
+def test_batch_aggregate_verifier_accepts_authenticated_incomplete_job(tmp_path):
+    job = {"job_id": "job-0", "science": {"state_id": "official-000"}}
+    record = {
+        "schema_id": "shakebench.phase07_5b.cpu_batch.job",
+        "schema_version": 1,
+        "job_id": job["job_id"],
+        "job_index": 0,
+        "science": job["science"],
+        "execution": {"cpu": 0},
+        "semantic_passed": False,
+        "retry_ledger": build_retry_ledger(job, [{"attempt": 1, "classification": "invalid_execution"}]),
+        "group_status": "incomplete",
+        "resumed": False,
+    }
+    record["payload_sha256"] = job_record_payload_hash(record)
+    aggregate = {
+        "schema_id": "shakebench.phase07_5b.cpu_batch",
+        "schema_version": 1,
+        "status": "FAIL",
+        "worker_count": 2,
+        "affinity": [0, 2],
+        "job_count": 1,
+        "completed_count": 1,
+        "state_authority": {},
+        "scoreable": True,
+        "records": [record],
+        "resource_before": {},
+        "resource_after": {},
+        "incomplete_groups": [job["job_id"]],
+    }
+    aggregate["payload_sha256"] = aggregate_payload_hash(aggregate)
+    path = tmp_path / "aggregate.json"
+    path.write_text(__import__("json").dumps(aggregate), encoding="utf-8")
+    assert verify_batch_aggregate(path)["passed"]

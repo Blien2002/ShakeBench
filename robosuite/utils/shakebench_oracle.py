@@ -60,7 +60,10 @@ class TaskPhase(str, Enum):
     RETREAT = "clearance_retreat"
     RE_ALIGN = "re_align"
     COMPLETE = "complete"
-    FAILED = "failed"
+    ABORTED = "aborted"
+    # Compatibility alias.  New runner code must use ``abort_reason`` and
+    # never infer a task result from a controller phase.
+    FAILED = "aborted"
 
 
 class MotionCapability(str, Enum):
@@ -105,7 +108,7 @@ MOTION_CAPABILITY_BY_PHASE = MappingProxyType(
         TaskPhase.CLEARANCE_RETREAT: MotionCapability.RECOVERY_RETREAT,
         TaskPhase.RE_ALIGN: MotionCapability.FREE_SPACE,
         TaskPhase.COMPLETE: MotionCapability.TERMINAL,
-        TaskPhase.FAILED: MotionCapability.TERMINAL,
+        TaskPhase.ABORTED: MotionCapability.TERMINAL,
     }
 )
 
@@ -1066,7 +1069,6 @@ class OracleControllerProfile:
     gripper_close_action: float = 1.0
     completion_evaluator_settle_s: float = 1.0
     phase_deadline_s: float = 8.0
-    episode_deadline_s: float = 55.0
     current_linear_accel_gain_s2: float = 0.002
     current_angular_velocity_gain_s: float = 0.002
     future_query_horizon_s: float = 0.100
@@ -1737,7 +1739,10 @@ class TaskExecutive:
     context: WorktableTaskContext = field(default_factory=WorktableTaskContext)
     phase: TaskPhase = TaskPhase.SETTLE
     phase_entered_s: float = 0.0
+    # ``failure_reason`` remains a read-only compatibility projection for old
+    # diagnostic consumers.  It is never a task outcome authority.
     failure_reason: Optional[str] = None
+    abort_reason: Optional[str] = None
     last_recovery_reason: Optional[str] = None
     recovery_count: int = 0
     recovery_transition: Optional[str] = field(default=None, init=False, repr=False)
@@ -1788,6 +1793,7 @@ class TaskExecutive:
         self.phase = TaskPhase.SETTLE
         self.phase_entered_s = 0.0
         self.failure_reason = None
+        self.abort_reason = None
         self.last_recovery_reason = None
         self.recovery_count = 0
         self.recovery_transition = None
@@ -2206,18 +2212,60 @@ class TaskExecutive:
             and self._public_linear_speed_m_s <= self.profile.recovery_max_downward_speed_m_s
         )
 
+    @staticmethod
+    def _event_type(reason: str) -> str:
+        event_type = {
+            "phase_deadline": "phase_deadline",
+            "public_grasp_not_established": "grasp_not_established",
+            "public_grasp_loss": "grasp_loss",
+            "public_grasp_slip": "grasp_slip",
+            "public_anchor_drift": "anchor_drift",
+            "public_tool_clearance": "tool_clearance_blocked",
+            "public_placement_loss": "placement_loss",
+            "public_placement_rebound": "placement_rebound",
+            "edge_risk": "edge_risk",
+            "workspace_risk": "workspace_risk",
+        }.get(reason)
+        if event_type is None:
+            raise ShakeBenchOracleError(f"unregistered recovery reason: {reason}")
+        return event_type
+
+    def _record_event(self, event_type: str, observation: Mapping[str, Any], time_s: float, decision: str) -> None:
+        """Record a public controller observation without changing outcome state."""
+
+        self._recovery_events.append(
+            {
+                "event_type": event_type,
+                "time_s": float(time_s),
+                "phase": self.phase.value,
+                "decision": decision,
+                "observation_summary": {
+                    "can_pos_robot_base": np.asarray(observation["can_pos_robot_base"], dtype=float).tolist(),
+                    "eef_pos_robot_base": np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float).tolist(),
+                    "recovery_count": self.recovery_count,
+                },
+            }
+        )
+
+    def _abort(self, observation: Mapping[str, Any], time_s: float, reason: str) -> None:
+        """End this controller's action stream; the runner owns episode result."""
+
+        self._record_event(self._event_type(reason), observation, time_s, "policy_abort")
+        self.phase = TaskPhase.ABORTED
+        self.abort_reason = reason
+        self.failure_reason = "policy_abort"  # legacy diagnostic projection
+        self.recovery_transition = "policy_abort"
+
     def _recover_or_fail(self, observation: Mapping[str, Any], time_s: float, reason: str) -> None:
+        """Choose a recovery primitive or a structured policy abort.
+
+        The historical name is retained only for source compatibility.  No
+        branch here creates an environment/task failure.
+        """
+
         self.last_recovery_reason = reason
         precondition = self._public_recoverability(observation)
-        event = {
-            "trigger": reason,
-            "time_s": float(time_s),
-            "precondition": dict(precondition),
-            "can_pos_robot_base": np.asarray(observation["can_pos_robot_base"], dtype=float).tolist(),
-            "eef_pos_robot_base": np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float).tolist(),
-            "can_speed_m_s": self._public_linear_speed_m_s,
-            "budget_before": self.profile.recovery_budget - self.recovery_count,
-        }
+        self._record_event(self._event_type(reason), observation, time_s, "evaluate_recovery")
         self._recovery_start_eef_position = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float).copy()
         brake = np.clip(
             self.profile.recovery_velocity_brake_s * self._public_eef_velocity_m_s,
@@ -2243,28 +2291,18 @@ class TaskExecutive:
         self._recovery_lower_goal = self._recovery_reverse_goal.copy()
         if lower_distance > 0.0 and self._prelift_start_eef_position is None:
             self._recovery_lower_goal = self._recovery_start_eef_position - target_rotation[:, 2] * lower_distance
-        if precondition["edge_unrecoverable"]:
-            self.phase = TaskPhase.FAILED
-            self.failure_reason = "public_object_edge_unrecoverable"
-            self.recovery_transition = "edge_unrecoverable_stop"
-            event["selected_transition"] = self.recovery_transition
+        if reason == "workspace_risk":
+            self._abort(observation, time_s, "workspace_risk")
+        elif precondition["edge_unrecoverable"]:
+            self._abort(observation, time_s, "edge_risk")
         elif not precondition["recoverable"]:
-            self.phase = TaskPhase.FAILED
-            self.failure_reason = "public_object_unrecoverable"
-            self.recovery_transition = "unrecoverable_stop"
-            event["selected_transition"] = self.recovery_transition
+            self._abort(observation, time_s, "workspace_risk")
         elif self.recovery_count < self.profile.recovery_budget:
             self.recovery_count += 1
             self.recovery_transition = "recovery_hold_close"
-            event["selected_transition"] = self.recovery_transition
             self._transition(TaskPhase.RECOVERY_HOLD, time_s)
         else:
-            self.phase = TaskPhase.FAILED
-            self.failure_reason = reason
-            self.recovery_transition = "recovery_exhausted"
-            event["selected_transition"] = self.recovery_transition
-        event["budget_after"] = self.profile.recovery_budget - self.recovery_count
-        self._recovery_events.append(event)
+            self._abort(observation, time_s, reason)
 
     def _target_base(self, observation: Mapping[str, Any], local_position: np.ndarray) -> np.ndarray:
         return target_local_to_robot_base(observation, local_position)
@@ -2446,12 +2484,9 @@ class TaskExecutive:
 
     def _advance(self, observation: Mapping[str, Any], time_s: float) -> None:
         elapsed = float(time_s) - self.phase_entered_s
-        if time_s > self.profile.episode_deadline_s:
-            self.phase, self.failure_reason = TaskPhase.FAILED, "episode_deadline"
-            return
         can = np.asarray(observation["can_pos_robot_base"], dtype=float)
         if float(np.linalg.norm(can)) > self.profile.public_workspace_radius_m:
-            self.phase, self.failure_reason = TaskPhase.FAILED, "public_object_out_of_workspace"
+            self._recover_or_fail(observation, time_s, "workspace_risk")
             return
         if (
             self._anchor_worktable_can_transform is not None
@@ -2626,11 +2661,15 @@ class TaskExecutive:
                 self._transition(TaskPhase.RECOVERY_OPEN, time_s)
             elif elapsed >= self.profile.recovery_settle_s:
                 state = self._public_recoverability(observation)
-                self.phase = TaskPhase.FAILED
-                self.failure_reason = (
-                    "public_object_edge_unrecoverable" if state["edge_unrecoverable"] else "public_object_unrecoverable"
-                )
-                self.recovery_transition = "recovery_settle_failed"
+                self._record_event("recovery_settle_timeout", observation, time_s, "reassess_recovery")
+                # A local settle deadline is not an episode deadline.  Keep
+                # the same physical rollout alive whenever a safe primitive
+                # remains; the global runner horizon is the only budget.
+                if state["recoverable"]:
+                    self.phase_entered_s = float(time_s)
+                    self.recovery_transition = "recovery_wait_continue"
+                else:
+                    self._abort(observation, time_s, "edge_risk" if state["edge_unrecoverable"] else "workspace_risk")
         elif self.phase == TaskPhase.RECOVERY_OPEN and elapsed >= self.profile.recovery_open_s:
             self._transition(TaskPhase.CLEARANCE_RETREAT, time_s)
         elif (
@@ -2649,7 +2688,7 @@ class TaskExecutive:
     def command(self, observation: Mapping[str, Any], time_s: float) -> tuple[np.ndarray, float]:
         if not np.isfinite(float(time_s)) or time_s < 0.0:
             raise ShakeBenchOracleError("time_s must be finite and non-negative")
-        if self.phase in {TaskPhase.COMPLETE, TaskPhase.FAILED}:
+        if self.phase in {TaskPhase.COMPLETE, TaskPhase.ABORTED}:
             return np.zeros(6), self.profile.gripper_open_action
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         if eef.shape != (3,) or not np.all(np.isfinite(eef)):
@@ -2664,7 +2703,7 @@ class TaskExecutive:
             )
         self._update_public_kinematics(observation, float(time_s))
         self._advance(observation, float(time_s))
-        if self.phase is TaskPhase.FAILED:
+        if self.phase is TaskPhase.ABORTED:
             return np.zeros(6), self.profile.gripper_open_action
         if self.phase == TaskPhase.SETTLE:
             return np.zeros(6), self.profile.gripper_open_action
@@ -2689,6 +2728,7 @@ class TaskExecutive:
                 },
                 "phase_entered_s": self.phase_entered_s,
                 "failure_reason": self.failure_reason,
+                "abort_reason": self.abort_reason,
                 "last_recovery_reason": self.last_recovery_reason,
                 "recovery_count": self.recovery_count,
                 "recovery_transition": self.recovery_transition,
@@ -2730,6 +2770,17 @@ class TaskExecutive:
             }
         )
 
+    @property
+    def controller_events(self) -> list[dict[str, Any]]:
+        """Canonical event sequence for the runner artifact."""
+
+        return [dict(event) for event in self._recovery_events]
+
+    def record_evaluator_not_latched(self, observation: Mapping[str, Any], time_s: float) -> None:
+        """Expose the post-verify diagnostic without allowing it to terminate."""
+
+        self._record_event("evaluator_not_latched_after_public_verify", observation, time_s, "continue_rollout")
+
 
 class ShakeBenchOracleController:
     """One public-input controller emitting robosuite's normalized 7D action."""
@@ -2762,6 +2813,12 @@ class ShakeBenchOracleController:
     @property
     def task_context_sha256(self) -> str:
         return self.task_context.sha256
+
+    @property
+    def abort_requested(self) -> bool:
+        """Return the controller's structured decision to stop acting."""
+
+        return self.executive.abort_reason is not None
 
     @property
     def controller_context_hash(self) -> str:

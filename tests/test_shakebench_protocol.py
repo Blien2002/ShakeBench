@@ -3,6 +3,8 @@
 import json
 
 from robosuite import models
+from robosuite.utils.shakebench_oracle import OracleControllerProfile
+from robosuite.utils.shakebench_outcomes import outcome_contract_sha256
 from robosuite.utils.shakebench_committed_states import (
     KNEE_STATE_COUNT,
     KNEE_STATE_FILENAME,
@@ -32,6 +34,15 @@ def test_regeneration_is_exact_and_never_mutates_the_ten_dev_states():
     assert knee == build_committed_state_artifact("knee")
     assert all(state["state_id"].startswith("shakebench-official-v1-") for state in official["states"])
     assert all(state["state_id"].startswith("shakebench-knee-v1-") for state in knee["states"])
+
+
+def test_committed_states_bind_the_current_controller_and_outcome_contract():
+    root = models.assets_root
+    controller_sha256 = OracleControllerProfile().sha256
+    for filename in (OFFICIAL_STATE_FILENAME, KNEE_STATE_FILENAME):
+        payload = json.loads(open(root + "/" + filename, encoding="utf-8").read())
+        assert payload["authority_hashes"]["controller_profile_sha256"] == controller_sha256
+        assert payload["authority_hashes"]["outcome_contract_sha256"] == outcome_contract_sha256()
 
 
 def test_future_outcomes_and_hash_changes_fail_closed(tmp_path):

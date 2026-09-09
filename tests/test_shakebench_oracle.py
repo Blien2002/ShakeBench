@@ -441,7 +441,13 @@ def test_verify_uses_public_target_geometry_for_placement_recovery():
     observation["can_pos_robot_base"] = np.array((0.5, 0.5, 0.04), dtype=np.float32)
     controller.action(observation, time_s=controller.profile.verify_s)
     assert controller.executive.phase is TaskPhase.FAILED
-    assert controller.executive.failure_reason == "public_object_edge_unrecoverable"
+    assert controller.executive.failure_reason == "policy_abort"
+    assert controller.executive.abort_reason == "edge_risk"
+
+
+def test_unknown_recovery_reason_fails_closed_instead_of_mislabeling_the_event():
+    with pytest.raises(ShakeBenchOracleError, match="unregistered recovery reason"):
+        ShakeBenchOracleController("V0").executive._event_type("typo")
 
 
 def test_phase07_has_a_frozen_unselected_ten_state_dev_manifest():

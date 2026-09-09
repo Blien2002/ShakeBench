@@ -98,13 +98,99 @@ def verify_batch_aggregate(path: str | Path) -> dict[str, Any]:
             errors.append("aggregate payload hash")
     except (TypeError, ValueError):
         errors.append("aggregate payload hash")
-    for field in ("records", "resource_before", "resource_after", "incomplete_groups"):
+    for field in (
+        "status",
+        "worker_count",
+        "affinity",
+        "job_count",
+        "completed_count",
+        "records",
+        "resource_before",
+        "resource_after",
+        "incomplete_groups",
+    ):
         if field not in payload:
             errors.append(f"aggregate {field}")
-    if not isinstance(payload.get("records"), list):
+    records = payload.get("records")
+    if not isinstance(records, list):
         errors.append("aggregate records")
-    elif any(not isinstance(record, Mapping) for record in payload["records"]):
-        errors.append("aggregate records")
+    else:
+        try:
+            if int(payload.get("job_count")) <= 0 or int(payload.get("completed_count")) != len(records):
+                errors.append("aggregate completion counts")
+        except (TypeError, ValueError):
+            errors.append("aggregate completion counts")
+        incomplete = payload.get("incomplete_groups")
+        if not isinstance(incomplete, list) or any(not isinstance(item, str) for item in incomplete):
+            errors.append("aggregate incomplete groups")
+            incomplete_ids = set()
+        else:
+            incomplete_ids = set(incomplete)
+        seen_job_ids = set()
+        seen_indexes = set()
+        for index, record in enumerate(records):
+            prefix = f"aggregate record[{index}]"
+            required = {
+                "schema_id",
+                "schema_version",
+                "job_id",
+                "job_index",
+                "science",
+                "execution",
+                "semantic_passed",
+                "retry_ledger",
+                "resumed",
+                "payload_sha256",
+            }
+            if not isinstance(record, Mapping) or not required.issubset(record):
+                errors.append(prefix + " schema")
+                continue
+            if (
+                record.get("schema_id") != SCHEMA_ID + ".job"
+                or record.get("schema_version") != SCHEMA_VERSION
+                or not isinstance(record.get("job_id"), str)
+                or not isinstance(record.get("job_index"), int)
+                or not isinstance(record.get("science"), Mapping)
+                or not isinstance(record.get("execution"), Mapping)
+                or not isinstance(record.get("semantic_passed"), bool)
+                or record.get("payload_sha256") != job_record_payload_hash(record)
+            ):
+                errors.append(prefix + " identity")
+            if record.get("job_id") in seen_job_ids or record.get("job_index") in seen_indexes:
+                errors.append(prefix + " duplicate")
+            seen_job_ids.add(record.get("job_id"))
+            seen_indexes.add(record.get("job_index"))
+            ledger = record.get("retry_ledger")
+            if (
+                not isinstance(ledger, Mapping)
+                or ledger.get("schema_id") != RETRY_LEDGER_SCHEMA_ID
+                or ledger.get("schema_version") != SCHEMA_VERSION
+                or ledger.get("job_id") != record.get("job_id")
+                or ledger.get("science") != record.get("science")
+                or not isinstance(ledger.get("events"), list)
+                or ledger.get("payload_sha256") != _hash({key: value for key, value in ledger.items() if key != "payload_sha256"})
+            ):
+                errors.append(prefix + " retry ledger")
+            if record.get("semantic_passed") is True:
+                output = record.get("output")
+                if (
+                    not isinstance(output, str)
+                    or not Path(output).is_file()
+                    or record.get("output_sha256") != hashlib.sha256(Path(output).read_bytes()).hexdigest()
+                ):
+                    errors.append(prefix + " output")
+            else:
+                group_status = record.get("group_status")
+                if group_status not in {"failed", "incomplete"}:
+                    errors.append(prefix + " group status")
+                elif group_status == "incomplete" and record.get("job_id") not in incomplete_ids:
+                    errors.append(prefix + " incomplete binding")
+        if incomplete_ids != {
+            record.get("job_id")
+            for record in records
+            if isinstance(record, Mapping) and record.get("group_status") == "incomplete"
+        }:
+            errors.append("aggregate incomplete groups")
     return {"passed": not errors, "errors": errors, "payload": dict(payload)}
 
 
@@ -139,6 +225,26 @@ def classify_execution_exception(exc: BaseException) -> str:
     if isinstance(exc, OSError) and exc.errno in RECOVERABLE_ERRNOS:
         return "infrastructure"
     return "contract"
+
+
+def artifact_requires_exact_retry(payload: Mapping[str, Any]) -> bool:
+    """Return whether a semantically valid artifact contains invalid execution.
+
+    Invalid execution is neither a task failure nor a successful completed job:
+    the exact immutable job must be attempted once more before the state block
+    can be admitted to a scorecard.
+    """
+
+    episodes = payload.get("episodes")
+    return bool(
+        isinstance(episodes, list)
+        and any(
+            isinstance(episode, Mapping)
+            and episode.get("episode_validity") == "invalid"
+            and episode.get("termination_cause") == "invalid_execution"
+            for episode in episodes
+        )
+    )
 
 
 def build_retry_ledger(job: Mapping[str, Any], events: list[Mapping[str, Any]]) -> dict[str, Any]:
@@ -355,6 +461,7 @@ def _resume_record(job: Mapping[str, Any], output: Path, record_path: Path) -> d
         return None
     try:
         record = json.loads(record_path.read_text(encoding="utf-8"))
+        output_payload = json.loads(output.read_text(encoding="utf-8"))
         from robosuite.scripts.shakebench_run_oracle import verify_run_artifact
 
         verdict = verify_run_artifact(output)
@@ -370,6 +477,7 @@ def _resume_record(job: Mapping[str, Any], output: Path, record_path: Path) -> d
         or record.get("output_sha256") != hashlib.sha256(output.read_bytes()).hexdigest()
         or record.get("semantic_passed") is not True
         or not verdict["passed"]
+        or artifact_requires_exact_retry(output_payload)
     ):
         return None
     resumed = mark_job_record_resumed(record)
@@ -451,6 +559,19 @@ def _run_job(job: Mapping[str, Any], output_dir: Path, resume: bool, state_asset
             verdict = verify_run_artifact(attempt_path)
             if exit_code != 0 or not verdict["passed"]:
                 raise RuntimeError(f"oracle artifact failed: exit={exit_code} errors={verdict['errors']}")
+            artifact = json.loads(attempt_path.read_text(encoding="utf-8"))
+            if artifact_requires_exact_retry(artifact):
+                retry_events.append(
+                    {
+                        "attempt": attempt,
+                        "classification": "invalid_execution",
+                        "science_identity_unchanged": True,
+                    }
+                )
+                _write_retry_ledger(retry_ledger_path, job, retry_events)
+                if attempt == 1:
+                    continue
+                break
             attempt_path.replace(output)
             duration = time.monotonic() - started
             record = {

@@ -41,6 +41,16 @@ from robosuite.utils.shakebench_oracle import (
     WorktableTaskContext,
     profile_for_diagnostic_mode,
 )
+from robosuite.utils.shakebench_outcomes import (
+    TERMINATION_CAUSES,
+    OutcomeContractError,
+    legacy_projection,
+    outcome_contract,
+    outcome_contract_sha256,
+    resolve_termination_cause,
+    validate_controller_events,
+    validate_outcome,
+)
 from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, TIER_POLICY_KEYS, observation_contract_for_tier
 from robosuite.utils.shakebench_scene import load_scene_visual_config
 
@@ -50,9 +60,11 @@ class OracleRunError(RuntimeError):
 
 
 RUN_SCHEMA_ID = "shakebench.phase07.oracle_run"
-RUN_SCHEMA_VERSION = 5
+RUN_SCHEMA_VERSION = 6
 EPISODE_SCHEMA_ID = "shakebench.phase07.oracle_episode"
-EPISODE_SCHEMA_VERSION = 5
+EPISODE_SCHEMA_VERSION = 6
+LEGACY_RUN_SCHEMA_VERSION = 5
+LEGACY_EPISODE_SCHEMA_VERSION = 5
 DETERMINISM_SCHEMA_ID = "shakebench.phase07.determinism_manifest"
 DETERMINISM_SCHEMA_VERSION = 5
 DEV_STATE_PRE_HISTORY_REWRITE_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
@@ -64,33 +76,10 @@ DEV_STATE_ANCHOR_REWRITE = {
 DEV_STATE_ANCHOR_COMMIT = DEV_STATE_REWRITTEN_COMMIT
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 OFFICIAL_PHYSICS_PROFILE_SHA256 = "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
-TERMINATION_CATEGORIES = {
-    "environment_success",
-    "controller_failed",
-    "physics_violation",
-    "nonfinite_action_or_state",
-    "post_verify_timeout",
-    "horizon_exhausted",
-}
-FAILURE_REASONS = {
-    "controller_failed",
-    "episode_deadline",
-    "phase_deadline",
-    "public_grasp_loss",
-    "public_grasp_slip",
-    "public_grasp_not_established",
-    "public_object_unrecoverable",
-    "public_object_edge_unrecoverable",
-    "public_object_out_of_workspace",
-    "public_anchor_drift",
-    "public_tool_clearance",
-    "public_placement_loss",
-    "public_placement_rebound",
-    "physics_violation",
-    "nonfinite_action_or_state",
-    "evaluator_not_latched_after_public_verify",
-    "horizon_exhausted",
-}
+# Legacy verifier exports retain these names, but the outcome contract is the
+# sole registry for v6 termination causes.
+TERMINATION_CATEGORIES = TERMINATION_CAUSES
+FAILURE_REASONS = TERMINATION_CAUSES
 
 
 def _json_ready(value: Any) -> Any:
@@ -331,18 +320,31 @@ def scene_visual_identity(scene_config) -> dict[str, Any]:
 
 
 def geometry_authority_identity(geometry_profile: str, *, allow_unverified: bool = False) -> dict[str, Any]:
-    """Return the only serialized geometry authorization identity."""
+    """Return the v6 geometry and outcome authority for a rollout."""
 
     if geometry_profile == "canonical":
-        return {"kind": "canonical", "scoreable": True}
+        return {
+            "kind": "canonical",
+            "scoreable": True,
+            "controller_profile_sha256": OracleControllerProfile().sha256,
+            "outcome_contract_sha256": outcome_contract_sha256(),
+        }
     try:
-        return {"kind": "phase07_5a", "scoreable": True, "authority": dict(verify_direct_mount_authority())}
+        return {
+            "kind": "phase08r",
+            "scoreable": True,
+            "prior_geometry_authority": dict(verify_direct_mount_authority()),
+            "controller_profile_sha256": OracleControllerProfile().sha256,
+            "outcome_contract_sha256": outcome_contract_sha256(),
+        }
     except DirectMountAuthorityError as exc:
         if allow_unverified:
             return {
-                "kind": "phase07_5a",
+                "kind": "phase08r",
                 "scoreable": False,
                 "verification": "not_authorized_for_scoreable_run",
+                "controller_profile_sha256": OracleControllerProfile().sha256,
+                "outcome_contract_sha256": outcome_contract_sha256(),
             }
         raise OracleRunError(f"direct-mount authority failed: {exc}") from exc
 
@@ -427,6 +429,8 @@ def _finite_json(value: Any) -> bool:
         return all(_finite_json(item) for item in value.values())
     if isinstance(value, (list, tuple)):
         return all(_finite_json(item) for item in value)
+    if isinstance(value, np.ndarray):
+        return bool(np.all(np.isfinite(value)))
     if isinstance(value, (float, np.floating)):
         return bool(np.isfinite(float(value)))
     if isinstance(value, (int, np.integer, bool, np.bool_)) or value is None or isinstance(value, str):
@@ -542,26 +546,69 @@ def run_episode(
         raw_model = getattr(env.sim.model, "_model", env.sim.model)
         actuator_metadata = _actuator_metadata_from_model(raw_model)
         trace = []
-        failure_reason = None
-        termination_category = None
-        complete_since_step = None
+        metrics: Mapping[str, Any] | dict[str, Any] | None = None
+        episode_validity = "valid"
+        score_outcome: str | None = None
+        termination_cause: str | None = None
+        complete_event_recorded = False
         for step in range(horizon_steps):
             policy_observation = observation
-            normalized = controller.action(observation, time_s=step / profile.policy_rate_hz)
+            if not _finite_json(policy_observation):
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
+                break
+            try:
+                normalized = controller.action(observation, time_s=step / profile.policy_rate_hz)
+            except ShakeBenchOracleError:
+                # An explicit controller-contract error on a finite public
+                # observation is a policy result, not an infrastructure retry.
+                termination_cause = "policy_error"
+                score_outcome = "unsuccessful"
+                break
+            except Exception:
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
+                break
+            if not np.all(np.isfinite(normalized)):
+                termination_cause = "policy_error"
+                score_outcome = "unsuccessful"
+                break
+            if controller.executive.phase.value == "complete" and not complete_event_recorded:
+                controller.executive.record_evaluator_not_latched(
+                    observation, step / profile.policy_rate_hz
+                )
+                complete_event_recorded = True
             decoded = normalized.copy()
             decoded[:3] *= profile.position_action_range_m
             decoded[3:6] *= profile.orientation_action_range_rad
             clipped = np.clip(normalized, -1.0, 1.0)
-            observation, _, _, _ = env.step(clipped)
+            try:
+                observation, _, _, _ = env.step(clipped)
+            except Exception:
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
+                break
             applied = np.asarray(env.sim.data.ctrl, dtype=float).copy()
             actuator_force = np.asarray(env.sim.data.actuator_force, dtype=float).copy()
             if not (
-                np.all(np.isfinite(observation["can_pos_robot_base"]))
+                _finite_json(observation)
                 and np.all(np.isfinite(applied))
                 and np.all(np.isfinite(actuator_force))
             ):
-                failure_reason = "nonfinite_action_or_state"
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
                 break
+            try:
+                metrics_now = env.get_metrics()
+            except Exception:
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
+                break
+            metrics = metrics_now
+            task_rule_violation = bool(
+                metrics_now["max_illegal_penetration_m"]
+                >= env.physics_profile.physics["safety"]["maximum_illegal_penetration_m"]
+            )
             trace.append(
                 {
                     "step": step,
@@ -592,45 +639,58 @@ def run_episode(
                     "applied_actuator_force": actuator_force,
                     "applied_actuator_force_sha256": _digest(actuator_force),
                     "phase": controller.last_trace["phase"],
+                    "controller_events": controller.executive.controller_events,
+                    "recovery_count": controller.executive.recovery_count,
+                    "environment_success_latched": bool(metrics_now["success"]["passed"]),
+                    "task_rule_violation": task_rule_violation,
                 }
             )
-            metrics_now = env.get_metrics()
             if step_observer is not None:
                 step_observer(env, step, observation, controller)
-            if (
-                metrics_now["max_illegal_penetration_m"]
-                >= env.physics_profile.physics["safety"]["maximum_illegal_penetration_m"]
-            ):
-                failure_reason = "physics_violation"
-                termination_category = "physics_violation"
-                break
-            if metrics_now["success"]["passed"]:
-                termination_category = "environment_success"
-                break
-            if controller.executive.phase.value == "failed":
-                failure_reason = controller.executive.failure_reason or "controller_failed"
-                termination_category = "controller_failed"
+            termination_cause = resolve_termination_cause(
+                prior_cause=termination_cause,
+                task_rule_violation=task_rule_violation,
+                success_latched=bool(metrics_now["success"]["passed"]),
+                policy_abort=controller.abort_requested,
+                horizon_exhausted=False,
+            )
+            if termination_cause is not None:
+                score_outcome = "success" if termination_cause == "success_latched" else "unsuccessful"
                 break
             if controller.executive.phase.value == "complete":
-                if complete_since_step is None:
-                    complete_since_step = step
-                elif (step - complete_since_step) / profile.policy_rate_hz >= profile.completion_evaluator_settle_s:
-                    failure_reason = "evaluator_not_latched_after_public_verify"
-                    termination_category = "post_verify_timeout"
-                    break
-        metrics = env.get_metrics()
-        if not bool(metrics["success"]["passed"]) and failure_reason is None:
-            failure_reason = controller.executive.failure_reason or "horizon_exhausted"
-            termination_category = "horizon_exhausted"
-        if bool(metrics["success"]["passed"]):
-            termination_category = "environment_success"
-            failure_reason = None
-        if termination_category is None:
-            termination_category = "horizon_exhausted"
-        if not bool(metrics["success"]["passed"]) and not isinstance(failure_reason, str):
-            failure_reason = "horizon_exhausted"
-        if failure_reason is not None and failure_reason not in FAILURE_REASONS:
-            raise OracleRunError(f"unregistered failure reason: {failure_reason}")
+                continue
+        if metrics is None:
+            try:
+                metrics = env.get_metrics()
+            except Exception:
+                episode_validity = "invalid"
+                termination_cause = "invalid_execution"
+                metrics = {}
+        termination_cause = resolve_termination_cause(
+            prior_cause=termination_cause,
+            task_rule_violation=False,
+            success_latched=bool(metrics.get("success", {}).get("passed")),
+            policy_abort=False,
+            horizon_exhausted=True,
+        )
+        if score_outcome is None:
+            score_outcome = "success" if termination_cause == "success_latched" else "unsuccessful"
+        if episode_validity == "invalid":
+            score_outcome = None
+        try:
+            validate_outcome(
+                episode_validity=episode_validity,
+                score_outcome=score_outcome,
+                termination_cause=termination_cause,
+            )
+            validate_controller_events(controller.executive.controller_events)
+        except OutcomeContractError as exc:
+            raise OracleRunError(f"outcome contract violation: {exc}") from exc
+        success, failure_reason, termination_category = legacy_projection(
+            episode_validity=episode_validity,
+            score_outcome=score_outcome,
+            termination_cause=termination_cause,
+        )
         return {
             "schema_id": EPISODE_SCHEMA_ID,
             "schema_version": EPISODE_SCHEMA_VERSION,
@@ -652,8 +712,14 @@ def run_episode(
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
             "state_sha256": _digest(state),
-            "success": bool(metrics["success"]["passed"]),
-            "failure_reason": failure_reason or controller.executive.failure_reason,
+            "outcome_contract": outcome_contract(),
+            "outcome_contract_sha256": outcome_contract_sha256(),
+            "episode_validity": episode_validity,
+            "score_outcome": score_outcome,
+            "termination_cause": termination_cause,
+            "controller_events": controller.executive.controller_events,
+            "success": success,
+            "failure_reason": failure_reason,
             "termination_category": termination_category,
             "actuators": actuator_metadata,
             "metrics": metrics,
@@ -762,7 +828,7 @@ def main(argv: list[str] | None = None) -> int:
                 and partial.get("schema_version") == RUN_SCHEMA_VERSION
                 and partial.get("tier") == args.tier
                 and float(partial.get("gamma_commanded")) == float(args.gamma)
-                and partial.get("controller_profile") == profile.to_dict()
+                and _values_equal(partial.get("controller_profile"), profile.to_dict(), atol=0.0)
                 and partial.get("diagnostic_mode") == profile.diagnostic_mode
                 and partial.get("evaluator_post_complete_settle_s") == profile.completion_evaluator_settle_s
                 and partial.get("scene_visual") == scene_identity
@@ -812,6 +878,8 @@ def main(argv: list[str] | None = None) -> int:
             "geometry_profile": geometry_payload,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
+            "outcome_contract": outcome_contract(),
+            "outcome_contract_sha256": outcome_contract_sha256(),
             "episodes": episodes,
         }
         partial_payload["run_id"] = _digest(
@@ -823,6 +891,7 @@ def main(argv: list[str] | None = None) -> int:
                 "geometry_profile": geometry_payload,
                 "geometry_authority": geometry_authority,
                 "scoreable": scoreable,
+                "outcome_contract_sha256": outcome_contract_sha256(),
                 "state_ids": [episode["state_id"] for episode in episodes],
                 "state_authority": state_asset["authority"],
             }
@@ -849,6 +918,8 @@ def main(argv: list[str] | None = None) -> int:
         "geometry_profile": geometry_payload,
         "geometry_authority": geometry_authority,
         "scoreable": scoreable,
+        "outcome_contract": outcome_contract(),
+        "outcome_contract_sha256": outcome_contract_sha256(),
         "episodes": episodes,
     }
     payload["run_id"] = _digest(
@@ -860,6 +931,7 @@ def main(argv: list[str] | None = None) -> int:
             "geometry_profile": geometry_payload,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
+            "outcome_contract_sha256": outcome_contract_sha256(),
             "state_ids": [episode["state_id"] for episode in episodes],
             "state_authority": payload["state_authority"],
         }
@@ -911,6 +983,22 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def _terminal_cause_from_trace(trace: list[Mapping[str, Any]]) -> str | None:
+    """Return the runner-priority terminal cause evidenced by the final row."""
+
+    if not trace:
+        return None
+    final = trace[-1]
+    phase = final.get("phase")
+    return resolve_termination_cause(
+        prior_cause=None,
+        task_rule_violation=final.get("task_rule_violation") is True,
+        success_latched=final.get("environment_success_latched") is True,
+        policy_abort=isinstance(phase, Mapping) and phase.get("phase") == "aborted",
+        horizon_exhausted=False,
+    )
+
+
 def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     """Semantically reverify a run without trusting stored summaries or hashes."""
 
@@ -921,8 +1009,14 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         return {"passed": False, "errors": [f"artifact read: {exc}"], "run_id": None}
     if not isinstance(payload, Mapping):
         return {"passed": False, "errors": ["run payload must be an object"], "run_id": None}
+    # Historical v5 evidence is intentionally verified as v5, never promoted
+    # to the outcome contract or mixed into a v6 score group.
+    if payload.get("schema_id") == RUN_SCHEMA_ID and payload.get("schema_version") == LEGACY_RUN_SCHEMA_VERSION:
+        return verify_legacy_run_artifact(payload)
     if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != RUN_SCHEMA_VERSION:
         errors.append("run schema")
+    if payload.get("outcome_contract") != outcome_contract() or payload.get("outcome_contract_sha256") != outcome_contract_sha256():
+        errors.append("outcome contract authority")
     required_top_level = {
         "schema_id",
         "schema_version",
@@ -937,6 +1031,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "geometry_profile",
         "geometry_authority",
         "scoreable",
+        "outcome_contract",
+        "outcome_contract_sha256",
         "episodes",
         "run_id",
         "payload_sha256",
@@ -1059,6 +1155,12 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             "geometry_profile",
             "geometry_authority",
             "scoreable",
+            "outcome_contract",
+            "outcome_contract_sha256",
+            "episode_validity",
+            "score_outcome",
+            "termination_cause",
+            "controller_events",
             "state_sha256",
             "success",
             "failure_reason",
@@ -1070,6 +1172,11 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         }
         if set(episode) != required_episode_fields:
             errors.append(prefix + " required fields")
+        if (
+            episode.get("outcome_contract") != outcome_contract()
+            or episode.get("outcome_contract_sha256") != outcome_contract_sha256()
+        ):
+            errors.append(prefix + " outcome contract authority")
         tier = episode.get("tier")
         if tier != payload.get("tier") or tier not in TIER_POLICY_KEYS:
             errors.append(prefix + " tier")
@@ -1085,6 +1192,15 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             state = states_by_id[state_id]
             if episode.get("state_sha256") != _digest(state):
                 errors.append(prefix + " state hash")
+            if committed_split is not None:
+                bindings = state.get("authority_hashes") if isinstance(state, Mapping) else None
+                if not isinstance(bindings, Mapping):
+                    errors.append(prefix + " committed outcome authority")
+                else:
+                    if bindings.get("controller_profile_sha256") != expected_profile["profile_sha256"]:
+                        errors.append(prefix + " committed controller authority")
+                    if bindings.get("outcome_contract_sha256") != outcome_contract_sha256():
+                        errors.append(prefix + " committed outcome authority")
         if not _values_equal(episode.get("controller_profile"), expected_profile, atol=1.0e-12):
             errors.append(prefix + " controller profile")
         try:
@@ -1132,7 +1248,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 errors.append(prefix + " program binding")
         _compare_actuator_metadata(episode.get("actuators"), errors)
         trace = episode.get("trace")
-        if not isinstance(trace, list) or not trace:
+        if not isinstance(trace, list) or (not trace and episode.get("episode_validity") != "invalid"):
             errors.append(prefix + " trace")
             trace = []
         try:
@@ -1182,11 +1298,19 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 "applied_actuator_force",
                 "applied_actuator_force_sha256",
                 "phase",
+                "controller_events",
+                "recovery_count",
+                "environment_success_latched",
+                "task_rule_violation",
             }
             if set(row) != required_row_keys:
                 errors.append(row_prefix + " schema")
             if row.get("step") != row_index:
                 errors.append(row_prefix + " step sequence")
+            if not isinstance(row.get("environment_success_latched"), bool):
+                errors.append(row_prefix + " environment success status")
+            if not isinstance(row.get("task_rule_violation"), bool):
+                errors.append(row_prefix + " task-rule status")
             try:
                 policy_time = float(row["policy_time_s"])
                 if not np.isclose(policy_time, row_index / expected_profile["policy_rate_hz"], rtol=0.0, atol=1.0e-12):
@@ -1229,6 +1353,10 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                     errors.append(row_prefix + " control-law recomputation")
                 if not _values_equal(row["phase"], recomputed_trace["phase"], atol=1.0e-6):
                     errors.append(row_prefix + " phase recomputation")
+                if not _values_equal(row["controller_events"], controller.executive.controller_events, atol=1.0e-6):
+                    errors.append(row_prefix + " controller events recomputation")
+                if row.get("recovery_count") != controller.executive.recovery_count:
+                    errors.append(row_prefix + " recovery count recomputation")
                 if not _values_equal(row["relative_kinematics"], recomputed_trace["relative_kinematics"], atol=1.0e-6):
                     errors.append(row_prefix + " relative kinematics recomputation")
                 for trace_key in (
@@ -1303,15 +1431,42 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         success = episode.get("success")
         termination = episode.get("termination_category")
         failure = episode.get("failure_reason")
-        if not isinstance(success, bool):
-            errors.append(prefix + " success type")
-        if termination not in TERMINATION_CATEGORIES:
-            errors.append(prefix + " termination category")
-        if success is True and (termination != "environment_success" or failure is not None):
-            errors.append(prefix + " success/failure integrity")
-        if success is False and (not isinstance(failure, str) or failure not in FAILURE_REASONS):
-            errors.append(prefix + " failure integrity")
-        if not isinstance(episode.get("metrics"), Mapping) or not _finite_json(episode.get("metrics")):
+        try:
+            validate_outcome(
+                episode_validity=episode.get("episode_validity"),
+                score_outcome=episode.get("score_outcome"),
+                termination_cause=episode.get("termination_cause"),
+            )
+            validate_controller_events(episode.get("controller_events"))
+            projected = legacy_projection(
+                episode_validity=episode["episode_validity"],
+                score_outcome=episode["score_outcome"],
+                termination_cause=episode["termination_cause"],
+            )
+            if (success, failure, termination) != projected:
+                errors.append(prefix + " legacy outcome projection")
+        except (OutcomeContractError, KeyError):
+            errors.append(prefix + " outcome integrity")
+        try:
+            trace_cause = _terminal_cause_from_trace(trace)
+            recorded_cause = episode.get("termination_cause")
+            horizon_steps = int(episode.get("horizon_steps"))
+            if recorded_cause in {"task_rule_violation", "success_latched", "policy_abort"}:
+                if trace_cause != recorded_cause:
+                    errors.append(prefix + " terminal trace evidence")
+            elif recorded_cause == "horizon_exhausted":
+                if trace_cause is not None or len(trace) != horizon_steps:
+                    errors.append(prefix + " horizon trace evidence")
+            elif recorded_cause in {"policy_error", "invalid_execution"}:
+                if len(trace) >= horizon_steps:
+                    errors.append(prefix + " early terminal trace evidence")
+        except (TypeError, ValueError):
+            errors.append(prefix + " terminal trace evidence")
+        if not _values_equal(episode.get("controller_events"), controller.executive.controller_events, atol=1.0e-6):
+            errors.append(prefix + " controller event ledger")
+        if not isinstance(episode.get("metrics"), Mapping) or (
+            episode.get("episode_validity") != "invalid" and not _finite_json(episode.get("metrics"))
+        ):
             errors.append(prefix + " metrics schema/finite")
     if expected_ids != sorted(expected_ids):
         errors.append("state ordering")
@@ -1322,6 +1477,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "state_ids": expected_ids,
         "geometry_authority": payload.get("geometry_authority"),
         "scoreable": payload.get("scoreable"),
+        "outcome_contract_sha256": payload.get("outcome_contract_sha256"),
     }
     run_id_basis["scene_visual"] = payload.get("scene_visual")
     run_id_basis["geometry_profile"] = payload.get("geometry_profile")
@@ -1338,6 +1494,46 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     }
 
 
+def verify_legacy_run_artifact(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Read-only verifier for pre-08R artifacts; it never reinterprets them."""
+
+    errors: list[str] = []
+    if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != LEGACY_RUN_SCHEMA_VERSION:
+        errors.append("legacy run schema")
+    if "outcome_contract" in payload or "outcome_contract_sha256" in payload:
+        errors.append("legacy/new schema mixture")
+    copied = dict(payload)
+    expected_hash = copied.pop("payload_sha256", None)
+    try:
+        if expected_hash != _digest(copied):
+            errors.append("legacy payload digest")
+    except (TypeError, ValueError):
+        errors.append("legacy payload digest")
+    episodes = payload.get("episodes")
+    if not isinstance(episodes, list) or not episodes:
+        errors.append("legacy episodes")
+        episodes = []
+    for index, episode in enumerate(episodes):
+        prefix = f"episode[{index}]"
+        if not isinstance(episode, Mapping) or episode.get("schema_version") != LEGACY_EPISODE_SCHEMA_VERSION:
+            errors.append(prefix + " legacy schema")
+            continue
+        if any(key in episode for key in ("episode_validity", "score_outcome", "termination_cause", "controller_events")):
+            errors.append(prefix + " legacy/new schema mixture")
+        trace = episode.get("trace")
+        try:
+            if not isinstance(trace, list) or episode.get("trace_sha256") != _digest(trace):
+                errors.append(prefix + " legacy trace digest")
+        except (TypeError, ValueError):
+            errors.append(prefix + " legacy trace digest")
+    return {
+        "passed": not errors,
+        "errors": sorted(set(errors)),
+        "run_id": payload.get("run_id"),
+        "legacy_schema": True,
+    }
+
+
 def _manifest_trace_projection(payload: Mapping[str, Any]) -> list[Any]:
     episodes = payload.get("episodes", [])
     return [
@@ -1346,6 +1542,10 @@ def _manifest_trace_projection(payload: Mapping[str, Any]) -> list[Any]:
             "tier": episode.get("tier"),
             "gamma_commanded": episode.get("gamma_commanded"),
             "success": episode.get("success"),
+            "episode_validity": episode.get("episode_validity"),
+            "score_outcome": episode.get("score_outcome"),
+            "termination_cause": episode.get("termination_cause"),
+            "controller_events": episode.get("controller_events"),
             "failure_reason": episode.get("failure_reason"),
             "termination_category": episode.get("termination_category"),
             "scene_visual": episode.get("scene_visual"),
@@ -1479,6 +1679,8 @@ def verify_determinism_manifest(path: str | Path) -> dict[str, Any]:
                 "geometry_profile",
                 "geometry_authority",
                 "scoreable",
+                "outcome_contract",
+                "outcome_contract_sha256",
             ):
                 if not _values_equal(payload.get(key), first.get(key), atol=0.0):
                     errors.append(f"binding mismatch {key} record[{index}]")

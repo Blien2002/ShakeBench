@@ -18,6 +18,8 @@ from typing import Any
 from robosuite import models
 from robosuite.utils.shakebench_artifacts import payload_hash, write_json_atomic
 from robosuite.utils.shakebench_dev_states import PHASE07_DEV_STATE_FILENAME, verify_phase07_dev_state_artifact
+from robosuite.utils.shakebench_oracle import OracleControllerProfile
+from robosuite.utils.shakebench_outcomes import outcome_contract_sha256
 
 
 PHASE08_STATE_SCHEMA_ID = "shakebench.phase08.committed_states"
@@ -126,7 +128,11 @@ def _authority_bindings() -> dict[str, str]:
     return {
         "science_authority_sha256": authority_sha256,
         "physics_profile_sha256": str(authority["official_physics_profile_sha256"]),
-        "controller_profile_sha256": str(authority["controller_profile_sha256"]),
+        # Phase 7.5A scene evidence remains a historical binding.  Phase 08R
+        # freezes the current controller and outcome contract independently
+        # into the committed state authority used by future measurements.
+        "controller_profile_sha256": OracleControllerProfile().sha256,
+        "outcome_contract_sha256": outcome_contract_sha256(),
         "geometry_profile_sha256": str(authority["geometry_payload_sha256"]),
         "scene_visual_sha256": str(authority["scene_sha256"]),
         "runtime_contract_sha256": hashlib.sha256(runtime_path.read_bytes()).hexdigest(),

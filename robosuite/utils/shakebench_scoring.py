@@ -17,9 +17,15 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from robosuite.utils.shakebench_outcomes import (
+    OutcomeContractError,
+    outcome_contract_sha256,
+    validate_outcome,
+)
+
 
 SCORECARD_SCHEMA_ID = "shakebench.phase08.scorecard"
-SCORECARD_SCHEMA_VERSION = 1
+SCORECARD_SCHEMA_VERSION = 2
 RUN_MANIFEST_SCHEMA_ID = "shakebench.phase08.run_manifest"
 EPISODE_RESULT_SCHEMA_ID = "shakebench.phase08.episode_result"
 _TIERS = ("V0", "V1", "V2", "V3")
@@ -71,6 +77,10 @@ class EpisodeResult:
     metrics: Mapping[str, Any]
     raw_result_sha256: str
     semantic_verifier_verdict: Mapping[str, Any]
+    episode_validity: str = "valid"
+    score_outcome: str | None = "unsuccessful"
+    termination_cause: str = "horizon_exhausted"
+    outcome_contract_sha256: str | None = None
 
     @classmethod
     def from_verified_raw(cls, raw: Mapping[str, Any], semantic_verifier_verdict: Mapping[str, Any]) -> "EpisodeResult":
@@ -118,12 +128,20 @@ class EpisodeResult:
         gamma = float(raw["gamma_commanded"])
         if not math.isfinite(gamma) or gamma < 0:
             raise ScorecardError("invalid gamma")
-        if raw["success"] and (
-            raw["failure_reason"] is not None or raw["termination_category"] != "environment_success"
-        ):
-            raise ScorecardError("success/failure integrity")
-        if not raw["success"] and not isinstance(raw["failure_reason"], str):
-            raise ScorecardError("failure denominator integrity")
+        # Small synthetic callers from Phase 08 can still use the legacy
+        # projection; new raw artifacts must provide the orthogonal fields.
+        validity = raw.get("episode_validity", "valid")
+        outcome = raw.get("score_outcome", "success" if raw["success"] else "unsuccessful")
+        cause = raw.get(
+            "termination_cause",
+            "success_latched" if raw["success"] else str(raw["termination_category"]),
+        )
+        try:
+            validate_outcome(episode_validity=validity, score_outcome=outcome, termination_cause=cause)
+        except OutcomeContractError as exc:
+            raise ScorecardError("outcome integrity") from exc
+        if bool(raw["success"]) != (outcome == "success"):
+            raise ScorecardError("success projection integrity")
         # The full raw record is hashed so verdict files cannot silently detach
         # their score from their trace, metrics, or termination outcome.
         return cls(
@@ -146,6 +164,12 @@ class EpisodeResult:
             metrics=dict(raw["metrics"]),
             raw_result_sha256=_sha256(raw),
             semantic_verifier_verdict=dict(semantic_verifier_verdict),
+            episode_validity=str(validity),
+            score_outcome=outcome,
+            termination_cause=str(cause),
+            outcome_contract_sha256=(
+                str(raw["outcome_contract_sha256"]) if "outcome_contract_sha256" in raw else None
+            ),
         )
 
     def science_identity(self) -> dict[str, Any]:
@@ -162,6 +186,7 @@ class EpisodeResult:
             "task_context": self.task_context,
             "task_context_sha256": self.task_context_sha256,
             "actuators": list(self.actuators),
+            "outcome_contract_sha256": self.outcome_contract_sha256,
         }
 
 
@@ -299,6 +324,18 @@ def paired_bootstrap(left: Sequence[EpisodeResult], right: Sequence[EpisodeResul
 def _validate_comparable(rows: Sequence[EpisodeResult]) -> None:
     if not rows:
         raise ScorecardError("no episodes")
+    expected_outcome_contract = outcome_contract_sha256()
+    if any(row.outcome_contract_sha256 != expected_outcome_contract for row in rows):
+        raise ScorecardError("mixed, missing, or stale outcome contract authority")
+    for row in rows:
+        try:
+            validate_outcome(
+                episode_validity=row.episode_validity,
+                score_outcome=row.score_outcome,
+                termination_cause=row.termination_cause,
+            )
+        except OutcomeContractError as exc:
+            raise ScorecardError("outcome integrity") from exc
     identities = {
         (
             row.gamma_commanded,
@@ -308,11 +345,12 @@ def _validate_comparable(rows: Sequence[EpisodeResult]) -> None:
             row.scoreable,
             _canonical(row.controller_profile),
             _canonical(row.physics_authority),
+            row.outcome_contract_sha256,
         )
         for row in rows
     }
     if len(identities) != 1:
-        raise ScorecardError("mixed Gamma or runtime authority")
+        raise ScorecardError("mixed Gamma, outcome contract, or runtime authority")
     duplicates = Counter((row.tier, row.state_id) for row in rows)
     if any(count != 1 for count in duplicates.values()):
         raise ScorecardError("duplicate tier/state result")
@@ -338,6 +376,8 @@ def build_scorecard(
         raise ScorecardError("scorecard input must contain verified EpisodeResult values")
     episodes = list(rows)
     _validate_comparable(episodes)
+    if require_complete_tiers and any(row.episode_validity != "valid" for row in episodes):
+        raise ScorecardError("incomplete tier matrix: invalid execution requires exact-job retry")
     by_tier: dict[str, list[EpisodeResult]] = defaultdict(list)
     for row in episodes:
         by_tier[row.tier].append(row)
@@ -348,15 +388,27 @@ def build_scorecard(
         raise ScorecardError("tiers do not share a matched state block")
     per_tier = {}
     for tier, values in sorted(by_tier.items()):
-        successes = sum(row.success for row in values)
-        failures = Counter(row.failure_reason for row in values if not row.success)
-        rate = successes / len(values)
+        valid_values = [row for row in values if row.episode_validity == "valid"]
+        invalid_values = [row for row in values if row.episode_validity == "invalid"]
+        successes = sum(row.score_outcome == "success" for row in valid_values)
+        failures = Counter(row.termination_cause for row in valid_values if row.score_outcome == "unsuccessful")
+        if not valid_values:
+            raise ScorecardError("tier has no valid scientific observations")
+        rate = successes / len(valid_values)
         per_tier[tier] = {
             "success_count": successes,
             "success_rate": rate,
-            "wilson": wilson_interval(successes, len(values)),
-            "failure_reasons": dict(sorted(failures.items())),
-            "physics_violation_count": failures.get("physics_violation", 0),
+            "wilson": wilson_interval(successes, len(valid_values)),
+            "valid_failure_count": len(valid_values) - successes,
+            "invalid_execution_count": len(invalid_values),
+            "incomplete": bool(invalid_values),
+            "termination_causes": dict(sorted(failures.items())),
+            "failure_reasons": dict(sorted(failures.items())),  # compatibility report projection
+            "task_rule_violation_count": failures.get("task_rule_violation", 0),
+            "policy_abort_count": failures.get("policy_abort", 0),
+            "policy_error_count": failures.get("policy_error", 0),
+            "horizon_exhausted_count": failures.get("horizon_exhausted", 0),
+            "physics_violation_count": failures.get("task_rule_violation", 0),
             "ceiling_limited": rate > 0.90,
             "floor_limited": rate < 0.10,
         }
@@ -369,19 +421,36 @@ def build_scorecard(
         left_by_state = {row.state_id: row for row in by_tier[left]}
         right_by_state = {row.state_id: row for row in by_tier[right]}
         common = sorted(set(left_by_state).intersection(right_by_state))
-        a_only = sum(left_by_state[key].success and not right_by_state[key].success for key in common)
-        b_only = sum(right_by_state[key].success and not left_by_state[key].success for key in common)
-        comparison = paired_mde(discordant_a_only=a_only, discordant_b_only=b_only, total=len(common))
+        valid_common = [
+            key
+            for key in common
+            if left_by_state[key].episode_validity == "valid" and right_by_state[key].episode_validity == "valid"
+        ]
+        if not valid_common:
+            continue
+        paired_left = [left_by_state[key] for key in valid_common]
+        paired_right = [right_by_state[key] for key in valid_common]
+        a_only = sum(
+            left_by_state[key].score_outcome == "success" and right_by_state[key].score_outcome != "success"
+            for key in valid_common
+        )
+        b_only = sum(
+            right_by_state[key].score_outcome == "success" and left_by_state[key].score_outcome != "success"
+            for key in valid_common
+        )
+        comparison = paired_mde(discordant_a_only=a_only, discordant_b_only=b_only, total=len(valid_common))
         comparison.update(
             {
                 "delta_success_rate": (
-                    sum(right_by_state[key].success for key in common)
-                    - sum(left_by_state[key].success for key in common)
+                    sum(row.score_outcome == "success" for row in paired_right)
+                    - sum(row.score_outcome == "success" for row in paired_left)
                 )
-                / len(common),
+                / len(valid_common),
                 "n_gain": b_only,
                 "n_loss": a_only,
-                "paired_bootstrap": paired_bootstrap(by_tier[left], by_tier[right]),
+                "paired_bootstrap": paired_bootstrap(paired_left, paired_right),
+                "incomplete": len(valid_common) != len(common),
+                "invalid_execution_count": len(common) - len(valid_common),
             }
         )
         comparisons[f"{right}_minus_{left}"] = comparison
@@ -394,6 +463,7 @@ def build_scorecard(
         "per_tier": per_tier,
         "paired_comparisons": comparisons,
         "episode_raw_sha256s": sorted(row.raw_result_sha256 for row in episodes),
+        "outcome_contract_sha256": outcome_contract_sha256(),
     }
     result["payload_sha256"] = scorecard_payload_hash(result)
     return result
@@ -412,6 +482,8 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
     errors = []
     if payload.get("schema_id") != SCORECARD_SCHEMA_ID or payload.get("schema_version") != SCORECARD_SCHEMA_VERSION:
         errors.append("schema")
+    if payload.get("outcome_contract_sha256") != outcome_contract_sha256():
+        errors.append("outcome contract authority")
     try:
         if payload.get("payload_sha256") != scorecard_payload_hash(payload):
             errors.append("payload hash")
@@ -476,6 +548,7 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
                 "per_tier",
                 "paired_comparisons",
                 "episode_raw_sha256s",
+                "outcome_contract_sha256",
             ):
                 if payload.get(key) != recomputed.get(key):
                     errors.append("scorecard recomputation")

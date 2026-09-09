@@ -1,10 +1,11 @@
 {
   "artifact_lock": {
-    "payload_sha256": "56d0940cd66e9fe64d233de088fa47bbd8f1ee088b80dc82e0930242f8e493c0"
+    "payload_sha256": "bff360ddf3db3f6ceb6a346e48e73b33afa2a122faea096e90597ee2fc08d3bc"
   },
   "authority_hashes": {
-    "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+    "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
     "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+    "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
     "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
     "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
     "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -33,8 +34,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -63,7 +65,7 @@
         -0.14439211279453154
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "2e1e58eeaf4a8e2b2f436d4783e0c300013890f70a272cfcc6d77ecaf0653dba",
+      "canonical_payload_sha256": "82fb3fac391aaaaa43e53212ca3f250e04b9f75277d2d9dd202f937a61ea0bd1",
       "excitation_seed": 1175976271,
       "imu_seed": 3651749953,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -92,8 +94,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -122,7 +125,7 @@
         -0.14505702553069588
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c843267a182f82a9f55d9475a42823f8e237a0a7daa3bfe1de1fdd235d468c58",
+      "canonical_payload_sha256": "259f9a07714a03058b905c433c5897686323ae82e052e9ca83d427d1efd8228b",
       "excitation_seed": 1778136321,
       "imu_seed": 2462665273,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -151,8 +154,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -181,7 +185,7 @@
         -0.12421148944358401
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "04a7967197714001a1e815917b6509224dd187a9eeff441a922d6252cf3486ef",
+      "canonical_payload_sha256": "4d3414397fde0db0c0b33d204e66b6434afab884c9cc9fb7a8d44da430e5407f",
       "excitation_seed": 1848528735,
       "imu_seed": 1267329793,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -210,8 +214,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -240,7 +245,7 @@
         -0.12780207780038355
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "62fa8cecbf1d753a962617bd03c94b7e055cfabcf31d292e720c713168c56c7e",
+      "canonical_payload_sha256": "d7f9cc3b27fcc781d14eb4d85479550b552dc6d1b588d1ee910903b5ee350390",
       "excitation_seed": 2972006184,
       "imu_seed": 1496405714,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -269,8 +274,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -299,7 +305,7 @@
         -0.1414145759340982
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "fe9555e00ca11ed2ca76a561185061b11badac80b872b713dc911bff238e7e78",
+      "canonical_payload_sha256": "0b786d58c8e4b97dfe64b631aab0226b9955d14a0a7e5e6373233d3822fd1063",
       "excitation_seed": 2799182347,
       "imu_seed": 1349285626,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -328,8 +334,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -358,7 +365,7 @@
         -0.14365289217198596
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "639679d78e54a0e2d98f9301f1182325b1b0e8f100a5b658320e4e846d8e29f4",
+      "canonical_payload_sha256": "e36f46525f37e05bbc6815eaf44895a6007515e773fe83f05a3ff75c5d4c341d",
       "excitation_seed": 3045565716,
       "imu_seed": 1421135020,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -387,8 +394,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -417,7 +425,7 @@
         -0.14862984214943215
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "25dcbb344b6978a8f93b8ded4302c899b401d1a8a376669f678a323a805a848a",
+      "canonical_payload_sha256": "6ab3757572b2959561a5e8bc8e68d0fa57ccde29a400b5a0da3d95b0d3ffbb3b",
       "excitation_seed": 3083001667,
       "imu_seed": 1658469973,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -446,8 +454,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -476,7 +485,7 @@
         -0.11762346094329097
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a055dfa96ba07eae2d00b16788ca61d9711fe453f537a66febe3465e823d1357",
+      "canonical_payload_sha256": "1307f488ece0df7c9b819b4f8db77516452a8150d3e40d7590fd8a27cb5e7906",
       "excitation_seed": 1071951727,
       "imu_seed": 4109914981,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -505,8 +514,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -535,7 +545,7 @@
         -0.11397158110282864
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "94446670ff307f4ee0132ccf9b66ad63cec2e6d273e26e4c9c30d83c0dc7c044",
+      "canonical_payload_sha256": "7159c340c09e9a60fd32e2cbb452efad876803cb6787746bb1544bf76ad7628c",
       "excitation_seed": 4173836589,
       "imu_seed": 3611299872,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -564,8 +574,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -594,7 +605,7 @@
         -0.11925570488973337
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "88c19ef679d8caee976b4d2835b8b26ee1429df42ce052decc9c86b568c5e543",
+      "canonical_payload_sha256": "a28b6438d7c1da12acd05efda6e7a77305df186e0ec5bcf06f6dfdf85f7e4526",
       "excitation_seed": 1443519808,
       "imu_seed": 3035887915,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -623,8 +634,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -653,7 +665,7 @@
         -0.1426110081098682
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "069554efac8e02db7c3ca2c9b441467e8d48e326e5aa26d379604cb12783375c",
+      "canonical_payload_sha256": "d57d60da2ea572e54b9e14f0ebc5fc74a1c06470ea843fad74575466ef1de2c0",
       "excitation_seed": 2837419813,
       "imu_seed": 1682977859,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -682,8 +694,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -712,7 +725,7 @@
         -0.13617364193997272
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "03bfa387b3cb59d7c2e504efaae3323e225e261936ddfceddb80f2b30ebb7c98",
+      "canonical_payload_sha256": "cd4f66a7d692fe0b84f5f51588709ad3d2750ef1c400573dea213ceae090b147",
       "excitation_seed": 2881904516,
       "imu_seed": 2219424597,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -741,8 +754,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -771,7 +785,7 @@
         -0.13803518420823932
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "30b813557ec81497943e4d3ee336544cef73d1d68c9e5613fc03bfa94f867666",
+      "canonical_payload_sha256": "b777e967008333004d2566ff8946436d4606c20ece79b09b3c1a34caafe25e95",
       "excitation_seed": 477443595,
       "imu_seed": 3682357234,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -800,8 +814,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -830,7 +845,7 @@
         -0.14962482015933534
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "48e5f5a828a176f1d98acfdbd3f14d30a7e4afd9d4b8419384cf730d46914fb1",
+      "canonical_payload_sha256": "0afb790e8d03286c46f6cea926879e6327ace5aff268cfc5acc69a1e6378805b",
       "excitation_seed": 3915047264,
       "imu_seed": 3299174154,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -859,8 +874,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -889,7 +905,7 @@
         -0.1334031480339019
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "897f6e183d6904d9c41fe3a38c466938cb0666b1dfd9e2d228ef5116c6f0e14e",
+      "canonical_payload_sha256": "9f32f3016f5d3d40245d8f04292d3e78d4c69388affd1defe05ad2a4b5087409",
       "excitation_seed": 840181097,
       "imu_seed": 1981732783,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -918,8 +934,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -948,7 +965,7 @@
         -0.12935175381151276
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d99125b43e53580940685fc81dd28074e8f155260825910d972004d04c587c17",
+      "canonical_payload_sha256": "d78c7991735dc06109103cc19a44f7a266cd70a32ca764c5a33eecbb88213526",
       "excitation_seed": 1771406529,
       "imu_seed": 1581418267,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -977,8 +994,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1007,7 +1025,7 @@
         -0.13945350619587185
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "6b283cc2a09223bf6e04d2a0648640ecfab40edfa521b344cbaa804b6c326a6a",
+      "canonical_payload_sha256": "504dbe959cb3c07f465efcf33a287494793afb6acf61c50e62cc1fd4777167af",
       "excitation_seed": 2954396227,
       "imu_seed": 605487215,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1036,8 +1054,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1066,7 +1085,7 @@
         -0.1493934406573146
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "1f0b1657ffb95603f92a18aa470b9ebffff84899fe3d9bbbbd6945d5b171a2dc",
+      "canonical_payload_sha256": "33d0ff4fe322b39e97c5a15b9cf21753e671c8aaaec301738c6f9659e227f514",
       "excitation_seed": 3495282653,
       "imu_seed": 2038182804,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1095,8 +1114,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1125,7 +1145,7 @@
         -0.12199193335375681
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "eb15a072db17e3aa18c5f3267a25af87d5056119ca39441516317bf659c77cc0",
+      "canonical_payload_sha256": "c4449f7f59ee49e4d1e30731ed28e115968cb1af2509f776d3a5cab9240443ad",
       "excitation_seed": 3120051575,
       "imu_seed": 2696588615,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1154,8 +1174,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1184,7 +1205,7 @@
         -0.11727422166767763
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "5c29a01363038d849a49fff33ffbf3289709924668b9f44da4f142cf74246168",
+      "canonical_payload_sha256": "d2156e17707bdd546e6df9c3504c3003aa946a8decb065926a2df97eabdb2a0a",
       "excitation_seed": 3407463928,
       "imu_seed": 297528452,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1213,8 +1234,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1243,7 +1265,7 @@
         -0.14556449906137855
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c286739e4c528732921eff40d5f218c5872a2662b5aa2405f2fbf5675e98b934",
+      "canonical_payload_sha256": "d6b822dac1c9e61b598c0e31bfd30bef90577b0a35bab595224388b8c95905f1",
       "excitation_seed": 2820645099,
       "imu_seed": 1850846490,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1272,8 +1294,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1302,7 +1325,7 @@
         -0.14576816295039244
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "4a43d913ae118e6adee0a4e6af56401541ebd2969977e96eb0532ec0fb05f721",
+      "canonical_payload_sha256": "182c2637eaa2c1708b167bed303c1abfb379d24cf17ed2260fa11527d9472582",
       "excitation_seed": 2617477138,
       "imu_seed": 646019812,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1331,8 +1354,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1361,7 +1385,7 @@
         -0.11901330296589765
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3671a1123068439c02c28aebd351832217b5b3157f4db9f96078c4c0ae0a354d",
+      "canonical_payload_sha256": "c35c487389d74594ebb554b412b8e6bd9058de66f92ad466e9a4dc182322d5bf",
       "excitation_seed": 2825309715,
       "imu_seed": 2927321469,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1390,8 +1414,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1420,7 +1445,7 @@
         -0.12595156165389315
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "139c797e9df3aaad0494a3e9e57219f934fc18f108b2f0e779a1a2c5c5ba3bc9",
+      "canonical_payload_sha256": "4e50189fd81d7bad7e5a97f3400882a6fe502f1c592728eb291402b792cc7c27",
       "excitation_seed": 3299061218,
       "imu_seed": 1291636891,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1449,8 +1474,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1479,7 +1505,7 @@
         -0.1162292846739416
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b044dd87b39023403be7d09e678c7e4d4ebbba0800a81236f40a2c370d18e27e",
+      "canonical_payload_sha256": "be24734e3eb34ea2fde344d131b43b77a5ce9cef7b4b2612280e4417111d46c5",
       "excitation_seed": 661369187,
       "imu_seed": 2718050129,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1508,8 +1534,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1538,7 +1565,7 @@
         -0.13067874352498646
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "074e5722afc25ec3ecbd7d57df24ac81541f9a1715106d30b3e9099da6e57b8e",
+      "canonical_payload_sha256": "b623cf5d36d4b3094140dcf03cbdc1b2520ff89bb4922f5d495e968337aa310f",
       "excitation_seed": 1702049764,
       "imu_seed": 2553392439,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1567,8 +1594,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1597,7 +1625,7 @@
         -0.12352492543764336
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8f563c186ae3203e5c97a0210df33e3fadb907993af6ac4fefe227863899ce8f",
+      "canonical_payload_sha256": "5f0db88f1702810394294f626ef9aa9cce5716747b93df5e07618cf2813c8286",
       "excitation_seed": 3617906623,
       "imu_seed": 378930728,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1626,8 +1654,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1656,7 +1685,7 @@
         -0.11897015849583009
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "adfb19ce8badb36b6847ace7e0b582c2cc95ef62f418ef094ff8d6bc6803b3bc",
+      "canonical_payload_sha256": "11cfa80505eaf1f1be2f49c1809f4d8ce1cab99bc6cfa808e604063299485c6e",
       "excitation_seed": 3074868133,
       "imu_seed": 668851239,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1685,8 +1714,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1715,7 +1745,7 @@
         -0.1108183615156992
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d856ee62f22c44c03bc67bbf22000d0897145cb4c19f0d3562a690f8e676a76c",
+      "canonical_payload_sha256": "79597b7f3a7de21b64d3a4e351e8f7bf69995df4a2082d986bba6741c56f3420",
       "excitation_seed": 3460512181,
       "imu_seed": 2972906598,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1744,8 +1774,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1774,7 +1805,7 @@
         -0.1283101728092694
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "f947cec8d12845bae362fe3aa633c508a23a77f74b6e83418ed631cd98a163cf",
+      "canonical_payload_sha256": "e81cf700b3e99a60322900b69cf73a541564677043f7f1eed4ed13c093db1d6e",
       "excitation_seed": 2921995948,
       "imu_seed": 605101635,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1803,8 +1834,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1833,7 +1865,7 @@
         -0.11478756474102102
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a31f327f6114a066cbf4fc00a9eda93b1c848facc06d3304dc82bc07bd8071db",
+      "canonical_payload_sha256": "d1755fca5abc4d4efdca94052e3bc606c298456d8ddf08bedf32b79d0f3fd300",
       "excitation_seed": 1270398675,
       "imu_seed": 3776827573,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1862,8 +1894,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1892,7 +1925,7 @@
         -0.12274360779552107
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "86d23da778971828aded4f78005eefde9f98ac820bd23fbfef144078fe8f1f02",
+      "canonical_payload_sha256": "0f62538c10c1197b0e3242854320eb8a88b581d1b57996a9aa5d4055e26134fc",
       "excitation_seed": 2779823280,
       "imu_seed": 3992693610,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1921,8 +1954,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -1951,7 +1985,7 @@
         -0.14761798588500719
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8e003ded37f7d01d61be093a3c6aeb947386cc4c5cb971d321974f5beb75aa9e",
+      "canonical_payload_sha256": "5efa41a8c4143661522629f53fa3440abd035a1c4358bfdb73a95e1eede4c6e5",
       "excitation_seed": 3295534772,
       "imu_seed": 3340002702,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1980,8 +2014,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2010,7 +2045,7 @@
         -0.11596205065683052
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "cf7704e39251105d99907543b2f6c1b8a3510d8b983cbefcaed4d2adbdf6d4bc",
+      "canonical_payload_sha256": "6963ce8a639adfbe54bc5c9ba56b074976f503e17ddc258de74b8570a591dbc9",
       "excitation_seed": 258254237,
       "imu_seed": 1426756531,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2039,8 +2074,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2069,7 +2105,7 @@
         -0.11806775421039199
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e7625b7888f7f04c7ca61c90a67ba7ac5149f79c61025cbda9f192554e5a1647",
+      "canonical_payload_sha256": "33daf84b52c5c92c2e8779aa70e0f23f13e87eeb2ab8ddf3b67ffeda3a507c6b",
       "excitation_seed": 2715948355,
       "imu_seed": 2741306398,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2098,8 +2134,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2128,7 +2165,7 @@
         -0.1287555960829699
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "f46c4ad6b5eed37a5bc45d72948dab3792ef728b889dc12ca6b9d1eeab4d61f0",
+      "canonical_payload_sha256": "dc3f9aa944e011eabd87e4c9a495bd5db733647c75f7c6ec347157134c2c348a",
       "excitation_seed": 4187519215,
       "imu_seed": 3494336184,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2157,8 +2194,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2187,7 +2225,7 @@
         -0.14424584810737848
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "685430c372b7e3a49559f162095b75e72ff6fb15db5b2626aa705aabb8f8e79c",
+      "canonical_payload_sha256": "42f46232ee13ffe1a6a49b1599fed25982de6122f24388c340b7d31729519fbe",
       "excitation_seed": 442858675,
       "imu_seed": 338636392,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2216,8 +2254,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2246,7 +2285,7 @@
         -0.12830254122868978
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "47816a24408c783d65f8c7599614fa41c51a6c042617bf07aabc31fda941a2d7",
+      "canonical_payload_sha256": "8617d0bd96cfdae25e4b4a4665958986aca94bc4eadaf6467a0e33c0f276e4a1",
       "excitation_seed": 3231690186,
       "imu_seed": 45999239,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2275,8 +2314,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2305,7 +2345,7 @@
         -0.11540496284145307
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ea29634d2d78c81cc6ef3e0a90b0048e645795d40278b3dd96b3a6759db502d2",
+      "canonical_payload_sha256": "dd21883a8146955d2ac6447afc75ef2bf441218fd5e0cda683bf050deaeaa239",
       "excitation_seed": 2115009567,
       "imu_seed": 1066213005,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2334,8 +2374,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2364,7 +2405,7 @@
         -0.1324554124340847
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b20befed063900ec73baf6c6854206e3d7141066c47001ba93c461a898c36755",
+      "canonical_payload_sha256": "b8ffd930a0f45fb2e3b0604fcc5e8e7efeaaf7d34ade0915aa41942c7370c3d2",
       "excitation_seed": 3940414610,
       "imu_seed": 4115102076,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2393,8 +2434,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2423,7 +2465,7 @@
         -0.1201061812222405
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0aae24071b670f336b756cbc1d77741edf23e62547b0a4a7d6b8f625aa1e0fae",
+      "canonical_payload_sha256": "23fe7b79bf160ed0ba5f716323efc27a860b814d8b1255d57cb26635ecd1db36",
       "excitation_seed": 2696734411,
       "imu_seed": 1017287571,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2452,8 +2494,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2482,7 +2525,7 @@
         -0.14234152410322054
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "57d9219c2f863fd715b24b6efce3284f3db62a0dc3d305d1190be176ccea3191",
+      "canonical_payload_sha256": "e3b37557da64e1d62dcbb7517912bebdf696bb8ec5923b56bdbe361dc3b830bc",
       "excitation_seed": 2401633031,
       "imu_seed": 2942276814,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2511,8 +2554,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2541,7 +2585,7 @@
         -0.11785219074078979
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "21aef3422e5a1110f820c615b003c0fe516f5ac476f961a2fcc59fe495bed28f",
+      "canonical_payload_sha256": "9c44d07c51150c6c90f3ee45c24fbf895140b9332bbde34abbadc80b73b231b9",
       "excitation_seed": 2025985402,
       "imu_seed": 130564541,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2570,8 +2614,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2600,7 +2645,7 @@
         -0.11773335965916194
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3ee3798b35d37b7883949c5b3897e4a729866dff70942089c0cc017a21e0efc7",
+      "canonical_payload_sha256": "d6e7179f2999a43294a1e649e709be62c98e247099a2b2ecbfa3e53c6328d7c7",
       "excitation_seed": 3628929613,
       "imu_seed": 4181572007,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2629,8 +2674,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2659,7 +2705,7 @@
         -0.12558757643696214
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "bfdc66fe9740c23eda8209b147b488fe61a553d10948968de07094cfc7e255ed",
+      "canonical_payload_sha256": "b9bcb9227768ce6e0756defbfad1d57e83d5669fffe11f8c2e268ca9a2856e56",
       "excitation_seed": 375120744,
       "imu_seed": 3765502372,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2688,8 +2734,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2718,7 +2765,7 @@
         -0.126633040521049
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "377e18e5f547c653b17ddbbc9120b1b9d2686c1dcd438bf8e221d98c03c5c33f",
+      "canonical_payload_sha256": "4a57ed3369bab526a08f3d3eefddf7889478d8d1ad5d37072273b8348532577f",
       "excitation_seed": 465967280,
       "imu_seed": 935582565,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2747,8 +2794,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2777,7 +2825,7 @@
         -0.1311600211635209
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "72aba604a0072796db5a14aeac99c897c1fc4b6dca6b89b4a2c5ab10c64b4650",
+      "canonical_payload_sha256": "4337b06e3c8b368bc2d95e181400730189a59b8add74575333ad9ec9388b3622",
       "excitation_seed": 1755928308,
       "imu_seed": 3271510620,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2806,8 +2854,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2836,7 +2885,7 @@
         -0.11819025673264166
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "7b61d7ec80ef083cb3f36d21ebb28e3933794bc15efd3bc663a73db67f23bdab",
+      "canonical_payload_sha256": "d2c6c5088243728f6ccc0671dd4e946127e8039360397cba3c0f772e47d2e051",
       "excitation_seed": 3292073664,
       "imu_seed": 3222673902,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2865,8 +2914,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2895,7 +2945,7 @@
         -0.14284511569029393
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "63a5beaaffbeeb4b3f3389ab003ef062b5086403c196443136b203b0be4a4c7e",
+      "canonical_payload_sha256": "d8e11dd77ab84fe26c1e50c32e939b3bc1c9dc5e22332b47df7eaa2ccea71261",
       "excitation_seed": 2882021409,
       "imu_seed": 1649395226,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2924,8 +2974,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -2954,7 +3005,7 @@
         -0.12001777017463729
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b2bc36c7dc32677c9e465f5852d73e5a3aede6197991e7b90767bffd27a219ed",
+      "canonical_payload_sha256": "73dcb7b2dbf2f14baa88af257328f72e4068a7877ff339946eced56a9b446d50",
       "excitation_seed": 1871613045,
       "imu_seed": 7056531,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2983,8 +3034,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3013,7 +3065,7 @@
         -0.1370409690622794
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "aa68a4d40eefcf9ca5fda74e5fff76c321205cf68fde673f06ea21e1a5c8445b",
+      "canonical_payload_sha256": "fc9ec2fb16d08b63df6eb67948988421684db84fb219c4868b02c8eca9cf7264",
       "excitation_seed": 3204461379,
       "imu_seed": 3270831735,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3042,8 +3094,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3072,7 +3125,7 @@
         -0.13198990095171048
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "40ce77a2f328fcc76240684d1c5a4670652478d1656f44abf38245177bc505de",
+      "canonical_payload_sha256": "8c9f7c9a7ba43bfd78a79ff0b9b1da2b578769f1a731b3e6c0fad9e8b3c95947",
       "excitation_seed": 46244146,
       "imu_seed": 1754923034,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3101,8 +3154,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3131,7 +3185,7 @@
         -0.12351746095131128
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "1f06ca6d97e8643ba80ea95db8e7e6ae7a6c9586d22b839ca14b2093e7435cdd",
+      "canonical_payload_sha256": "d955bea48c8662a6bb3b60e9583a9f12bb0eb7a0d5f5aad783a9667acac9ad40",
       "excitation_seed": 1336016608,
       "imu_seed": 2770468839,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3160,8 +3214,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3190,7 +3245,7 @@
         -0.14791891152354902
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8999f2414e63945d4662369c18ec27298cd082ea2b39c487c3072b232c959d1f",
+      "canonical_payload_sha256": "510bf74eacb790b3f0ec6c80e71c99e7496534519773ca1d0d994495738b3001",
       "excitation_seed": 139821044,
       "imu_seed": 3495913826,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3219,8 +3274,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3249,7 +3305,7 @@
         -0.12029407216360061
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d45b4ff4627d62f948e6624a6f81d73c5b96f5fcc572d30b25666d80de005bd6",
+      "canonical_payload_sha256": "f2f110dadaee00234bd65237630908136bf1e65e967d830021d44287a3f8a962",
       "excitation_seed": 4093741108,
       "imu_seed": 3359695536,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3278,8 +3334,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3308,7 +3365,7 @@
         -0.12999621053780888
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c05a6752f41a271027ef3661e4a63fe8cb36cb2790b1356fb92124849671e3cc",
+      "canonical_payload_sha256": "5aaa2d4ff52e26dce37f1608914900e2ac32049439ad2757d5fbef362edd5497",
       "excitation_seed": 3227542501,
       "imu_seed": 2989486595,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3337,8 +3394,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3367,7 +3425,7 @@
         -0.1456479913349651
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "4b91f64b2f9122a0cabc42467aa2d90ff3fe6eb9cf0637446e52b7ae44bd903d",
+      "canonical_payload_sha256": "4688597ec17875f31a70b735024dfc59c7fba6bc0807d5ca1dca5ebbfb299dc3",
       "excitation_seed": 4128010964,
       "imu_seed": 2775661771,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3396,8 +3454,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3426,7 +3485,7 @@
         -0.1442459120956071
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9ae659ccda5cf07a7b3cc2f9a22f9bcea662be469a7d7a1ba167ffd9f0186e4c",
+      "canonical_payload_sha256": "fa80ac0299838eb1c77db469ffdf401babc3a7ad5adff6d2562f549bfee3ea2b",
       "excitation_seed": 322479372,
       "imu_seed": 2095286717,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3455,8 +3514,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3485,7 +3545,7 @@
         -0.13682101765800844
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ce96daa6bafb70a492583a8d8b0b5baf2fdc18ec292062493d31d2f4512dd389",
+      "canonical_payload_sha256": "e1bb4ff9e16e38de9e1148249ba60000814649c40c8ede814354b6c4fb4265ac",
       "excitation_seed": 2270417193,
       "imu_seed": 1615752966,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3514,8 +3574,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3544,7 +3605,7 @@
         -0.12132635660626567
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a6cbd3df7e369e936957ef82896fb06dfc7d7e3a581e43ccf8a6027379aef73e",
+      "canonical_payload_sha256": "ec556bd31ddd3ecad361ef3eaccdd3e0c6e79e7fe528aae96602de8404fdf17a",
       "excitation_seed": 679187013,
       "imu_seed": 2848489382,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3573,8 +3634,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3603,7 +3665,7 @@
         -0.14876885612071117
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a6abb053efbc3b6de7b59b5667809c1560f0e22c31865a3a44713cad78459df0",
+      "canonical_payload_sha256": "3ea2aa892797810637cece503cc83e398d114b95913c7a3041ea48f431026737",
       "excitation_seed": 2407220165,
       "imu_seed": 1707052043,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3632,8 +3694,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3662,7 +3725,7 @@
         -0.12815075271528908
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "74d8e1b5c239d6aa8a0e81597ceb469c7f2c836098000c2157b8cb6aff9b15ec",
+      "canonical_payload_sha256": "a618eaf9163b7f8d3b35d1dd1030b837f9f818227be15692ff1bf35c02e7cb07",
       "excitation_seed": 456473324,
       "imu_seed": 223678435,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3691,8 +3754,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3721,7 +3785,7 @@
         -0.14501620729074644
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "6cf316cd7eaf780305fed4a7a1074a5ff5e763eb7a322d2b5a93fab752754da6",
+      "canonical_payload_sha256": "3247ec4d5263da617379cee975d4a1412d20d8aaa0c1dd1941f4b9f4da7027cd",
       "excitation_seed": 2938392821,
       "imu_seed": 2698416981,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3750,8 +3814,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3780,7 +3845,7 @@
         -0.11181162525328739
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "18632564ab7e3fb6c8ddca082328014df8e5dc38644a277b1b292867e9ff27f0",
+      "canonical_payload_sha256": "53c678c7292d38828883ece690318309be4fd82e7da560b8f6aa702e09813417",
       "excitation_seed": 1972108297,
       "imu_seed": 383592670,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3809,8 +3874,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3839,7 +3905,7 @@
         -0.1204098552223273
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c545478a941f48ffdd64aac48904ab0334d9f0e0d66a9abca5de33ad89b7714d",
+      "canonical_payload_sha256": "3a9173aa0b47ac4ff1deb45a2fc3eaac6d52a5559c97575a344965a82bd6d62e",
       "excitation_seed": 2931226193,
       "imu_seed": 2252607695,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3868,8 +3934,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3898,7 +3965,7 @@
         -0.11097012561659535
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "7932bbf7ad4dfeb382816477bc2a4b468df53764612d0f55958ed7f153b94346",
+      "canonical_payload_sha256": "e94c3099e06bbd28a960568ec83784ef3f4135ed2c62332bffa560c2b1578ff9",
       "excitation_seed": 1897522196,
       "imu_seed": 3355649125,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3927,8 +3994,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -3957,7 +4025,7 @@
         -0.12845299883126318
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8c3e58900f01f1c943149f568df10ef33a013233c499ef94dc96a0ca018d3202",
+      "canonical_payload_sha256": "6a69bf083b57b288739a38c0384c6f1db35c56834b4c55d4f0ba508119c236ad",
       "excitation_seed": 1811227938,
       "imu_seed": 1488547589,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3986,8 +4054,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4016,7 +4085,7 @@
         -0.126782212100289
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a336f61b563c41787dfe9eba917df8759d06720e30c1e616dfa31ff8b2dc8095",
+      "canonical_payload_sha256": "ca8c91c77580819054ba3080e20c9a1af5624037c7aa353c7aed4c26c92f2cbe",
       "excitation_seed": 3975771648,
       "imu_seed": 2255589192,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4045,8 +4114,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4075,7 +4145,7 @@
         -0.14151745580157649
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "82fca29a00439132d6e135606f170823ddcf5987dffada8fa5a692ee91bc0cd5",
+      "canonical_payload_sha256": "541cd734e5f60a5468fbd9e0f50632a8b937bc2d412e91849792e36f6d63bec0",
       "excitation_seed": 974265344,
       "imu_seed": 1373344179,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4104,8 +4174,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4134,7 +4205,7 @@
         -0.1301408060250374
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "71b4bda791fe515c00ebececef73dfff774ef97166ec2c926ceb80acf8d89a2f",
+      "canonical_payload_sha256": "2c3afc1f9272dcd0e9c9c3edfa62c596931e59ca26932681c827455de8614ef2",
       "excitation_seed": 1768314959,
       "imu_seed": 3817285517,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4163,8 +4234,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4193,7 +4265,7 @@
         -0.12484925240805039
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "107b6140be025e693230bad98567af242165c6927f7ecf2cdcaad7a4ba5cfe9b",
+      "canonical_payload_sha256": "dea932fa3e9318d70bcbfdf0aa583bd00dfc80f7227e651a9ff14e460717e986",
       "excitation_seed": 1300622580,
       "imu_seed": 1209587504,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4222,8 +4294,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4252,7 +4325,7 @@
         -0.145150397704597
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "24847a94077b7f3d880b4375c4ac8c6ca41b3b5e563e1eed3477280893a9ff24",
+      "canonical_payload_sha256": "d282b8fd98e5b671bba681167bf853a3c77db08af17fab580bed51caa0ab5ff0",
       "excitation_seed": 1335308408,
       "imu_seed": 2823755734,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4281,8 +4354,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4311,7 +4385,7 @@
         -0.1293467014320022
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "bee5cffdd01811abf69ddd3f6a98226fbad312aa71445147a0b97139e1c07115",
+      "canonical_payload_sha256": "0c834fb92f8ac70b8a3ef1e4927b680b04ca186d03b79be1f3ee8b3713fe2295",
       "excitation_seed": 2726582944,
       "imu_seed": 1251800419,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4340,8 +4414,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4370,7 +4445,7 @@
         -0.14357907826125643
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ce8cf5e391fbfdf6a9b2b24e3e28bb99e5c6b9b1fb782860a20c039d3e6eaf09",
+      "canonical_payload_sha256": "3d57968e00f3ee62c272cc359641a2a918bba1dd6447d4a5e95372df588ffe40",
       "excitation_seed": 787239028,
       "imu_seed": 4187336868,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4399,8 +4474,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4429,7 +4505,7 @@
         -0.12323646383451672
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8cb50728d3958dce7199c872c6faf4c59f7f135e5a9f90c4ee229230f8e4bda3",
+      "canonical_payload_sha256": "342cf5c0b20c38abbc9a309c6dba563c42134fd4d450028a0462c788a83fa227",
       "excitation_seed": 1150508277,
       "imu_seed": 3744270016,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4458,8 +4534,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4488,7 +4565,7 @@
         -0.11305220175560336
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "04ebdcc7258b2d5e752f0150457f02e1e2fafb60205803cca2d042de3b4abfcf",
+      "canonical_payload_sha256": "09cfa2ca9ef06cba566fdcf8db88e16f7a576fe3824911ae893ed0187a5bf341",
       "excitation_seed": 2081594042,
       "imu_seed": 635191689,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4517,8 +4594,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4547,7 +4625,7 @@
         -0.11226328495362588
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "1b1821d968e41b81150dccea4628104a9f7dec14d0455cad83fc8b9ecb6c28ca",
+      "canonical_payload_sha256": "e5ff2e758c6bd2fe346dec5a56f52ba086ecc21cec2c00f64b82b71b2c80baa8",
       "excitation_seed": 3864378610,
       "imu_seed": 3582424535,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4576,8 +4654,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4606,7 +4685,7 @@
         -0.13832487679189204
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "1c20a380e5c607b451da46388b7c198048ece71bd08b37dd85fa3b86cd2de251",
+      "canonical_payload_sha256": "cab66f97c748c8e25f4073a6af7c6b5fd6e8ed5f3b78b5f4fde9a2c2d17f944d",
       "excitation_seed": 1360483380,
       "imu_seed": 889355589,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4635,8 +4714,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4665,7 +4745,7 @@
         -0.11839739367930642
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b2d7ad8fd7bcdf0b97b6168f6345df751aed9585497e2ffe22277ea4caa17088",
+      "canonical_payload_sha256": "dca08d48b7731d50befaddd8065af48c845275f4f9a79924375aa7db3c454f7e",
       "excitation_seed": 2262563024,
       "imu_seed": 3990091640,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4694,8 +4774,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4724,7 +4805,7 @@
         -0.11650909576835301
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "2eb4c6310f6fe082b3c9035efde5168b1ccb86ada1f70e8bc14ea7aa1608e755",
+      "canonical_payload_sha256": "c7d8abddbe524027b5ea6a987e4c7e42f34c49c96161941ccf844fe89080edb8",
       "excitation_seed": 1805921401,
       "imu_seed": 2851507313,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4753,8 +4834,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4783,7 +4865,7 @@
         -0.11453276635989125
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0aad2cae1269cada4ecdcaa93da8a986f634c95d1cf64840a491fab2ae10ae12",
+      "canonical_payload_sha256": "c2e3f63dd712a4fa70f013458e68156d850dc505a4f5a4b0426f6ddcdbf3fd2c",
       "excitation_seed": 2430224588,
       "imu_seed": 598616352,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4812,8 +4894,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4842,7 +4925,7 @@
         -0.132070431658444
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a349664ad2787b9d64b1444e0266c7210670fdc3e7fa88e671dbcbb984ad0ece",
+      "canonical_payload_sha256": "4ff696f16c6556c09571ad49b8065d8c84d39ac756710b6e17c9a6d66f80370b",
       "excitation_seed": 1707062605,
       "imu_seed": 2616753803,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4871,8 +4954,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4901,7 +4985,7 @@
         -0.14900827088810487
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d45ee36f1f0835844e6b6fd5d9fe25667dbc389a7db06c757a856874724dc50b",
+      "canonical_payload_sha256": "402b2e3b0c180ef5a6df2ef2b385d6ca31b6c0309543412b6cc5281c303b2606",
       "excitation_seed": 2650820240,
       "imu_seed": 2281173402,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4930,8 +5014,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -4960,7 +5045,7 @@
         -0.1395151512375322
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "08d1cdd1762c19b5a8b7c1071937a92b6c991760ebdf8f1ed894916b4796b775",
+      "canonical_payload_sha256": "883fedbc186e8ab6389cd950d4787bed3acea9f5d6dad188c779f9b8453646af",
       "excitation_seed": 2179211041,
       "imu_seed": 629263069,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4989,8 +5074,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5019,7 +5105,7 @@
         -0.11197665649859644
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b7da15d6cab6a7f6c23438b7dee79c77c3ba245b6a37583f62446eb605c58a6e",
+      "canonical_payload_sha256": "2f251c235a05c6b35dee0caad995cd1e06f286ff22a52283de9991e57042dedb",
       "excitation_seed": 941391386,
       "imu_seed": 2164422221,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5048,8 +5134,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5078,7 +5165,7 @@
         -0.14078920891441477
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "34c69a6e4073359d8607a92c384eacaeebf5e38f5748da99194f761d6e2eebe8",
+      "canonical_payload_sha256": "3cfebebd9384ad3da701063b6c99de1f7d032340498aeeba8b1998a65010f1fe",
       "excitation_seed": 2559649416,
       "imu_seed": 1189055576,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5107,8 +5194,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5137,7 +5225,7 @@
         -0.13842175629470094
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "f5505a686a93f09ebf4d77b46f4f55650e403b1e0f027540dd328c8a0c47456c",
+      "canonical_payload_sha256": "a0399480d33eddb59816dffa46441d34cf5e50eff6ec977db36c5b4f9eea2d49",
       "excitation_seed": 2601135610,
       "imu_seed": 2854036756,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5166,8 +5254,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5196,7 +5285,7 @@
         -0.11111061299732637
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9dace87c94b853e2102f40a3830a86de5f221fa3603126182eb381e08b48eeb3",
+      "canonical_payload_sha256": "1b1faab34127d8729248336be811dbb787b5962d311c0a3ac8220cd9ea4856da",
       "excitation_seed": 1855266289,
       "imu_seed": 1165974408,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5225,8 +5314,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5255,7 +5345,7 @@
         -0.12007282379353387
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0e531356e2e01fe0d9bcfc7a0e201c1ee4faf54472ceb099cda0ffa694934b8c",
+      "canonical_payload_sha256": "56cfee85c7c329fa098ab87315ac6ad5215e8ecc0c6de22826c22a549922e014",
       "excitation_seed": 4029810027,
       "imu_seed": 532794646,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5284,8 +5374,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5314,7 +5405,7 @@
         -0.12619511131113778
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "aa90b4a9a625e3f4312952e01153b1bb00ad7a18713eeaf0ce1f4db5392c35d2",
+      "canonical_payload_sha256": "0aa86d4ee55dfd993003f5762242ae5eeed80eecac56b338f4cbd751659f3e74",
       "excitation_seed": 2025669312,
       "imu_seed": 3997464422,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5343,8 +5434,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5373,7 +5465,7 @@
         -0.1349363279636719
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "50d8adaa107b1d2f4964d25745e190c6ebd95cfd888c815584eff6b5497d055a",
+      "canonical_payload_sha256": "cafe1d570dedeca8698e32a5b8b389b2f23edb943cfae31324b2a9ff453b498b",
       "excitation_seed": 3441532768,
       "imu_seed": 4100789887,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5402,8 +5494,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5432,7 +5525,7 @@
         -0.12262510352217411
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b29e531e31aec46b25eef27977e170dc3aa078c150d971250d1a795afee0960b",
+      "canonical_payload_sha256": "b7221790b16846f7a8bdf5a01691e6ca9299e4d74e4f2ab63092f5610a5f0f68",
       "excitation_seed": 1066248514,
       "imu_seed": 2342010142,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5461,8 +5554,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5491,7 +5585,7 @@
         -0.1400814642796669
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b6663e90e49fb7da41d8f1cefb90bb615a64e7f374572ec63bfc2b82955bde82",
+      "canonical_payload_sha256": "56a30ef039350ee47541b9929de5f12958d22bc5972fb3b1496cd855ab1e4645",
       "excitation_seed": 3545130737,
       "imu_seed": 877206825,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5520,8 +5614,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5550,7 +5645,7 @@
         -0.13802778207551233
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "226331d878a72a6fee7eaf1c9f16c89ccb831e5026d1202a46a9e83889c5cf6c",
+      "canonical_payload_sha256": "67749a5558f26e2f98563a09a57cb3a103a4020afae5be3752700e6181de084f",
       "excitation_seed": 168208258,
       "imu_seed": 507915169,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5579,8 +5674,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5609,7 +5705,7 @@
         -0.13527239357566018
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a50887c6df41df241526ff28e29927e87f9bc97638cac1f01634a7561c5e8612",
+      "canonical_payload_sha256": "b9086ed3f1d1ce6662624e76e52f3f4029178ff8c1d04fe2260f1585de66bb4f",
       "excitation_seed": 659478266,
       "imu_seed": 3585606243,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5638,8 +5734,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5668,7 +5765,7 @@
         -0.13801529098703
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e484bdd7dc4d62a023053220de51434ec38e586b257ff1b3832874dcd69eddc7",
+      "canonical_payload_sha256": "44e85a2aec6941b158a6c318484da2a0988d39fe8f63eb64cdc6612177934b86",
       "excitation_seed": 3357701149,
       "imu_seed": 3384287997,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5697,8 +5794,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5727,7 +5825,7 @@
         -0.12761083350101993
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "09dfc8b57886310992ee9e0f4a1859a2882ddcf76817bbf97074ef066574383e",
+      "canonical_payload_sha256": "0093b4e4756d18adbf7387533e536534d9caed7fb0187d29dcad6fe936fae02c",
       "excitation_seed": 312165796,
       "imu_seed": 2994442447,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5756,8 +5854,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5786,7 +5885,7 @@
         -0.1357141190860032
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a5775d6bae00fcdb21a2b4ad6270354d6881621b8fc7621996c6f05f40c14f1d",
+      "canonical_payload_sha256": "0981b733f9c9ccd50ecac3143681f7e56115ee14275a053f2269a11db0f778fa",
       "excitation_seed": 3978497533,
       "imu_seed": 2913440640,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5815,8 +5914,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5845,7 +5945,7 @@
         -0.1253089117173571
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "2f4d0a692d7e9ffdd8d5dd0e6fad5146bb8c234c29fffc8ab567b11f04ff36d1",
+      "canonical_payload_sha256": "133612bdaa645182b3c2c937238d5901deac8720a5813d2de0ac57074bfbe96d",
       "excitation_seed": 21976586,
       "imu_seed": 182147803,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5874,8 +5974,9 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "authority_hashes": {
-        "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
         "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
         "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
         "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
@@ -5904,7 +6005,7 @@
         -0.1363814531549192
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "eae5d5cdb0225f28d84d96d4caac950095d80683a2a7b25e1ccd89ae0d562568",
+      "canonical_payload_sha256": "a2b0818c1536bc5c5ffaf850aeb18f2767c80bdea27d2b73650bfbfeefb85cb0",
       "excitation_seed": 1980605566,
       "imu_seed": 3800753411,
       "schema_id": "shakebench.phase08.committed_states.record",

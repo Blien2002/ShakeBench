@@ -28,6 +28,7 @@ from robosuite.utils.shakebench_oracle import (
     gravity_compensated_imu_window,
     vibration_estimate_from_public_observation,
 )
+from robosuite.utils.shakebench_outcomes import outcome_contract, outcome_contract_sha256
 from tests.shakebench_test_helpers import build_tier_observation
 
 
@@ -227,7 +228,8 @@ def test_public_container_risk_is_diagnostic_and_recovery_budget_exhaustion_is_b
     exhausted.executive.phase_entered_s = 0.0
     exhausted.action(bad, time_s=exhausted.profile.verify_s + 0.01)
     assert exhausted.executive.phase is TaskPhase.FAILED
-    assert exhausted.executive.failure_reason == "public_object_edge_unrecoverable"
+    assert exhausted.executive.failure_reason == "policy_abort"
+    assert exhausted.executive.abort_reason == "edge_risk"
 
 
 def _reseal(payload: dict) -> None:
@@ -240,7 +242,7 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
     profile = OracleControllerProfile()
     payload = {
         "schema_id": "shakebench.phase07.oracle_run",
-        "schema_version": 5,
+        "schema_version": 6,
         "tier": "V0",
         "gamma_commanded": 0.0,
         "controller_profile": profile.to_dict(),
@@ -255,6 +257,8 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
         "geometry_profile": episode["geometry_profile"],
         "geometry_authority": episode["geometry_authority"],
         "scoreable": episode["scoreable"],
+        "outcome_contract": outcome_contract(),
+        "outcome_contract_sha256": outcome_contract_sha256(),
         "episodes": [episode],
     }
     payload["run_id"] = _digest(
@@ -266,6 +270,7 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
             "geometry_profile": episode["geometry_profile"],
             "geometry_authority": episode["geometry_authority"],
             "scoreable": episode["scoreable"],
+            "outcome_contract_sha256": outcome_contract_sha256(),
             "state_ids": state_ids,
         }
     )
@@ -291,6 +296,7 @@ def _valid_run_payload(episode: dict, *, state_ids: list[str]) -> dict:
         "state_hash",
         "physics_hash",
         "termination",
+        "outcome_cause",
         "tier_key",
     ),
 )
@@ -328,6 +334,10 @@ def test_red_resealed_semantic_mutations_are_rejected(tmp_path, mutation):
     elif mutation == "termination":
         episode["termination_category"] = "environment_success"
         episode["failure_reason"] = None
+    elif mutation == "outcome_cause":
+        episode["termination_cause"] = "policy_abort"
+        episode["termination_category"] = "policy_abort"
+        episode["failure_reason"] = "policy_abort"
     elif mutation == "tier_key":
         episode["trace"][0]["policy_input"]["forbidden_key"] = 1.0
     _reseal(payload)
@@ -397,7 +407,8 @@ def test_public_workspace_escape_stops_controller_without_simulator_truth():
         controller.action(observation, time_s=0.1), np.array((0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0))
     )
     assert controller.executive.phase is TaskPhase.FAILED
-    assert controller.executive.failure_reason == "public_object_out_of_workspace"
+    assert controller.executive.failure_reason == "policy_abort"
+    assert controller.executive.abort_reason == "workspace_risk"
 
 
 def test_public_fingertip_geometry_and_wrench_reference_drives_slip_recovery():
@@ -428,6 +439,8 @@ def test_red_horizon_failure_has_a_nonempty_reason():
     episode = run_episode(state, tier="V0", gamma_commanded=0.0, profile=OracleControllerProfile(), horizon_steps=1)
     assert episode["success"] is False
     assert episode["failure_reason"] == "horizon_exhausted"
+    assert episode["trace"][0]["environment_success_latched"] is False
+    assert episode["trace"][0]["task_rule_violation"] is False
 
 
 def test_run_artifact_verifier_rejects_trace_mutation(tmp_path):

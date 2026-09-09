@@ -5,6 +5,7 @@ import dataclasses
 
 import pytest
 
+from robosuite.utils.shakebench_outcomes import outcome_contract_sha256
 from robosuite.utils.shakebench_scoring import (
     EpisodeResult,
     RunManifest,
@@ -24,6 +25,10 @@ def _raw(state_id: str, tier: str, success: bool) -> dict:
         "success": success,
         "failure_reason": None if success else "horizon_exhausted",
         "termination_category": "environment_success" if success else "horizon_exhausted",
+        "episode_validity": "valid",
+        "score_outcome": "success" if success else "unsuccessful",
+        "termination_cause": "success_latched" if success else "horizon_exhausted",
+        "outcome_contract_sha256": outcome_contract_sha256(),
         "scene_visual": {"scene_id": "direct", "config_sha256": "a" * 64},
         "geometry_authority": {"kind": "phase07_5a", "scoreable": True, "authority": {"payload_sha256": "b" * 64}},
         "geometry_profile": {"profile_id": "direct_mount_v1", "payload_sha256": "c" * 64},
@@ -84,6 +89,21 @@ def test_scorecard_rejects_unverified_episode_mappings():
 def test_scorecard_verification_requires_recomputable_raw_provenance():
     scorecard = build_scorecard([_verified("s0", "V0", True)])
     assert not verify_scorecard(scorecard)["passed"]
+
+
+def test_scorecard_verifier_rejects_a_resealed_stale_outcome_contract():
+    scorecard = {
+        "schema_id": "shakebench.phase08.scorecard",
+        "schema_version": 2,
+        "outcome_contract_sha256": "0" * 64,
+        "paired_comparisons": {},
+        "raw_artifacts": [],
+    }
+    from robosuite.utils.shakebench_scoring import scorecard_payload_hash
+
+    scorecard["payload_sha256"] = scorecard_payload_hash(scorecard)
+    verdict = verify_scorecard(scorecard)
+    assert "outcome contract authority" in verdict["errors"]
 
 
 def test_run_manifest_identity_excludes_execution_provenance():
