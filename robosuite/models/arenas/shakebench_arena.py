@@ -205,6 +205,97 @@ class ShakeBenchArena(Arena):
         self.table_visual.set("size", _fmt(self.table_half_size))
         self.table_top.set("pos", _fmt((0.0, 0.0, self.table_half_size[2])))
 
+    def add_table_mat(self) -> None:
+        """Install a flush 3 mm rigid rubber layer with an explicit contact geom.
+
+        The total supported mass and tabletop height stay fixed. Only the mat
+        is paired with the manipulated object, avoiding duplicate constraints
+        from the underlying metal. It moves rigidly with the isolated table.
+        """
+        from robosuite.utils.shakebench_tasks import MAT_TEXTURE_PATH, MAT_VISUAL_RGBA
+
+        if self.table_body.find("./geom[@name='table_mat_collision']") is not None:
+            raise ShakeBenchArenaError("table mat already installed")
+        half = self.table_half_size
+        position = (0.0, 0.0, half[2] - 0.0015)
+        self.object_support_geom = ET.SubElement(
+            self.table_body,
+            "geom",
+            {
+                "name": "table_mat_collision",
+                "type": "box",
+                "group": "0",
+                "size": _fmt((half[0], half[1], 0.0015)),
+                "pos": _fmt(position),
+                "contype": "0",
+                "conaffinity": "0",
+                "mass": "0",
+                "rgba": "0 0 0 0",
+            },
+        )
+        ET.SubElement(
+            self.asset,
+            "texture",
+            {
+                "name": "shakebench_task_mat_felt",
+                "type": "2d",
+                "file": xml_path_completion(MAT_TEXTURE_PATH),
+            },
+        )
+        ET.SubElement(
+            self.asset,
+            "material",
+            {
+                "name": "shakebench_task_mat",
+                "rgba": _fmt(MAT_VISUAL_RGBA),
+                "texture": "shakebench_task_mat_felt",
+                "texrepeat": "3 3",
+                "texuniform": "false",
+                "specular": "0.12",
+                "shininess": "0.08",
+                "reflectance": "0",
+            },
+        )
+        ET.SubElement(
+            self.table_body,
+            "geom",
+            {
+                "name": "table_mat_visual",
+                "type": "box",
+                "group": "1",
+                "size": _fmt((half[0], half[1], 0.0015)),
+                "pos": _fmt((0.0, 0.0, position[2] + 0.00015)),
+                "contype": "0",
+                "conaffinity": "0",
+                "mass": "0",
+                "material": "shakebench_task_mat",
+                "rgba": _fmt(MAT_VISUAL_RGBA),
+            },
+        )
+        # A fine bound edge makes the textile layer readable at oblique views.
+        for axis in (0, 1):
+            for sign in (-1, 1):
+                start = [-half[0] + 0.006, -half[1] + 0.006, half[2] + 0.0004]
+                end = [half[0] - 0.006, half[1] - 0.006, half[2] + 0.0004]
+                start[axis] = end[axis] = sign * (half[axis] - 0.006)
+                ET.SubElement(
+                    self.table_body,
+                    "geom",
+                    {
+                        "name": f"table_mat_binding_{axis}_{sign}_visual",
+                        "type": "capsule",
+                        "group": "1",
+                        "fromto": _fmt((*start, *end)),
+                        "size": "0.00065",
+                        "rgba": "0.50 0.59 0.55 1",
+                        "contype": "0",
+                        "conaffinity": "0",
+                        "mass": "0",
+                    },
+                )
+        self._refresh_visual_geom_names()
+        self.set_visual_layer(self.visual_layer_enabled)
+
     def configure_isolator(self, config=None) -> IsolatorParameters:
         """Apply a candidate's derived ``k/c/springref`` to the six joints."""
 
@@ -312,6 +403,7 @@ class ShakeBenchArena(Arena):
         *,
         friction=(0.30, 0.005, 0.0001),
         add_visual=True,
+        visual_style="tray",
     ) -> dict[str, str]:
         """Add the optional bottom and four walls to the isolated assembly.
 
@@ -320,6 +412,8 @@ class ShakeBenchArena(Arena):
         is an assembly seam for Phase 04, not a task success evaluator.
         """
 
+        if visual_style not in {"tray", "basket"}:
+            raise ShakeBenchArenaError("target visual_style must be tray or basket")
         if self._target_container_added:
             raise ShakeBenchArenaError("target container has already been added")
         center = _vector("center_xy_m", center_xy_m, 2)
@@ -382,7 +476,9 @@ class ShakeBenchArena(Arena):
         for element in elements.values():
             self.table_body.append(element)
         self.target_container_geom_names = {key: element.get("name") for key, element in elements.items()}
-        if add_visual:
+        if add_visual and visual_style == "basket":
+            self._add_basket_visuals(center)
+        elif add_visual:
             for key, element in elements.items():
                 visual_name = f"{element.get('name')}_visual"
                 visual = new_geom(
@@ -401,6 +497,88 @@ class ShakeBenchArena(Arena):
         self._refresh_visual_geom_names()
         self.set_visual_layer(self.visual_layer_enabled)
         return dict(self.target_container_geom_names)
+
+    def _add_basket_visuals(self, center) -> None:
+        """Rounded rim and wire sides inside the existing shallow-box envelope.
+
+        The five original solid geoms remain the collision approximation. All
+        basket details are massless visuals and do not alter target tolerances.
+        """
+        cx, cy = center
+        hx, hy = (value / 2 for value in TARGET_CONTAINER_OUTER_XY_M)
+        floor = float(self.table_half_size[2]) + TARGET_CONTAINER_BOTTOM_THICKNESS_M
+        top = floor + TARGET_CONTAINER_WALL_HEIGHT_M
+        rgba = "0.82 0.84 0.80 1"
+        ET.SubElement(
+            self.asset,
+            "material",
+            {
+                "name": "shakebench_basket_coated_metal",
+                "rgba": rgba,
+                "specular": "0.3",
+                "shininess": "0.22",
+                "reflectance": "0.05",
+            },
+        )
+
+        def add(name, attributes):
+            name = f"target_basket_{name}_visual"
+            ET.SubElement(
+                self.table_body,
+                "geom",
+                {
+                    "name": name,
+                    "group": "1",
+                    "contype": "0",
+                    "conaffinity": "0",
+                    "mass": "0",
+                    "material": "shakebench_basket_coated_metal",
+                    "rgba": rgba,
+                    **attributes,
+                },
+            )
+            self.target_container_geom_names[name] = name
+
+        def wire(name, start, end, radius):
+            add(name, {"type": "capsule", "fromto": _fmt((*start, *end)), "size": str(radius)})
+
+        add(
+            "base", {"type": "box", "size": _fmt((hx - 0.002, hy - 0.002, 0.006)), "pos": _fmt((cx, cy, floor - 0.006))}
+        )
+        # Two rounded horizontal bands and evenly spaced vertical wires.
+        for axis, (half, along) in enumerate(((hx, hy), (hy, hx))):
+            for sign in (-1, 1):
+                fixed = (cx, cy)[axis] + sign * (half - 0.004)
+                for band, z, radius in (("rim", top - 0.004, 0.004), ("lower", floor + 0.002, 0.002)):
+                    start = [cx - hx + 0.004, cy - hy + 0.004, z]
+                    end = [cx + hx - 0.004, cy + hy - 0.004, z]
+                    start[axis] = end[axis] = fixed
+                    wire(f"{axis}_{sign}_{band}", start, end, radius)
+                for index, offset in enumerate(np.linspace(-along + 0.01, along - 0.01, 12)):
+                    point = [cx, cy, floor + 0.002]
+                    point[axis] = fixed
+                    point[1 - axis] += offset
+                    wire(f"{axis}_{sign}_upright_{index}", point, [*point[:2], top - 0.004], 0.0014)
+        # Quiet grip sleeves distinguish the basket from a plain target frame.
+        for sign in (-1, 1):
+            add(
+                f"grip_{sign}",
+                {
+                    "type": "capsule",
+                    "size": "0.0044",
+                    "rgba": "0.35 0.43 0.40 1",
+                    "fromto": _fmt(
+                        (
+                            cx - 0.026,
+                            cy + sign * (hy - 0.004),
+                            top - 0.004,
+                            cx + 0.026,
+                            cy + sign * (hy - 0.004),
+                            top - 0.004,
+                        )
+                    ),
+                },
+            )
 
     @property
     def target_container_added(self) -> bool:

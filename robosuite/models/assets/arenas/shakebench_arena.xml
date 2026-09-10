@@ -27,6 +27,7 @@
     <material name="shakebench_cabinet_light" rgba="0.26 0.28 0.29 1" reflectance="0.25" shininess="0.35" specular="0.35" />
     <material name="shakebench_emergency" rgba="0.82 0.055 0.035 1" reflectance="0.2" shininess="0.25" specular="0.25" />
   </asset>
+  <include file="shakebench_world_visuals.xml" />
   <worldbody>
     <!-- Keep this physical plane for the original contact semantics. The
          scene layer hides it and adds non-contact slabs around a visual pit. -->

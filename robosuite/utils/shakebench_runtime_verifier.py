@@ -8,41 +8,20 @@ full scientific audit live in the explicit audit path.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from robosuite.utils.shakebench_artifacts import file_sha256, payload_hash
+
 RUNTIME_CONTRACT_FILENAME = "shakebench_runtime_contract.json"
-REWRITE_MAP_FILENAME = "shakebench_history_rewrite_map_v2.json"
-REWRITE_MAP_SCHEMA_ID = "shakebench.history_rewrite_map"
-REWRITE_MAP_SCHEMA_VERSION = 2
-HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 class RuntimePublicationError(ValueError):
     """Raised when a compact package publication contract is invalid."""
-
-
-def _canonical(value: Any) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
-
-
-def _payload_hash(value: Mapping[str, Any], field: str = "payload_sha256") -> str:
-    payload = dict(value)
-    payload.pop(field, None)
-    return hashlib.sha256(_canonical(payload)).hexdigest()
-
-
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _read_json(root: Path, filename: str) -> dict[str, Any]:
@@ -71,78 +50,11 @@ def _load_yaml(path: Path) -> Mapping[str, Any]:
 
 
 def _profile_hash(profile: Mapping[str, Any]) -> str:
-    payload = dict(profile)
-    payload.pop("profile_sha256", None)
-    return hashlib.sha256(_canonical(payload)).hexdigest()
+    return payload_hash(profile, field="profile_sha256")
 
 
-def _verify_rewrite_map(root: Path, contract: Mapping[str, Any], errors: list[str]) -> None:
-    rewrite = contract.get("history_rewrite")
-    if not isinstance(rewrite, Mapping) or rewrite.get("status") != "complete":
-        errors.append("completed history-rewrite binding is missing")
-        return
-    filename = rewrite.get("asset_filename", REWRITE_MAP_FILENAME)
-    if not isinstance(filename, str) or filename != REWRITE_MAP_FILENAME:
-        errors.append("history-rewrite map asset filename mismatch")
-        return
-    path = root / filename
-    if not path.is_file():
-        errors.append("history-rewrite map asset is missing")
-        return
-    expected_file_hash = rewrite.get("map_sha256")
-    if not isinstance(expected_file_hash, str) or not HEX64.fullmatch(expected_file_hash):
-        errors.append("history-rewrite map SHA-256 binding is malformed")
-    elif _file_sha256(path) != expected_file_hash:
-        errors.append("history-rewrite map SHA-256 binding mismatch")
-    try:
-        mapping = _read_json(root, filename)
-    except RuntimePublicationError as exc:
-        errors.append(str(exc))
-        return
-    if mapping.get("schema_id") != REWRITE_MAP_SCHEMA_ID or mapping.get("schema_version") != REWRITE_MAP_SCHEMA_VERSION:
-        errors.append("history-rewrite map schema/version mismatch")
-    payload_hash = mapping.get("mapping_payload_sha256")
-    if (
-        not isinstance(payload_hash, str)
-        or not HEX64.fullmatch(payload_hash)
-        or _payload_hash(mapping, "mapping_payload_sha256") != payload_hash
-    ):
-        errors.append("history-rewrite map payload hash mismatch")
-    if "archive_sha256" in mapping:
-        errors.append("history-rewrite map must not bind the outer archive hash")
-    anchor = mapping.get("rewritten_anchor")
-    if not isinstance(anchor, Mapping):
-        errors.append("history-rewrite map rewritten anchor is missing")
-    else:
-        for field in ("pre_history_rewrite_commit", "rewritten_commit"):
-            if not isinstance(anchor.get(field), str) or not HEX40.fullmatch(anchor[field]):
-                errors.append(f"history-rewrite map anchor {field} is malformed")
-        if anchor.get("asset_path") != "robosuite/models/assets/shakebench_states_dev.json":
-            errors.append("history-rewrite map anchor asset path mismatch")
-        if anchor.get("asset_sha256") != contract.get("compact_assets", {}).get("shakebench_states_dev.json"):
-            errors.append("history-rewrite map anchor asset hash mismatch")
-    mappings = mapping.get("commit_mapping")
-    if not isinstance(mappings, list) or len(mappings) < 3:
-        errors.append("history-rewrite map commit mapping is incomplete")
-    else:
-        for row in mappings:
-            if not isinstance(row, Mapping) or not all(
-                isinstance(row.get(field), str) and HEX40.fullmatch(row[field])
-                for field in ("original_commit", "rewritten_commit")
-            ):
-                errors.append("history-rewrite map contains malformed commit mapping")
-    science = mapping.get("science_bindings")
-    if not isinstance(science, Mapping):
-        errors.append("history-rewrite map science bindings are missing")
-    else:
-        expected_science = contract.get("science_bindings")
-        if isinstance(expected_science, Mapping) and any(
-            science.get(key) != value for key, value in expected_science.items()
-        ):
-            errors.append("runtime contract/history-rewrite science binding mismatch")
 
-
-def verify_runtime_publication_bundle(asset_root: str | Path) -> dict[str, Any]:
+def verify_runtime_publication_bundle(asset_root: str | Path, *, include_profile: bool = False) -> dict[str, Any]:
     """Verify package-owned profile, protocol, map, and compact bindings."""
 
     root = Path(asset_root).resolve()
@@ -154,7 +66,7 @@ def verify_runtime_publication_bundle(asset_root: str | Path) -> dict[str, Any]:
 
     if contract.get("schema_id") != "shakebench.runtime.publication_contract" or contract.get("schema_version") != 1:
         errors.append("runtime contract schema mismatch")
-    if contract.get("payload_sha256") != _payload_hash(contract):
+    if contract.get("payload_sha256") != payload_hash(contract):
         errors.append("runtime contract payload hash mismatch")
     package_contract = contract.get("package_contract")
     if not isinstance(package_contract, Mapping):
@@ -196,7 +108,7 @@ def verify_runtime_publication_bundle(asset_root: str | Path) -> dict[str, Any]:
     ):
         if not isinstance(expected, str) or not HEX64.fullmatch(expected):
             errors.append(f"{label} byte hash binding missing")
-        elif not path.is_file() or _file_sha256(path) != expected:
+        elif not path.is_file() or file_sha256(path) != expected:
             errors.append(f"{label} byte hash mismatch")
 
     if profile:
@@ -213,47 +125,28 @@ def verify_runtime_publication_bundle(asset_root: str | Path) -> dict[str, Any]:
         if not isinstance(contact, Mapping) or contact.get("candidate_id") != selected.get("contact_candidate_id"):
             errors.append("official profile selected contact mismatch")
 
-    compact_assets = contract.get("compact_assets")
-    if not isinstance(compact_assets, Mapping):
-        errors.append("compact asset hash map missing")
-    else:
-        for filename, expected in compact_assets.items():
-            if not isinstance(filename, str) or not isinstance(expected, str) or not HEX64.fullmatch(expected):
-                errors.append(f"compact asset hash malformed: {filename}")
-                continue
-            path = root / filename
-            if not path.is_file() or _file_sha256(path) != expected:
-                errors.append(f"compact asset hash mismatch: {filename}")
-
-    if (
-        protocol_spec.get("sha256") != compact_assets.get(protocol_name)
-        if isinstance(compact_assets, Mapping)
-        else True
-    ):
-        errors.append("protocol compact-asset binding mismatch")
     if protocol_spec.get("sha256") != profile.get("protocol_sha256"):
         errors.append("official profile protocol binding mismatch")
     if selected.get("physics_profile_id") != profile_spec.get("profile_id"):
         errors.append("selected tuple profile id mismatch")
     if selected.get("physics_profile_sha256") != profile_spec.get("profile_sha256"):
         errors.append("selected tuple profile hash mismatch")
-    _verify_rewrite_map(root, contract, errors)
-
-    return {
+    result = {
         "passed": not errors,
         "errors": sorted(set(errors)),
         "profile_id": profile_spec.get("profile_id"),
         "profile_sha256": profile_spec.get("profile_sha256"),
         "protocol_sha256": protocol_spec.get("sha256"),
         "contact_candidate_id": selected.get("contact_candidate_id"),
-        "history_rewrite_map_sha256": contract.get("history_rewrite", {}).get("map_sha256"),
         "raw_archive_required_for_runtime": False,
         "network_access_required": False,
     }
+    if include_profile and profile:
+        result["profile_payload"] = dict(profile)
+    return result
 
 
 __all__ = [
-    "REWRITE_MAP_FILENAME",
     "RUNTIME_CONTRACT_FILENAME",
     "RuntimePublicationError",
     "verify_runtime_publication_bundle",

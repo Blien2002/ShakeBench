@@ -104,6 +104,8 @@ def verify_batch_aggregate(path: str | Path) -> dict[str, Any]:
         "affinity",
         "job_count",
         "completed_count",
+        "state_authority",
+        "scoreable",
         "records",
         "resource_before",
         "resource_after",
@@ -624,7 +626,8 @@ def _run_job(job: Mapping[str, Any], output_dir: Path, resume: bool, state_asset
         "retry_ledger": _write_retry_ledger(retry_ledger_path, job, retry_events),
         "group_status": (
             "incomplete"
-            if len(retry_events) == 2 and all(event["classification"] == "infrastructure" for event in retry_events)
+            if len(retry_events) == 2
+            and all(event["classification"] in {"infrastructure", "invalid_execution"} for event in retry_events)
             else "failed"
         ),
         "resumed": False,
@@ -676,12 +679,12 @@ def run_batch(
     from robosuite.utils.shakebench_authority import authority_payload_hash, verify_direct_mount_authority
 
     from robosuite.scripts.shakebench_run_oracle import load_state_asset
-    from robosuite.utils.shakebench_committed_states import OFFICIAL_STATE_FILENAME
+    from robosuite.utils.shakebench_task_states import TASK_STATE_FILENAMES
 
-    asset_path = Path(models.assets_root) / OFFICIAL_STATE_FILENAME if state_asset is None else Path(state_asset)
+    asset_path = Path(models.assets_root) / TASK_STATE_FILENAMES["official"] if state_asset is None else Path(state_asset)
     resolved_asset = load_state_asset(asset_path)
-    if resolved_asset["authority"].get("kind") != "committed":
-        raise ValueError("batch runner requires official or knee committed-state authority")
+    if resolved_asset["authority"].get("kind") not in {"committed", "task_variants"}:
+        raise ValueError("batch runner requires official or knee committed/task-variant state authority")
     states = resolved_asset["states"]
     authority = verify_direct_mount_authority()
     jobs = build_jobs(
@@ -764,6 +767,8 @@ def run_batch(
         "affinity": list(AFFINITIES[workers]),
         "job_count": len(jobs),
         "completed_count": len(records),
+        "state_authority": resolved_asset["authority"],
+        "scoreable": resolved_asset["authority"].get("kind") == "committed",
         "elapsed_s": elapsed,
         "jobs_s": len(durations) / elapsed if elapsed else 0.0,
         "simulated_seconds": simulated_seconds,
@@ -798,7 +803,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument(
-        "--state-asset", type=Path, default=None, help="frozen official-state authority (defaults to package asset)"
+        "--state-asset", type=Path, default=None, help="state authority (defaults to the six-variant Phase 09 v2 pool)"
     )
     parser.add_argument("--tier", choices=("V0", "V1", "V2", "V3"), default="V0")
     parser.add_argument("--gamma", type=float, default=0.0)

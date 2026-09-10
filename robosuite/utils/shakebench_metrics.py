@@ -13,8 +13,7 @@ import hashlib
 import json
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
-from pathlib import Path
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Any, Optional
 
@@ -1253,6 +1252,7 @@ def audit_contact_pairs(
     target_wall_geom_names: Iterable[str],
     finger_pad_geom_names: Iterable[str],
     table_sliding_mu: float = 0.30,
+    target_sliding_mu: Optional[float] = None,
     finger_sliding_mu: float = 1.00,
     contact_profile: Optional[Mapping[str, Any]] = None,
     tolerance: float = 1e-12,
@@ -1297,7 +1297,10 @@ def audit_contact_pairs(
         for other_name in table_names:
             expected[frozenset((can_name, other_name))] = (CONTACT_INTERFACE_TABLE_OBJECT, table_sliding_mu)
         for other_name in bottom_names + wall_names:
-            expected[frozenset((can_name, other_name))] = (CONTACT_INTERFACE_TARGET_OBJECT, table_sliding_mu)
+            expected[frozenset((can_name, other_name))] = (
+                CONTACT_INTERFACE_TARGET_OBJECT,
+                table_sliding_mu if target_sliding_mu is None else target_sliding_mu,
+            )
         for other_name in finger_names:
             expected[frozenset((can_name, other_name))] = (CONTACT_INTERFACE_FINGER_OBJECT, finger_sliding_mu)
     roles = defaultdict(list)
@@ -1703,21 +1706,7 @@ class ShakeBenchMetrics:
     def attach_success(self, evaluation: SuccessEvaluation) -> MetricsSnapshot:
         if self.latest is None:
             raise ShakeBenchMetricsError("cannot attach success before the first metrics update")
-        self.latest = MetricsSnapshot(
-            time_s=self.latest.time_s,
-            can=self.latest.can,
-            contacts=self.latest.contacts,
-            table_slip_distance_m=self.latest.table_slip_distance_m,
-            table_slip_speed_m_s=self.latest.table_slip_speed_m_s,
-            first_slip_time_s=self.latest.first_slip_time_s,
-            in_hand_translation_slip_m=self.latest.in_hand_translation_slip_m,
-            in_hand_rotation_slip_rad=self.latest.in_hand_rotation_slip_rad,
-            finger_contact_loss_after_grasp=self.latest.finger_contact_loss_after_grasp,
-            driver_response=self.latest.driver_response,
-            table_response=self.latest.table_response,
-            success_snapshot=self.latest.success_snapshot,
-            success=evaluation,
-        )
+        self.latest = replace(self.latest, success=evaluation)
         return self.latest
 
     def to_dict(self) -> dict[str, Any]:
@@ -1730,125 +1719,10 @@ PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_ID = "shakebench.phase04.environment"
 PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_VERSION = 2
 
 
-def phase04_environment_artifact_hash(payload: Mapping[str, Any]) -> str:
-    """Hash an artifact while excluding only its self-referential hash field."""
-
-    if not isinstance(payload, Mapping):
-        raise ShakeBenchMetricsError("Phase 04 artifact must be a mapping")
-    normalized = json.loads(json.dumps(dict(payload), sort_keys=True, ensure_ascii=True))
-    lock = normalized.get("artifact_lock")
-    if isinstance(lock, dict):
-        lock.pop("payload_sha256", None)
-    encoded = json.dumps(
-        normalized,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=True,
-        allow_nan=False,
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
 
 
-def _contains_key(value: Any, key: str) -> bool:
-    if isinstance(value, Mapping):
-        return key in value or any(_contains_key(item, key) for item in value.values())
-    if isinstance(value, (list, tuple)):
-        return any(_contains_key(item, key) for item in value)
-    return False
 
 
-def verify_phase04_environment_artifact(path: Any) -> dict[str, Any]:
-    """Read-only verify the Phase 04 evidence schema, lock, and runtime asset."""
-
-    checks = {
-        "schema": False,
-        "integrity": False,
-        "envelope_authority": False,
-        "inertia_placement_authority": False,
-        "support_contact_schema": False,
-        "runtime_asset": False,
-        "policy_frame": False,
-        "no_ambiguous_contact_loss": False,
-    }
-    try:
-        with open(path, encoding="utf-8") as stream:
-            payload = json.load(stream)
-        checks["schema"] = (
-            payload.get("schema_id") == PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_ID
-            and payload.get("schema_version") == PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_VERSION
-            and payload.get("status") == "PASS"
-        )
-        lock = payload.get("artifact_lock", {})
-        expected_hash = lock.get("payload_sha256")
-        checks["integrity"] = (
-            isinstance(lock, dict)
-            and isinstance(lock.get("update_reason"), str)
-            and bool(lock["update_reason"].strip())
-            and isinstance(lock.get("previous_payload_sha256"), str)
-            and len(lock["previous_payload_sha256"]) == 64
-            and isinstance(expected_hash, str)
-            and len(expected_hash) == 64
-            and expected_hash == phase04_environment_artifact_hash(payload)
-        )
-        envelope = payload.get("compiled", {}).get("can", {}).get("collision_envelope", {})
-        checks["envelope_authority"] = (
-            envelope.get("source_geom_names") == list(CANONICAL_CAN_COLLISION_ENVELOPE.source_geom_names)
-            and envelope.get("source_model_hash") == CANONICAL_CAN_COLLISION_ENVELOPE.source_model_hash
-            and envelope.get("extraction_algorithm_version")
-            == CANONICAL_CAN_COLLISION_ENVELOPE.extraction_algorithm_version
-            and np.isclose(envelope.get("height_m"), CANONICAL_CAN_COLLISION_ENVELOPE.height_m, rtol=0.0, atol=1e-12)
-            and np.isclose(
-                envelope.get("support_radius_m"),
-                CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m,
-                rtol=0.0,
-                atol=1e-12,
-            )
-        )
-        compiled_can = payload.get("compiled", {}).get("can", {})
-        expected_inertia = equivalent_cylinder_inertia(
-            CANONICAL_CAN_MASS_KG,
-            CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m,
-            CANONICAL_CAN_COLLISION_ENVELOPE.height_m,
-        )
-        checks["inertia_placement_authority"] = np.allclose(
-            compiled_can.get("inertia_kg_m2"), expected_inertia, rtol=0.0, atol=1e-15
-        ) and np.isclose(
-            compiled_can.get("placement_correction_z_offset_m"),
-            -CANONICAL_CAN_COLLISION_ENVELOPE.lower_support_z_m,
-            rtol=0.0,
-            atol=1e-12,
-        )
-        schemas = payload.get("schemas", {})
-        checks["support_contact_schema"] = schemas.get("support_contact_schema_version") == 2 and schemas.get(
-            "contact_loss_schema"
-        ) == {
-            "instantaneous": "finger_can_contact_present",
-            "stateful": "finger_contact_loss_after_grasp",
-        }
-        asset = payload.get("runtime_asset", {})
-        artifact_path = getattr(path, "__fspath__", lambda: str(path))()
-        repo_root = Path(artifact_path).resolve().parent.parent
-        runtime_path = repo_root / asset.get("path", "")
-        actual_hash = hashlib.sha256(runtime_path.read_bytes()).hexdigest() if runtime_path.is_file() else None
-        checks["runtime_asset"] = (
-            asset.get("path") == "robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.png"
-            and asset.get("git_tracked") is True
-            and asset.get("clean_compile") is True
-            and actual_hash == asset.get("sha256")
-        )
-        policy_frame = payload.get("policy_frame", {})
-        checks["policy_frame"] = (
-            policy_frame.get("common_can_state_frame") == "robot_base"
-            and policy_frame.get("world_frame_can_observation") is False
-        )
-        checks["no_ambiguous_contact_loss"] = not _contains_key(payload, "contact_loss")
-    except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError):
-        pass
-    return {
-        "passed": bool(all(checks.values())),
-        "integrity_valid": bool(checks["integrity"]),
-        "checks": checks,
-    }
 
 
 # Compatibility-friendly names for callers that prefer evaluator/collector

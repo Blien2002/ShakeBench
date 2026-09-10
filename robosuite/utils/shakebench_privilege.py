@@ -177,30 +177,6 @@ class PrivilegedRecorder:
         return len(self._records)
 
 
-class PrivilegedEvaluator:
-    """Explicit adapter for evaluator callbacks that consume simulator truth.
-
-    The adapter is intentionally not an Observable and does not expose its
-    result to the policy path.  It exists so callers can make the evaluator
-    boundary auditable in the same way as recorder callbacks.
-    """
-
-    def __init__(self, evaluator: Callable[..., Any]) -> None:
-        if not callable(evaluator):
-            raise ShakeBenchPrivilegeError("privileged evaluator must be callable")
-        self.evaluator = evaluator
-
-    def evaluate(self, *args: Any, **kwargs: Any) -> Any:
-        return _copy_value(self.evaluator(*args, **kwargs))
-
-
-class CallbackPrivilegedRecorder(PrivilegedRecorder):
-    """Named adapter for the environment's callback-only constructor option."""
-
-    def __init__(self, callback: Callable[[Mapping[str, Any]], Any]) -> None:
-        super().__init__(callback=callback)
-
-
 def make_privileged_recorder(value: Any) -> Optional[PrivilegedRecorder]:
     """Normalize the explicit environment recorder/callback argument."""
 
@@ -211,20 +187,8 @@ def make_privileged_recorder(value: Any) -> Optional[PrivilegedRecorder]:
     if isinstance(value, (bool, np.bool_)):
         raise ShakeBenchPrivilegeError("privileged_recorder must be an explicit recorder or callback, not a flag")
     if callable(value):
-        return CallbackPrivilegedRecorder(value)
+        return PrivilegedRecorder(callback=value)
     raise ShakeBenchPrivilegeError("privileged_recorder must be a PrivilegedRecorder or callable callback")
-
-
-def make_privileged_evaluator(value: Any) -> Optional[PrivilegedEvaluator]:
-    if value is None:
-        return None
-    if isinstance(value, PrivilegedEvaluator):
-        return value
-    if isinstance(value, (bool, np.bool_)):
-        raise ShakeBenchPrivilegeError("privileged evaluator must be an explicit callable, not a flag")
-    if callable(value):
-        return PrivilegedEvaluator(value)
-    raise ShakeBenchPrivilegeError("privileged evaluator must be a PrivilegedEvaluator or callable")
 
 
 def namespace_snapshot(fields: Mapping[str, Any]) -> dict[str, Any]:
@@ -372,9 +336,7 @@ def verify_phase05_observation_artifact(path: Any) -> dict[str, Any]:
 
 __all__ = [
     "PRIVILEGED_NAMESPACE",
-    "CallbackPrivilegedRecorder",
     "PrivilegeAudit",
-    "PrivilegedEvaluator",
     "PrivilegedRecorder",
     "PrivilegeError",
     "ShakeBenchPrivilegeError",
@@ -383,7 +345,6 @@ __all__ = [
     "audit_policy_observation",
     "audit_privilege_boundary",
     "make_privileged_recorder",
-    "make_privileged_evaluator",
     "namespace_snapshot",
     "PHASE05_OBSERVATION_ARTIFACT_SCHEMA_ID",
     "PHASE05_OBSERVATION_ARTIFACT_SCHEMA_VERSION",

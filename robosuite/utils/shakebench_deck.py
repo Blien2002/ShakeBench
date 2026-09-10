@@ -121,23 +121,17 @@ def _normalise_quat_wxyz(quaternion: Iterable[Any], name: str = "quaternion") ->
 
 
 def _quat_multiply_wxyz(first: np.ndarray, second: np.ndarray) -> np.ndarray:
-    w1, x1, y1, z1 = first
-    w2, x2, y2, z2 = second
-    return np.array(
-        (
-            w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
-            w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
-            w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
-            w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
-        ),
-        dtype=float,
-    )
+    from robosuite.utils.shakebench_rotations import multiply_wxyz
+
+    return multiply_wxyz(first, second)
+
 
 
 def _quat_inverse_wxyz(quaternion: np.ndarray) -> np.ndarray:
-    return np.array((quaternion[0], -quaternion[1], -quaternion[2], -quaternion[3]), dtype=float) / float(
-        np.dot(quaternion, quaternion)
-    )
+    from robosuite.utils.shakebench_rotations import inverse_wxyz
+
+    return inverse_wxyz(quaternion)
+
 
 
 def _skew(vector: np.ndarray) -> np.ndarray:
@@ -243,79 +237,24 @@ def rotation_vector_to_spatial_angular_acceleration(
 
 
 def rotation_vector_to_quat(rotation_vector: Iterable[Any]) -> np.ndarray:
-    """Convert an exponential-coordinate rotation vector to wxyz quaternion."""
+    from robosuite.utils.shakebench_rotations import rotation_vector_to_wxyz
 
-    vector = np.asarray(_vector("rotation_vector", rotation_vector, 3), dtype=float)
-    angle = float(np.linalg.norm(vector))
-    if angle <= 1e-14:
-        return np.array((1.0, 0.0, 0.0, 0.0), dtype=float)
-    axis = vector / angle
-    half = 0.5 * angle
-    return np.concatenate(([math.cos(half)], axis * math.sin(half)))
+    return rotation_vector_to_wxyz(rotation_vector, error_type=DeckDriverError)
+
 
 
 def quat_to_rotation_vector(quaternion: Iterable[Any]) -> np.ndarray:
-    """Convert a wxyz quaternion to the shortest exponential-coordinate vector."""
+    from robosuite.utils.shakebench_rotations import wxyz_to_rotation_vector
 
-    quat = _normalise_quat_wxyz(quaternion)
-    if quat[0] < 0.0:
-        quat = -quat
-    sine_half = float(np.linalg.norm(quat[1:]))
-    if sine_half <= 1e-14:
-        return 2.0 * quat[1:]
-    angle = 2.0 * math.atan2(sine_half, float(np.clip(quat[0], -1.0, 1.0)))
-    return quat[1:] * (angle / sine_half)
+    return wxyz_to_rotation_vector(quaternion, error_type=DeckDriverError)
+
 
 
 def _matrix_to_quat_wxyz(matrix: np.ndarray) -> np.ndarray:
-    """Convert a proper 3x3 rotation matrix to a normalized wxyz quaternion."""
+    from robosuite.utils.shakebench_rotations import matrix_to_wxyz
 
-    matrix = np.asarray(matrix, dtype=float).reshape(3, 3)
-    trace = float(np.trace(matrix))
-    if trace > 0.0:
-        scale = 2.0 * math.sqrt(trace + 1.0)
-        result = np.array(
-            (
-                0.25 * scale,
-                (matrix[2, 1] - matrix[1, 2]) / scale,
-                (matrix[0, 2] - matrix[2, 0]) / scale,
-                (matrix[1, 0] - matrix[0, 1]) / scale,
-            )
-        )
-    else:
-        diagonal = np.diag(matrix)
-        index = int(np.argmax(diagonal))
-        if index == 0:
-            scale = 2.0 * math.sqrt(max(1e-16, 1.0 + matrix[0, 0] - matrix[1, 1] - matrix[2, 2]))
-            result = np.array(
-                (
-                    (matrix[2, 1] - matrix[1, 2]) / scale,
-                    0.25 * scale,
-                    (matrix[0, 1] + matrix[1, 0]) / scale,
-                    (matrix[0, 2] + matrix[2, 0]) / scale,
-                )
-            )
-        elif index == 1:
-            scale = 2.0 * math.sqrt(max(1e-16, 1.0 + matrix[1, 1] - matrix[0, 0] - matrix[2, 2]))
-            result = np.array(
-                (
-                    (matrix[0, 2] - matrix[2, 0]) / scale,
-                    (matrix[0, 1] + matrix[1, 0]) / scale,
-                    0.25 * scale,
-                    (matrix[1, 2] + matrix[2, 1]) / scale,
-                )
-            )
-        else:
-            scale = 2.0 * math.sqrt(max(1e-16, 1.0 + matrix[2, 2] - matrix[0, 0] - matrix[1, 1]))
-            result = np.array(
-                (
-                    (matrix[1, 0] - matrix[0, 1]) / scale,
-                    (matrix[0, 2] + matrix[2, 0]) / scale,
-                    (matrix[1, 2] + matrix[2, 1]) / scale,
-                    0.25 * scale,
-                )
-            )
-    return _normalise_quat_wxyz(result, name="rotation matrix quaternion")
+    return matrix_to_wxyz(matrix, error_type=DeckDriverError)
+
 
 
 def _local_body_pose(body: ET.Element) -> tuple[np.ndarray, np.ndarray]:

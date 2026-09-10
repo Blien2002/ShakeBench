@@ -46,19 +46,23 @@ from robosuite.utils.shakebench_artifacts import (
 from robosuite.utils.shakebench_isolator import (
     IsolatorConfig,
     derive_isolator_parameters,
+    static_sag_uncompensated_m,
+)
+from robosuite.scripts.isolator_experiments import (
     run_harmonic_transfer_grid,
     run_joint_spectrum_probe,
     run_payload_sensitivity_probe,
-    static_sag_uncompensated_m,
 )
 from robosuite.utils.shakebench_phase06_adapters import (
     AdapterContractError,
+    adapter_contract_payload,
     NoPhysicsBackend,
     prepare_contact_probe,
     prepare_driver_probe,
     prepare_isolator_probe,
     prepare_parity_probe,
     prepare_replay_probe,
+    probe_profile_from_state,
 )
 from robosuite.utils.shakebench_physics import PhysicsProfile, make_probe_physics_profile, physics_profile_hash
 from robosuite.utils.shakebench_protocol_v6 import (
@@ -288,66 +292,13 @@ def dry_run_manifest(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | 
 
 
 def adapter_contract(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | None = None) -> dict[str, Any]:
-    """Exercise every stage preparation path with a backend that forbids physics."""
+    return adapter_contract_payload(
+        resolve_v6_manifest(protocol, protocol_bytes_hash=protocol_bytes_hash),
+        resolve_replay_binding_templates(protocol),
+        schema_id=SCHEMA_ID + ".adapter_contract",
+        schema_version=SCHEMA_VERSION,
+    )
 
-    states = resolve_v6_manifest(protocol, protocol_bytes_hash=protocol_bytes_hash)
-    backend = NoPhysicsBackend()
-    plans: list[dict[str, Any]] = []
-
-    def prepare(state: ResolvedProbeState) -> None:
-        if state.stage == "driver":
-            plan = prepare_driver_probe(state, backend)
-        elif state.stage == "isolator":
-            plan = prepare_isolator_probe(state, backend)
-        elif state.stage == "contact":
-            plan = prepare_contact_probe(state, backend)
-        elif state.stage == "parity":
-            plan = prepare_parity_probe(state, backend)
-        elif state.stage == "replay":
-            plan = prepare_replay_probe(state, backend)
-        else:  # pragma: no cover - resolver already rejects this
-            raise AdapterContractError(f"unsupported adapter stage: {state.stage}")
-        if plan.complete is not True or not plan.requested_fields:
-            raise AdapterContractError(f"incomplete {state.stage} adapter plan")
-        plans.append({"kind": "manifest_state", "state_digest": state.resolved_state_digest, "plan": plan.to_dict()})
-
-    for state in states:
-        prepare(state)
-
-    # Replay states in the manifest represent the selected profile.  These
-    # additional states cover every candidate binding before any selection
-    # exists, which is the registration-time contract required by V6.
-    binding_states = resolve_replay_binding_templates(protocol)
-    for state in binding_states:
-        replay_plan = prepare_replay_probe(state, backend)
-        if state.replay is None:
-            raise AdapterContractError("replay binding resolver produced no replay child")
-        plans.append({"kind": "legal_replay_binding", "state_digest": state.resolved_state_digest, "plan": replay_plan.to_dict()})
-        selected = state.replay.selected_component
-        if selected == "driver":
-            component_plan = prepare_driver_probe(state, backend)
-        elif selected == "isolator":
-            component_plan = prepare_isolator_probe(state, backend)
-        elif selected == "contact":
-            component_plan = prepare_contact_probe(state, backend)
-        else:
-            component_plan = prepare_parity_probe(state, backend)
-        if component_plan.complete is not True:
-            raise AdapterContractError(f"incomplete replay component plan: {selected}")
-        plans.append({"kind": "legal_replay_component", "state_digest": state.resolved_state_digest, "plan": component_plan.to_dict()})
-
-    digest = sha256_json(plans)
-    return {
-        "schema_id": SCHEMA_ID + ".adapter_contract",
-        "schema_version": SCHEMA_VERSION,
-        "state_count": len(states),
-        "legal_replay_binding_count": len(binding_states),
-        "prepared_plan_count": len(plans),
-        "adapter_contract_digest": digest,
-        "plans": plans,
-        "backend": {"type": "NoPhysicsBackend", "preparation_event_count": len(backend.preparation_events), "physics_calls": 0},
-        "mujoco_model_created": False,
-    }
 
 
 def _last_json_line(output: str) -> Mapping[str, Any]:
@@ -848,62 +799,7 @@ def _v6_isolator_probe(state: ResolvedProbeState) -> Mapping[str, Any]:
     }
 
 
-def _profile_from_state(state: ResolvedProbeState) -> PhysicsProfile:
-    """Build a non-scoreable candidate profile solely from resolved children."""
-
-    if state.isolator is None or state.contact is None:
-        raise V6ProtocolError(f"contact/parity state lacks isolator or contact child: {state.state_id}")
-    payload = make_probe_physics_profile().to_dict()
-    physics = payload["physics"]
-    physics["timestep"].update(
-        {
-            "physics_timestep_s": state.common.physics_timestep_s,
-            "integrator": state.common.integrator,
-            "solver": state.common.solver,
-            "iterations": state.common.solver_iterations,
-            "tolerance": state.common.solver_tolerance,
-        }
-    )
-    physics["scheduler"]["control_steps"] = state.common.control_steps
-    physics["deck"].update(
-        {
-            "mass_kg": state.common.deck_mass_kg,
-            "inertia_kg_m2": list(state.common.deck_inertia_kg_m2),
-            "eq_solref": list(state.common.deck_eq_solref),
-            "eq_solimp": list(state.common.deck_eq_solimp),
-        }
-    )
-    physics["isolator"].update(
-        {
-            "candidate_id": state.isolator.candidate_id,
-            "fn_hz": list(state.isolator.fn_hz),
-            "zeta": list(state.isolator.zeta),
-            "k": list(state.isolator.k),
-            "c": list(state.isolator.c),
-            "springref": list(state.isolator.springref),
-            "mass_kg": state.isolator.mass_kg,
-            "inertia_kg_m2": list(state.isolator.inertia_kg_m2),
-            "gravity_m_s2": state.isolator.gravity_m_s2,
-            "travel_limits_m": list(state.isolator.travel_limits_m),
-            "angle_limits_rad": list(state.isolator.angle_limits_rad),
-        }
-    )
-    physics["contact"].update(
-        {
-            "condim": state.contact.condim,
-            "sliding_mu": dict(state.contact.sliding_mu),
-            "torsional_mu": state.contact.torsional_mu,
-            "rolling_mu": state.contact.rolling_mu,
-            "margin_m": state.contact.margin_m,
-            "gap_m": state.contact.gap_m,
-            "solref": list(state.contact.solref),
-            "solimp": list(state.contact.solimp),
-            "interfaces": list(state.contact.interfaces),
-        }
-    )
-    payload["profile_id"] = f"shakebench.phase06r5.v6.probe.{state.contact.candidate_id}"
-    payload["profile_sha256"] = physics_profile_hash(payload)
-    return PhysicsProfile(payload=payload, source="V6 resolved state", profile_sha256=payload["profile_sha256"]).assert_valid()
+_profile_from_state = probe_profile_from_state
 
 
 def _contact_candidate_mapping(state: ResolvedProbeState) -> dict[str, Any]:

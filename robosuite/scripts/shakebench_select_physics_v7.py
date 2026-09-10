@@ -71,12 +71,7 @@ from robosuite.utils.shakebench_artifacts import (
 )
 from robosuite.utils.shakebench_phase06_adapters import (
     AdapterContractError,
-    NoPhysicsBackend,
-    prepare_contact_probe,
-    prepare_driver_probe,
-    prepare_isolator_probe,
-    prepare_parity_probe,
-    prepare_replay_probe,
+    adapter_contract_payload,
 )
 from robosuite.utils.shakebench_physics import (
     PhysicsProfile,
@@ -104,7 +99,6 @@ STATUS_FILENAME = "shakebench_phase_06r6_v7_status.json"
 PARITY_FILENAME = "shakebench_phase_06r6_v7_gamma_zero_parity.json"
 DETERMINISM_FILENAME = "shakebench_phase_06r6_v7_replay_determinism.json"
 OFFICIAL_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-DIAGNOSTIC_FILENAME = "shakebench_phase_06r6_v7_contact_recovery_diagnostic.json"
 V6_PROTOCOL_FILENAME = "shakebench_selection_protocol_v6.yaml"
 V6_SELECTED_FILENAME = "shakebench_phase_06r5_v6_selected_candidates.json"
 V6_STATUS_FILENAME = "shakebench_phase_06r5_v6_status.json"
@@ -393,7 +387,7 @@ def validate_v7_protocol(
                 raise V7ProtocolError(f"V7 changed a non-contact-family field for {candidate_id}: {field}")
 
     contact_spec = _mapping(protocol.get("contact"), "contact")
-    for key in ("interfaces", "probes", "hard_gates", "scoring", "diagnostic"):
+    for key in ("interfaces", "probes", "hard_gates", "scoring"):
         if key not in contact_spec:
             raise V7ProtocolError(f"contact.{key} is required")
     if tuple(contact_spec["interfaces"]) != (
@@ -434,11 +428,6 @@ def validate_v7_protocol(
             raise V7ProtocolError(f"V7 contact hard gate is missing {key}")
     if not np.isclose(float(gates["finger_force_max_N"]), 40.0, rtol=0.0, atol=1.0e-12):
         raise V7ProtocolError("V7 force gate does not equal the diagnostic-derived 40 N envelope")
-    diagnostic = _mapping(contact_spec["diagnostic"], "contact.diagnostic")
-    diagnostic_path = _v6_asset(str(diagnostic.get("path", DIAGNOSTIC_FILENAME)))
-    if str(diagnostic.get("sha256")) != file_sha256(diagnostic_path):
-        raise V7ProtocolError("V7 diagnostic artifact hash mismatch")
-
     states = _resolve_v7(protocol, protocol_bytes_hash=protocol_bytes_hash)
     declared_count = int(protocol.get("manifest_state_count", -1))
     if declared_count != len(states):
@@ -489,69 +478,13 @@ def dry_run_manifest(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | 
 
 
 def adapter_contract(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | None = None) -> dict[str, Any]:
-    """Exercise every V7 state and every legal replay binding without physics."""
+    return adapter_contract_payload(
+        _resolve_v7(protocol, protocol_bytes_hash=protocol_bytes_hash),
+        resolve_replay_binding_templates(protocol),
+        schema_id=SCHEMA_ID + ".adapter_contract",
+        schema_version=SCHEMA_VERSION,
+    )
 
-    states = _resolve_v7(protocol, protocol_bytes_hash=protocol_bytes_hash)
-    backend = NoPhysicsBackend()
-    plans: list[dict[str, Any]] = []
-
-    def prepare(state: ResolvedProbeState) -> None:
-        if state.stage == "driver":
-            plan = prepare_driver_probe(state, backend)
-        elif state.stage == "isolator":
-            plan = prepare_isolator_probe(state, backend)
-        elif state.stage == "contact":
-            plan = prepare_contact_probe(state, backend)
-        elif state.stage == "parity":
-            plan = prepare_parity_probe(state, backend)
-        elif state.stage == "replay":
-            plan = prepare_replay_probe(state, backend)
-        else:
-            raise AdapterContractError(f"unsupported V7 stage: {state.stage}")
-        if plan.complete is not True or not plan.requested_fields:
-            raise AdapterContractError(f"incomplete V7 {state.stage} adapter plan")
-        plans.append({"kind": "manifest_state", "state_digest": state.resolved_state_digest, "plan": plan.to_dict()})
-
-    for state in states:
-        prepare(state)
-    for state in resolve_replay_binding_templates(protocol):
-        replay_plan = prepare_replay_probe(state, backend)
-        plans.append(
-            {"kind": "legal_replay_binding", "state_digest": state.resolved_state_digest, "plan": replay_plan.to_dict()}
-        )
-        selected = state.replay.selected_component if state.replay is not None else ""
-        if selected == "driver":
-            component_plan = prepare_driver_probe(state, backend)
-        elif selected == "isolator":
-            component_plan = prepare_isolator_probe(state, backend)
-        elif selected == "contact":
-            component_plan = prepare_contact_probe(state, backend)
-        else:
-            component_plan = prepare_parity_probe(state, backend)
-        if component_plan.complete is not True:
-            raise AdapterContractError(f"incomplete replay component plan: {selected}")
-        plans.append(
-            {
-                "kind": "legal_replay_component",
-                "state_digest": state.resolved_state_digest,
-                "plan": component_plan.to_dict(),
-            }
-        )
-    return {
-        "schema_id": SCHEMA_ID + ".adapter_contract",
-        "schema_version": SCHEMA_VERSION,
-        "state_count": len(states),
-        "legal_replay_binding_count": len(resolve_replay_binding_templates(protocol)),
-        "prepared_plan_count": len(plans),
-        "adapter_contract_digest": sha256_json(plans),
-        "plans": plans,
-        "backend": {
-            "type": "NoPhysicsBackend",
-            "preparation_event_count": len(backend.preparation_events),
-            "physics_calls": 0,
-        },
-        "mujoco_model_created": False,
-    }
 
 
 def _last_json_line(output: str) -> Mapping[str, Any]:
@@ -610,7 +543,6 @@ def write_feasibility_artifact(protocol_path: str | Path, *, output_path: str | 
                 "passed": np.isclose(ratio, state.common.control_steps, rtol=0.0, atol=1.0e-12),
             }
         )
-    diagnostic_path = _v6_asset(DIAGNOSTIC_FILENAME)
     artifact = {
         "schema_id": SCHEMA_ID + ".feasibility",
         "schema_version": SCHEMA_VERSION,
@@ -634,11 +566,6 @@ def write_feasibility_artifact(protocol_path: str | Path, *, output_path: str | 
             "path": str(measurement.get("capacity_preflight")),
             "sha256": file_sha256(_v6_asset(str(measurement.get("capacity_preflight")))),
             "selection_input": measurement_selection_input(protocol),
-        },
-        "diagnostic_evidence": {
-            "path": diagnostic_path.name,
-            "sha256": file_sha256(diagnostic_path),
-            "selection_authority": False,
         },
         "v6_inheritance": {
             "protocol": V6_PROTOCOL_FILENAME,

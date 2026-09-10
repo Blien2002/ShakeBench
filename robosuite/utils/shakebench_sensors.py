@@ -91,70 +91,16 @@ def _normalise_quaternion_wxyz(value: Any, name: str = "quaternion_wxyz") -> np.
 
 
 def _quat_wxyz_to_matrix(value: Any) -> np.ndarray:
-    w, x, y, z = _normalise_quaternion_wxyz(value)
-    return np.asarray(
-        (
-            (1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - z * w), 2.0 * (x * z + y * w)),
-            (2.0 * (x * y + z * w), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - x * w)),
-            (2.0 * (x * z - y * w), 2.0 * (y * z + x * w), 1.0 - 2.0 * (x * x + y * y)),
-        ),
-        dtype=float,
-    )
+    from robosuite.utils.shakebench_rotations import wxyz_to_matrix
+
+    return wxyz_to_matrix(value, error_type=ShakeBenchSensorError)
 
 
 def _matrix_to_quaternion_wxyz(matrix: Any) -> np.ndarray:
-    """Convert a proper rotation matrix to a normalized ``wxyz`` quaternion."""
+    from robosuite.utils.shakebench_rotations import matrix_to_wxyz
 
-    rotation = _finite_matrix("rotation", matrix, (3, 3))
-    trace = float(np.trace(rotation))
-    if trace > 0.0:
-        scale = 2.0 * np.sqrt(trace + 1.0)
-        result = np.asarray(
-            (
-                0.25 * scale,
-                (rotation[2, 1] - rotation[1, 2]) / scale,
-                (rotation[0, 2] - rotation[2, 0]) / scale,
-                (rotation[1, 0] - rotation[0, 1]) / scale,
-            ),
-            dtype=float,
-        )
-    else:
-        diagonal = np.diag(rotation)
-        index = int(np.argmax(diagonal))
-        if index == 0:
-            scale = 2.0 * np.sqrt(max(1e-16, 1.0 + rotation[0, 0] - rotation[1, 1] - rotation[2, 2]))
-            result = np.asarray(
-                (
-                    (rotation[2, 1] - rotation[1, 2]) / scale,
-                    0.25 * scale,
-                    (rotation[0, 1] + rotation[1, 0]) / scale,
-                    (rotation[0, 2] + rotation[2, 0]) / scale,
-                ),
-                dtype=float,
-            )
-        elif index == 1:
-            scale = 2.0 * np.sqrt(max(1e-16, 1.0 + rotation[1, 1] - rotation[0, 0] - rotation[2, 2]))
-            result = np.asarray(
-                (
-                    (rotation[0, 2] - rotation[2, 0]) / scale,
-                    (rotation[0, 1] + rotation[1, 0]) / scale,
-                    0.25 * scale,
-                    (rotation[1, 2] + rotation[2, 1]) / scale,
-                ),
-                dtype=float,
-            )
-        else:
-            scale = 2.0 * np.sqrt(max(1e-16, 1.0 + rotation[2, 2] - rotation[0, 0] - rotation[1, 1]))
-            result = np.asarray(
-                (
-                    (rotation[1, 0] - rotation[0, 1]) / scale,
-                    (rotation[0, 2] + rotation[2, 0]) / scale,
-                    (rotation[1, 2] + rotation[2, 1]) / scale,
-                    0.25 * scale,
-                ),
-                dtype=float,
-            )
-    return _normalise_quaternion_wxyz(result)
+    return matrix_to_wxyz(matrix, error_type=ShakeBenchSensorError)
+
 
 
 def rigid_body_point_acceleration(

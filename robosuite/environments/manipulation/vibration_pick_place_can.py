@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from collections.abc import Iterable
@@ -13,7 +14,6 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import ShakeBenchArena
-from robosuite.models.objects import CanObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
@@ -163,7 +163,12 @@ class VibrationPickPlaceCan(ManipulationEnv):
         scene_config=None,
         scene_visual=True,
         geometry_profile="canonical",
+        task=None,
     ):
+        from robosuite.utils.shakebench_tasks import TaskSpec
+
+        self.task_spec = None if task is None else TaskSpec.from_mapping(task)
+        self.object_mass_kg = CANONICAL_CAN_MASS_KG if self.task_spec is None else self.task_spec.object_mass_kg
         requested_robots = list(robots) if isinstance(robots, (list, tuple)) else [robots]
         if requested_robots != ["Panda"]:
             raise ValueError("VibrationPickPlaceCan currently supports exactly one Panda robot")
@@ -265,6 +270,12 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.reward_shaping = reward_shaping
         self.table_object_sliding_mu = float(self.physics_profile.contact["sliding_mu"]["table_object"])
         self.finger_object_sliding_mu = float(self.physics_profile.contact["sliding_mu"]["finger_object"])
+        self.target_object_sliding_mu = self.table_object_sliding_mu
+        if self.task_spec is not None:
+            self.table_object_sliding_mu = self.task_spec.table_sliding_mu
+            self.target_object_sliding_mu = self.task_spec.target_sliding_mu
+            self.finger_object_sliding_mu = 1.0
+            self.target_container_friction = (self.target_object_sliding_mu, *expected_target_friction[1:])
         self.use_object_obs = use_object_obs
         self.use_camera_obs = use_camera_obs
         self.observation_tier = observation_tier
@@ -442,17 +453,32 @@ class VibrationPickPlaceCan(ManipulationEnv):
             self.can.root_body,
             self.can.contact_geoms,
         )
-        envelope.assert_matches(CANONICAL_CAN_COLLISION_ENVELOPE)
+        if self.task_spec is None:
+            envelope.assert_matches(CANONICAL_CAN_COLLISION_ENVELOPE)
+        if self.task_spec is not None:
+            from robosuite.utils.shakebench_tasks import OBJECT_SUPPORT
+
+            expected_support = OBJECT_SUPPORT[self.task_spec.object_id]
+            actual_support = (envelope.lower_support_z_m, envelope.upper_support_z_m, envelope.support_radius_m)
+            if not np.allclose(actual_support, expected_support, atol=1e-10, rtol=0):
+                raise ShakeBenchMetricsError("task object collision support differs from its state contract")
         self.can_collision_envelope = envelope
         self.can_collision_envelope_bottom_m = envelope.lower_support_z_m
         self.can_collision_envelope_top_m = envelope.upper_support_z_m
         self.can_collision_envelope_radius_m = envelope.support_radius_m
         self.can_placement_z_offset_m = -envelope.lower_support_z_m
         inertia = equivalent_cylinder_inertia(
-            CANONICAL_CAN_MASS_KG,
+            self.object_mass_kg,
             envelope.support_radius_m,
             envelope.height_m,
         )
+        self.can_com = CANONICAL_CAN_COM_M
+        inertial_quat = (1.0, 0.0, 0.0, 0.0)
+        if self.task_spec is not None:
+            body_id = mujoco.mj_name2id(probe_model, mujoco.mjtObj.mjOBJ_BODY, self.can.root_body)
+            inertia = probe_model.body_inertia[body_id] * (self.object_mass_kg / probe_model.body_mass[body_id])
+            self.can_com = tuple(probe_model.body_ipos[body_id])
+            inertial_quat = tuple(probe_model.body_iquat[body_id])
         self.can_inertia = tuple(float(value) for value in inertia)
         can_body = self.can.get_obj()
         if can_body.find("./inertial") is not None:
@@ -462,8 +488,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
             ET.Element(
                 "inertial",
                 {
-                    "pos": array_to_string(CANONICAL_CAN_COM_M),
-                    "mass": format(CANONICAL_CAN_MASS_KG, ".17g"),
+                    "pos": array_to_string(self.can_com),
+                    "quat": array_to_string(inertial_quat),
+                    "mass": format(self.object_mass_kg, ".17g"),
                     "diaginertia": array_to_string(inertia),
                 },
             ),
@@ -472,7 +499,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
 
     def _append_contact_pairs(self):
         can_geom_names = tuple(self.can.contact_geoms)
-        table_geom_names = (self.arena.table_collision.get("name"),)
+        table_geom_names = (self.arena.object_support_geom.get("name"),)
         target_collision_names = tuple(
             name for key, name in self.arena.target_container_geom_names.items() if not key.endswith("_visual")
         )
@@ -487,6 +514,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         finger_pad_names = tuple(self.finger_pad_geom_names)
         table_pair_attributes = self.physics_profile.pair_attributes(self.table_object_sliding_mu)
         finger_pair_attributes = self.physics_profile.pair_attributes(self.finger_object_sliding_mu)
+        target_pair_attributes = self.physics_profile.pair_attributes(self.target_object_sliding_mu)
         partner_names = table_geom_names + target_collision_names + finger_pad_names
         for geom_name in partner_names:
             geom = self.model.worldbody.find(f".//geom[@name='{geom_name}']")
@@ -504,7 +532,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 ET.SubElement(
                     self.model.contact,
                     "pair",
-                    {"geom1": can_name, "geom2": target_name, **table_pair_attributes},
+                    {"geom1": can_name, "geom2": target_name, **target_pair_attributes},
                 )
             for finger_name in finger_pad_names:
                 ET.SubElement(
@@ -529,6 +557,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         }
 
     def _load_model(self):
+        self._policy_task_context_cache = None
         super()._load_model()
         if len(self.robots) != 1 or self.robot_names != ["Panda"]:
             raise ValueError("VibrationPickPlaceCan requires exactly one Panda")
@@ -547,7 +576,13 @@ class VibrationPickPlaceCan(ManipulationEnv):
             visual=self.scene_visual,
             scene_config=self.scene_config,
         )
-        self.arena.add_target_container(friction=self.target_container_friction)
+        self.arena.object_support_geom = self.arena.table_collision
+        if self.task_spec is not None and self.task_spec.surface_id == "mat":
+            self.arena.add_table_mat()
+        self.arena.add_target_container(
+            friction=self.target_container_friction,
+            visual_style="basket" if self.task_spec is not None else "tray",
+        )
         base_position = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         if self.geometry_profile is not None:
             base_position = self.geometry_profile["robot_base_pos_m"]
@@ -564,7 +599,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
         )
         self.gripper_body_name = self.robots[0].robot_model.eef_name["right"]
 
-        self.can = CanObject(name="can")
+        from robosuite.utils.shakebench_tasks import make_task_object
+
+        # Stable internal handles preserve the evaluator and legacy replay wire format.
+        self.can = make_task_object(self.task_spec)
+        self.task_object = self.can
         self._configure_can()
         self._measure_can_collision_envelope()
         if self.placement_initializer is None:
@@ -1016,6 +1055,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
     def policy_task_context(self):
         """Return public static task/physics metadata, never current runtime truth."""
 
+        cached = getattr(self, "_policy_task_context_cache", None)
+        if cached is not None:
+            return copy.deepcopy(cached)
         if not hasattr(self, "arena"):
             return {
                 "observation_tier": self.observation_tier,
@@ -1056,7 +1098,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             deck_to_robot_base_position_m=compiled_robot_base_position,
             deck_to_robot_base_quaternion_wxyz=compiled_robot_base_quaternion,
         )
-        return {
+        context = {
             "observation_tier": self.observation_tier,
             "policy_rate_hz": float(self.control_freq),
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
@@ -1083,7 +1125,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "inertia_kg_m2": list(self.arena.isolator_parameters.inertia_kg_m2),
             },
             "can": {
-                "mass_kg": float(CANONICAL_CAN_MASS_KG),
+                "mass_kg": float(self.object_mass_kg),
                 "inertia_kg_m2": list(self.can_inertia) if self.can_inertia is not None else None,
                 "collision_envelope": (
                     self.can_collision_envelope.to_dict() if hasattr(self, "can_collision_envelope") else None
@@ -1098,7 +1140,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
             "physics_profile": {
                 "profile_id": self.physics_profile.profile_id,
                 "profile_sha256": self.physics_profile.profile_sha256,
-                "scoreable": self.physics_profile.scoreable and self._geometry_is_scoreable(),
+                "scoreable": self.physics_profile.scoreable
+                and self._geometry_is_scoreable()
+                and self.task_spec is None,
             },
             "imu": {
                 "profile_id": CANONICAL_IMU_PROFILE.profile_id,
@@ -1133,7 +1177,11 @@ class VibrationPickPlaceCan(ManipulationEnv):
             },
             "support_topology_id": "deck_robot_base_plus_isolated_worktable",
             "success_semantics": "phase04_vibration_success_evaluator",
+            **({"task": self.task_spec.contract()} if self.task_spec is not None else {}),
         }
+        if hasattr(self, "sim"):
+            self._policy_task_context_cache = copy.deepcopy(context)
+        return context
 
     def get_policy_task_context(self):
         """Return the public static task context as a fresh mapping."""
@@ -1199,8 +1247,8 @@ class VibrationPickPlaceCan(ManipulationEnv):
             sim_or_model,
             self.can.root_body,
             self.can.contact_geoms,
-            expected_mass_kg=CANONICAL_CAN_MASS_KG,
-            expected_com_m=CANONICAL_CAN_COM_M,
+            expected_mass_kg=self.object_mass_kg,
+            expected_com_m=self.can_com,
             expected_inertia_kg_m2=self.can_inertia,
         )
         compiled_envelope = extract_can_collision_envelope(
@@ -1219,6 +1267,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
             target_wall_geom_names=self.target_wall_geom_names,
             finger_pad_geom_names=self.finger_pad_geom_names,
             table_sliding_mu=self.table_object_sliding_mu,
+            target_sliding_mu=self.target_object_sliding_mu,
             finger_sliding_mu=self.finger_object_sliding_mu,
             contact_profile=self.physics_profile.contact,
         )
@@ -1331,6 +1380,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "collision_geometry": target_geometry,
             },
             "contacts": contact_audit,
+            **({"task": self.task_spec.contract()} if self.task_spec is not None else {}),
             "physics_profile": self.physics_profile.audit(),
             "robot_mount": robot_mount_audit,
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),

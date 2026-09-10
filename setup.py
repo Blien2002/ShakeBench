@@ -44,6 +44,8 @@ setup(
             "models/assets/shakebench_states_dev.json",
             "models/assets/shakebench_states_official.json",
             "models/assets/shakebench_states_knee.json",
+            "models/assets/shakebench_task_states_official_v2.json",
+            "models/assets/shakebench_task_states_knee_v2.json",
             "models/assets/shakebench_scene_visual_v1.json",
             "models/assets/shakebench_scene_direct_mount_v1.json",
             "models/assets/shakebench_geometry_direct_mount_v1.json",

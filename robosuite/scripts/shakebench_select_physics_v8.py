@@ -74,12 +74,7 @@ from robosuite.utils.shakebench_artifacts import (
 )
 from robosuite.utils.shakebench_phase06_adapters import (
     AdapterContractError,
-    NoPhysicsBackend,
-    prepare_contact_probe,
-    prepare_driver_probe,
-    prepare_isolator_probe,
-    prepare_parity_probe,
-    prepare_replay_probe,
+    adapter_contract_payload,
 )
 from robosuite.utils.shakebench_physics import PhysicsProfile, physics_profile_hash
 from robosuite.utils.shakebench_protocol_v8 import (
@@ -104,7 +99,6 @@ STATUS_FILENAME = "shakebench_phase_06r7_v8_status.json"
 PARITY_FILENAME = "shakebench_phase_06r7_v8_gamma_zero_parity.json"
 DETERMINISM_FILENAME = "shakebench_phase_06r7_v8_replay_determinism.json"
 OFFICIAL_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-DIAGNOSTIC_FILENAME = "shakebench_phase_06r7_v8_normal_impact_diagnostic.json"
 V7_PROTOCOL_FILENAME = "shakebench_selection_protocol_v7.yaml"
 V7_SELECTED_FILENAME = "shakebench_phase_06r6_v7_selected_candidates.json"
 V7_STATUS_FILENAME = "shakebench_phase_06r6_v7_status.json"
@@ -280,7 +274,7 @@ def validate_v8_protocol(protocol: Mapping[str, Any], *, protocol_bytes_hash: st
         raise V8ProtocolError("V8 impedance-variation candidate does not vary solimp")
 
     contact = _mapping(protocol.get("contact"), "contact")
-    for key in ("interfaces", "probes", "hard_gates", "scoring", "diagnostic", "normal_impact"):
+    for key in ("interfaces", "probes", "hard_gates", "scoring", "normal_impact"):
         if key not in contact:
             raise V8ProtocolError(f"contact.{key} is required")
     if tuple(contact["interfaces"]) != tuple(v7_protocol["contact"]["interfaces"]):
@@ -306,11 +300,8 @@ def validate_v8_protocol(protocol: Mapping[str, Any], *, protocol_bytes_hash: st
     for key, expected in (("maximum_illegal_penetration_m", PENETRATION_MAX_M), ("recovery_velocity_max_m_s", VELOCITY_MAX_M_S), ("recovery_angular_velocity_max_rad_s", ANGULAR_VELOCITY_MAX_RAD_S), ("finger_force_max_N", 40.0), ("finger_penetration_max_m", PENETRATION_MAX_M), ("incline_bracket_resolution_rad", INCLINE_RESOLUTION_RAD), ("incline_slip_displacement_m", INCLINE_SLIP_DISPLACEMENT_M)):
         if float(gates[key]) != expected:
             raise V8ProtocolError(f"V8 hard gate changed frozen value: {key}")
-    diagnostic = _mapping(contact["diagnostic"], "contact.diagnostic")
-    diagnostic_path = _asset(str(diagnostic.get("path", DIAGNOSTIC_FILENAME)))
-    if str(diagnostic.get("sha256")) != file_sha256(diagnostic_path):
-        raise V8ProtocolError("V8 diagnostic artifact hash mismatch")
-    if diagnostic.get("selection_authority") is not False:
+    diagnostic = _mapping(contact.get("diagnostic"), "contact.diagnostic", required=False)
+    if diagnostic and diagnostic.get("selection_authority") is not False:
         raise V8ProtocolError("V8 diagnostic must not have selection authority")
 
     replay = _mapping(protocol.get("replay"), "replay")
@@ -349,40 +340,21 @@ def _contact_plan_with_normal_fields(plan: Any) -> dict[str, Any]:
 
 
 def adapter_contract(protocol: Mapping[str, Any], *, protocol_bytes_hash: str | None = None) -> dict[str, Any]:
-    states = _resolve_v8(protocol, protocol_bytes_hash=protocol_bytes_hash)
-    backend = NoPhysicsBackend()
-    plans = []
-    for state in states:
-        if state.stage == "driver":
-            plan = prepare_driver_probe(state, backend)
-        elif state.stage == "isolator":
-            plan = prepare_isolator_probe(state, backend)
-        elif state.stage == "contact":
-            plan = prepare_contact_probe(state, backend)
-        elif state.stage == "parity":
-            plan = prepare_parity_probe(state, backend)
-        else:
-            plan = prepare_replay_probe(state, backend)
-        if plan.complete is not True or not plan.requested_fields:
-            raise AdapterContractError(f"incomplete V8 adapter plan: {state.state_id}")
-        plan_dict = _contact_plan_with_normal_fields(plan) if state.stage == "contact" else plan.to_dict()
-        plans.append({"kind": "manifest_state", "state_digest": state.resolved_state_digest, "plan": plan_dict})
-    for state in resolve_replay_binding_templates(protocol):
-        replay_plan = prepare_replay_probe(state, backend)
-        plans.append({"kind": "legal_replay_binding", "state_digest": state.resolved_state_digest, "plan": replay_plan.to_dict()})
-        selected = state.replay.selected_component if state.replay is not None else ""
-        if selected == "driver":
-            component = prepare_driver_probe(state, backend)
-        elif selected == "isolator":
-            component = prepare_isolator_probe(state, backend)
-        elif selected == "contact":
-            component = prepare_contact_probe(state, backend)
-        else:
-            component = prepare_parity_probe(state, backend)
-        if component.complete is not True:
-            raise AdapterContractError(f"incomplete V8 replay component plan: {selected}")
-        plans.append({"kind": "legal_replay_component", "state_digest": state.resolved_state_digest, "plan": (_contact_plan_with_normal_fields(component) if selected == "contact" else component.to_dict())})
-    return {"schema_id": SCHEMA_ID + ".adapter_contract", "schema_version": SCHEMA_VERSION, "state_count": len(states), "legal_replay_binding_count": len(resolve_replay_binding_templates(protocol)), "prepared_plan_count": len(plans), "adapter_contract_digest": sha256_json(plans), "plans": plans, "backend": {"type": "NoPhysicsBackend", "preparation_event_count": len(backend.preparation_events), "physics_calls": 0}, "mujoco_model_created": False}
+    def encode(state: ResolvedProbeState, plan, kind: str) -> dict[str, Any]:
+        if state.stage == "contact" or (
+            kind == "legal_replay_component" and state.replay is not None and state.replay.selected_component == "contact"
+        ):
+            return _contact_plan_with_normal_fields(plan)
+        return plan.to_dict()
+
+    return adapter_contract_payload(
+        _resolve_v8(protocol, protocol_bytes_hash=protocol_bytes_hash),
+        resolve_replay_binding_templates(protocol),
+        schema_id=SCHEMA_ID + ".adapter_contract",
+        schema_version=SCHEMA_VERSION,
+        plan_payload=encode,
+    )
+
 
 
 def _normal_from_trace(normal: Any, *, timestep_s: float, duration_s: float, tail_window_s: float, penetration_limit_m: float, velocity_limit_m_s: float, angular_limit_rad_s: float, support_force_min_N: float) -> tuple[dict[str, Any], list[str]]:
@@ -759,8 +731,7 @@ def write_feasibility_artifact(protocol_path: str | Path, *, output_path: str | 
     for state in states:
         ratio = state.common.control_period_s / state.common.physics_timestep_s
         proofs.append({"state_id": state.state_id, "control_period_over_dt": ratio, "integer": state.common.control_steps, "passed": bool(np.isclose(ratio, state.common.control_steps, rtol=0.0, atol=1.0e-12))})
-    diagnostic_path = _asset(DIAGNOSTIC_FILENAME)
-    artifact = {"schema_id": SCHEMA_ID + ".feasibility", "schema_version": SCHEMA_VERSION, "status": "PASS", "protocol": {"path": protocol_name, "bytes_sha256": protocol_hash, "normalized_sha256": sha256_json(protocol), "immutable_after_registration": protocol.get("immutable_after_registration")}, "resolved_state_digest": structure["resolved_state_digest"], "resolved_states": [state.to_dict() for state in states], "state_count": len(states), "stage_counts": structure["stage_counts"], "legal_replay_binding_count": len(resolve_replay_binding_templates(protocol)), "adapter_contract_digest": contract["adapter_contract_digest"], "adapter_contract_state_count": contract["state_count"], "adapter_contract_prepared_plan_count": contract["prepared_plan_count"], "integer_ratio_proofs": proofs, "capacity_evidence": {"path": capacity_path.name, "sha256": file_sha256(capacity_path), "selection_input": False}, "diagnostic_evidence": {"path": diagnostic_path.name, "sha256": file_sha256(diagnostic_path), "selection_authority": False}, "v7_inheritance": {"protocol": V7_PROTOCOL_FILENAME, "protocol_sha256": structure["v7_protocol_sha256"], "selected_driver": "dt_nominal", "selected_isolator": "low_frequency_damped", "v7_contact_selection_inherited": False}, "commands": {label: {"command": f"python -m robosuite.scripts.shakebench_select_physics_v8 --protocol {protocol_path} {flag}", "exit_code": exit_codes[label], "result_digest": sha256_json(results[label])} for label, flag in command_specs}}
+    artifact = {"schema_id": SCHEMA_ID + ".feasibility", "schema_version": 1, "status": "PASS", "protocol": {"path": protocol_name, "bytes_sha256": protocol_hash, "normalized_sha256": sha256_json(protocol), "immutable_after_registration": protocol.get("immutable_after_registration")}, "resolved_state_digest": structure["resolved_state_digest"], "resolved_states": [state.to_dict() for state in states], "state_count": len(states), "stage_counts": structure["stage_counts"], "legal_replay_binding_count": len(resolve_replay_binding_templates(protocol)), "adapter_contract_digest": contract["adapter_contract_digest"], "adapter_contract_state_count": contract["state_count"], "adapter_contract_prepared_plan_count": contract["prepared_plan_count"], "integer_ratio_proofs": proofs, "capacity_evidence": {"path": capacity_path.name, "sha256": file_sha256(capacity_path), "selection_input": False}, "v7_inheritance": {"protocol": V7_PROTOCOL_FILENAME, "protocol_sha256": structure["v7_protocol_sha256"], "selected_driver": "dt_nominal", "selected_isolator": "low_frequency_damped", "v7_contact_selection_inherited": False}, "commands": {label: {"command": f"python -m robosuite.scripts.shakebench_select_physics_v8 --protocol {protocol_path} {flag}", "exit_code": exit_codes[label], "result_digest": sha256_json(results[label])} for label, flag in command_specs}}
     artifact["payload_sha256"] = payload_hash(artifact)
     destination = Path(output_path) if output_path is not None else Path(models.assets_root) / FEASIBILITY_FILENAME
     write_json_atomic(destination, artifact)

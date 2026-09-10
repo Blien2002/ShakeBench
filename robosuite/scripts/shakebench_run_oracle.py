@@ -158,6 +158,18 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
     if payload.get("schema_id") == "shakebench.phase07.dev_states":
         states = load_dev_states(source)
         return {"states": states, "authority": {"kind": "dev", "dev_state_anchor": _dev_state_anchor(source)}}
+    from robosuite.utils.shakebench_task_states import TASK_STATE_SCHEMA, verify_task_state_artifact
+
+    if payload.get("schema_id") == TASK_STATE_SCHEMA:
+        verdict = verify_task_state_artifact(payload)
+        if not verdict["passed"]:
+            raise OracleRunError("task state authority failed: " + ", ".join(verdict["errors"]))
+        return {"states": payload["states"], "authority": {
+            "kind": "task_variants", "split": payload["split"], "scoreable": False,
+            "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "asset_payload_sha256": payload["payload_sha256"],
+            "authority_hashes": dict(payload["authority_hashes"]),
+        }}
     from robosuite.utils.shakebench_committed_states import verify_committed_state_artifact
 
     split = payload.get("split")
@@ -512,8 +524,12 @@ def run_episode(
         raise OracleRunError("gamma_commanded must be finite and non-negative")
     level_scale = level_scale_for_gamma(gamma_commanded, seed=seed, t0=t0_s)
     program = build_excitation_program(seed=seed, t0=t0_s, level_scale=level_scale)
+    from robosuite.utils.shakebench_tasks import legacy_oracle_observation, task_env_kwargs
+
+    variant = "task" in state
+    task_kwargs = task_env_kwargs(state) if variant else {"can_start_xy": tuple(state["can_xy_m"])}
     env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace" if variant else "VibrationPickPlaceCan",
         robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"),
         has_renderer=False,
@@ -525,7 +541,7 @@ def run_episode(
         observation_tier=tier,
         imu_mode="canonical_noisy_v1",
         excitation_program=program,
-        can_start_xy=tuple(state["can_xy_m"]),
+        **task_kwargs,
         imu_seed=imu_seed,
         horizon=horizon_steps,
         ignore_done=True,
@@ -538,11 +554,11 @@ def run_episode(
         scene_identity = scene_visual_identity(env.scene_config)
         geometry_authority = geometry_authority_identity(geometry_profile, allow_unverified=allow_unverified_geometry)
         scoreable = bool(env.get_policy_task_context()["physics_profile"]["scoreable"])
-        if scoreable != bool(geometry_authority["scoreable"]):
+        if scoreable != (bool(geometry_authority["scoreable"]) and not variant):
             raise OracleRunError("environment and geometry authority scoreability disagree")
         task_context = WorktableTaskContext.from_mapping(env.get_policy_task_context().get("task_context"))
         controller = ShakeBenchOracleController(tier, profile, task_context=task_context)
-        observation = env.reset()
+        observation = legacy_oracle_observation(env.reset())
         raw_model = getattr(env.sim.model, "_model", env.sim.model)
         actuator_metadata = _actuator_metadata_from_model(raw_model)
         trace = []
@@ -584,6 +600,7 @@ def run_episode(
             clipped = np.clip(normalized, -1.0, 1.0)
             try:
                 observation, _, _, _ = env.step(clipped)
+                observation = legacy_oracle_observation(observation)
             except Exception:
                 episode_validity = "invalid"
                 termination_cause = "invalid_execution"
@@ -712,6 +729,7 @@ def run_episode(
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
             "state_sha256": _digest(state),
+            **({"task_contract": env.task_spec.contract()} if variant else {}),
             "outcome_contract": outcome_contract(),
             "outcome_contract_sha256": outcome_contract_sha256(),
             "episode_validity": episode_validity,
@@ -811,7 +829,7 @@ def main(argv: list[str] | None = None) -> int:
     scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))
     geometry_payload = geometry_profile if geometry_profile is not None else None
     geometry_authority = geometry_authority_identity(args.geometry_profile)
-    scoreable = bool(geometry_authority["scoreable"])
+    scoreable = bool(geometry_authority["scoreable"]) and state_asset["authority"]["kind"] != "task_variants"
     scene_identity = scene_visual_identity(scene_config)
     if args.horizon_steps <= 0:
         raise OracleRunError("--horizon-steps must be positive")
@@ -1049,7 +1067,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         if not anchor_matches:
             errors.append("dev-state anchor")
         states_by_id = {row["state_id"]: row for row in load_dev_states(_default_dev_state_path())}
-    elif isinstance(state_authority, Mapping) and state_authority.get("kind") == "committed":
+    elif isinstance(state_authority, Mapping) and state_authority.get("kind") in {"committed", "task_variants"}:
         committed_split = state_authority.get("split")
         from robosuite.utils.shakebench_committed_states import KNEE_STATE_FILENAME, OFFICIAL_STATE_FILENAME
 
@@ -1060,6 +1078,10 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             asset = Path(models.assets_root) / (
                 OFFICIAL_STATE_FILENAME if committed_split == "official" else KNEE_STATE_FILENAME
             )
+            if state_authority.get("kind") == "task_variants":
+                from robosuite.utils.shakebench_task_states import TASK_STATE_FILENAMES
+
+                asset = Path(models.assets_root) / TASK_STATE_FILENAMES[committed_split]
             try:
                 resolved = load_state_asset(asset)
                 if resolved["authority"] != state_authority:
@@ -1100,7 +1122,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             errors.append("scene visual authority")
         if not _values_equal(payload.get("geometry_authority"), expected_geometry_authority, atol=0.0):
             errors.append("geometry authorization")
-        if payload.get("scoreable") is not bool(expected_geometry_authority["scoreable"]):
+        variant_run = isinstance(state_authority, Mapping) and state_authority.get("kind") == "task_variants"
+        if payload.get("scoreable") is not (bool(expected_geometry_authority["scoreable"]) and not variant_run):
             errors.append("scoreable authority")
     except (OSError, TypeError, ValueError):
         errors.append("scene visual authority unavailable")
@@ -1170,6 +1193,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             "trace",
             "trace_sha256",
         }
+        if isinstance(state_authority, Mapping) and state_authority.get("kind") == "task_variants":
+            required_episode_fields.add("task_contract")
         if set(episode) != required_episode_fields:
             errors.append(prefix + " required fields")
         if (
@@ -1190,6 +1215,18 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         else:
             seen_state_ids.add(state_id)
             state = states_by_id[state_id]
+            if "task" in state:
+                from robosuite.utils.shakebench_tasks import TaskSpec, OBJECT_SUPPORT
+
+                spec = TaskSpec.from_mapping(state["task"])
+                if episode.get("task_contract") != spec.contract():
+                    errors.append(prefix + " task contract binding")
+                context = episode.get("task_context", {})
+                lower, upper, radius = OBJECT_SUPPORT[spec.object_id]
+                for key, value in (("can_collision_lower_support_m", lower),
+                                   ("can_collision_upper_support_m", upper), ("can_collision_radius_m", radius)):
+                    if not _values_equal(context.get(key), value, atol=1e-10):
+                        errors.append(prefix + " object geometry binding")
             if episode.get("state_sha256") != _digest(state):
                 errors.append(prefix + " state hash")
             if committed_split is not None:

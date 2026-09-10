@@ -28,6 +28,7 @@ from typing import Any, Optional
 import numpy as np
 
 from robosuite import models
+from robosuite.utils.shakebench_artifacts import json_ready as _json_ready
 from robosuite.utils.shakebench_isolator import AXES, IsolatorConfig, derive_isolator_parameters
 
 PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
@@ -66,18 +67,6 @@ class PhysicsProfileError(ValueError):
 
 class PhysicsProfileIntegrityError(PhysicsProfileError):
     """Raised when a package profile or its embedded hash is tampered with."""
-
-
-def _json_ready(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {str(key): _json_ready(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_ready(item) for item in value]
-    if isinstance(value, np.ndarray):
-        return [_json_ready(item) for item in value.tolist()]
-    if isinstance(value, (np.integer, np.floating, np.bool_)):
-        return value.item()
-    return value
 
 
 def canonical_profile_payload(payload: Mapping[str, Any]) -> str:
@@ -622,22 +611,24 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             )
     from robosuite.utils.shakebench_runtime_verifier import verify_runtime_publication_bundle
 
-    runtime = verify_runtime_publication_bundle(Path(models.assets_root))
+    try:
+        runtime = verify_runtime_publication_bundle(Path(models.assets_root), include_profile=True)
+    except TypeError:  # Compatibility with test and downstream verifier stubs.
+        runtime = verify_runtime_publication_bundle(Path(models.assets_root))
     if runtime.get("passed") is not True:
         detail = "; ".join(str(error) for error in runtime.get("errors", ()))
         raise PhysicsProfileIntegrityError("official physics is blocked by the runtime publication contract: " + detail)
     profile_path = _asset_path(OFFICIAL_PHYSICS_PROFILE_FILENAME)
-    try:
-        payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
-    except OSError as exc:
-        raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
+    payload = runtime.get("profile_payload")
+    if payload is None:
+        try:
+            payload = _load_yaml_text(profile_path.read_text(encoding="utf-8"))
+        except OSError as exc:
+            raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
     profile = _validate_payload(payload, source=str(profile_path), require_official=True)
-    protocol_filename = PHASE06F_PROTOCOL_FILENAME
-    try:
-        protocol_bytes = _asset_path(protocol_filename).read_bytes()
-    except OSError as exc:
-        raise PhysicsProfileIntegrityError(f"cannot read active selection protocol: {protocol_filename}") from exc
-    expected_protocol_hash = hashlib.sha256(protocol_bytes).hexdigest()
+    expected_protocol_hash = runtime.get("protocol_sha256")
+    if expected_protocol_hash is None:
+        expected_protocol_hash = hashlib.sha256(_asset_path(PHASE06F_PROTOCOL_FILENAME).read_bytes()).hexdigest()
     if profile.payload.get("protocol_sha256") != expected_protocol_hash:
         raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06F selection protocol")
     if profile.profile_sha256 != runtime.get("profile_sha256"):

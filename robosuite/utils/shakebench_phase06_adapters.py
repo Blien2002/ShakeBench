@@ -13,7 +13,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable, Iterable
 
 from robosuite.utils.shakebench_protocol_v6 import ResolvedProbeState, sha256_json
 
@@ -64,6 +64,75 @@ class PreparedProbePlan:
         }
 
 
+def adapter_contract_payload(
+    states: Iterable[ResolvedProbeState],
+    replay_states: Iterable[ResolvedProbeState],
+    *,
+    schema_id: str,
+    schema_version: int,
+    plan_payload: Callable[[ResolvedProbeState, PreparedProbePlan, str], dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Exercise all adapter plans without a physics backend.
+
+    V6--V8 differ only in their resolved states and, for V8 contact plans,
+    their serialized plan details.  This keeps the common preflight loop in
+    one place while callers retain their protocol-specific payload shape.
+    """
+
+    states = tuple(states)
+    replay_states = tuple(replay_states)
+    backend = NoPhysicsBackend()
+    encode = plan_payload or (lambda _state, plan, _kind: plan.to_dict())
+    plans: list[dict[str, Any]] = []
+
+    def prepare(state: ResolvedProbeState) -> PreparedProbePlan:
+        handlers = {
+            "driver": prepare_driver_probe,
+            "isolator": prepare_isolator_probe,
+            "contact": prepare_contact_probe,
+            "parity": prepare_parity_probe,
+            "replay": prepare_replay_probe,
+        }
+        try:
+            plan = handlers[state.stage](state, backend)
+        except KeyError as exc:
+            raise AdapterContractError(f"unsupported adapter stage: {state.stage}") from exc
+        if plan.complete is not True or not plan.requested_fields:
+            raise AdapterContractError(f"incomplete {state.stage} adapter plan")
+        return plan
+
+    for state in states:
+        plans.append({"kind": "manifest_state", "state_digest": state.resolved_state_digest, "plan": encode(state, prepare(state), "manifest_state")})
+    for state in replay_states:
+        replay_plan = prepare_replay_probe(state, backend)
+        if state.replay is None:
+            raise AdapterContractError("replay binding resolver produced no replay child")
+        plans.append({"kind": "legal_replay_binding", "state_digest": state.resolved_state_digest, "plan": encode(state, replay_plan, "legal_replay_binding")})
+        component = state.replay.selected_component
+        component_state = state
+        handlers = {
+            "driver": prepare_driver_probe,
+            "isolator": prepare_isolator_probe,
+            "contact": prepare_contact_probe,
+            "parity": prepare_parity_probe,
+        }
+        plan = handlers.get(component, prepare_parity_probe)(component_state, backend)
+        if plan.complete is not True:
+            raise AdapterContractError(f"incomplete replay component plan: {component}")
+        plans.append({"kind": "legal_replay_component", "state_digest": state.resolved_state_digest, "plan": encode(state, plan, "legal_replay_component")})
+    return {
+        "schema_id": schema_id,
+        "schema_version": schema_version,
+        "state_count": len(states),
+        "legal_replay_binding_count": len(replay_states),
+        "prepared_plan_count": len(plans),
+        "adapter_contract_digest": sha256_json(plans),
+        "plans": plans,
+        "backend": {"type": "NoPhysicsBackend", "preparation_event_count": len(backend.preparation_events), "physics_calls": 0},
+        "mujoco_model_created": False,
+    }
+
+
 def _json_ready(value: Any) -> Any:
     if isinstance(value, Mapping):
         return {str(key): _json_ready(item) for key, item in value.items()}
@@ -75,10 +144,7 @@ def _json_ready(value: Any) -> Any:
 def _finish(state: ResolvedProbeState, fields: tuple[str, ...], details: Mapping[str, Any], backend: NoPhysicsBackend | None) -> PreparedProbePlan:
     if backend is not None:
         backend.record_preparation(state.stage, state.state_id)
-    plan = PreparedProbePlan(state.stage, state.state_id, fields, True, dict(details))
-    if not plan.complete:
-        raise AdapterContractError(f"{state.stage} adapter did not produce a complete plan")
-    return plan
+    return PreparedProbePlan(state.stage, state.state_id, fields, True, dict(details))
 
 
 def prepare_driver_probe(state: ResolvedProbeState, backend: NoPhysicsBackend | None = None) -> PreparedProbePlan:
@@ -193,7 +259,7 @@ def prepare_isolator_probe(state: ResolvedProbeState, backend: NoPhysicsBackend 
     )
 
 
-def _probe_profile_from_state(state: ResolvedProbeState):
+def probe_profile_from_state(state: ResolvedProbeState):
     """Build the non-scoreable candidate profile used by contact/parity probes."""
 
     if state.contact is None or state.isolator is None:
@@ -258,7 +324,7 @@ def prepare_contact_probe(state: ResolvedProbeState, backend: NoPhysicsBackend |
 
     if state.stage not in {"contact", "replay"} or state.contact is None:
         raise AdapterContractError("contact adapter requires a contact resolved state")
-    profile = _probe_profile_from_state(state)
+    profile = probe_profile_from_state(state)
     fields = (
         "common.physics_timestep_s",
         "contact.candidate_id",
@@ -354,6 +420,7 @@ __all__ = [
     "AdapterContractError",
     "NoPhysicsBackend",
     "PreparedProbePlan",
+    "probe_profile_from_state",
     "prepare_driver_probe",
     "prepare_isolator_probe",
     "prepare_contact_probe",

@@ -50,7 +50,6 @@ R6_ARCHIVE_URL = (
 ALLOWED_R6_HANDOFF_FILES = {
     R6_MANIFEST_FILENAME,
     "docs/phase_07_report.md",
-    "docs/shakebench_prompts/README.md",
     INDEX_FILENAME,
     RELEASE_MANIFEST_FILENAME,
     "SHA256SUMS",
