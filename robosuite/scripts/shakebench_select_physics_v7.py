@@ -78,14 +78,14 @@ from robosuite.utils.shakebench_physics import (
     make_probe_physics_profile,
     physics_profile_hash,
 )
-from robosuite.utils.shakebench_protocol_v7 import (
+from robosuite.utils.shakebench_protocol_v6 import (
     ResolvedProbeState,
-    V7ProtocolStateError,
+    V6ProtocolStateError as V7ProtocolStateError,
     legal_replay_binding_templates,
-    resolve_all_protocol_states_v7,
+    resolve_all_protocol_states_v6 as resolve_all_protocol_states_v7,
     resolve_replay_binding_templates,
+    sha256_json as sha256_state_json,
 )
-from robosuite.utils.shakebench_protocol_v7 import sha256_json as sha256_state_json
 
 SCHEMA_ID = "shakebench.phase06r6.v7.physics_selection"
 PROTOCOL_SCHEMA_ID = "shakebench.phase06r6.v7.physics_selection_protocol"

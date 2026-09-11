@@ -1,0 +1,139 @@
+{
+  "authorities": {
+    "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
+    "knee_state_authority": {
+      "asset_file_sha256": "cad6bfe986c89ffd78b68c102efe420a44e59209239631014db5b9dd4bf53667",
+      "asset_payload_sha256": "575db1c1c66b618ac46677af883cf67e918b7c010b6e061da76fb67f1e272aff",
+      "authority_hashes": {
+        "controller_profile_sha256": "ce4182b352ddf04b2655f5930ce93d486c34944906ba227b86d3f5830711f7da",
+        "geometry_profile_sha256": "f577c7044bfd0f72efb1f107dda3f0f379ca6242ae93bad6a7cc306b73552322",
+        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
+        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
+        "runtime_contract_sha256": "c1872baf6ffe0675e523f4d99b03529c03ea1972d8c1a73076a629dcf8f35210",
+        "scene_visual_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde",
+        "science_authority_sha256": "45b354c182d1f06cd7105d00b606649dec005029819bf25b95d31794f41d72f4",
+        "task_contract_sha256": "5410917df49b6789b56fb937364615cbbb04595a5f6640ce1af3deda056691b8"
+      },
+      "kind": "task_variants",
+      "scoreable": false,
+      "split": "knee"
+    },
+    "official_state_asset": "robosuite/models/assets/shakebench_task_states_official_v2.json",
+    "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
+    "selection_payload_sha256": "04d1abdff707ecd5ed54e2b46d4d39b50292525f55526c60c92c12f4f64e637f"
+  },
+  "blockers": [
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "metal/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-000.pick_place.metal.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "mat/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-000.pick_place.mat.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "metal/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-024.pick_place.metal.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "mat/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-024.pick_place.mat.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "metal/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-049.pick_place.metal.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "mat/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-049.pick_place.mat.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "metal/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-074.pick_place.metal.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "mat/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-074.pick_place.mat.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "metal/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-099.pick_place.metal.steel_block",
+      "termination_cause": "policy_abort"
+    },
+    {
+      "abort_reason": "public_anchor_drift",
+      "configuration": "mat/steel_block",
+      "controller_event": "anchor_drift",
+      "recovery_count": 3,
+      "state_id": "shakebench-knee-v2-099.pick_place.mat.steel_block",
+      "termination_cause": "policy_abort"
+    }
+  ],
+  "code_state": {
+    "git_head": "b8ae8741dba1e2360339eb837bf18384d447c308",
+    "git_status_porcelain_sha256": "d5b6f1075e3da14855381c59052122d202a83e8ce47a9712ef56977dd34c43cf"
+  },
+  "evidence": {
+    "cross_process_replay": "not_run_after_static_gate_failure",
+    "independent_verdict_count": 30,
+    "positive_gamma_060": "not_run_after_static_gate_failure",
+    "positive_gamma_095": "not_run_after_static_gate_failure",
+    "selection": {
+      "file_sha256": "a7bd7dfe76c799202aca29b263cac370ee9faaac98f22e9f1599f031e011be16",
+      "path": "out/phase09_pilot_invalidated_20mm/selection.json"
+    },
+    "static_gate": {
+      "episode_count": 30,
+      "file_sha256": "b8d226a621cbd48b0c2e1a35334b1108b5bcfc07420487f3f8f3c9028b6b3323",
+      "path": "out/phase09_pilot_invalidated_20mm/static_gamma000.json",
+      "payload_sha256": "94b7b3006495c1e40e7a14a46f3cc6a4f51947565f56bced404e0baed45c3de3",
+      "success_count": 20,
+      "valid_episode_count": 30
+    },
+    "static_summary": {
+      "file_sha256": "9b3b22710d97ffc29fcfa2a23483fdf14cb88e7b79f14fbb254fcba7cb01318b",
+      "path": "out/phase09_pilot_invalidated_20mm/static_summary.json"
+    }
+  },
+  "payload_sha256": "155ceeba9486126f1ecc22fef94beb853ab008ae607330b096bf31f36514b902",
+  "reason": "The steel and wood blocks were replaced by RoboCasa Objaverse canned-food and cookie-box models on 2026-09-10; all references below describe historical evidence. Fresh selection and requalification required.",
+  "schema_id": "shakebench.phase09.qualification_manifest",
+  "schema_version": 1,
+  "scoreable": false,
+  "status": "INVALIDATED"
+}

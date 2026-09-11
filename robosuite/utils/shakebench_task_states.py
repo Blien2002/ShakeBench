@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 from collections.abc import Mapping
 from pathlib import Path
 
 from robosuite import models
 from robosuite.utils.shakebench_artifacts import payload_hash, write_json_atomic
 from robosuite.utils.shakebench_committed_states import build_committed_state_artifact
-from robosuite.utils.shakebench_tasks import OBJECT_SUPPORT, task_variants
+from robosuite.utils.shakebench_tasks import OBJECT_SUPPORT, task_initial_yaw_rad, task_variants
 
 TASK_STATE_SCHEMA = "shakebench.phase09.task_states"
 TASK_STATE_FILENAMES = {split: f"shakebench_task_states_{split}_v2.json" for split in ("official", "knee")}
@@ -37,6 +38,7 @@ def build_task_state_artifact(split: str) -> dict:
         selected = (variants[index % len(variants)],) if split == "official" else variants
         for spec in selected:
             lower = OBJECT_SUPPORT[spec.object_id][0]
+            yaw = task_initial_yaw_rad(spec)
             record = {
                 "schema_id": TASK_STATE_SCHEMA + ".record",
                 "schema_version": 2,
@@ -46,8 +48,15 @@ def build_task_state_artifact(split: str) -> dict:
                 "split": split,
                 "task": spec.to_dict(),
                 "object_xy_m": list(parent["can_xy_m"]),
-                "object_pose_worktable": [*parent["can_xy_m"], 0.03 - lower, 1.0, 0.0, 0.0, 0.0],
-                "object_yaw_rad": 0.0,
+                "object_pose_worktable": [
+                    *parent["can_xy_m"],
+                    0.03 - lower,
+                    0.0,
+                    0.0,
+                    math.sin(yaw / 2.0),
+                    math.cos(yaw / 2.0),
+                ],
+                "object_yaw_rad": yaw,
                 "object_initial_velocity": [0.0] * 6,
                 "target_reference": copy.deepcopy(parent["target_reference"]),
                 "excitation_seed": parent["excitation_seed"],

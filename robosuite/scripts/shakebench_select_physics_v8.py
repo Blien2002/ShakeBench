@@ -77,11 +77,11 @@ from robosuite.utils.shakebench_phase06_adapters import (
     adapter_contract_payload,
 )
 from robosuite.utils.shakebench_physics import PhysicsProfile, physics_profile_hash
-from robosuite.utils.shakebench_protocol_v8 import (
+from robosuite.utils.shakebench_protocol_v6 import (
     ResolvedProbeState,
-    V8ProtocolStateError,
+    V6ProtocolStateError as V8ProtocolStateError,
     legal_replay_binding_templates,
-    resolve_all_protocol_states_v8,
+    resolve_all_protocol_states_v6 as resolve_all_protocol_states_v8,
     resolve_replay_binding_templates,
     sha256_json as sha256_state_json,
 )

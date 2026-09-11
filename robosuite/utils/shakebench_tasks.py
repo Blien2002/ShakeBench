@@ -8,6 +8,7 @@ deliberately not used). All variants retain a common 349 g payload mass.
 from __future__ import annotations
 
 import hashlib
+import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -16,8 +17,11 @@ from typing import Any, Protocol, runtime_checkable
 from robosuite.utils.shakebench_artifacts import payload_hash
 
 OBJECTS = {
-    "steel_block": {
-        "asset": "robosuite.models.objects.BoxObject:SteelBrushed:half_size=0.030,0.025,0.010",
+    "food_can": {
+        "asset": "objects/food_can.xml",
+        "source": "RoboCasa Objaverse canned_food_18",
+        "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+        "source_license": "CC-BY-4.0",
         "friction_class": "low",
         "metal_mu": 0.15,
         "mat_mu": 0.60,
@@ -30,8 +34,11 @@ OBJECTS = {
         "mat_mu": 0.60,
         "mass_kg": 0.10,
     },
-    "wood_cube": {
-        "asset": "robosuite.models.objects.BoxObject:WoodLight:half_size=0.025,0.025,0.025",
+    "cookie_box": {
+        "asset": "objects/cookie_box.xml",
+        "source": "RoboCasa Objaverse boxed_food_0",
+        "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+        "source_license": "CC-BY-4.0",
         "friction_class": "medium",
         "metal_mu": 0.30,
         "mat_mu": 0.90,
@@ -52,9 +59,9 @@ MAT_TEXTURE_PATH = "textures/gray-felt.png"
 TASK_VISUAL_REVISION = "felt_mat_wire_basket.v2"
 # Compiled support in object coordinates, measured from the package meshes.
 OBJECT_SUPPORT = {
-    "steel_block": (-0.01, 0.01, 0.03905124837953328),
+    "food_can": (-0.0325, 0.0325, 0.025),
     "light_wood_block": (-0.01, 0.01, 0.03905124837953328),
-    "wood_cube": (-0.025, 0.025, 0.03535533905932738),
+    "cookie_box": (-0.0362, 0.0362, 0.06415052610852073),
     "bread": (-0.023251370186775307, 0.024748632093102355, 0.0312410001023236),
 }
 
@@ -65,14 +72,11 @@ def object_asset_hashes(object_id):
     from robosuite import models
 
     root = Path(models.assets_root)
-    if object_id in {"steel_block", "light_wood_block", "wood_cube"}:
+    if object_id == "light_wood_block":
         sources = {
             "objects/generated_objects.py": root.parent / "objects/generated_objects.py",
             "objects/primitive/box.py": root.parent / "objects/primitive/box.py",
-            (
-                "assets/textures/steel-brushed.png" if object_id == "steel_block" else "assets/textures/light-wood.png"
-            ): root
-            / ("textures/steel-brushed.png" if object_id == "steel_block" else "textures/light-wood.png"),
+            "assets/textures/light-wood.png": root / "textures/light-wood.png",
         }
         return {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in sources.items()}
     source = root / OBJECTS[object_id]["asset"]
@@ -81,6 +85,12 @@ def object_asset_hashes(object_id):
         for node in ET.parse(source).getroot().findall("./asset/*")
         if "file" in node.attrib
     ]
+    if object_id in {"food_can", "cookie_box"}:
+        source_dir = {"food_can": "canned_food_18", "cookie_box": "cookie_box_0"}[object_id]
+        paths += [
+            source.parent / "meshes/robocasa_selected/LICENSE.md",
+            source.parent / "meshes/robocasa_selected" / source_dir / "material.mtl",
+        ]
     return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
 
 
@@ -89,7 +99,7 @@ class TaskSpec:
     """Serializable task selector; invalid combinations fail before compilation."""
 
     task_type: str = "pick_place"
-    object_id: str = "steel_block"
+    object_id: str = "food_can"
     surface_id: str = "metal"
 
     def __post_init__(self):
@@ -161,28 +171,31 @@ class TaskSpec:
             "success_semantics": "phase04_vibration_success_evaluator",
             "qualification": "pending_task_variant_requalification",
         }
+        for key in ("source", "source_url", "source_license"):
+            if key in OBJECTS[self.object_id]:
+                record[key] = OBJECTS[self.object_id][key]
         record["task_contract_sha256"] = payload_hash(record, field="task_contract_sha256")
         return record
 
 
 def make_task_object(spec: TaskSpec | None, *, name="can"):
     """Use existing robosuite meshes and its native textured box primitive."""
-    from robosuite.models.objects import BoxObject, BreadObject, CanObject
+    from robosuite.models.objects import BoxObject, BreadObject, CanObject, CookieBoxObject, FoodCanObject
     from robosuite.utils.mjcf_utils import CustomMaterial
 
     if spec is None:
         return CanObject(name=name)
-    if spec.object_id in {"steel_block", "light_wood_block"}:
+    if spec.object_id == "food_can":
+        return FoodCanObject(name=name)
+    if spec.object_id == "cookie_box":
+        return CookieBoxObject(name=name)
+    if spec.object_id == "light_wood_block":
         material = CustomMaterial(
-            texture="SteelBrushed" if spec.object_id == "steel_block" else "WoodLight",
+            texture="WoodLight",
             tex_name=f"{spec.object_id}_texture",
             mat_name=f"{spec.object_id}_material",
-            tex_attrib={"type": "cube" if spec.object_id == "steel_block" else "2d"},
-            mat_attrib=(
-                {"texrepeat": "1 1", "specular": "0.35", "shininess": "0.3", "reflectance": "0.15"}
-                if spec.object_id == "steel_block"
-                else {"texrepeat": "1 1", "specular": "0.15", "shininess": "0.1"}
-            ),
+            tex_attrib={"type": "2d"},
+            mat_attrib={"texrepeat": "1 1", "specular": "0.15", "shininess": "0.1"},
         )
         return BoxObject(
             name=name,
@@ -192,16 +205,7 @@ def make_task_object(spec: TaskSpec | None, *, name="can"):
         )
     if spec.object_id == "bread":
         return BreadObject(name=name)
-    material = CustomMaterial(
-        texture="WoodLight",
-        tex_name="wood_cube_texture",
-        mat_name="wood_cube_material",
-        tex_attrib={"type": "2d"},
-        mat_attrib={"texrepeat": "1 1", "specular": "0.15", "shininess": "0.1"},
-    )
-    return BoxObject(
-        name=name, size=(0.025, 0.025, 0.025), material=material, joints=[dict(type="free", damping="0.0005")]
-    )
+    raise ValueError(f"unsupported task object {spec.object_id!r}")
 
 
 def task_variants() -> tuple[TaskSpec, ...]:
@@ -209,7 +213,7 @@ def task_variants() -> tuple[TaskSpec, ...]:
     return tuple(
         TaskSpec(object_id=obj, surface_id=surface)
         for surface in SURFACES
-        for obj in ("steel_block", "wood_cube", "bread")
+        for obj in ("food_can", "cookie_box", "bread")
     )
 
 
@@ -240,6 +244,10 @@ def make_task_env(task: Mapping[str, Any] | TaskSpec | None = None, **kwargs) ->
     return VibrationPickPlace(task=TaskSpec.from_mapping(task), **kwargs)
 
 
+def task_initial_yaw_rad(spec: TaskSpec) -> float:
+    return math.pi / 2.0 if spec.object_id == "cookie_box" else 0.0
+
+
 def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     """Resolve state initialization; reject unsupported poses rather than ignore them."""
     import numpy as np
@@ -248,7 +256,15 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     xy = np.asarray(state.get("object_xy_m"), dtype=float)
     if xy.shape != (2,) or not np.all(np.isfinite(xy)):
         raise ValueError("object_xy_m must be a finite two-vector")
-    expected_pose = [*xy, 0.03 - OBJECT_SUPPORT[spec.object_id][0], 1.0, 0.0, 0.0, 0.0]
+    yaw = task_initial_yaw_rad(spec)
+    expected_pose = [
+        *xy,
+        0.03 - OBJECT_SUPPORT[spec.object_id][0],
+        0.0,
+        0.0,
+        math.sin(yaw / 2.0),
+        math.cos(yaw / 2.0),
+    ]
     pose = np.asarray(state.get("object_pose_worktable"), dtype=float)
     velocity = np.asarray(state.get("object_initial_velocity"), dtype=float)
     if (
@@ -256,10 +272,10 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
         or not np.allclose(pose, expected_pose, atol=1e-12, rtol=0)
         or velocity.shape != (6,)
         or np.any(velocity != 0)
-        or state.get("object_yaw_rad") != 0.0
+        or not math.isclose(float(state.get("object_yaw_rad", float("nan"))), yaw, rel_tol=0.0, abs_tol=1e-12)
     ):
-        raise ValueError("task states currently require upright support-aligned pose, zero yaw and zero velocity")
-    return {"task": spec, "object_start_xy": tuple(xy)}
+        raise ValueError("task states require their registered upright pose, yaw and zero velocity")
+    return {"task": spec, "object_start_xy": tuple(xy), "object_start_yaw_rad": yaw}
 
 
 def legacy_oracle_observation(observation: Mapping[str, Any]) -> dict[str, Any]:

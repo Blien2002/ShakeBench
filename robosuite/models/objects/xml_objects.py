@@ -34,6 +34,32 @@ class CanObject(MujocoXMLObject):
         )
 
 
+class FoodCanObject(MujocoXMLObject):
+    """RoboCasa canned-food visual with a stable cylindrical collision primitive."""
+
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/food_can.xml"),
+            name=name,
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=False,
+        )
+
+
+class CookieBoxObject(MujocoXMLObject):
+    """RoboCasa boxed-food visual with a simple rectangular collision primitive."""
+
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/cookie_box.xml"),
+            name=name,
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=False,
+        )
+
+
 class LemonObject(MujocoXMLObject):
     """
     Lemon object

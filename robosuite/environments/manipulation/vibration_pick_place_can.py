@@ -126,6 +126,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         table_offset=DEFAULT_TABLE_OFFSET_M,
         target_container_friction=(0.30, DEFAULT_CONTACT_TORSIONAL_MU, DEFAULT_CONTACT_ROLLING_MU),
         can_start_xy=CAN_START_XY_M,
+        can_start_yaw_rad=0.0,
         use_camera_obs=False,
         use_object_obs=True,
         reward_scale=1.0,
@@ -256,6 +257,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.table_offset = _finite_vector("table_offset", table_offset, 3)
         self.target_container_friction = _finite_vector("target_container_friction", target_container_friction, 3)
         self.can_start_xy = _finite_vector("can_start_xy", can_start_xy, 2)
+        self.can_start_yaw_rad = float(can_start_yaw_rad)
+        if not np.isfinite(self.can_start_yaw_rad):
+            raise ValueError("can_start_yaw_rad must be finite")
         if any(value < 0.0 for value in self.table_friction + self.target_container_friction):
             raise ValueError("friction values must be non-negative")
         if (
@@ -612,7 +616,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 mujoco_objects=self.can,
                 x_range=(self.can_start_xy[0], self.can_start_xy[0]),
                 y_range=(self.can_start_xy[1], self.can_start_xy[1]),
-                rotation=0.0,
+                rotation=self.can_start_yaw_rad,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,

@@ -34,29 +34,7 @@ from robosuite.utils.shakebench_isolator import AXES, IsolatorConfig, derive_iso
 PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
 PHYSICS_PROFILE_SCHEMA_VERSION = 1
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-SELECTION_PROTOCOL_FILENAME = "shakebench_selection_protocol.yaml"
-SELECTION_PROTOCOL_V2_FILENAME = "shakebench_selection_protocol_v2.yaml"
-SELECTION_PROTOCOL_V4_FILENAME = "shakebench_selection_protocol_v4.yaml"
-SELECTION_PROTOCOL_V5_FILENAME = "shakebench_selection_protocol_v5.yaml"
-SELECTION_PROTOCOL_V6_FILENAME = "shakebench_selection_protocol_v6.yaml"
-SELECTION_PROTOCOL_V7_FILENAME = "shakebench_selection_protocol_v7.yaml"
-SELECTION_PROTOCOL_V8_FILENAME = "shakebench_selection_protocol_v8.yaml"
-PHASE06R_STATUS_FILENAME = "shakebench_phase_06r_status.json"
-PHASE06R2_STATUS_FILENAME = "shakebench_phase_06r2_status.json"
-PHASE06R3_STATUS_FILENAME = "shakebench_phase_06r3_v4_status.json"
-PHASE06R4_STATUS_FILENAME = "shakebench_phase_06r4_v5_status.json"
-PHASE06R5_STATUS_FILENAME = "shakebench_phase_06r5_v6_status.json"
-PHASE06R6_STATUS_FILENAME = "shakebench_phase_06r6_v7_status.json"
-PHASE06R7_STATUS_FILENAME = "shakebench_phase_06r7_v8_status.json"
-PHASE06_FINAL_STATUS_FILENAME = "shakebench_phase_06_final_status.json"
-PHASE06_TO_07_HANDOFF_FILENAME = "shakebench_phase_06_to_07_handoff.json"
 PHASE06F_PROTOCOL_FILENAME = "shakebench_phase_06f_protocol.yaml"
-PHASE06FR_STATUS_FILENAME = "shakebench_phase_06fr_status.json"
-PHASE06FR_HANDOFF_FILENAME = "shakebench_phase_06fr_handoff.json"
-PHASE06FR_PROTOCOL_FILENAME = "shakebench_phase_06fr_protocol.yaml"
-PHASE06FR2_PROTOCOL_FILENAME = "shakebench_phase_06fr2_protocol.yaml"
-PHASE06FR2_STATUS_FILENAME = "shakebench_phase_06fr2_status.json"
-PHASE06FR2_HANDOFF_FILENAME = "shakebench_phase_06fr2_handoff.json"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 
@@ -636,18 +614,6 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
     return profile
 
 
-def load_selection_protocol(path: Optional[str | Path] = None) -> tuple[Mapping[str, Any], str, str]:
-    """Load the pre-registered selection protocol and return payload/path/hash."""
-
-    protocol_path = _asset_path(SELECTION_PROTOCOL_FILENAME) if path is None else Path(path)
-    try:
-        raw = protocol_path.read_bytes()
-        payload = _load_yaml_text(raw.decode("utf-8"))
-    except OSError as exc:
-        raise PhysicsProfileIntegrityError(f"cannot read selection protocol: {protocol_path}") from exc
-    return payload, str(protocol_path), hashlib.sha256(raw).hexdigest()
-
-
 def make_probe_physics_profile() -> PhysicsProfile:
     """Return the explicit non-scoreable Phase 03-compatible probe profile."""
 
@@ -755,40 +721,18 @@ def official_physics_profile_hash() -> str:
     return load_official_physics_profile().profile_sha256
 
 
-def load_physics_profile(profile: Any = None) -> PhysicsProfile:
-    """Public alias for resolving official or explicit non-scoreable profiles."""
-
-    return resolve_physics_profile(profile)
-
-
 __all__ = [
     "OFFICIAL_PHYSICS_PROFILE_FILENAME",
     "OFFICIAL_PHYSICS_PROFILE_ID",
-    "PHASE06R5_STATUS_FILENAME",
-    "PHASE06R6_STATUS_FILENAME",
-    "PHASE06R7_STATUS_FILENAME",
-    "PHASE06_FINAL_STATUS_FILENAME",
-    "PHASE06_TO_07_HANDOFF_FILENAME",
     "PHASE06F_PROTOCOL_FILENAME",
-    "PHASE06FR_STATUS_FILENAME",
-    "PHASE06FR_HANDOFF_FILENAME",
-    "PHASE06FR_PROTOCOL_FILENAME",
-    "PHASE06FR2_PROTOCOL_FILENAME",
-    "PHASE06FR2_STATUS_FILENAME",
-    "PHASE06FR2_HANDOFF_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",
-    "SELECTION_PROTOCOL_V6_FILENAME",
-    "SELECTION_PROTOCOL_V7_FILENAME",
-    "SELECTION_PROTOCOL_V8_FILENAME",
     "PhysicsProfile",
     "PhysicsProfileError",
     "PhysicsProfileIntegrityError",
     "canonical_profile_payload",
     "load_official_physics_profile",
-    "load_physics_profile",
-    "load_selection_protocol",
     "make_probe_physics_profile",
     "official_physics_profile_hash",
     "physics_profile_hash",

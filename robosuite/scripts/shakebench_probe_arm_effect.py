@@ -378,7 +378,11 @@ def _run_trial(
             {
                 "experiment": experiment,
                 "seed": seed,
-                "condition": "vibration" if gamma else "no_vibration",
+                "condition": (
+                    "vibration"
+                    if np.isclose(gamma, GAMMA)
+                    else ("no_vibration" if gamma == 0.0 else f"vibration_gamma{gamma:.2f}")
+                ),
                 "gamma_commanded": gamma,
                 "level_scale": level_scale,
                 "gamma_calibrated_2s": calibrate_gamma(gated.program).gamma_commanded,
@@ -452,11 +456,12 @@ def _svg(path: Path, title: str, series: dict[str, tuple[np.ndarray, np.ndarray]
 def _plots(output: Path, trials: list[tuple[list[dict], dict]]) -> None:
     for experiment in ("E1", "E2", "E3"):
         selected = [(rows, summary) for rows, summary in trials if summary["experiment"] == experiment]
+        conditions = tuple(dict.fromkeys(summary["condition"] for _, summary in selected))
         for metric, suffix, unit in (("eef_error_mm", "error", "mm"), ("object_relative_drift_mm", "drift", "mm")):
             if metric == "object_relative_drift_mm" and experiment != "E3":
                 continue
             series = {}
-            for condition in ("no_vibration", "vibration"):
+            for condition in conditions:
                 rows = [row for values, summary in selected if summary["condition"] == condition for row in values]
                 by_time: dict[float, list[float]] = {}
                 for row in rows:
@@ -466,7 +471,7 @@ def _plots(output: Path, trials: list[tuple[list[dict], dict]]) -> None:
             _svg(output / f"{experiment}_{suffix}.svg", f"{experiment}: {suffix}", series, unit)
         if experiment in ("E1", "E2"):
             series = {}
-            for condition in ("no_vibration", "vibration"):
+            for condition in conditions:
                 rows = [row for values, summary in selected if summary["condition"] == condition for row in values]
                 by_time: dict[float, list[list[float]]] = {}
                 for row in rows:
@@ -494,27 +499,69 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, default=Path("out/vibration_arm_effect_minimal"))
     parser.add_argument("--experiment", choices=("E1", "E2", "E3", "all"), default="all")
     parser.add_argument("--seeds", type=int, nargs="+", default=SEEDS, help="defaults to the prescribed 17 18 19")
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        action="append",
+        default=None,
+        help="positive commanded Gamma; repeat to run several levels",
+    )
+    parser.add_argument(
+        "--vibration-only",
+        action="store_true",
+        help="run only positive-Gamma cases, reusing an existing Gamma=0 control",
+    )
+    parser.add_argument(
+        "--control-dir", type=Path, default=None, help="existing Gamma=0 output directory used with --vibration-only"
+    )
     parser.add_argument("--duration-s", type=float, default=MEASUREMENT_S)
     parser.add_argument("--check", action="store_true", help="run the no-simulator invariant check")
     args = parser.parse_args(argv)
+    if args.duration_s <= 0:
+        parser.error("--duration-s must be positive")
+    if any(seed < 0 for seed in args.seeds):
+        parser.error("--seeds must be non-negative")
+    gammas = (GAMMA,) if args.gamma is None else tuple(args.gamma)
+    if not gammas or any(gamma <= 0.0 or not np.isfinite(gamma) for gamma in gammas):
+        parser.error("--gamma values must be finite and positive")
+    if len(set(gammas)) != len(gammas):
+        parser.error("--gamma values must be unique")
+    if args.vibration_only and args.control_dir is None:
+        parser.error("--vibration-only requires --control-dir")
+    if args.control_dir is not None and not (args.control_dir / "summary.json").is_file():
+        parser.error("--control-dir must contain summary.json")
+    if args.vibration_only:
+        try:
+            control = json.loads((args.control_dir / "summary.json").read_text(encoding="utf-8"))
+            available = {
+                (str(row["experiment"]), int(row["seed"]))
+                for row in control["trials"]
+                if float(row["gamma_commanded"]) == 0.0
+            }
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+            parser.error("--control-dir summary.json is unreadable")
+        missing = [
+            f"{experiment}/seed{seed}"
+            for experiment in ("E1", "E2", "E3")
+            for seed in args.seeds
+            if (experiment, seed) not in available
+        ]
+        if missing:
+            parser.error("--control-dir lacks Gamma=0 controls for " + ", ".join(missing))
     _self_check()
     if args.check:
         return 0
-    if args.duration_s <= 0:
-        parser.error("--duration-s must be positive")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     experiments = ("E1", "E2", "E3") if args.experiment == "all" else (args.experiment,)
     trials: list[tuple[list[dict], dict]] = []
     preparation_checks = []
-    if any(seed < 0 for seed in args.seeds):
-        parser.error("--seeds must be non-negative")
     for experiment in experiments:
         for seed in args.seeds:
             pair = []
             gated = GatedProgram(build_excitation_program(seed=seed, t0=0.0, level_scale=0.0))
             env = _make_env(seed, gated)
             try:
-                for gamma in (0.0, GAMMA):
+                for gamma in gammas if args.vibration_only else (0.0, *gammas):
                     rows, summary, start = _run_trial(experiment, seed, gamma, args.duration_s, env=env, gated=gated)
                     _write_csv(args.output_dir / f"{experiment}_seed{seed}_{summary['condition']}.csv", rows, summary)
                     trials.append((rows, summary))
@@ -522,15 +569,25 @@ def main(argv: list[str] | None = None) -> int:
                     print(json.dumps(summary, sort_keys=True), flush=True)
             finally:
                 env.close()
-            differences = _snapshot_delta(*pair)
-            preparation_checks.append(
-                {
-                    "experiment": experiment,
-                    "seed": seed,
-                    "max_abs_difference": differences,
-                    "consistent_at_1e-9": all(value <= 1.0e-9 for value in differences.values()),
-                }
-            )
+            if args.vibration_only:
+                preparation_checks.append(
+                    {
+                        "experiment": experiment,
+                        "seed": seed,
+                        "control_reused_from": str(args.control_dir),
+                        "note": "Gamma=0 start-state equality was verified in the referenced control run",
+                    }
+                )
+            else:
+                differences = _snapshot_delta(*pair)
+                preparation_checks.append(
+                    {
+                        "experiment": experiment,
+                        "seed": seed,
+                        "max_abs_difference": differences,
+                        "consistent_at_1e-9": all(value <= 1.0e-9 for value in differences.values()),
+                    }
+                )
     _plots(args.output_dir, trials)
     try:
         revision = subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip()
@@ -542,7 +599,9 @@ def main(argv: list[str] | None = None) -> int:
         "reproduce": f"python -m robosuite.scripts.shakebench_probe_arm_effect --output-dir {args.output_dir}",
         "parameters": {
             "seeds": list(args.seeds),
-            "gamma": GAMMA,
+            "gammas": list(gammas),
+            "vibration_only": bool(args.vibration_only),
+            "control_dir": str(args.control_dir) if args.control_dir is not None else None,
             "measurement_s": args.duration_s,
             "sample_rate_hz": 200,
             "geometry_profile": "direct_mount_v1",

@@ -795,11 +795,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--parent-run-uuid", default=None)
     args = parser.parse_args(argv)
     if args.determinism_manifest is not None:
-        if args.state_id is None:
+        if args.state_id is None and args.state_ids is None:
             args.state_id = "shakebench-dev-v0-000"
         return run_determinism_replay(
             args.determinism_manifest,
             state_id=args.state_id,
+            state_ids=(None if args.state_ids is None else tuple(item.strip() for item in args.state_ids.split(",") if item.strip())),
+            states_path=args.states,
             horizon_steps=args.horizon_steps,
             geometry_profile=args.geometry_profile,
         )["exit_code"]
@@ -1677,7 +1679,7 @@ def verify_determinism_manifest(path: str | Path) -> dict[str, Any]:
             errors.extend(prefix + " semantic: " + error for error in semantic["errors"])
         if record.get("payload_sha256") != payload.get("payload_sha256"):
             errors.append(prefix + " payload hash")
-        if record.get("trace_sha256") != payload.get("episodes", [{}])[0].get("trace_sha256"):
+        if record.get("trace_sha256") != _digest(_manifest_trace_projection(payload)):
             errors.append(prefix + " trace hash")
         if record.get("complete") is not True:
             errors.append(prefix + " incomplete")
@@ -1735,6 +1737,8 @@ def run_determinism_replay(
     manifest_path: str | Path,
     *,
     state_id: str = "shakebench-dev-v0-000",
+    state_ids: tuple[str, ...] | None = None,
+    states_path: str | Path | None = None,
     horizon_steps: int = 1200,
     geometry_profile: str = "canonical",
 ) -> dict[str, Any]:
@@ -1742,6 +1746,9 @@ def run_determinism_replay(
 
     manifest_target = Path(manifest_path)
     manifest_target.parent.mkdir(parents=True, exist_ok=True)
+    requested_state_ids = state_ids or (state_id,)
+    if not requested_state_ids or len(set(requested_state_ids)) != len(requested_state_ids):
+        raise OracleRunError("determinism replay requires unique state IDs")
     parent_run_uuid = str(uuid.uuid4())
     records = []
     for process_index in range(3):
@@ -1756,8 +1763,8 @@ def run_determinism_replay(
             "0.0",
             "--output",
             str(child_path),
-            "--state-id",
-            state_id,
+            "--state-ids",
+            ",".join(requested_state_ids),
             "--horizon-steps",
             str(horizon_steps),
             "--geometry-profile",
@@ -1767,6 +1774,8 @@ def run_determinism_replay(
             "--parent-run-uuid",
             parent_run_uuid,
         ]
+        if states_path is not None:
+            command.extend(("--states", str(states_path)))
         started = time.time()
         completed = subprocess.run(command, capture_output=True, text=True, check=False)
         stdout_lines = completed.stdout.splitlines()
@@ -1787,7 +1796,7 @@ def run_determinism_replay(
                 {
                     "file_sha256": hashlib.sha256(child_path.read_bytes()).hexdigest(),
                     "payload_sha256": payload.get("payload_sha256"),
-                    "trace_sha256": payload.get("episodes", [{}])[0].get("trace_sha256"),
+                    "trace_sha256": _digest(_manifest_trace_projection(payload)),
                     "process_pid": payload.get("process", {}).get("process_pid"),
                     "process_identity": payload.get("process", {}).get("process_identity"),
                 }
@@ -1797,7 +1806,8 @@ def run_determinism_replay(
         "schema_id": DETERMINISM_SCHEMA_ID,
         "schema_version": DETERMINISM_SCHEMA_VERSION,
         "parent_run_uuid": parent_run_uuid,
-        "state_id": state_id,
+        "state_id": requested_state_ids[0],
+        "state_ids": list(requested_state_ids),
         "tier": "V0",
         "gamma_commanded": 0.0,
         "geometry_profile": load_geometry_profile(geometry_profile),

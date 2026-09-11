@@ -18,13 +18,18 @@ class VibrationPickPlace(VibrationPickPlaceCan):
     The legacy oracle uses the explicit legacy_oracle_observation adapter.
     """
 
-    def __init__(self, task=None, object_start_xy=(-0.10, -0.13), **kwargs):
-        if "can_start_xy" in kwargs:
-            raise ValueError("use object_start_xy with VibrationPickPlace")
+    def __init__(self, task=None, object_start_xy=(-0.10, -0.13), object_start_yaw_rad=0.0, **kwargs):
+        if "can_start_xy" in kwargs or "can_start_yaw_rad" in kwargs:
+            raise ValueError("use object_start_xy and object_start_yaw_rad with VibrationPickPlace")
         if "table_friction" in kwargs or "target_container_friction" in kwargs:
             raise ValueError("TaskSpec owns surface/object contact friction")
         kwargs.setdefault("geometry_profile", "direct_mount_v1")
-        super().__init__(task=TaskSpec.from_mapping(task), can_start_xy=object_start_xy, **kwargs)
+        super().__init__(
+            task=TaskSpec.from_mapping(task),
+            can_start_xy=object_start_xy,
+            can_start_yaw_rad=object_start_yaw_rad,
+            **kwargs,
+        )
 
     def _get_observations(self, force_update=False):
         return OrderedDict((_public_key(k), v) for k, v in super()._get_observations(force_update).items())
