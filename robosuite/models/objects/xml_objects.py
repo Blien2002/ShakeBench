@@ -35,7 +35,7 @@ class CanObject(MujocoXMLObject):
 
 
 class FoodCanObject(MujocoXMLObject):
-    """RoboCasa canned-food visual with a stable cylindrical collision primitive."""
+    """RoboCasa canned-food visual with a non-rolling box collision primitive."""
 
     def __init__(self, name):
         super().__init__(

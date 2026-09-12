@@ -826,6 +826,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.limit <= 0 or args.limit > len(states):
             raise OracleRunError("--limit must be in [1, 10]")
         states = states[: args.limit]
+    states = sorted(states, key=lambda state: state["state_id"])
     profile = profile_for_diagnostic_mode(args.diagnostic_mode)
     geometry_profile = load_geometry_profile(args.geometry_profile)
     scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))

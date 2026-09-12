@@ -8,7 +8,8 @@
   <worldbody>
     <body>
       <body name="object">
-        <geom name="food_can_collision" type="cylinder" size="0.025 0.0325" group="0" rgba="0 0 0 0"/>
+        <geom name="food_can_collision" type="box" size="0.0185 0.0185 0.0325"
+              group="0" rgba="0 0 0 0"/>
         <geom name="food_can_visual" type="mesh" mesh="food_can_mesh" material="food_can_material"
               contype="0" conaffinity="0" group="1" mass="0.0001"/>
       </body>

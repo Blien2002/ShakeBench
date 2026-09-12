@@ -1,0 +1,160 @@
+{
+  "schema_id": "shakebench.phase04.environment",
+  "schema_version": 2,
+  "phase": "04",
+  "status": "PASS",
+  "environment": {
+    "name": "VibrationPickPlaceCan",
+    "robots": ["Panda"],
+    "model_timestep_s": 0.0002,
+    "control_freq_hz": 20,
+    "deck_eq_solref": [0.0004, 0.5],
+    "contact_profile": {
+      "table_object_sliding_mu": 0.3,
+      "finger_object_sliding_mu": 1.0,
+      "other_contact_fields": "provisional_until_phase06"
+    }
+  },
+  "compiled": {
+    "topology": {
+      "deck_body": "deck",
+      "can_parent": null,
+      "robot_base_parent": "deck",
+      "worktable_parent": "deck",
+      "worktable_body": "worktable",
+      "target_body": "worktable",
+      "can_freejoint": ["can_joint0"],
+      "target_collision_geom_names": [
+        "target_container_bottom",
+        "target_container_wall_xneg",
+        "target_container_wall_xpos",
+        "target_container_wall_yneg",
+        "target_container_wall_ypos"
+      ]
+    },
+    "worktable": {
+      "mass_kg": 32.0,
+      "com_m": [0.0, 0.0, 0.0],
+      "inertia_kg_m2": [0.9696, 1.1363, 2.0867],
+      "direct_inertial_count": 1,
+      "joint_count": 6
+    },
+    "can": {
+      "body_name": "can_main",
+      "mass_kg": 0.349,
+      "com_m": [0.0, 0.0, 0.0],
+      "inertia_kg_m2": [0.00024106572568945823, 0.00024106572568945823, 0.00010986473347417683],
+      "freejoint_names": ["can_joint0"],
+      "collision_geom_names": ["can_g0"],
+      "collision_envelope": {
+        "source_geom_names": ["can_g0"],
+        "support_radius_m": 0.02509177806572465,
+        "height_m": 0.08000000550552341,
+        "lower_support_z_m": -0.040297003330440104,
+        "upper_support_z_m": 0.03970300217508332,
+        "source_model_hash": "c5332fb76e8b2f8c36fe10ac99e51f5e79c189e248d626dacd54cc983629e669",
+        "extraction_algorithm_version": "shakebench.can_collision_envelope.compiled_support.v1"
+      },
+      "placement_correction_z_offset_m": 0.040297003330440104
+    },
+    "target_container": {
+      "center_xy_m": [-0.1, 0.17],
+      "outer_xy_m": [0.18, 0.16],
+      "inner_xy_m": [0.164, 0.144],
+      "wall_thickness_m": 0.008,
+      "wall_height_m": 0.035,
+      "bottom_thickness_m": 0.012,
+      "collision_geom_names": [
+        "target_container_bottom",
+        "target_container_wall_xneg",
+        "target_container_wall_xpos",
+        "target_container_wall_yneg",
+        "target_container_wall_ypos"
+      ]
+    },
+    "contact_pair_count": 8,
+    "contact_roles": {
+      "table_object": 1,
+      "target_object": 5,
+      "finger_object": 2
+    },
+    "contact_geometry_friction": {
+      "can_g0": [0.95, 0.3, 0.1],
+      "table_collision": [1.0, 0.005, 0.0001],
+      "gripper0_right_finger1_pad_collision": [2.0, 0.05, 0.0001],
+      "gripper0_right_finger2_pad_collision": [2.0, 0.05, 0.0001]
+    },
+    "contact_geometry_bits": {
+      "can_g0": [2, 0],
+      "table_collision": [1, 2],
+      "gripper0_right_finger1_pad_collision": [1, 2],
+      "gripper0_right_finger2_pad_collision": [1, 2]
+    }
+  },
+  "probes": {
+    "headless_lifecycle": {"passed": true, "steps": 1},
+    "gamma_zero_passive_settle": {
+      "passed": true,
+      "samples": 20,
+      "max_illegal_penetration_m": 0.0001185109329923288,
+      "table_contact_present": true,
+      "driver_trace_samples": 5000,
+      "warning_number": [0, 0, 0, 0, 0, 0, 0]
+    },
+    "target_bottom_contact": {
+      "passed": true,
+      "target_bottom_contact_present": true,
+      "target_wall_contact_present": false,
+      "target_bottom_support_force_N": 3.5391707718023744,
+      "supported_by_target_bottom": true,
+      "lower_support_z_m": -0.00030940540490503426,
+      "containment": true,
+      "penetration_m": 0.0003094054023028073
+    },
+    "target_wall_straddling": {
+      "passed": true,
+      "target_bottom_contact_present": true,
+      "target_wall_contact_present": true,
+      "containment": false
+    },
+    "success_evaluator_boundaries": {"passed": true, "tests": 8},
+    "contact_loss_state_machine": {
+      "passed": true,
+      "instantaneous_key": "finger_can_contact_present",
+      "stateful_key": "finger_contact_loss_after_grasp",
+      "never_grasped_loss": false,
+      "release_loss": true
+    },
+    "frame_invariance": {
+      "passed": true,
+      "test": "relative_pose_twist_under_rigid_motion"
+    }
+  },
+  "deferred": [
+    "tier_observables",
+    "controller_success_rate",
+    "official_physics_freeze"
+  ],
+  "schemas": {
+    "support_contact_schema_version": 2,
+    "contact_loss_schema": {
+      "instantaneous": "finger_can_contact_present",
+      "stateful": "finger_contact_loss_after_grasp"
+    }
+  },
+  "policy_frame": {
+    "common_can_state_frame": "robot_base",
+    "world_frame_can_observation": false
+  },
+  "runtime_asset": {
+    "path": "robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.png",
+    "sha256": "87a5478e7325b7d79fc8073afefd3ac7c44b44d6c804ecb586c1641d8157e162",
+    "git_tracked": true,
+    "clean_compile": true
+  },
+  "artifact_lock": {
+    "update_reason": "Phase 04R: replace site-derived Can authority, split support/contact-loss schema, and lock runtime PNG evidence",
+    "previous_payload_sha256": "5a964a49d4918d0d7ada074c5c5a105160e671b547ca1387e4c1662dbabbf0cf",
+    "payload_sha256": "0e16fb2bc4b69bcecfc09613bea1853c60d5e8fce29d1d16c72b1009feadddb0"
+  }
+}

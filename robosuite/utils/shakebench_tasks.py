@@ -59,7 +59,7 @@ MAT_TEXTURE_PATH = "textures/gray-felt.png"
 TASK_VISUAL_REVISION = "felt_mat_wire_basket.v2"
 # Compiled support in object coordinates, measured from the package meshes.
 OBJECT_SUPPORT = {
-    "food_can": (-0.0325, 0.0325, 0.025),
+    "food_can": (-0.0325, 0.0325, 0.02616295090390226),
     "light_wood_block": (-0.01, 0.01, 0.03905124837953328),
     "cookie_box": (-0.0362, 0.0362, 0.06415052610852073),
     "bread": (-0.023251370186775307, 0.024748632093102355, 0.0312410001023236),
