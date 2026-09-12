@@ -1,7 +1,7 @@
 {
   "schema_id": "shakebench.scene_visual",
   "schema_version": 1,
-  "scene_id": "shakebench.scene.direct_mount.v1",
+  "scene_id": "shakebench.scene.world_fixed_arm.v1",
   "geometry_variant": "C",
   "physics_effect": false,
   "source": {
@@ -85,7 +85,7 @@
     "runtime_policy": "Reference files are provenance only; package/runtime never opens a backup or Isaac/USD path.",
     "material_policy": "Three original repository-generated laboratory JPG maps decoded to lossless PNG with identical decoded RGB pixels for MuJoCo. No remote Isaac/Omniverse or third-party photographic assets copied.",
     "detail_modeling": "Original deterministic chamfer meshes and primitives; visible handles, fasteners, rack modules, grilles, BNC sockets, instrument controls, keycaps, casters and maintenance tools. No external model downloads.",
-    "assembly_policy": "Companion geometry profile removes RethinkMount including physical proxies and inertia. This visual payload alone is massless; geometry variant C is not covered by legacy scientific evidence.",
+    "assembly_policy": "Solid shore-connected robot foundation, with an opening in the adjacent guardrail; narrower shifted deck and worktable near the shore.",
     "finish_revision": "Moderate neutral illumination with one indoor shadow-casting source; inward-facing cabinet; continuous tubular yellow/black rails with curved elbows, couplers and anchors; blank computer monitor.",
     "storage_layout_revision": "Added a massless low storage cabinet beside the control rack; sensor tray, coiled cable, reference weights and logbook are authored primitives. Trolley moved to the left of the computer bench by the rear wall."
   },
@@ -12722,7 +12722,7 @@
   },
   "platen": {
     "size_m": [
-      2,
+      1.25,
       1.4,
       0.08
     ],
@@ -12732,32 +12732,36 @@
       1,
       1,
       1
+    ],
+    "center_xy_m": [
+      0.35,
+      0
     ]
   },
   "stewart": {
     "base_ellipse_semi_axes_m": [
-      0.85,
+      0.68,
       0.6
     ],
     "platen_ellipse_semi_axes_m": [
-      0.62,
+      0.5,
       0.4
     ],
     "joint_pair_spread_deg": 20.0,
-    "base_joint_z_m": -0.5,
+    "base_joint_z_m": -0.6,
     "platen_joint_z_from_center_m": -0.04,
     "leg_nominal_m": 0.82,
-    "leg_min_m": 0.67,
+    "leg_min_m": 0.55,
     "leg_max_m": 0.95,
     "outer_length_m": 0.48,
     "rod_length_m": 0.46,
     "outer_radius_m": 0.05,
     "rod_radius_m": 0.03,
     "joint_radius_m": 0.055,
-    "base_plate_radius_m": 0.88,
+    "base_plate_radius_m": 0.6,
     "base_plate_height_m": 0.1,
     "foundation_size_m": [
-      1.85,
+      1.2,
       1.35,
       0.18
     ],
@@ -12815,9 +12819,10 @@
     "assembly_tolerance_m": 0.02,
     "minimum_stewart_overlap_m": 0.01,
     "mount_collision_prefixes": [
-      "robot0_link0_collision"
+      "robot0_link0_collision",
+      "robot_support_"
     ],
-    "direct_robot_support_body": "robot0_link0"
+    "world_robot_support_body": "robot0_link0"
   },
   "safe_excitation_envelope": {
     "gamma_commanded": 0.15,
@@ -12831,10 +12836,10 @@
       0.003,
       0.003
     ],
-    "sample_count": 21,
+    "sample_count": 77,
     "duration_s": 2.0,
-    "sampling_method": "nominal plus six translation extrema, six rotation extrema, and eight translation corners; finite samples are not a continuous proof",
-    "source": "pre-registered conservative envelope around the Phase 06 safe Gamma=0.15 authoring range"
+    "sampling_method": "nominal, twelve individual axis extrema and 64 simultaneous translation/rotation corners; finite samples are not a continuous proof",
+    "source": "Scene clearance envelope; experimental qualification pending"
   },
   "render": {
     "default_width": 1280,
@@ -13262,5 +13267,5 @@
     "instrument screens show fixed decorative graphics, not live scientific telemetry",
     "Newton/Isaac lighting is approximated with native MuJoCo neutral lights; no external renderer dependency"
   ],
-  "payload_sha256": "8a23e7c39b1e182b4e70171eb6631a866000e9163f4ff2db445fa457034a7dde"
+  "payload_sha256": "2500810ebf9ba19be45f6ef2221e83559c3c9bcecae727774128ac6475f98fd4"
 }

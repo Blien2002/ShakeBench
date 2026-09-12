@@ -1,4 +1,4 @@
-"""Phase 7.5A scene authority, frame, and clearance gates."""
+"""Scene configuration, frame ownership, and clearance gates."""
 
 from __future__ import annotations
 
@@ -72,6 +72,7 @@ def test_scene_config_authenticates_source_and_package_assets():
     "mutate, pattern",
     (
         (lambda payload: payload["platen"].update(size_m=[0.0, 1.1, 0.08]), "platen.size_m"),
+        (lambda payload: payload["platen"].update(center_xy_m=[2, 0]), "platen must fit"),
         (lambda payload: payload["expected_roles"].append("shakebench_platen_visual"), "duplicate"),
         (lambda payload: payload["physics_effect"].__class__ and payload.update(physics_effect=True), "physics_effect"),
         (lambda payload: payload["room"]["equipment"][0]["geoms"][0].update(contype=1), "unsupported fields"),
@@ -99,15 +100,12 @@ def test_compiled_inventory_binds_platen_and_supports_to_their_frames():
     assert audit.visual_geoms["shakebench_stewart_rod_0"]["frame"] == "dynamic_deck"
 
 
-@pytest.mark.parametrize("geometry_profile", ["canonical", "direct_mount_v1"])
-def test_table_feet_clear_deck_through_isolator_travel(geometry_profile):
-    if geometry_profile == "canonical":
-        arena = ShakeBenchArena()
-    else:
-        geometry = load_geometry_profile(geometry_profile)
-        arena = ShakeBenchArena(
-            table_offset=geometry["table_top_pos_m"], scene_config=geometry_scene_path(geometry_profile)
-        )
+def test_table_feet_clear_deck_through_isolator_travel():
+    geometry_profile = "world_fixed_arm_v1"
+    geometry = load_geometry_profile(geometry_profile)
+    arena = ShakeBenchArena(
+        table_offset=geometry["table_top_pos_m"], scene_config=geometry_scene_path(geometry_profile)
+    )
     model, data = _arena_deck_model(arena)
     joints = [model.joint(f"isolator_{axis}") for axis in ("tx", "ty", "tz", "rx", "ry", "rz")]
     poses = [np.zeros(6), [0, 0, -0.003, 0, 0, 0], *itertools.product(*(joint.range for joint in joints))]
@@ -147,6 +145,7 @@ def test_visual_switch_preserves_named_state_and_metric_trace():
         "initialization_noise": None,
         "seed": 0,
         "horizon": 2,
+        "hard_reset": False,
     }
     visible = VibrationPickPlaceCan(scene_visual=True, **kwargs)
     hidden = VibrationPickPlaceCan(scene_visual=False, **kwargs)
@@ -237,7 +236,7 @@ def test_nominal_and_registered_safe_scene_clearance_passes():
         report = scene_clearance_report(env.sim, env.scene_config)
         assert report.passed
         assert report.clearance_passed
-        assert report.safe_envelope["sample_count"] == 21
+        assert report.safe_envelope["sample_count"] == 77
         assert report.support_interfaces["worktable_assembly_error_m"] == pytest.approx(0.0, abs=1.0e-9)
         assert report.support_interfaces["robot_mount_assembly_error_m"] == pytest.approx(0.0, abs=1.0e-9)
         assert report.stewart["passed"]
@@ -261,7 +260,11 @@ def test_negative_clearance_fixture_rejects_table_leg_inside_mount_proxy():
     try:
         model = env.sim.model._model
         leg_id = model.geom("shakebench_table_upper_leg_0").id
-        model.geom_pos[leg_id, 0] = -0.50
+        data = env.sim.data._data
+        body_id = int(model.geom_bodyid[leg_id])
+        model.geom_pos[leg_id] = data.xmat[body_id].reshape(3, 3).T @ (
+            data.geom("robot_support_foundation").xpos - data.xpos[body_id]
+        )
         mujoco.mj_forward(model, env.sim.data._data)
         report = scene_clearance_report(env.sim, env.scene_config)
         assert not report.passed
@@ -303,3 +306,12 @@ def test_scene_cameras_are_named_and_present_in_the_compiled_task():
         assert {"shakebench_camera_overview", "shakebench_camera_assembly", "shakebench_camera_side"}.issubset(names)
     finally:
         env.close()
+
+
+def test_stewart_length_scan_includes_rotation():
+    from robosuite.models.arenas.scene_audit import _stewart_report
+
+    config = load_scene_visual_config(geometry_scene_path("world_fixed_arm_v1"))
+    poses = [np.array([0, 0, 0, 1, 0, 0, 0]), np.array([0, 0, 0, np.cos(0.01), 0, np.sin(0.01), 0])]
+    report = _stewart_report(None, None, config, poses)
+    assert not np.allclose(report["samples"][0]["lengths_m"], report["samples"][1]["lengths_m"])

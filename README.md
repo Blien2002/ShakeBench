@@ -1,9 +1,6 @@
-> **ShakeBench 当前开发入口（2026-09-08）**：Phase 7.5 改造场景及 Phase 8 协议已整合至本项目根目录。
-> 历史副本已删除，后续请在当前目录运行。改造场景使用 `geometry_profile="direct_mount_v1"`；视频 CLI 默认采用该场景。
-> 腕部相机演示：`MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m robosuite.demos.demo_shakebench_oracle_video --wrist-inset --output out/demo/shakebench_direct_mount_wrist.mp4`。
-> [整合记录](docs/phase07_5a_main_integration.md) · [相机用法](docs/demos.md#shakebench-wrist-camera)
-
-> **Pick&place state 扩展**：新增金属／桌垫两种表面，以及食品罐头／饼干盒／bread 三种摩擦档位。使用 `VibrationPickPlace` 的统一任务接口；六种组合合并为 400 official states（六种组合各 66–67 个）和 600 knee states。Phase 09 先执行六配置重认证与 90-episode 配对 pilot，Phase 09.5 才进行 Gamma knee 和正式测量。[接口、参数与验证说明](docs/phase09_pick_place_states.md) · [阶段提示词](docs/shakebench_prompts/README.md)。
+> **ShakeBench 当前场景（2026-09-12）**：`VibrationPickPlace` 默认使用 `world_fixed_arm_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
+> 当前完成范围为 IMU 世界模型计划的 B 场景迁移；新场景尚未取得实验认证。桌下 IMU、视频历史、预测器和 policy 接入仍待后续阶段实施。
+> 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
 
 # robosuite
 

@@ -35,6 +35,7 @@ from robosuite.utils.shakebench_scene import (
     scene_visual_geom_names,
 )
 
+
 def _raw_model_and_data(sim_or_model: Any) -> tuple[Any, Any]:
     model = getattr(sim_or_model, "model", sim_or_model)
     raw_model = getattr(model, "_model", model)
@@ -506,12 +507,6 @@ def _floor_cylinder_support_distance(model: Any, data: Any, geom1: int, geom2: i
 
 def _pair_whitelist(name1: str, name2: str, signed_distance_m: float | None = None) -> str | None:
     names = {name1, name2}
-    if names == {"shakebench_platen_surface", "robot0_link0_collision"}:
-        # The stock link0 convex mesh extends ~0.033 mm below its authored
-        # mounting datum. Accept only this named, sub-0.1 mm seating interface.
-        # Larger penetration remains an error, including in negative fixtures.
-        if signed_distance_m is not None and signed_distance_m >= -1.0e-4:
-            return "direct_panda_flange_to_platen_seating_interface"
     if any(name.startswith("shakebench_pit_") for name in names) and any(
         name.startswith("shakebench_floor_slab_") for name in names
     ):
@@ -536,16 +531,6 @@ def _pair_whitelist(name1: str, name2: str, signed_distance_m: float | None = No
         name.startswith("shakebench_pit_") for name in names
     ):
         return "shaker_foundation_inside_pit"
-    if any(name.startswith("shakebench_platen_") for name in names) and any(
-        name.startswith("fixed_mount", 0) for name in names
-    ):
-        return "robot_mount_to_platen_expected_support"
-    if "table_visual" in names and any(name.startswith("fixed_mount") for name in names):
-        # The canonical tabletop edge and the stock Rethink proxy are tangent
-        # in AABB space. The primitive distance has a sub-millimetre numerical
-        # round-off on this exact edge; a deeper overlap stays a red gate.
-        if signed_distance_m is not None and signed_distance_m >= -1.0e-3:
-            return "canonical_tabletop_edge_adjacency_with_mount_proxy"
     return None
 
 
@@ -588,7 +573,28 @@ def _candidate_pairs(
             whitelist = _pair_whitelist(visual_name, str(proxy_name))
             if whitelist is not None or distance <= window:
                 candidates.append(("visual_collision_proxy", visual_id, visual_name, proxy_id, str(proxy_name)))
+    support_ids = [i for i in proxy_ids if str(raw_model.geom(i).name).startswith("robot_support_")]
+    existing = {(row[1], row[3]) for row in candidates}
+    for support_id in support_ids:
+        for geom_id in range(int(raw_model.ngeom)):
+            if _frame_for_body(raw_model, int(raw_model.geom_bodyid[geom_id])) not in {
+                "dynamic_deck",
+                "isolated_worktable",
+            }:
+                continue
+            if (geom_id, support_id) not in existing:
+                candidates.append(
+                    (
+                        "support_motion_clearance",
+                        geom_id,
+                        raw_model.geom(geom_id).name,
+                        support_id,
+                        raw_model.geom(support_id).name,
+                    )
+                )
     return tuple(candidates)
+
+
 def _normalise_pose(value: Any, nominal_pose: np.ndarray) -> np.ndarray:
     array = np.asarray(value, dtype=float).reshape(-1)
     if array.size == 7:
@@ -646,12 +652,10 @@ def _safe_envelope_poses(config: SceneVisualConfig, nominal_pose: np.ndarray, en
             value = np.zeros(6)
             value[3 + axis] = sign * rotation_abs[axis]
             relative.append(value)
-    # Eight simultaneous translation extrema cover the corners of the
-    # registered translation box without pretending to prove a continuum.
-    for signs in itertools.product((-1.0, 1.0), repeat=3):
-        value = np.zeros(6)
-        value[:3] = np.asarray(signs) * translation_abs
-        relative.append(value)
+    # Sample coupled translation/rotation corners as well as individual axes;
+    # finite sampling does not prove clearance over a continuous envelope.
+    for signs in itertools.product((-1.0, 1.0), repeat=6):
+        relative.append(np.asarray(signs) * np.concatenate((translation_abs, rotation_abs)))
     return tuple(_normalise_pose(value, nominal_pose) for value in relative)
 
 
@@ -671,47 +675,45 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
     # the moving upper foot is seated on top of the isolator sleeve.
     table_bottom = extrema("shakebench_table_lower_mount_plate_")
     platen_top = extrema("shakebench_platen_surface", upper=True)
-    mount_bottom = None
-    mount_names = []
-    for geom_id in range(int(raw_model.ngeom)):
-        name = mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
-        if name is None or not str(name).startswith("fixed_mount"):
-            continue
-        if "pedestal_feet" not in str(name) and "pedestal_col" not in str(name):
-            continue
-        lower, _ = _geom_aabb(raw_model, raw_data, geom_id)
-        mount_names.append(str(name))
-        mount_bottom = float(lower[2]) if mount_bottom is None else min(mount_bottom, float(lower[2]))
     configured_top = float(config.section("platen")["nominal_top_z_m"])
-    direct_body = config.section("clearance").get("direct_robot_support_body")
-    if direct_body is not None:
-        body_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_BODY, direct_body)
-        # Panda link0's authored base plane is its installation datum. Convex
-        # bounding spheres are not a valid support-plane estimate for its mesh.
-        mount_bottom = float(raw_data.xpos[body_id, 2])
-        mount_names = [direct_body + ":authored_mount_datum"]
-    derivation_inputs = {
-        "worktable_foot_lowest_support_z_m": table_bottom,
-        "robot_mount_lowest_support_z_m": mount_bottom,
-    }
-    finite_inputs = [value for value in derivation_inputs.values() if value is not None]
-    derived_top = max(finite_inputs) if finite_inputs else None
+    mount_bottom = support_top = None
+    mount_names = []
+    support_body = config.section("clearance").get("world_robot_support_body")
+    if support_body is not None:
+        mount_geoms = []
+        for geom_id in range(int(raw_model.ngeom)):
+            name = mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+            if name is None or not str(name).startswith("fixed_mount"):
+                continue
+            if not int(raw_model.geom_contype[geom_id]) and not int(raw_model.geom_conaffinity[geom_id]):
+                continue
+            lower, _ = _geom_aabb(raw_model, raw_data, geom_id)
+            mount_geoms.append((float(lower[2]), str(name)))
+        if mount_geoms:
+            mount_bottom = min(mount_geoms)[0]
+        else:
+            base_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_BODY, support_body)
+            mount_bottom = float(raw_data.xpos[base_id, 2])
+            mount_geoms = [(mount_bottom, support_body + ":authored_mount_datum")]
+        beam_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, "robot_support_foundation")
+        _, upper = _geom_aabb(raw_model, raw_data, beam_id)
+        support_top = float(upper[2])
+        mount_names = [name for _, name in mount_geoms]
     return {
-        "method": "compiled geom AABB support extrema; direct Panda uses its authored link0 installation datum",
+        "method": "compiled table support extrema and world-fixed robot installation datum",
         "platen_nominal_top_z_m": platen_top,
         "configured_platen_nominal_top_z_m": configured_top,
-        "derived_platen_nominal_top_z_m": derived_top,
-        "derivation_rule": "max of compiled worktable lower-mount plate and robot-mount lowest support points",
-        "derivation_inputs_z_m": derivation_inputs,
+        "derived_platen_nominal_top_z_m": table_bottom,
+        "derivation_rule": "compiled worktable lower-mount plate only",
+        "derivation_inputs_z_m": {"worktable_foot_lowest_support_z_m": table_bottom},
         "derived_vs_compiled_platen_top_error_m": (
-            None if derived_top is None or platen_top is None else float(platen_top - derived_top)
+            None if table_bottom is None or platen_top is None else platen_top - table_bottom
         ),
         "worktable_foot_lowest_support_z_m": table_bottom,
         "robot_mount_lowest_support_z_m": mount_bottom,
+        "world_robot_support_top_z_m": support_top,
         "worktable_assembly_error_m": None if table_bottom is None or platen_top is None else table_bottom - platen_top,
-        "robot_mount_assembly_error_m": (
-            None if mount_bottom is None or platen_top is None else mount_bottom - platen_top
-        ),
+        "robot_mount_assembly_error_m": None if mount_bottom is None else mount_bottom - support_top,
         "robot_mount_support_geoms": mount_names,
     }
 
@@ -779,6 +781,17 @@ def _distance_record(
         method = "mujoco_geom_distance_mesh_convex_candidate"
     if _floor_cylinder_support_distance(raw_model, raw_data, geom1, geom2) is not None:
         method = "analytic_cylinder_support_to_containing_floor_top"
+    if any(name.startswith(("robot_support_", "fixed_mount")) for name in (name1, name2)):
+        lower1, upper1 = _geom_aabb(raw_model, raw_data, geom1)
+        lower2, upper2 = _geom_aabb(raw_model, raw_data, geom2)
+        separation = np.maximum(np.maximum(lower1 - upper2, lower2 - upper1), 0.0)
+        if np.any(separation > 0):
+            # Disjoint enclosing boxes prove a conservative positive gap even
+            # when the convex-distance solver returns zero for distant boxes.
+            distance = float(np.linalg.norm(separation))
+            middle = np.maximum(lower1, lower2)
+            closest = np.array([np.minimum(middle, upper1), np.minimum(middle, upper2)])
+            method = "conservative_aabb_separation_lower_bound"
     return {
         "category": category,
         "geom1": name1,
@@ -829,16 +842,18 @@ def _stewart_report(
     raw_model: Any, raw_data: Any, config: SceneVisualConfig, poses: Sequence[np.ndarray]
 ) -> dict[str, Any]:
     stewart = config.section("stewart")
-    platen_body_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_BODY, DECK_VISUAL_BODY_NAME)
-    nominal_center_z = float(raw_data.xpos[platen_body_id][2])
-    base_points, _ = _stewart_points(config, nominal_center_z)
+    platen = config.section("platen")
+    nominal_center_z = float(platen["nominal_top_z_m"]) - float(platen["size_m"][2]) / 2
+    base_points, nominal_points = _stewart_points(config, nominal_center_z)
     rows = []
     min_overlap = float("inf")
     min_length = float("inf")
     max_length = -float("inf")
     passed = True
     for sample_index, pose in enumerate(poses):
-        _, platen_points = _stewart_points(config, float(pose[2]) + nominal_center_z)
+        rotation = np.empty(9)
+        mujoco.mju_quat2Mat(rotation, pose[3:])
+        platen_points = nominal_points @ rotation.reshape(3, 3).T + pose[:3]
         lengths = np.linalg.norm(platen_points - base_points, axis=1)
         overlap = float(stewart["outer_length_m"]) + float(stewart["rod_length_m"]) - lengths
         min_overlap = min(min_overlap, float(np.min(overlap)))
@@ -897,7 +912,7 @@ def scene_clearance_report(
         raise SceneConfigError("safe clearance envelope must contain at least one pose")
     candidates = _candidate_pairs(raw_model, raw_data, scene_config)
     nominal_records: list[dict[str, Any]] = []
-    safe_records: list[dict[str, Any]] = []
+    safe_records: dict[tuple[str, str, str], dict[str, Any]] = {}
     # Work in a private MjData so a clearance audit never changes the caller's
     # state, mocap targets, warmstart buffers, or policy-facing history.
     audit_data = mujoco.MjData(raw_model)
@@ -910,12 +925,18 @@ def scene_clearance_report(
         audit_data.qpos[deck_qpos : deck_qpos + 7] = pose
         mujoco.mj_forward(raw_model, audit_data)
         for category, geom1, name1, geom2, name2 in candidates:
+            if sample_index and all(
+                _frame_for_body(raw_model, int(raw_model.geom_bodyid[i])) == "world" for i in (geom1, geom2)
+            ):
+                continue
             record = _distance_record(raw_model, audit_data, category, geom1, name1, geom2, name2, sample_index, pose)
-            safe_records.append(record)
+            key = (category, name1, name2)
+            if key not in safe_records or record["signed_distance_m"] < safe_records[key]["signed_distance_m"]:
+                safe_records[key] = record
             if sample_index == 0:
                 nominal_records.append(record)
     nominal_min = _minimum_pair_records(nominal_records)
-    safe_min = _minimum_pair_records(safe_records)
+    safe_min = list(safe_records.values())
     nominal_map = {(record["category"], record["geom1"], record["geom2"]): record for record in nominal_min}
     safe_map = {(record["category"], record["geom1"], record["geom2"]): record for record in safe_min}
     # Put every candidate in the compact report, retaining both nominal and

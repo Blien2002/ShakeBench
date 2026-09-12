@@ -1,4 +1,4 @@
-"""Run the Phase 7.5A scene/frame/clearance gate without task scoring."""
+"""Audit the world-fixed arm scene without granting experiment certification."""
 
 from __future__ import annotations
 
@@ -6,14 +6,13 @@ import argparse
 import hashlib
 import json
 import subprocess
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 import robosuite
-from robosuite.utils.shakebench_authority import DirectMountAuthorityError, verify_direct_mount_authority
+from robosuite.utils.shakebench_artifacts import json_ready, payload_hash
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_scene import compiled_physics_signature, load_scene_visual_config
 
@@ -24,26 +23,14 @@ def _git_head() -> str | None:
     return value if result.returncode == 0 and len(value) == 40 else None
 
 
-def _digest(value: Any) -> str:
-    return hashlib.sha256(
-        json.dumps(_json_ready(value), sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
-    ).hexdigest()
-
-
-def _json_ready(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {str(key): _json_ready(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_ready(item) for item in value]
-    return value
-
-
-def run_preflight(output: str | Path, geometry_profile: str = "canonical") -> dict[str, Any]:
+def run_preflight(
+    output: str | Path, geometry_profile: str = "world_fixed_arm_v1", preview: str | Path | None = None
+) -> dict[str, Any]:
     """Compile the native scene and write the machine-readable gate result."""
 
     scene_config = load_scene_visual_config(geometry_scene_path(geometry_profile))
     env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=None,
         physics_profile="official",
@@ -63,23 +50,26 @@ def run_preflight(output: str | Path, geometry_profile: str = "canonical") -> di
         visible_signature = compiled_physics_signature(env.sim)
         visible_rgba_sha256 = hashlib.sha256(np.asarray(env.sim.model._model.geom_rgba).tobytes()).hexdigest()
         forbidden_initial_contacts = []
-        if geometry_profile == "direct_mount_v1":
-            model = env.sim.model._model
-            for contact in env.sim.data.contact[: env.sim.data.ncon]:
-                names = {model.geom(contact.geom1).name or "", model.geom(contact.geom2).name or ""}
-                if "table_collision" in names and any(
-                    token in " ".join(names) for token in ("link5", "link6", "link7", "hand")
-                ):
-                    forbidden_initial_contacts.append(sorted(names))
-        authority_error = None
-        authority = None
-        if geometry_profile == "direct_mount_v1":
-            try:
-                authority = dict(verify_direct_mount_authority())
-            except DirectMountAuthorityError as exc:
-                authority_error = str(exc)
+        model = env.sim.model._model
+        for contact in env.sim.data.contact[: env.sim.data.ncon]:
+            names = {model.geom(contact.geom1).name or "", model.geom(contact.geom2).name or ""}
+            if "table_collision" in names and any(
+                token in " ".join(names) for token in ("link5", "link6", "link7", "hand")
+            ):
+                forbidden_initial_contacts.append(sorted(names))
+        if preview is not None:
+            import mujoco
+            from PIL import Image
+
+            options = mujoco.MjvOption()
+            options.geomgroup[0] = 0
+            with mujoco.Renderer(model, height=720, width=1280) as renderer:
+                renderer.update_scene(env.sim.data._data, camera="shakebench_camera_assembly", scene_option=options)
+                target = Path(preview)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                Image.fromarray(renderer.render()).save(target)
         report = {
-            "schema_id": "shakebench.phase07_5a.scene_preflight",
+            "schema_id": "shakebench.world_fixed_arm.scene_preflight",
             "schema_version": 1,
             "base_commit": _git_head(),
             "geometry_profile": load_geometry_profile(geometry_profile),
@@ -93,24 +83,21 @@ def run_preflight(output: str | Path, geometry_profile: str = "canonical") -> di
             "compiled_audit": env._scene_audit.to_dict(),
             "clearance": env._scene_clearance.to_dict(),
             "robot_mount": env._compiled_contract["robot_mount"],
-            "geometry_authority": authority,
+            "experiment_certification": "pending",
             "physics_signature": env._scene_audit.physics_signature,
             "gates": {
                 "scene_ready": bool(env._scene_audit.passed),
                 "clearance_passed": bool(env._scene_clearance.passed),
                 "visual_physics_invariant": None,
-                "direct_mount_initial_contact_gate": not forbidden_initial_contacts,
-                "authority_hashes_match": geometry_profile != "direct_mount_v1" or authority is not None,
-                "knee_or_official_states_run": False,
+                "initial_contact_gate": not forbidden_initial_contacts,
             },
-            "direct_mount_initial_contacts": forbidden_initial_contacts,
-            "authority_error": authority_error,
+            "initial_contacts": forbidden_initial_contacts,
         }
     finally:
         env.close()
 
     hidden_env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=None,
         physics_profile="official",
@@ -139,23 +126,24 @@ def run_preflight(output: str | Path, geometry_profile: str = "canonical") -> di
             "rgba_differs": visible_rgba_sha256 != hidden_rgba_sha256,
         }
         report["gates"]["visual_physics_invariant"] = report["visual_invariance"]["passed"]
-        report["payload_sha256"] = _digest(report)
+        report["payload_sha256"] = payload_hash(report)
     finally:
         hidden_env.close()
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(
-        json.dumps(_json_ready(report), ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+        json.dumps(json_ready(report), ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
     return report
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=Path("out/phase07_5a/scene_preflight.json"))
-    parser.add_argument("--geometry-profile", choices=("canonical", "direct_mount_v1"), default="canonical")
+    parser.add_argument("--output", type=Path, default=Path("out/world_fixed_arm/scene_preflight.json"))
+    parser.add_argument("--geometry-profile", choices=("world_fixed_arm_v1",), default="world_fixed_arm_v1")
+    parser.add_argument("--preview", type=Path, help="Optional PNG; requires an EGL/MESA renderer")
     args = parser.parse_args(argv)
-    report = run_preflight(args.output, geometry_profile=args.geometry_profile)
+    report = run_preflight(args.output, geometry_profile=args.geometry_profile, preview=args.preview)
     print(json.dumps({"output": str(args.output), **report["gates"]}, sort_keys=True))
     return (
         0
@@ -165,8 +153,7 @@ def main(argv: list[str] | None = None) -> int:
                 "scene_ready",
                 "clearance_passed",
                 "visual_physics_invariant",
-                "direct_mount_initial_contact_gate",
-                "authority_hashes_match",
+                "initial_contact_gate",
             )
         )
         else 1

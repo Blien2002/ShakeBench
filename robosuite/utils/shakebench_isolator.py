@@ -508,9 +508,7 @@ def derive_isolator_parameters(
         inertia_kg_m2 = table_inertia_kg_m2
     base = _coerce_config(config)
     natural_frequency = (
-        base.fn_hz
-        if fn_hz is None
-        else _coerce_values("fn_hz", fn_hz, 6, allow_scalar=True, positive=True)
+        base.fn_hz if fn_hz is None else _coerce_values("fn_hz", fn_hz, 6, allow_scalar=True, positive=True)
     )
     damping_ratio = base.zeta if zeta is None else _coerce_values("zeta", zeta, 6, allow_scalar=True, positive=True)
     reference_mass = base.mass_kg if mass_kg is None else _coerce_scalar("mass_kg", mass_kg, positive=True)
@@ -800,9 +798,7 @@ def transmissibility(frequency_hz: Any, natural_frequency_hz: Any, damping_ratio
     return float(value) if np.ndim(value) == 0 else value
 
 
-def relative_transmissibility(
-    frequency_hz: Any, natural_frequency_hz: Any, damping_ratio: Any
-) -> np.ndarray | float:
+def relative_transmissibility(frequency_hz: Any, natural_frequency_hz: Any, damping_ratio: Any) -> np.ndarray | float:
     """Return relative-displacement transmissibility magnitude."""
 
     value = np.abs(relative_transfer_function(frequency_hz, natural_frequency_hz, damping_ratio))
@@ -1132,8 +1128,6 @@ def transfer_metrics(
     }
 
 
-
-
 def parameter_sweep(
     natural_frequency_candidates_hz: Iterable[Any],
     damping_ratio_candidates: Iterable[Any],
@@ -1200,11 +1194,7 @@ class IsolatorSafetyReport:
 
     @property
     def metrics(self) -> dict[str, float]:
-        return {
-            check.name: check.measured
-            for check in self.checks
-            if check.measured is not None
-        }
+        return {check.name: check.measured for check in self.checks if check.measured is not None}
 
     def __bool__(self) -> bool:
         return self.passed

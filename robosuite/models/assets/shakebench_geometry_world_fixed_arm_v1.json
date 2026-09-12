@@ -1,0 +1,54 @@
+{
+  "schema_id": "shakebench.geometry",
+  "schema_version": 1,
+  "profile_id": "world_fixed_arm_v1",
+  "geometry_variant": "C",
+  "mount_type": "NullMount",
+  "initial_joint_qpos_rad": [
+    0.0,
+    -0.38858314770089614,
+    0.0,
+    -2.2021431362535075,
+    0.0,
+    1.940809223301548,
+    0.7853981633974483
+  ],
+  "initial_eef_pos_robot_base_m": [
+    0.45,
+    0.0,
+    0.55
+  ],
+  "robot_base_pos_m": [
+    -0.55,
+    0,
+    0
+  ],
+  "table_top_pos_m": [
+    0.11,
+    0,
+    0.299
+  ],
+  "scene_config": "shakebench_scene_world_fixed_arm_v1.json",
+  "scene_sha256": "2500810ebf9ba19be45f6ef2221e83559c3c9bcecae727774128ac6475f98fd4",
+  "physics_effect": true,
+  "retained_table_dimensions_m": [
+    0.65,
+    0.6,
+    0.06
+  ],
+  "mass_inertia_policy": "Retain worktable mass/inertia, isolator parameters and deck driver. Panda and solid shore foundation belong to world; no compensating ballast.",
+  "reference": "Solid foundation occupies x=[-1.225,-0.47], y=[-0.42,0.42], z=[-0.765,0], joining the shore at the same top elevation and extending to the pit bottom. Black trim covers its top perimeter and its full pit-facing walls. Deck x=[-0.275,0.975]; worktable is inset 0.06 m from its shore-facing edge.",
+  "robot_support": {
+    "foundation_pos_m": [
+      -0.8475,
+      0,
+      -0.3825
+    ],
+    "foundation_half_size_m": [
+      0.3775,
+      0.42,
+      0.3825
+    ]
+  },
+  "payload_sha256": "7b8ce732e2c74fb9882841e1f702e9f3755a7b11b9284136c36073fbf4b944a3"
+}

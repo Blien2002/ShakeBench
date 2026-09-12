@@ -63,6 +63,7 @@ def _load_world_visuals(arena: Any, config: SceneVisualConfig) -> None:
                 arena.worldbody.append(deepcopy(body))
     arena._shakebench_world_visuals_loaded = True
 
+
 def _build_table_finish(arena, platen_body, table, envelope, platen_center_z, geom_names):
     """Author two-part isolator covers and bolted, non-contact table details.
 
@@ -224,8 +225,6 @@ def _build_table_finish(arena, platen_body, table, envelope, platen_center_z, ge
     return names
 
 
-
-
 def build_scene_visuals(
     arena: Any, config: SceneVisualConfig
 ) -> tuple[dict[str, Any], tuple[str, ...], tuple[str, ...]]:
@@ -279,12 +278,13 @@ def build_scene_visuals(
     visual_bodies.append(DECK_VISUAL_BODY_NAME)
     frame_bodies[DECK_VISUAL_BODY_NAME] = "dynamic_deck"
     platen_half = np.asarray(platen["size_m"], dtype=float) / 2.0
+    centre = np.asarray(platen.get("center_xy_m", (0.0, 0.0)), dtype=float)
     for name, size, pos, material in (
-        ("shakebench_platen_surface", platen_half, (0.0, 0.0, 0.0), "shakebench_platen_surface"),
+        ("shakebench_platen_surface", platen_half, (*centre, 0.0), "shakebench_platen_surface"),
         (
             "shakebench_platen_edge",
             (platen_half[0], platen_half[1], 0.008),
-            (0.0, 0.0, -platen_half[2] - 0.008),
+            (*centre, -platen_half[2] - 0.008),
             "shakebench_platen_edge",
         ),
     ):
@@ -293,7 +293,7 @@ def build_scene_visuals(
         )
         visual_geoms.append(name)
     # Small top fasteners provide the visual cue of a laboratory shaker plate.
-    for index, (x, y) in enumerate(((-0.65, -0.42), (-0.65, 0.42), (0.65, -0.42), (0.65, 0.42))):
+    for index, (x, y) in enumerate(itertools.product((-platen_half[0] + 0.08, platen_half[0] - 0.08), (-0.42, 0.42))):
         name = f"shakebench_platen_bolt_{index}"
         _append_unique_geom(
             platen_body,
@@ -301,7 +301,7 @@ def build_scene_visuals(
                 name,
                 "cylinder",
                 (0.012, 0.003),
-                (x, y, platen_half[2] + 0.003),
+                (x + centre[0], y + centre[1], platen_half[2] + 0.003),
                 material="shakebench_bolt_metal",
                 rgba=bolt_rgb,
             ),

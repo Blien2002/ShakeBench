@@ -13,9 +13,8 @@ def _public_key(key):
 class VibrationPickPlace(VibrationPickPlaceCan):
     """Three stock objects on two surfaces, with object-neutral observations.
 
-    The historical VibrationPickPlaceCan retains its frozen defaults. This new
-    task uses TaskSpec and object_start_xy; reset and step expose object_* keys.
-    The legacy oracle uses the explicit legacy_oracle_observation adapter.
+    Uses the world-fixed arm assembly, TaskSpec and object_start_xy;
+    reset and step expose object_* keys.
     """
 
     def __init__(self, task=None, object_start_xy=(-0.10, -0.13), object_start_yaw_rad=0.0, **kwargs):
@@ -23,7 +22,7 @@ class VibrationPickPlace(VibrationPickPlaceCan):
             raise ValueError("use object_start_xy and object_start_yaw_rad with VibrationPickPlace")
         if "table_friction" in kwargs or "target_container_friction" in kwargs:
             raise ValueError("TaskSpec owns surface/object contact friction")
-        kwargs.setdefault("geometry_profile", "direct_mount_v1")
+        kwargs.setdefault("geometry_profile", "world_fixed_arm_v1")
         super().__init__(
             task=TaskSpec.from_mapping(task),
             can_start_xy=object_start_xy,

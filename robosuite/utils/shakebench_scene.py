@@ -292,9 +292,10 @@ def _validate_scene_payload(payload: Mapping[str, Any], path: Path) -> None:
 
     platen = _require_mapping("platen", payload["platen"])
     platen_size = _vector("platen.size_m", platen.get("size_m"), 3, minimum=0.0, strict=True)
+    platen_center = _vector("platen.center_xy_m", platen.get("center_xy_m", (0.0, 0.0)), 2)
     _number("platen.nominal_top_z_m", platen.get("nominal_top_z_m"))
     _rgba("platen.rgba", platen.get("rgba"))
-    if platen_size[0] >= opening[0] or platen_size[1] >= opening[1]:
+    if any(2 * abs(platen_center[i]) + platen_size[i] >= opening[i] for i in range(2)):
         raise SceneConfigError("platen must fit inside the pit opening")
 
     stewart = _require_mapping("stewart", payload["stewart"])
@@ -693,6 +694,9 @@ def _stewart_points(config: SceneVisualConfig, platen_center_z: float) -> tuple[
             np.full(6, float(platen_center_z) + float(stewart["platen_joint_z_from_center_m"])),
         )
     )
+    centre = np.asarray(config.section("platen").get("center_xy_m", (0.0, 0.0)), dtype=float)
+    base[:, :2] += centre
+    platen[:, :2] += centre
     return base, platen
 
 
@@ -920,8 +924,6 @@ def _get_or_append_body(worldbody: ET.Element, name: str, pos: Iterable[float] =
     return body
 
 
-
-
 @dataclass(frozen=True)
 class SceneInventory:
     """Machine-readable source-scene inventory returned by augmentation."""
@@ -1096,8 +1098,6 @@ def _distance_record(*args: Any, **kwargs: Any) -> dict[str, Any]:
     from robosuite.models.arenas.scene_audit import _distance_record as record
 
     return record(*args, **kwargs)
-
-
 
 
 __all__ = [

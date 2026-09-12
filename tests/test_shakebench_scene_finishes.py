@@ -11,7 +11,7 @@ from robosuite.environments.manipulation.vibration_pick_place_can import Vibrati
 def env():
     env = VibrationPickPlaceCan(
         robots="Panda",
-        geometry_profile="direct_mount_v1",
+        geometry_profile="world_fixed_arm_v1",
         observation_tier=None,
         use_camera_obs=False,
         has_renderer=False,
@@ -46,8 +46,8 @@ def test_cabinet_operator_face_points_towards_shaker_and_monitor_is_blank(env):
 def test_curved_elbow_centres_meet_straight_tube_ends(env):
     model, data = env.sim.model._model, env.sim.data._data
     ends = []
-    for i in range(4):
-        geom = model.geom(f"shakebench_guardrail_top_{i}")
+    for suffix in ("0", "1", "2_south", "2_north", "3"):
+        geom = model.geom(f"shakebench_guardrail_top_{suffix}")
         pose = data.geom(geom.id)
         axis = pose.xmat.reshape(3, 3)[:, 2]
         ends.extend([pose.xpos - axis * geom.size[1], pose.xpos + axis * geom.size[1]])
@@ -62,8 +62,9 @@ def test_curved_elbow_centres_meet_straight_tube_ends(env):
         world = verts @ pose.xmat.reshape(3, 3).T + pose.xpos
         elbow_ends.extend([world[:ring_size].mean(axis=0), world[-ring_size:].mean(axis=0)])
     distances = np.linalg.norm(np.asarray(ends)[:, None, :] - np.asarray(elbow_ends)[None, :, :], axis=2)
-    assert np.all(distances.min(axis=1) < 1e-6)
-    assert len(set(distances.argmin(axis=1))) == 8
+    assert np.all(distances.min(axis=0) < 1e-6)
+    opening_ends = np.asarray(ends)[distances.min(axis=1) > 1e-6]
+    np.testing.assert_allclose(np.sort(opening_ends[:, 1]), [-0.46, 0.46], atol=1e-6)
     assert env._scene_clearance.passed
 
 

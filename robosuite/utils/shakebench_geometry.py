@@ -1,4 +1,4 @@
-"""Explicit assembly variants, separate from frozen physics and visual profiles."""
+"""Current world-fixed assembly and its hash-bound scene configuration."""
 
 import hashlib
 import json
@@ -9,18 +9,17 @@ import numpy as np
 from robosuite import models
 
 
-def load_geometry_profile(profile="canonical"):
-    """Return a validated opt-in assembly; canonical keeps the historical layout."""
-    if profile == "canonical":
-        return None
-    if profile != "direct_mount_v1":
-        raise ValueError("geometry_profile must be canonical or direct_mount_v1")
-    path = Path(models.assets_root) / "shakebench_geometry_direct_mount_v1.json"
+def load_geometry_profile(profile="world_fixed_arm_v1"):
+    """Load the sole current, hash-bound world-fixed assembly."""
+    if profile != "world_fixed_arm_v1":
+        raise ValueError("geometry_profile must be world_fixed_arm_v1")
+    path = Path(models.assets_root) / "shakebench_geometry_world_fixed_arm_v1.json"
     try:
         payload = json.loads(path.read_text(), object_pairs_hook=_reject_duplicate_keys)
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError(f"invalid geometry profile JSON: {exc}") from exc
     required = {
+        "robot_support",
         "schema_id",
         "schema_version",
         "profile_id",
@@ -39,7 +38,7 @@ def load_geometry_profile(profile="canonical"):
         "payload_sha256",
     }
     if set(payload) != required:
-        raise ValueError("direct-mount geometry fields mismatch")
+        raise ValueError("world-fixed geometry fields mismatch")
     digest = payload.pop("payload_sha256")
     actual = hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
@@ -52,14 +51,23 @@ def load_geometry_profile(profile="canonical"):
             raise ValueError(f"invalid geometry profile {key}")
     initial_qpos = np.asarray(payload.get("initial_joint_qpos_rad"), dtype=float)
     if initial_qpos.shape != (7,) or not np.all(np.isfinite(initial_qpos)):
-        raise ValueError("direct-mount geometry requires seven finite initial_joint_qpos_rad values")
+        raise ValueError("world-fixed geometry requires seven finite initial_joint_qpos_rad values")
     initial_eef = np.asarray(payload.get("initial_eef_pos_robot_base_m"), dtype=float)
     if initial_eef.shape != (3,) or not np.all(np.isfinite(initial_eef)):
-        raise ValueError("direct-mount geometry requires finite initial_eef_pos_robot_base_m")
+        raise ValueError("world-fixed geometry requires finite initial_eef_pos_robot_base_m")
     if payload["mount_type"] != "NullMount":
-        raise ValueError("direct-mount assembly must declare NullMount")
+        raise ValueError("world-fixed assembly must declare NullMount")
     if Path(payload["scene_config"]).name != payload["scene_config"]:
         raise ValueError("geometry scene_config must be a packaged filename")
+    support = payload["robot_support"]
+    if set(support) != {"foundation_pos_m", "foundation_half_size_m"}:
+        raise ValueError("robot support fields mismatch")
+    for key, value in support.items():
+        vector = np.asarray(value, dtype=float)
+        if vector.shape != (3,) or not np.all(np.isfinite(vector)) or ("half_size" in key and np.any(vector <= 0)):
+            raise ValueError(f"invalid robot support {key}")
+    if payload["profile_id"] != profile:
+        raise ValueError("geometry profile identity mismatch")
     payload["payload_sha256"] = digest
     return payload
 
@@ -76,4 +84,4 @@ def _reject_duplicate_keys(pairs):
 def geometry_scene_path(profile):
     """Resolve the assembly's visual authority without opening reference backups."""
     geometry = load_geometry_profile(profile)
-    return None if geometry is None else Path(models.assets_root) / geometry["scene_config"]
+    return Path(models.assets_root) / geometry["scene_config"]
