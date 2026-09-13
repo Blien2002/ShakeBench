@@ -20,15 +20,19 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from types import MappingProxyType
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Iterable, Optional
 import xml.etree.ElementTree as ET
 
 import mujoco
 import numpy as np
 
 from robosuite.utils import transform_utils as T
+from robosuite.utils.shakebench_rotations import (
+    inverse_wxyz as _quat_inverse_wxyz,
+    multiply_wxyz as _quat_multiply_wxyz,
+)
 
 
 AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
@@ -118,20 +122,6 @@ def _normalise_quat_wxyz(quaternion: Iterable[Any], name: str = "quaternion") ->
     if norm <= 0.0:
         raise DeckDriverError(f"{name} must not be the zero quaternion")
     return result / norm
-
-
-def _quat_multiply_wxyz(first: np.ndarray, second: np.ndarray) -> np.ndarray:
-    from robosuite.utils.shakebench_rotations import multiply_wxyz
-
-    return multiply_wxyz(first, second)
-
-
-
-def _quat_inverse_wxyz(quaternion: np.ndarray) -> np.ndarray:
-    from robosuite.utils.shakebench_rotations import inverse_wxyz
-
-    return inverse_wxyz(quaternion)
-
 
 
 def _skew(vector: np.ndarray) -> np.ndarray:
@@ -1300,27 +1290,7 @@ class DeckDriverTrace:
             "schema_version": TRACE_SCHEMA_VERSION,
             "axis_order": list(AXES),
             "field_contract": dict(TRACE_FIELD_CONTRACT),
-            "integration_target_time_s": self.integration_target_time_s.tolist(),
-            "sample_target_time_s": self.sample_target_time_s.tolist(),
-            "integration_application_time_s": self.integration_application_time_s.tolist(),
-            "sample_application_time_s": self.sample_application_time_s.tolist(),
-            "sample_time_s": self.sample_time_s.tolist(),
-            "command_pose": self.command_pose.tolist(),
-            "actual_pose": self.actual_pose.tolist(),
-            "command_twist": self.command_twist.tolist(),
-            "actual_twist": self.actual_twist.tolist(),
-            "command_acceleration": self.command_acceleration.tolist(),
-            "actual_acceleration": self.actual_acceleration.tolist(),
-            "sample_target_pose": self.sample_target_pose.tolist(),
-            "sample_target_twist": self.sample_target_twist.tolist(),
-            "sample_target_acceleration": self.sample_target_acceleration.tolist(),
-            "deck_tracking_pose_error": self.deck_tracking_pose_error.tolist(),
-            "weld_constraint_residual_raw": self.weld_constraint_residual_raw.tolist(),
-            "weld_constraint_force_raw": self.weld_constraint_force_raw.tolist(),
-            "solver_iterations": self.solver_iterations.tolist(),
-            "solver_niter": self.solver_niter.tolist(),
-            "warning_number_delta": self.warning_number_delta.tolist(),
-            "warning_lastinfo": self.warning_lastinfo.tolist(),
+            **{item.name: getattr(self, item.name).tolist() for item in fields(self)},
         }
 
     def __getitem__(self, key: str) -> Any:
@@ -1363,33 +1333,10 @@ class DeckDriver:
         self._sim_token = None
         self._driver_mocap_id = None
         self._deck_body_id = None
-        self._deck_freejoint_dofadr = None
         self._weld_id = None
         self._environment = None
         self._pending_command = None
-        self._records = {
-            "integration_target_time_s": [],
-            "sample_target_time_s": [],
-            "integration_application_time_s": [],
-            "sample_application_time_s": [],
-            "sample_time_s": [],
-            "command_pose": [],
-            "actual_pose": [],
-            "command_twist": [],
-            "actual_twist": [],
-            "command_acceleration": [],
-            "actual_acceleration": [],
-            "sample_target_pose": [],
-            "sample_target_twist": [],
-            "sample_target_acceleration": [],
-            "deck_tracking_pose_error": [],
-            "weld_constraint_residual_raw": [],
-            "weld_constraint_force_raw": [],
-            "solver_iterations": [],
-            "solver_niter": [],
-            "warning_number_delta": [],
-            "warning_lastinfo": [],
-        }
+        self._records = {item.name: [] for item in fields(DeckDriverTrace)}
         self._last_warning_number = None
 
     @property
@@ -1452,15 +1399,6 @@ class DeckDriver:
         self._sim_token = id(sim)
         self._driver_mocap_id = mocap_id
         self._deck_body_id = deck_id
-        freejoint_ids = [
-            joint_id
-            for joint_id in range(int(raw_model.njnt))
-            if int(raw_model.jnt_bodyid[joint_id]) == deck_id
-            and int(raw_model.jnt_type[joint_id]) == int(mujoco.mjtJoint.mjJNT_FREE)
-        ]
-        if len(freejoint_ids) != 1:
-            raise DeckDriverError("compiled deck must have exactly one freejoint")
-        self._deck_freejoint_dofadr = int(raw_model.jnt_dofadr[freejoint_ids[0]])
         self._weld_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_EQUALITY, self.config.weld_name)
 
     def reset_trace(self) -> None:
@@ -1484,9 +1422,9 @@ class DeckDriver:
         return sim, raw_model, raw_data
 
     @staticmethod
-    def _coerce_six(name: str, value: Any, default: Optional[np.ndarray] = None) -> np.ndarray:
+    def _coerce_six(name: str, value: Any) -> np.ndarray:
         if value is None:
-            return np.zeros(6, dtype=float) if default is None else np.array(default, copy=True)
+            return np.zeros(6, dtype=float)
         array = np.asarray(value, dtype=float)
         if array.shape == (1, 6):
             array = array[0]
@@ -1576,7 +1514,6 @@ class DeckDriver:
                 "sample_pose": np.concatenate((position, quaternion)),
                 "sample_twist": twist,
                 "sample_acceleration": acceleration,
-                "right_limit_refresh_performed": True,
             }
         )
 

@@ -22,9 +22,9 @@ from robosuite.controllers.parts.arm.osc_warp import (
 from robosuite.utils import transform_utils as T
 from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_providers import (
-    COMMON_STATE_KEYS, POLICY_FIELD_CONTRACT, RigidBodyState, SupportState,
-    relative_pose_twist_acceleration,
+    COMMON_STATE_KEYS, POLICY_FIELD_CONTRACT, RigidBodyState,
 )
+from robosuite.utils.shakebench_expert import oracle_observation
 from robosuite.utils.shakebench_rotations import wxyz_to_matrix
 
 wp.set_module_options({"enable_backward": False})
@@ -47,6 +47,7 @@ class Evaluation:
     latched: wp.array[int]
     invalid: wp.array[int]
     imu: wp.array3d[float]
+    imu_body: int
     imu_position: wp.vec3
     imu_rotation: wp.mat33
 
@@ -150,7 +151,7 @@ def sample_imu(k: Kinematics, e: Evaluation, tick: wp.array[int], stride: int, s
     w = wp.tid()
     if (tick[0] + 1) % stride != 0:
         return
-    body = e.bodies[0]
+    body = e.imu_body
     point = k.xpos[w, body] + k.xmat[w, body] @ e.imu_position
     sensor_from_world = wp.transpose(k.xmat[w, body] @ e.imu_rotation)
     # Gravity-inclusive object acceleration already equals specific force here.
@@ -231,9 +232,8 @@ class MJWarpBatch:
         self.imu_stride = round(0.005 / self.dt)
         if self.steps != 250 or not np.isclose(self.dt, 0.0002) or self.imu_stride != 25:
             raise ValueError("collector requires the current 5 kHz physics / 20 Hz policy scheduler")
-        self.tier = env.observation_tier
-        if self.tier not in ("V0", "V1", "V2", "V3"):
-            raise ValueError("collector requires a State observation tier V0–V3")
+        if env.geometry_profile["profile_id"] != "world_fixed_arm_v1" or env.observation_tier is not None:
+            raise ValueError("collector requires the migrated world-fixed scene observation contract")
         signature = self._signature(env)
         if any(self._signature(other) != signature for other in envs):
             raise ValueError("batch models, controller configurations, and observation tiers must match")
@@ -250,15 +250,20 @@ class MJWarpBatch:
         if not (np.all(arm.input_max == 1) and np.all(arm.input_min == -1)
                 and np.array_equal(arm.output_min, -arm.output_max)):
             raise ValueError("collector requires symmetric normalized OSC action scaling")
-        self.initial_observations = [copy.deepcopy(other._get_observations(force_update=True)) for other in envs]
-        from robosuite.utils.shakebench_tasks import legacy_oracle_observation
-        self.initial_observations = [legacy_oracle_observation(o) for o in self.initial_observations]
-        self.initial_imus = [copy.deepcopy(other.vibration_provider.imu) if self.tier != "V0" else None for other in envs]
+        self.initial_observations = [
+            {**oracle_observation(other), **other.table_imu_provider.observation()}
+            for other in envs
+        ]
+        self.initial_imus = [copy.deepcopy(other.table_imu_provider.imu) for other in envs]
         self.robots = env.robots[0]
         self.initial_arrays = {name: np.stack([np.array(getattr(other.sim.data._data, name)) for other in envs])
                                for name in ("qpos", "qvel", "ctrl", "act", "mocap_pos", "mocap_quat", "qacc_warmstart")}
         with wp.ScopedDevice(self.device):
             self.model = mjw.put_model(self.raw_model)
+            # MJWarp raises tolerance to 1e-6 on upload. On this stiff loaded
+            # support it terminates early and creates spurious IMU impulses;
+            # retain the authored tolerance (state arithmetic is still float32).
+            self.model.opt.tolerance.fill_(float(self.raw_model.opt.tolerance))
             if self.model.is_sparse:
                 raise ValueError("Panda collector currently requires dense MJWarp inertia storage")
             self.data = mjw.make_data(self.raw_model, nworld=self.nworld, nconmax=nconmax, njmax=njmax)
@@ -355,9 +360,11 @@ class MJWarpBatch:
         e.latched = wp.zeros(self.nworld, dtype=int)
         e.invalid = wp.zeros(self.nworld, dtype=int)
         e.imu = wp.zeros((self.nworld, 10, 6), dtype=float)
-        provider = env.vibration_provider
-        e.imu_position = wp.vec3(*(provider.sensor_position_body_m if self.tier != "V0" else (0, 0, 0)))
-        e.imu_rotation = wp.mat33(wxyz_to_matrix(provider.sensor_quat_body_wxyz).flatten()) if self.tier != "V0" else wp.mat33(np.eye(3).flatten())
+        mount = env.table_imu_provider.audit_compiled_mount(env.sim)
+        site = m.site_name2id(mount["sensor_site_name"])
+        e.imu_body = int(self.raw_model.site_bodyid[site])
+        e.imu_position = wp.vec3(*self.raw_model.site_pos[site])
+        e.imu_rotation = wp.mat33(wxyz_to_matrix(self.raw_model.site_quat[site]).flatten())
         return e
 
     def reset(self):
@@ -416,9 +423,8 @@ class MJWarpBatch:
                     d.contact.geom, d.contact.dist, d.contact.frame, d.contact.friction, d.contact.dim,
                     d.contact.efc_address, d.efc.force, d.njmax], d.naconmax)
         self._launch(evaluate, [self.k, e, self.tick, self.dt])
-        if self.tier != "V0":
-            # Force/torque sensors request post-constraint RNE during forward.
-            self._launch(sample_imu, [self.k, e, self.tick, self.imu_stride, self.steps])
+        # Force/torque sensors request post-constraint RNE during forward.
+        self._launch(sample_imu, [self.k, e, self.tick, self.imu_stride, self.steps])
         self._launch(advance_tick, [self.tick], 1)
 
     def _block(self):
@@ -441,20 +447,19 @@ class MJWarpBatch:
                          wp.vec3(*self.raw_model.opt.gravity), self.packet])
             # All downloads are batched and occur only at the policy boundary.
             packet = self.packet.numpy()
-            samples = self.e.imu.numpy() if self.tier != "V0" else None
+            samples = self.e.imu.numpy()
             metrics = {"contacts": self.e.aggregate.numpy(), "success": self.e.latched.numpy().astype(bool),
                        "invalid": self.e.invalid.numpy().astype(bool)}
         self.policy_step += 1
         metrics["invalid"] |= ~np.all(np.isfinite(packet), axis=1)
         obs = []
         for w in range(self.nworld):
-            if metrics["invalid"][w] or (samples is not None and not np.all(np.isfinite(samples[w]))):
+            if metrics["invalid"][w] or not np.all(np.isfinite(samples[w])):
                 metrics["invalid"][w] = True
                 obs.append(copy.deepcopy(self.initial_observations[w]))
                 continue
-            if samples is not None:
-                for i, sample in enumerate(samples[w]):
-                    self.imus[w].acquire(sample, timestamp_s=((self.policy_step - 1) * 10 + i + 1) * 0.005)
+            for i, sample in enumerate(samples[w]):
+                self.imus[w].acquire(sample, timestamp_s=((self.policy_step - 1) * 10 + i + 1) * 0.005)
             obs.append(self._observation(w, packet[w]))
         offset = 132
         metrics["qpos"] = packet[:, offset:offset + self.raw_model.nq].copy()
@@ -487,16 +492,5 @@ class MJWarpBatch:
             "goal_frame_pos_robot_base": rotation @ (origin - base.position_world_m),
             "goal_frame_quat_robot_base": T.mat2quat(rotation @ table.rotation_world),
         })
-        if self.tier != "V0":
-            result.update(self.imus[w].to_policy_observation())
-        if self.tier in ("V2", "V3"):
-            config = self.envs[0].deck_config
-            nominal = RigidBodyState(np.array(config.deck_pos_m), wxyz_to_matrix(config.deck_quat_wxyz), np.zeros(6), np.zeros(6))
-            d = relative_pose_twist_acceleration(deck, nominal)
-            t = relative_pose_twist_acceleration(table, deck)
-            result.update(SupportState(d.pose, d.twist, d.acceleration, t.pose, t.twist, t.acceleration).to_policy_observation())
-        if self.tier == "V3":
-            provider = self.envs[w].vibration_provider
-            provider._episode_time_s = self.policy_step / 20
-            result.update(provider.public_program_payload())
+        result.update(self.imus[w].to_policy_observation())
         return {key: np.asarray(value, dtype=POLICY_FIELD_CONTRACT[key]["dtype"]).copy() for key, value in result.items()}

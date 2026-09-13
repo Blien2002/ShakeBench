@@ -1,0 +1,4 @@
+# Private MJWarp kernel layouts are version-specific.
+mujoco==3.9.0
+mujoco-warp==3.9.0
+warp-lang==1.13.0

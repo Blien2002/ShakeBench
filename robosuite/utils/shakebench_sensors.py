@@ -1,4 +1,4 @@
-"""Canonical ShakeBench deck IMU model.
+"""Canonical ShakeBench worktable IMU model.
 
 This module owns the measurement model used by the State-V1 observation.  The
 physics equation is deliberately separate from the runtime sampling plumbing
@@ -334,8 +334,8 @@ class CanonicalIMUProfile:
         return {
             "profile_id": self.profile_id,
             "frame": {
-                "parent": "robot_base",
-                "position_m": [0.0, 0.0, 0.0],
+                "parent": "worktable",
+                "position_m": [0.0, 0.0, -0.03],
                 "quaternion_wxyz": [1.0, 0.0, 0.0, 0.0],
             },
             "output": {
@@ -1042,17 +1042,13 @@ class CanonicalIMU:
 
     def to_policy_observation(self) -> dict[str, np.ndarray]:
         return {
-            "deck_imu_window": self.window(),
-            "deck_imu_dt_s": np.asarray(self.profile.dt_s, dtype=np.float32),
+            "table_imu_window": self.window(),
+            "table_imu_dt_s": np.asarray(self.profile.dt_s, dtype=np.float32),
+            "table_imu_timestamps_s": np.asarray(self.window_acquisition_timestamps_s, dtype=np.float64),
         }
 
 
-# Names used by callers that describe the physical installation rather than
-# the profile implementation.  They intentionally refer to the same class.
-CanonicalDeckIMU = CanonicalIMU
-DeckIMU = CanonicalIMU
 CanonicalIMUSensor = CanonicalIMU
-DeckIMUSensor = CanonicalIMU
 IMUSensor = CanonicalIMU
 ButterworthFilter = ButterworthLowpass
 
@@ -1066,14 +1062,11 @@ __all__ = [
     "BUTTERWORTH_B",
     "BUTTERWORTH_CUTOFF_HZ",
     "BUTTERWORTH_ENBW_HZ",
-    "CanonicalDeckIMU",
     "CanonicalIMUSensor",
     "CanonicalIMU",
     "CanonicalIMUProfile",
     "CANONICAL_IMU_PROFILE",
     "CANONICAL_IMU_PROFILE_HASH",
-    "DeckIMU",
-    "DeckIMUSensor",
     "IMUSensor",
     "G0_M_S2",
     "GRAVITY_WORLD_M_S2",

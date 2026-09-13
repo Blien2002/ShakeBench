@@ -184,6 +184,7 @@ class VideoObserver:
         policy_rate_hz: float,
         scene_config=None,
         wrist_inset: bool = False,
+        raw: bool = False,
     ) -> None:
         self.output = output
         self.camera = camera
@@ -195,6 +196,7 @@ class VideoObserver:
         self.state_id = state_id
         self.policy_rate_hz = policy_rate_hz
         self.wrist_inset = wrist_inset
+        self.raw = raw
         scene_config = scene_config or load_scene_visual_config()
         camera_names = {str(camera["name"]) for camera in scene_config.section("cameras").values()}
         camera_names.update((WRIST_CAMERA, TASK_CLOSE_CAMERA))
@@ -260,20 +262,15 @@ class VideoObserver:
         metrics = env.get_metrics()
         self.last_step = step
         self.last_phase = _phase_label(controller)
-        self.last_frame = annotate_frame(
-            raw,
-            tier=self.tier,
-            gamma=self.gamma,
-            state_id=self.state_id,
-            step=step,
-            policy_rate_hz=self.policy_rate_hz,
-            phase=self.last_phase,
+        self.last_frame = raw if self.raw else annotate_frame(
+            raw, tier=self.tier, gamma=self.gamma, state_id=self.state_id, step=step,
+            policy_rate_hz=self.policy_rate_hz, phase=self.last_phase,
             success=bool(metrics["success"]["passed"]),
         )
         self.writer.append_data(self.last_frame)
 
     def close(self, *, success: bool, hold_seconds: float = 1.5) -> None:
-        if self.last_frame is not None:
+        if self.last_frame is not None and not self.raw:
             final = self.last_frame.copy()
             label = "SUCCESS" if success else "NOT COMPLETED"
             color = (58, 210, 92) if success else (64, 96, 235)

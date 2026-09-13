@@ -23,6 +23,7 @@ from robosuite.utils.shakebench_sensors import (
     CanonicalIMU,
     CanonicalIMUProfile,
     ShakeBenchSensorError,
+    canonical_imu_profile_hash,
     _matrix_to_quaternion_wxyz,
     _normalise_quaternion_wxyz,
     _quat_wxyz_to_matrix,
@@ -47,7 +48,8 @@ COMMON_STATE_KEYS = (
     "goal_orientation_mask",
 )
 V0_POLICY_KEYS = ()
-V1_POLICY_KEYS = ("deck_imu_window", "deck_imu_dt_s")
+TABLE_IMU_POLICY_KEYS = ("table_imu_window", "table_imu_dt_s", "table_imu_timestamps_s")
+V1_POLICY_KEYS = TABLE_IMU_POLICY_KEYS
 V2_POLICY_KEYS = (
     "deck_pose_in_nominal_frame",
     "deck_twist_in_nominal_frame",
@@ -104,8 +106,9 @@ POLICY_FIELD_CONTRACT = MappingProxyType(
         "goal_inner_half_extents_target": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "target"},
         "goal_z_bounds_target": {"shape": (2,), "dtype": "float32", "units": "m", "frame": "target"},
         "goal_orientation_mask": {"shape": (3,), "dtype": "bool", "units": "unitless", "frame": "target"},
-        "deck_imu_window": {"shape": (10, 6), "dtype": "float32", "units": "m/s2,rad/s", "frame": "sensor"},
-        "deck_imu_dt_s": {"shape": (), "dtype": "float32", "units": "s", "frame": "acquisition_time"},
+        "table_imu_window": {"shape": (10, 6), "dtype": "float32", "units": "m/s2,rad/s", "frame": "table_imu"},
+        "table_imu_dt_s": {"shape": (), "dtype": "float32", "units": "s", "frame": "acquisition_time"},
+        "table_imu_timestamps_s": {"shape": (10,), "dtype": "float64", "units": "s", "frame": "acquisition_time"},
         "deck_pose_in_nominal_frame": {"shape": (7,), "dtype": "float32", "units": "m,unitless", "frame": "nominal"},
         "deck_twist_in_nominal_frame": {"shape": (6,), "dtype": "float32", "units": "m/s,rad/s", "frame": "nominal"},
         "deck_accel_in_nominal_frame": {"shape": (6,), "dtype": "float32", "units": "m/s2,rad/s2", "frame": "nominal"},
@@ -506,10 +509,14 @@ class V0Provider(VibrationProvider):
     tier = "V0"
 
 
-class V1Provider(VibrationProvider):
-    """Delayed/noisy canonical IMU provider mounted at robot-base origin."""
+class TableIMUProvider(VibrationProvider):
+    """Delayed/noisy IMU provider rigidly mounted below the worktable."""
 
-    tier = "V1"
+    tier = "table_imu"
+
+    @property
+    def policy_keys(self) -> tuple[str, ...]:
+        return TABLE_IMU_POLICY_KEYS
 
     def __init__(
         self,
@@ -517,10 +524,8 @@ class V1Provider(VibrationProvider):
         seed: int = 0,
         imu_mode: str = "canonical_noisy_v1",
         imu_profile: CanonicalIMUProfile = CANONICAL_IMU_PROFILE,
-        imu_body_name: Optional[str] = None,
-        sensor_body_name: Optional[str] = None,
-        deck_body_name: Optional[str] = None,
-        sensor_position_body_m: Iterable[float] = (0.0, 0.0, 0.0),
+        sensor_site_name: str = "table_imu_site",
+        sensor_position_body_m: Iterable[float] = (0.0, 0.0, -0.03),
         sensor_quat_body_wxyz: Iterable[float] = (1.0, 0.0, 0.0, 0.0),
         gravity_world_m_s2: Iterable[float] = GRAVITY_WORLD_M_S2,
     ) -> None:
@@ -528,12 +533,9 @@ class V1Provider(VibrationProvider):
             self.imu = CanonicalIMU(seed=seed, mode=imu_mode, profile=imu_profile)
         except (ShakeBenchSensorError, TypeError, ValueError) as exc:
             raise ShakeBenchProviderError(str(exc)) from exc
-        if sensor_body_name is not None and imu_body_name is not None and str(sensor_body_name) != str(imu_body_name):
-            raise ShakeBenchProviderError("sensor_body_name and imu_body_name specify different bodies")
-        selected_imu_body_name = sensor_body_name or imu_body_name or deck_body_name or "robot0_base"
-        self.imu_body_name = str(selected_imu_body_name)
+        self.imu_body_name = "worktable"
         self.sensor_body_name = self.imu_body_name
-        self.deck_body_name = "deck" if deck_body_name is None else str(deck_body_name)
+        self.sensor_site_name = str(sensor_site_name)
         self.sensor_position_body_m = np.array(sensor_position_body_m, dtype=float, copy=True)
         self.sensor_quat_body_wxyz = np.array(sensor_quat_body_wxyz, dtype=float, copy=True)
         self.gravity_world_m_s2 = np.array(gravity_world_m_s2, dtype=float, copy=True)
@@ -552,40 +554,48 @@ class V1Provider(VibrationProvider):
         self.reset()
 
     def audit_compiled_mount(self, sim: Any) -> dict[str, Any]:
-        """Audit the canonical robot-base IMU body and save deck extrinsics."""
+        """Audit the massless IMU site and its calibrated worktable extrinsics."""
 
         model = getattr(sim, "model", sim)
         model = getattr(model, "_model", model)
-        sensor_id = int(mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, self.imu_body_name))
-        deck_id = int(mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, self.deck_body_name))
+        sensor_id = int(mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, self.sensor_site_name))
+        body_id = int(mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, self.imu_body_name))
         if sensor_id < 0:
+            raise ShakeBenchProviderError(f"compiled model is missing IMU site {self.sensor_site_name!r}")
+        if body_id < 0:
             raise ShakeBenchProviderError(f"compiled model is missing IMU body {self.imu_body_name!r}")
-        if deck_id < 0:
-            raise ShakeBenchProviderError(f"compiled model is missing deck body {self.deck_body_name!r}")
-        parent_id = int(model.body_parentid[sensor_id])
-        if parent_id != deck_id:
-            raise ShakeBenchProviderError(
-                f"IMU body {self.imu_body_name!r} must be a rigid child of {self.deck_body_name!r}"
-            )
-        local_position = np.asarray(model.body_pos[sensor_id], dtype=float).copy()
-        local_quaternion = _normalise_quaternion_wxyz(model.body_quat[sensor_id], "compiled IMU body quaternion")
+        parent_id = int(model.site_bodyid[sensor_id])
+        if parent_id != body_id:
+            raise ShakeBenchProviderError(f"IMU site {self.sensor_site_name!r} must belong to {self.imu_body_name!r}")
+        local_position = np.asarray(model.site_pos[sensor_id], dtype=float).copy()
+        local_quaternion = _normalise_quaternion_wxyz(model.site_quat[sensor_id], "compiled IMU site quaternion")
         metadata_position = np.asarray(self.sensor_position_body_m, dtype=float)
         metadata_quaternion = _normalise_quaternion_wxyz(self.sensor_quat_body_wxyz, "sensor_quat_body_wxyz")
-        if not np.allclose(metadata_position, 0.0, rtol=0.0, atol=1e-12) or not np.allclose(
-            metadata_quaternion, (1.0, 0.0, 0.0, 0.0), rtol=0.0, atol=1e-12
+        if not np.allclose(metadata_position, local_position, rtol=0.0, atol=1e-12) or not np.allclose(
+            metadata_quaternion, local_quaternion, rtol=0.0, atol=1e-12
         ):
-            raise ShakeBenchProviderError(
-                "canonical IMU extrinsics must be zero position and identity orientation in robot_base"
-            )
+            raise ShakeBenchProviderError("configured IMU extrinsics do not match table_imu_site")
         mount = {
-            "sensor_body_name": self.imu_body_name,
-            "sensor_frame_parent": "robot_base",
-            "deck_body_name": self.deck_body_name,
+            "sensor_site_name": self.sensor_site_name,
+            "sensor_parent": "worktable",
             "parent_body_name": mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, parent_id),
-            "robot_base_pose_in_deck": np.concatenate((local_position, local_quaternion)),
-            "sensor_position_m_in_robot_base": metadata_position.copy(),
-            "sensor_quaternion_wxyz_in_robot_base": metadata_quaternion.copy(),
+            "sensor_position_m_in_worktable": metadata_position.copy(),
+            "sensor_quaternion_wxyz_in_worktable": metadata_quaternion.copy(),
+            "sensor_profile_id": self.imu.profile.profile_id,
         }
+        import hashlib
+        import json
+
+        identity = {
+            "sensor_parent": mount["sensor_parent"],
+            "sensor_site_name": mount["sensor_site_name"],
+            "position_m": metadata_position.tolist(),
+            "quaternion_wxyz": metadata_quaternion.tolist(),
+            "profile_sha256": canonical_imu_profile_hash(self.imu.profile),
+        }
+        mount["sensor_config_sha256"] = hashlib.sha256(
+            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
         self._compiled_imu_mount = mount
         return {key: value.copy() if isinstance(value, np.ndarray) else value for key, value in mount.items()}
 
@@ -605,26 +615,8 @@ class V1Provider(VibrationProvider):
                     sensor_quat_body_wxyz=self.sensor_quat_body_wxyz,
                     gravity_world_m_s2=self.gravity_world_m_s2,
                 )
-                # At t=0 MuJoCo has populated accelerations from the initial
-                # constraint solve, which is not an acquired physical sample
-                # and can contain a transient.  The episode starts from the
-                # authored zero-motion deck state, so seed static history from
-                # that state while retaining the compiled orientation.
-                data = getattr(sim, "data", None)
-                if data is not None and abs(float(data.time) - float(timestamp_s)) <= 1e-12:
-                    rotation_world_to_sensor = kinematics["rotation_world_to_sensor"]
-                    clean = np.concatenate(
-                        (
-                            rotation_world_to_sensor.dot(-self.gravity_world_m_s2),
-                            np.zeros(3, dtype=float),
-                        )
-                    )
-                    kinematics["origin_acceleration_world_m_s2"] = np.zeros(3, dtype=float)
-                    kinematics["angular_acceleration_world_rad_s2"] = np.zeros(3, dtype=float)
-                    kinematics["angular_velocity_world_rad_s"] = np.zeros(3, dtype=float)
-                    kinematics["point_acceleration_world_m_s2"] = np.zeros(3, dtype=float)
-                    kinematics["specific_force_sensor_m_s2"] = clean[:3].copy()
-                    kinematics["angular_velocity_sensor_rad_s"] = np.zeros(3, dtype=float)
+                # Initialize the filter from the actual reset state; the
+                # environment settles the loaded support before this call.
                 self.imu.reset(initial_clean_measurement=clean, timestamp_s=timestamp_s)
                 self.imu._last_kinematics = kinematics
             except (ShakeBenchSensorError, TypeError, ValueError) as exc:
@@ -678,7 +670,7 @@ class V1Provider(VibrationProvider):
         return result
 
 
-class V2Provider(V1Provider):
+class V2Provider(TableIMUProvider):
     """V1 plus current realized deck/table support state."""
 
     tier = "V2"
@@ -687,13 +679,13 @@ class V2Provider(V1Provider):
         self,
         *,
         deck_body_name: str = "deck",
-        imu_body_name: Optional[str] = "robot0_base",
         table_body_name: str = "worktable",
         nominal_frame_position_m: Iterable[float] = (0.0, 0.0, 0.0),
         nominal_frame_quat_wxyz: Iterable[float] = (1.0, 0.0, 0.0, 0.0),
         **kwargs: Any,
     ) -> None:
-        super().__init__(deck_body_name=deck_body_name, imu_body_name=imu_body_name, **kwargs)
+        super().__init__(**kwargs)
+        self.deck_body_name = str(deck_body_name)
         self.table_body_name = str(table_body_name)
         self.nominal_frame_position_m = np.array(nominal_frame_position_m, dtype=float, copy=True)
         self.nominal_frame_quat_wxyz = np.array(nominal_frame_quat_wxyz, dtype=float, copy=True)
@@ -871,7 +863,6 @@ def make_vibration_provider(
     program: Optional[ExcitationProgram] = None,
     excitation_program: Optional[ExcitationProgram] = None,
     deck_body_name: str = "deck",
-    imu_body_name: str = "robot0_base",
     table_body_name: str = "worktable",
     nominal_frame_position_m: Iterable[float] = (0.0, 0.0, 0.0),
     nominal_frame_quat_wxyz: Iterable[float] = (1.0, 0.0, 0.0, 0.0),
@@ -883,7 +874,6 @@ def make_vibration_provider(
         "imu_mode": imu_mode,
         "imu_profile": imu_profile,
         "deck_body_name": deck_body_name,
-        "imu_body_name": imu_body_name,
         "table_body_name": table_body_name,
         "nominal_frame_position_m": nominal_frame_position_m,
         "nominal_frame_quat_wxyz": nominal_frame_quat_wxyz,
@@ -892,11 +882,16 @@ def make_vibration_provider(
     if normalized == "V0":
         return V0Provider()
     if normalized == "V1":
-        return V1Provider(
+        return TableIMUProvider(
             **{
                 key: value
                 for key, value in common.items()
-                if key not in {"table_body_name", "nominal_frame_position_m", "nominal_frame_quat_wxyz"}
+                if key not in {
+                    "deck_body_name",
+                    "table_body_name",
+                    "nominal_frame_position_m",
+                    "nominal_frame_quat_wxyz",
+                }
             }
         )
     if normalized == "V2":
@@ -907,7 +902,6 @@ def make_vibration_provider(
 create_vibration_provider = make_vibration_provider
 VibrationProviderFactory = make_vibration_provider
 VibrationProviderV0 = V0Provider
-VibrationProviderV1 = V1Provider
 VibrationProviderV2 = V2Provider
 VibrationProviderV3 = V3Provider
 TIER_KEYS = TIER_POLICY_KEYS
@@ -919,6 +913,7 @@ __all__ = [
     "POLICY_FIELD_CONTRACT",
     "TIER_ADDED_KEYS",
     "TIER_POLICY_KEYS",
+    "TABLE_IMU_POLICY_KEYS",
     "V0_POLICY_KEYS",
     "V1_POLICY_KEYS",
     "V2_POLICY_KEYS",
@@ -928,13 +923,12 @@ __all__ = [
     "ShakeBenchProviderError",
     "SupportState",
     "V0Provider",
-    "V1Provider",
+    "TableIMUProvider",
     "V2Provider",
     "V3Provider",
     "VibrationProvider",
     "VibrationProviderFactory",
     "VibrationProviderV0",
-    "VibrationProviderV1",
     "VibrationProviderV2",
     "VibrationProviderV3",
     "TIER_KEYS",

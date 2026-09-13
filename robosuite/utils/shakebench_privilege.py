@@ -11,8 +11,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass
-import hashlib
-import json
 from typing import Any, Callable, Optional
 
 import numpy as np
@@ -204,134 +202,6 @@ def namespace_snapshot(fields: Mapping[str, Any]) -> dict[str, Any]:
     return _validate_privileged_mapping(prefixed)
 
 
-PHASE05_OBSERVATION_ARTIFACT_SCHEMA_ID = "shakebench.phase05.observation"
-PHASE05_OBSERVATION_ARTIFACT_SCHEMA_VERSION = 1
-
-
-def phase05_observation_artifact_hash(payload: Mapping[str, Any]) -> str:
-    """Hash an observation artifact while excluding only its self-hash."""
-
-    if not isinstance(payload, Mapping):
-        raise ShakeBenchPrivilegeError("Phase 05 observation artifact must be a mapping")
-    normalized = json.loads(json.dumps(dict(payload), sort_keys=True, ensure_ascii=True, allow_nan=False))
-    lock = normalized.get("artifact_lock")
-    if isinstance(lock, dict):
-        lock.pop("payload_sha256", None)
-    encoded = json.dumps(
-        normalized,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=True,
-        allow_nan=False,
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def verify_phase05_observation_artifact(path: Any) -> dict[str, Any]:
-    """Read-only verification of the Phase 05R controlled evidence artifact."""
-
-    checks = {
-        "schema": False,
-        "integrity": False,
-        "exact_policy_keys": False,
-        "imu_mount": False,
-        "imu_profile": False,
-        "timeline": False,
-        "quantizer": False,
-        "noise_filter": False,
-        "v2_v3": False,
-        "privilege_isolation": False,
-    }
-    try:
-        with open(path, encoding="utf-8") as stream:
-            payload = json.load(stream)
-        checks["schema"] = (
-            payload.get("schema_id") == PHASE05_OBSERVATION_ARTIFACT_SCHEMA_ID
-            and payload.get("schema_version") == PHASE05_OBSERVATION_ARTIFACT_SCHEMA_VERSION
-            and payload.get("phase") == "05R"
-            and payload.get("status") == "PASS"
-        )
-        lock = payload.get("artifact_lock", {})
-        expected_hash = lock.get("payload_sha256") if isinstance(lock, dict) else None
-        checks["integrity"] = (
-            isinstance(lock, dict)
-            and isinstance(lock.get("update_reason"), str)
-            and bool(lock["update_reason"].strip())
-            and isinstance(lock.get("previous_payload_sha256"), str)
-            and len(lock["previous_payload_sha256"]) == 64
-            and isinstance(expected_hash, str)
-            and len(expected_hash) == 64
-            and expected_hash == phase05_observation_artifact_hash(payload)
-        )
-        from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, TIER_POLICY_KEYS
-
-        artifact_keys = payload.get("exact_policy_key_sets", {})
-        checks["exact_policy_keys"] = all(
-            isinstance(artifact_keys.get(tier), list)
-            and set(artifact_keys[tier]) == set(COMMON_STATE_KEYS) | set(TIER_POLICY_KEYS[tier])
-            and len(artifact_keys[tier]) == len(set(artifact_keys[tier]))
-            for tier in ("V0", "V1", "V2", "V3")
-        )
-        mount = payload.get("imu_mount", {})
-        checks["imu_mount"] = (
-            mount.get("sensor_body_name") == "robot0_base"
-            and mount.get("sensor_frame_parent") == "robot_base"
-            and mount.get("deck_body_name") == "deck"
-            and mount.get("parent_body_name") == "deck"
-            and np.allclose(mount.get("sensor_position_m_in_robot_base"), [0.0, 0.0, 0.0], rtol=0.0, atol=1e-12)
-            and np.allclose(
-                mount.get("sensor_quaternion_wxyz_in_robot_base"),
-                [1.0, 0.0, 0.0, 0.0],
-                rtol=0.0,
-                atol=1e-12,
-            )
-            and np.linalg.norm(np.asarray(mount.get("robot_base_pose_in_deck"), dtype=float)[:3]) > 0.0
-        )
-        from robosuite.utils.shakebench_sensors import CANONICAL_IMU_PROFILE, canonical_imu_profile_hash
-
-        profile = payload.get("imu_profile", {})
-        checks["imu_profile"] = (
-            profile.get("profile_id") == CANONICAL_IMU_PROFILE.profile_id
-            and profile.get("profile_hash") == canonical_imu_profile_hash()
-            and profile.get("sample_rate_hz") == 200.0
-            and profile.get("window_shape") == [10, 6]
-            and profile.get("delivery_delay_samples") == 1
-        )
-        timeline = payload.get("timeline", {})
-        checks["timeline"] = (
-            timeline.get("reset_window_acquisition_s")
-            == [-0.05, -0.045, -0.04, -0.035, -0.03, -0.025, -0.02, -0.015, -0.01, -0.005]
-            and timeline.get("reset_pending_delivery_s") == [0.0]
-            and timeline.get("first_step_window_delivered_s")
-            == [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045]
-            and timeline.get("first_step_acquisition_s")
-            == [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
-            and timeline.get("first_step_pending_delivery_s") == [0.05]
-        )
-        quantizer = payload.get("quantizer", {})
-        checks["quantizer"] = (
-            quantizer.get("code_min") == -32768
-            and quantizer.get("code_max") == 32767
-            and quantizer.get("accel_plus_endpoint_code") == 32767
-            and quantizer.get("accel_minus_endpoint_code") == -32768
-            and quantizer.get("gyro_plus_endpoint_code") == 32767
-            and quantizer.get("gyro_minus_endpoint_code") == -32768
-            and quantizer.get("round_trip_int16") is True
-        )
-        checks["noise_filter"] = payload.get("noise_filter", {}).get("passed") is True
-        checks["v2_v3"] = (
-            payload.get("v2_v3", {}).get("current_only") is True
-            and payload.get("v2_v3", {}).get("independent_reconstruction") is True
-            and payload.get("v2_v3", {}).get("no_future_realized_state") is True
-        )
-        checks["privilege_isolation"] = payload.get("privilege_isolation", {}).get("passed") is True
-    except (OSError, TypeError, ValueError, KeyError, IndexError, AttributeError, json.JSONDecodeError):
-        pass
-    return {
-        "passed": bool(all(checks.values())),
-        "integrity_valid": bool(checks["integrity"]),
-        "checks": checks,
-    }
 
 
 __all__ = [
@@ -346,8 +216,4 @@ __all__ = [
     "audit_privilege_boundary",
     "make_privileged_recorder",
     "namespace_snapshot",
-    "PHASE05_OBSERVATION_ARTIFACT_SCHEMA_ID",
-    "PHASE05_OBSERVATION_ARTIFACT_SCHEMA_VERSION",
-    "phase05_observation_artifact_hash",
-    "verify_phase05_observation_artifact",
 ]

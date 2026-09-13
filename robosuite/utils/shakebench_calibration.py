@@ -8,7 +8,9 @@ from the same seed, common ``t0``, active-axis mask, and time window.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import hashlib
+import json
+from dataclasses import dataclass, replace
 from typing import Any, Iterable, Mapping
 
 import numpy as np
@@ -21,7 +23,10 @@ from .shakebench_excitation import (
     ExcitationProgram,
     MotionSample,
     build_excitation_program,
+    build_mode_program,
 )
+
+GAMMA_DEFINITIONS = ("normal_peak_v1", "magnitude_peak_v1")
 
 
 class CalibrationError(ValueError):
@@ -214,6 +219,7 @@ class GammaCalibration:
     per_axis_peak: Mapping[str, float]
     unit_replay: Mapping[str, Any]
     include_centripetal: bool = False
+    gamma_definition: str = "normal_peak_v1"
 
     @property
     def peak_factor(self) -> float:
@@ -230,7 +236,7 @@ class GammaCalibration:
     def to_dict(self) -> dict[str, Any]:
         """Serialize calibration metrics and the complete unit replay."""
 
-        return {
+        payload = {
             "seed": self.seed,
             "t0": self.t0,
             "level_scale": self.level_scale,
@@ -251,6 +257,9 @@ class GammaCalibration:
             "unit_replay": dict(self.unit_replay),
             "include_centripetal": self.include_centripetal,
         }
+        if self.gamma_definition != "normal_peak_v1":
+            payload["gamma_definition"] = self.gamma_definition
+        return payload
 
 
 def calibrate_gamma(
@@ -267,6 +276,7 @@ def calibrate_gamma(
     point_offset_m: Iterable[float] | None = None,
     support_normal: Iterable[float] | None = None,
     include_centripetal: bool = False,
+    gamma_definition: str = "normal_peak_v1",
 ) -> GammaCalibration:
     """Calibrate ``Gamma_commanded`` from an authored deck command.
 
@@ -278,6 +288,8 @@ def calibrate_gamma(
 
     if program is not None and not isinstance(program, ExcitationProgram):
         raise CalibrationError("program must be an ExcitationProgram")
+    if gamma_definition not in GAMMA_DEFINITIONS:
+        raise CalibrationError(f"unknown gamma_definition {gamma_definition!r}")
     if program is None:
         try:
             authored_program = build_excitation_program(
@@ -310,32 +322,37 @@ def calibrate_gamma(
     )
     point = _point_offset(cfg, point_offset_m)
     normal = _support_normal(support_normal)
-    unit_program = build_excitation_program(
-        seed=authored_program.seed,
-        t0=authored_program.t0,
-        level_scale=1.0,
-        active_axes=authored_program.active_axes,
-        config=authored_program.config,
-    )
+    if authored_program.mode_params or authored_program.mode != "multisine_v1":
+        unit_program = build_mode_program(
+            authored_program.mode,
+            authored_program.mode_params,
+            seed=authored_program.seed,
+            t0=authored_program.t0,
+            level_scale=1.0,
+        )
+    else:
+        unit_program = build_excitation_program(
+            seed=authored_program.seed,
+            t0=authored_program.t0,
+            level_scale=1.0,
+            active_axes=authored_program.active_axes,
+            config=authored_program.config,
+        )
     authored_motion = authored_program.evaluate(times)
     unit_motion = unit_program.evaluate(times)
-    authored_vertical = authored_point_normal_acceleration(
-        authored_motion,
-        point,
-        normal,
-        include_centripetal=include_centripetal,
-    )
-    unit_vertical = authored_point_normal_acceleration(
-        unit_motion,
-        point,
-        normal,
-        include_centripetal=include_centripetal,
-    )
+    authored_point = workpiece_point_acceleration(authored_motion, point, include_centripetal=include_centripetal)
+    unit_point = workpiece_point_acceleration(unit_motion, point, include_centripetal=include_centripetal)
+    if gamma_definition == "normal_peak_v1":
+        authored_measure = np.einsum("...i,i->...", authored_point, normal)
+        unit_measure = np.einsum("...i,i->...", unit_point, normal)
+    else:
+        authored_measure = np.linalg.norm(authored_point, axis=-1)
+        unit_measure = np.linalg.norm(unit_point, axis=-1)
     gravity = cfg.gravity_m_s2
-    unit_peak_index = int(np.argmax(np.abs(unit_vertical)))
-    authored_peak_index = int(np.argmax(np.abs(authored_vertical)))
-    unit_peak = float(np.max(np.abs(unit_vertical)))
-    authored_peak = float(np.max(np.abs(authored_vertical)))
+    unit_peak_index = int(np.argmax(np.abs(unit_measure)))
+    authored_peak_index = int(np.argmax(np.abs(authored_measure)))
+    unit_peak = float(np.max(np.abs(unit_measure)))
+    authored_peak = float(np.max(np.abs(authored_measure)))
     axis_rms, axis_peak = _axis_statistics(authored_motion)
     excitation_config_hash = config_hash(ShakeBenchConfig(options={"excitation": authored_program.config.to_dict()}))
     unit_replay = {
@@ -355,6 +372,8 @@ def calibrate_gamma(
         "program": unit_program.to_dict(),
         "unit_peak_time_s": float(times[unit_peak_index]),
     }
+    if gamma_definition != "normal_peak_v1":
+        unit_replay["gamma_definition"] = gamma_definition
     return GammaCalibration(
         seed=authored_program.seed,
         t0=authored_program.t0,
@@ -373,6 +392,7 @@ def calibrate_gamma(
         per_axis_peak=axis_peak,
         unit_replay=unit_replay,
         include_centripetal=bool(include_centripetal),
+        gamma_definition=gamma_definition,
     )
 
 
@@ -407,6 +427,8 @@ def level_scale_for_gamma(
     duration_s: float | None = None,
     sample_count: int = 20001,
     point_offset_m: Iterable[float] | None = None,
+    support_normal: Iterable[float] | None = None,
+    gamma_definition: str = "normal_peak_v1",
 ) -> float:
     """Convert a requested linear authored Gamma to ``level_scale``."""
 
@@ -421,6 +443,8 @@ def level_scale_for_gamma(
         duration_s=duration_s,
         sample_count=sample_count,
         point_offset_m=point_offset_m,
+        support_normal=support_normal,
+        gamma_definition=gamma_definition,
     )
     if unit.unit_peak_factor <= 0.0:
         if requested == 0.0:
@@ -429,15 +453,85 @@ def level_scale_for_gamma(
     return requested / unit.unit_peak_factor
 
 
+def build_vibration_program(vibration: Mapping[str, Any]) -> ExcitationProgram:
+    """Parse the public vibration mapping, calibrate Gamma, and return one program."""
+
+    if not isinstance(vibration, Mapping):
+        raise CalibrationError("vibration must be an object")
+    allowed = {"mode", "gamma", "seed", "t0_s", "mode_params", "gamma_definition"}
+    unknown = sorted(set(vibration) - allowed)
+    if unknown:
+        raise CalibrationError("unknown vibration field(s): " + ", ".join(repr(item) for item in unknown))
+    mode = vibration.get("mode", "multisine_v1")
+    gamma = _finite_float("vibration.gamma", vibration.get("gamma", 0.0), minimum=0.0)
+    gamma_definition = vibration.get("gamma_definition", "normal_peak_v1")
+    if gamma_definition not in GAMMA_DEFINITIONS:
+        raise CalibrationError(f"unknown gamma_definition {gamma_definition!r}")
+    try:
+        unit = build_mode_program(
+            mode,
+            vibration.get("mode_params", {}),
+            seed=vibration.get("seed", 0),
+            t0=vibration.get("t0_s", 0.0),
+            level_scale=1.0,
+        )
+    except ExcitationError as exc:
+        raise CalibrationError(str(exc)) from exc
+    calibration = calibrate_gamma(unit, gamma_definition=gamma_definition)
+    if calibration.unit_peak_factor <= 0.0 and gamma > 0.0:
+        raise CalibrationError("unit vibration Gamma is zero")
+    level_scale = 0.0 if gamma == 0.0 else gamma / calibration.unit_peak_factor
+    try:
+        program = build_mode_program(
+            mode,
+            vibration.get("mode_params", {}),
+            seed=unit.seed,
+            t0=unit.t0,
+            level_scale=level_scale,
+        )
+    except ExcitationError as exc:
+        raise CalibrationError(str(exc)) from exc
+    window = {"start_s": 0.0, "duration_s": calibration.duration_s, "sample_count": calibration.sample_count}
+    return replace(
+        program,
+        gamma_definition=gamma_definition,
+        gamma_requested=gamma,
+        calibration_window=window,
+    )
+
+
+def vibration_record(program: ExcitationProgram) -> dict[str, Any]:
+    """Return the required replay identity for a configured vibration program."""
+
+    if not isinstance(program, ExcitationProgram) or program.gamma_definition is None:
+        raise CalibrationError("program was not built from a vibration config")
+    payload = program.to_dict()
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    return {
+        "mode": program.mode,
+        "mode_params": dict(program.mode_params),
+        "mode_version": payload["mode_version"],
+        "gamma_definition": program.gamma_definition,
+        "gamma_requested": program.gamma_requested,
+        "level_scale": program.level_scale,
+        "calibration_window": dict(program.calibration_window or {}),
+        "excitation_seed": program.seed,
+        "t0_s": program.t0,
+        "program_hash": hashlib.sha256(encoded).hexdigest(),
+    }
+
+
 calibrate_gamma_command = calibrate_gamma
 compute_gamma = gamma_commanded
 
 
 __all__ = [
     "CalibrationError",
+    "GAMMA_DEFINITIONS",
     "GammaCalibration",
     "authored_point_normal_acceleration",
     "authored_point_vertical_acceleration",
+    "build_vibration_program",
     "calibrate_gamma",
     "calibrate_gamma_command",
     "compute_gamma",
@@ -445,4 +539,5 @@ __all__ = [
     "level_scale_for_gamma",
     "peak_factor",
     "workpiece_point_acceleration",
+    "vibration_record",
 ]

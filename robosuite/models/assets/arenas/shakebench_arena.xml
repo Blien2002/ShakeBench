@@ -48,6 +48,7 @@
       <geom name="table_collision" type="box" size="0.325 0.30 0.03" pos="0 0 0" group="0" friction="1 0.005 0.0001" />
       <geom name="table_visual" type="box" size="0.325 0.30 0.03" pos="0 0 0" group="1" conaffinity="0" contype="0" material="shakebench_phenolic_bench" />
       <site name="table_top" type="sphere" pos="0 0 0.03" size="0.001" rgba="0 0 0 0" />
+      <site name="table_imu_site" type="sphere" pos="0 0 -0.03" size="0.001" rgba="0 0 0 0" />
     </body>
     <!-- Explicit deck_visual role; Python fills this body deterministically. -->
     <body name="shakebench_platen_visual" pos="0 0 -0.031" />

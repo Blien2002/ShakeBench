@@ -29,6 +29,7 @@ WORKTABLE_BODY_NAME = "worktable"
 WORKTABLE_COLLISION_GEOM_NAME = "table_collision"
 WORKTABLE_VISUAL_GEOM_NAME = "table_visual"
 WORKTABLE_TOP_SITE_NAME = "table_top"
+TABLE_IMU_SITE_NAME = "table_imu_site"
 ISOLATED_WORKTABLE_ROLE = "isolated_worktable"
 ISOLATOR_JOINT_NAMES = {axis: f"isolator_{axis}" for axis in AXES}
 
@@ -157,7 +158,8 @@ class ShakeBenchArena(Arena):
         self.table_collision = self.table_body.find(f"./geom[@name='{WORKTABLE_COLLISION_GEOM_NAME}']")
         self.table_visual = self.table_body.find(f"./geom[@name='{WORKTABLE_VISUAL_GEOM_NAME}']")
         self.table_top = self.table_body.find(f"./site[@name='{WORKTABLE_TOP_SITE_NAME}']")
-        if self.table_collision is None or self.table_visual is None or self.table_top is None:
+        self.table_imu_site = self.table_body.find(f"./site[@name='{TABLE_IMU_SITE_NAME}']")
+        if self.table_collision is None or self.table_visual is None or self.table_top is None or self.table_imu_site is None:
             raise ShakeBenchArenaError("arena XML is missing the canonical tabletop collision/visual/site handles")
         self.isolator_joints = {}
         for axis, joint_name in ISOLATOR_JOINT_NAMES.items():
@@ -204,6 +206,7 @@ class ShakeBenchArena(Arena):
         self.table_collision.set("friction", _fmt(self.table_friction))
         self.table_visual.set("size", _fmt(self.table_half_size))
         self.table_top.set("pos", _fmt((0.0, 0.0, self.table_half_size[2])))
+        self.table_imu_site.set("pos", _fmt((0.0, 0.0, -self.table_half_size[2])))
 
     def add_table_mat(self) -> None:
         """Install a flush 3 mm rigid rubber layer with an explicit contact geom.

@@ -21,7 +21,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from math import pi
 from typing import Any
 
@@ -52,6 +52,8 @@ DEFAULT_MAX_LINES = 12
 EXCITATION_SCHEMA_ID = "shakebench.excitation"
 EXCITATION_SCHEMA_VERSION = 2
 PROGRAM_SCHEMA_ID = "shakebench.excitation.program"
+VIBRATION_MODES = ("multisine_v1", "single_sine_v1", "custom_multisine_v1")
+VIBRATION_MODE_VERSION = 1
 AUTHORED_PROFILE_ID = "shakebench.authored_v0_candidate"
 AUTHORED_SPECTRUM_VERSION = "candidate-2026-08-30"
 AUTHORED_DECISION_ID = "phase-01-remediation-B-20260830"
@@ -649,6 +651,11 @@ class ExcitationProgram:
     line_phase_at_episode_zero: np.ndarray
     line_mask: np.ndarray
     bands: tuple[AxisBand, ...] = field(default_factory=lambda: BAND_TABLE)
+    mode: str = "multisine_v1"
+    mode_params: Mapping[str, Any] = field(default_factory=dict)
+    gamma_definition: str | None = None
+    gamma_requested: float | None = None
+    calibration_window: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.config, ExcitationConfig):
@@ -685,6 +692,10 @@ class ExcitationProgram:
             raise ExcitationError("line_mask does not match active_axes")
         if len(self.bands) != len(AXES) or tuple(band.axis for band in self.bands) != AXES:
             raise ExcitationError("bands must be ordered tx, ty, tz, rx, ry, rz")
+        if self.mode not in VIBRATION_MODES:
+            raise ExcitationError(f"unknown vibration mode {self.mode!r}")
+        if self.gamma_requested is not None:
+            object.__setattr__(self, "gamma_requested", _finite_float("gamma_requested", self.gamma_requested, minimum=0.0))
         object.__setattr__(self, "seed", seed)
         object.__setattr__(self, "t0", t0)
         object.__setattr__(self, "level_scale", level_scale)
@@ -825,7 +836,7 @@ class ExcitationProgram:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the complete deterministic program and its band schema."""
 
-        return {
+        payload = {
             "schema_id": PROGRAM_SCHEMA_ID,
             "schema_version": EXCITATION_SCHEMA_VERSION,
             "axis_order": list(AXES),
@@ -843,6 +854,16 @@ class ExcitationProgram:
             "config": self.config.to_dict(),
             "bands": [band.to_dict() for band in self.bands],
         }
+        if self.gamma_definition is not None or self.mode != "multisine_v1" or self.mode_params:
+            payload.update(
+                mode=self.mode,
+                mode_version=VIBRATION_MODE_VERSION,
+                mode_params=dict(self.mode_params),
+                gamma_definition=self.gamma_definition,
+                gamma_requested=self.gamma_requested,
+                calibration_window=None if self.calibration_window is None else dict(self.calibration_window),
+            )
+        return payload
 
     def to_runtime_payload(self, episode_time_s: float) -> dict[str, Any]:
         """Add an explicit finite non-negative current episode time."""
@@ -860,6 +881,9 @@ def build_excitation_program(
     active_axes: Iterable[str | int] | str | np.ndarray | None = None,
     *,
     config: ExcitationConfig | Mapping[str, Any] | None = None,
+    _bands: tuple[AxisBand, ...] | None = None,
+    _mode: str = "multisine_v1",
+    _mode_params: Mapping[str, Any] | None = None,
 ) -> ExcitationProgram:
     """Create a deterministic six-axis program from the authored band table."""
 
@@ -875,7 +899,7 @@ def build_excitation_program(
     t0_float = _finite_float("t0", t0)
     level = _finite_float("level_scale", level_scale, minimum=0.0)
     active = _normalise_active_axes(active_axes)
-    bands = build_band_table(cfg)
+    bands = build_band_table(cfg) if _bands is None else _bands
     rng = np.random.default_rng(seed_int)
     max_lines = cfg.max_lines
     amplitudes = np.zeros((len(AXES), max_lines), dtype=float)
@@ -915,6 +939,99 @@ def build_excitation_program(
         line_phase_at_episode_zero=phases,
         line_mask=mask,
         bands=bands,
+        mode=_mode,
+        mode_params={} if _mode_params is None else dict(_mode_params),
+    )
+
+
+def build_mode_program(
+    mode: str,
+    mode_params: Mapping[str, Any] | None = None,
+    *,
+    seed: int = 0,
+    t0: float = 0.0,
+    level_scale: float = 1.0,
+) -> ExcitationProgram:
+    """Build one strictly validated vibration mode at an explicit intensity."""
+
+    if mode not in VIBRATION_MODES:
+        raise ExcitationError(f"unknown vibration mode {mode!r}")
+    if mode_params is None:
+        mode_params = {}
+    if not isinstance(mode_params, Mapping):
+        raise ExcitationError("mode_params must be an object")
+    allowed = {"frequency_scale", "active_axes"}
+    if mode == "custom_multisine_v1":
+        allowed.add("bands")
+    unknown = sorted(set(mode_params) - allowed)
+    if unknown:
+        raise ExcitationError("unknown mode parameter(s): " + ", ".join(repr(item) for item in unknown))
+
+    frequency_scale = _finite_float(
+        "mode_params.frequency_scale", mode_params.get("frequency_scale", 1.0), minimum=0.0, strict=True
+    )
+    config = ExcitationConfig(frequency_scale=frequency_scale)
+    active = _normalise_active_axes(mode_params.get("active_axes"))
+    bands = list(build_band_table(config))
+    if mode == "single_sine_v1":
+        bands = [replace(band, tones=1) for band in bands]
+    elif mode == "custom_multisine_v1":
+        overrides = mode_params.get("bands")
+        if not isinstance(overrides, Mapping) or not overrides:
+            raise ExcitationError("mode_params.bands must be a non-empty object")
+        unknown_axes = sorted(set(overrides) - set(AXES))
+        if unknown_axes:
+            raise ExcitationError("unknown custom band axis(es): " + ", ".join(repr(item) for item in unknown_axes))
+        by_axis = {band.axis: band for band in bands}
+        for axis, values in overrides.items():
+            if not isinstance(values, Mapping):
+                raise ExcitationError(f"mode_params.bands.{axis} must be an object")
+            band_allowed = {"center_hz", "bandwidth_ratio", "relative_accel_rms", "tones"}
+            extra = sorted(set(values) - band_allowed)
+            if extra:
+                raise ExcitationError(
+                    f"unknown mode_params.bands.{axis} parameter(s): " + ", ".join(repr(item) for item in extra)
+                )
+            base = by_axis[axis]
+            center_hz = base.center_hz
+            if "center_hz" in values:
+                center_hz = _finite_float(
+                    f"mode_params.bands.{axis}.center_hz", values["center_hz"], minimum=0.0, strict=True
+                ) * frequency_scale
+            by_axis[axis] = AxisBand(
+                axis=axis,
+                center_hz=center_hz,
+                relative_accel_rms=_finite_float(
+                    f"mode_params.bands.{axis}.relative_accel_rms",
+                    values.get("relative_accel_rms", base.relative_accel_rms),
+                    minimum=0.0,
+                ),
+                bandwidth_ratio=_finite_float(
+                    f"mode_params.bands.{axis}.bandwidth_ratio",
+                    values.get("bandwidth_ratio", base.bandwidth_ratio),
+                    minimum=0.0,
+                    strict=True,
+                ),
+                tones=_positive_int(f"mode_params.bands.{axis}.tones", values.get("tones", base.tones)),
+                coordinate_unit=base.coordinate_unit,
+                acceleration_unit=base.acceleration_unit,
+                reference_accel_rms_m_s2=base.reference_accel_rms_m_s2,
+            )
+        bands = [by_axis[axis] for axis in AXES]
+    if any(band.tones > config.max_lines for band in bands):
+        raise ExcitationError(f"mode exceeds the {config.max_lines}-line representation limit")
+    if any(band.nominal_band_hz[0] <= 0.0 or band.nominal_band_hz[1] > config.conservative_max_line_frequency_hz for band in bands):
+        raise ExcitationError("mode contains an illegal line frequency")
+
+    return build_excitation_program(
+        seed=seed,
+        t0=t0,
+        level_scale=level_scale,
+        active_axes=active,
+        config=config,
+        _bands=tuple(bands),
+        _mode=mode,
+        _mode_params=mode_params,
     )
 
 
@@ -1001,12 +1118,15 @@ __all__ = [
     "AxisBand",
     "MotionSample",
     "PROGRAM_SCHEMA_ID",
+    "VIBRATION_MODES",
+    "VIBRATION_MODE_VERSION",
     "ROTATION_AXES",
     "TRANSLATION_AXES",
     "axis_schema",
     "band_table_dict",
     "build_band_table",
     "build_excitation_program",
+    "build_mode_program",
     "derive_rotation_accel_rms",
     "excitation_profile_hash",
     "evaluate_excitation",

@@ -25,27 +25,28 @@ from robosuite.utils.shakebench_oracle import (
     OracleControllerProfile, ShakeBenchOracleController, ShakeBenchOracleError, WorktableTaskContext,
 )
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause, validate_outcome
+from robosuite.utils.shakebench_calibration import vibration_record
+from robosuite.utils.shakebench_providers import TABLE_IMU_POLICY_KEYS
 
 
-def make_environment(state, *, tier, gamma, horizon):
+def make_environment(state, *, gamma, horizon, mode="multisine_v1", tier=None, physics_profile="official"):
     """Use the same inputs and reset sequence as the CPU oracle runner."""
     import robosuite
     from robosuite.controllers import load_composite_controller_config
-    from robosuite.utils.shakebench_calibration import level_scale_for_gamma
-    from robosuite.utils.shakebench_excitation import build_excitation_program
     from robosuite.utils.shakebench_tasks import task_env_kwargs
 
+    if tier not in (None, "V0"):
+        raise ValueError("migrated collection uses the current-state expert, not V1–V3")
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
     t0 = float(state.get("t0_s", 0.0))
-    program = build_excitation_program(seed=seed, t0=t0, level_scale=level_scale_for_gamma(gamma, seed=seed, t0=t0))
     variant = "task" in state
     kwargs = task_env_kwargs(state) if variant else {"can_start_xy": tuple(state["can_xy_m"])}
     env = robosuite.make(
         "VibrationPickPlace" if variant else "VibrationPickPlaceCan", robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"), has_renderer=False,
         has_offscreen_renderer=False, use_camera_obs=False, use_object_obs=False,
-        physics_profile="official", geometry_profile="direct_mount_v1", observation_tier=tier,
-        imu_mode="canonical_noisy_v1", excitation_program=program, **kwargs,
+        physics_profile=physics_profile, geometry_profile="world_fixed_arm_v1",
+        imu_mode="canonical_noisy_v1", vibration={"mode": mode, "gamma": gamma, "seed": seed, "t0_s": t0}, **kwargs,
         imu_seed=int(state.get("imu_seed", seed)), horizon=horizon, ignore_done=True, seed=seed, hard_reset=False,
     )
     try:
@@ -53,7 +54,7 @@ def make_environment(state, *, tier, gamma, horizon):
     except BaseException:
         env.close()
         raise
-    return env, program
+    return env, env.deck_driver.trajectory
 
 
 def _write_npz(path, arrays):
@@ -79,7 +80,7 @@ def collect_batch(batch, states, *, horizon, profile=None):
     if profile.policy_rate_hz != 20:
         raise ValueError("GPU collector requires policy_rate_hz=20")
     observations = batch.reset()
-    controllers = [ShakeBenchOracleController(batch.tier, profile, task_context=WorktableTaskContext.from_mapping(
+    controllers = [ShakeBenchOracleController("V0", profile, task_context=WorktableTaskContext.from_mapping(
         env.get_policy_task_context().get("task_context"))) for env in batch.envs]
     # ponytail: worlds finish as a batch; use masked resets only if tail waste
     # becomes a measured throughput bottleneck. Terminal snapshots are retained.
@@ -93,6 +94,8 @@ def collect_batch(batch, states, *, horizon, profile=None):
         active = [w for w, record in enumerate(records) if record["termination_cause"] is None]
         if not active:
             break
+        if step % 100 == 0:
+            print(f"Rollout step {step}/{horizon}: {len(active)} active worlds", flush=True)
         actions = np.zeros((len(states), 7))
         for w in active:
             try:
@@ -147,8 +150,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--states", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--tier", choices=("V0", "V1", "V2", "V3"), default="V0")
-    parser.add_argument("--gamma", type=float, default=0.0)
+    parser.add_argument("--tier", choices=("V0",), help="deprecated alias for the current-state expert; not an environment tier")
+    gamma_args = parser.add_mutually_exclusive_group()
+    gamma_args.add_argument("--gamma", type=float, help="one Gamma (default: 0)")
+    gamma_args.add_argument("--gammas", type=float, nargs="+", help="Gamma sweep, e.g. 0 0.15 0.3 0.6")
+    parser.add_argument("--mode", default="multisine_v1", choices=("multisine_v1", "single_sine_v1"))
+    parser.add_argument("--physics-profile", choices=("official", "probe"), default="official",
+                        help="official retains frozen hard contacts; probe uses the existing exploratory contact profile")
     parser.add_argument("--num-worlds", type=_positive, default=16)
     parser.add_argument("--horizon-steps", type=_positive, default=1200)
     parser.add_argument("--limit", type=_positive)
@@ -158,8 +166,9 @@ def main(argv=None):
     parser.add_argument("--njmax", type=_positive, default=512)
     parser.add_argument("--no-capture", action="store_true", help="disable CUDA graphs for debugging")
     args = parser.parse_args(argv)
-    if not np.isfinite(args.gamma) or args.gamma < 0:
-        parser.error("--gamma must be finite and non-negative")
+    gammas = list(dict.fromkeys(args.gammas or [0.0 if args.gamma is None else args.gamma]))
+    if any(not np.isfinite(gamma) or gamma < 0 for gamma in gammas):
+        parser.error("Gamma values must be finite and non-negative")
     try:
         import mujoco
         import mujoco_warp as mjw
@@ -189,12 +198,14 @@ def main(argv=None):
         parser.error("output must be a new or empty directory; existing episodes are never overwritten")
     args.output.mkdir(parents=True, exist_ok=True)
     grouped = defaultdict(list)
-    for index, state in enumerate(states):
-        grouped[json.dumps(state.get("task"), sort_keys=True)].append((index, state))
-    manifest = {"schema_id": "shakebench.mjwarp.collection", "schema_version": 1, "scoreable": False,
+    for index, (state, gamma) in enumerate((state, gamma) for state in states for gamma in gammas):
+        grouped[json.dumps(state.get("task"), sort_keys=True)].append((index, state, gamma))
+    manifest = {"schema_id": "shakebench.mjwarp.collection", "schema_version": 2, "scoreable": False,
                 "backend": "mujoco_warp", "device": str(device), "mujoco_version": mujoco.__version__,
                 "mujoco_warp_version": mjw.__version__, "warp_version": wp.__version__,
-                "tier": args.tier, "gamma_commanded": args.gamma, "state_authority": asset["authority"],
+                "expert_contract": "privileged_current_state_v1", "geometry_profile": "world_fixed_arm_v1",
+                "gammas": gammas, "mode": args.mode, "state_authority": asset["authority"],
+                "physics_profile": args.physics_profile,
                 "horizon_steps": args.horizon_steps, "episodes": [], "complete": False,
                 "requested_num_worlds": args.num_worlds, "nconmax": args.nconmax, "njmax": args.njmax,
                 "cuda_graph": bool(device.is_cuda and not args.no_capture),
@@ -208,27 +219,34 @@ def main(argv=None):
             selected = group[begin:begin + args.num_worlds]
             envs, programs = [], []
             try:
-                for _, state in selected:
-                    env, program = make_environment(state, tier=args.tier, gamma=args.gamma, horizon=args.horizon_steps)
+                for _, state, gamma in selected:
+                    print(f"Preparing {state['state_id']} Gamma={gamma:g}", flush=True)
+                    env, program = make_environment(state, gamma=gamma, mode=args.mode, horizon=args.horizon_steps,
+                                                    physics_profile=args.physics_profile)
                     envs.append(env)
                     programs.append(program)
                 batch = MJWarpBatch(envs, programs, device=str(device), nconmax=args.nconmax, njmax=args.njmax,
                                     capture=not args.no_capture)
-                records, elapsed = collect_batch(batch, [s for _, s in selected], horizon=args.horizon_steps, profile=profile)
+                records, elapsed = collect_batch(batch, [s for _, s, _ in selected], horizon=args.horizon_steps, profile=profile)
                 solver_tolerance = float(batch.model.opt.tolerance.numpy().reshape(-1)[0])
                 model_path = args.output / f"model_{batch.model_sha256}.xml"
                 if not model_path.exists():
                     with model_path.open("x") as stream:
                         stream.write(envs[0].sim.model.get_xml())
-                for w, ((index, state), record) in enumerate(zip(selected, records)):
+                for w, ((index, state, gamma), record) in enumerate(zip(selected, records)):
                     name = f"episode_{index:06d}.npz"
-                    meta = {"state": state, "tier": args.tier, "gamma_commanded": args.gamma,
+                    meta = {"state": state, "expert_contract": manifest["expert_contract"], "gamma_commanded": gamma,
+                            "schema_version": 2, "geometry_profile": envs[w].geometry_profile,
+                            "vibration": vibration_record(programs[w]),
+                            "imu_mount": envs[w].table_imu_provider.audit_compiled_mount(envs[w].sim),
                             "scoreable": False, "backend": "mujoco_warp", "model_sha256": batch.model_sha256,
                             "physics_profile_sha256": envs[w].physics_profile.profile_sha256,
+                            "physics_profile": envs[w].physics_profile.to_dict(),
                             "effective_solver_tolerance": solver_tolerance,
                             "program": programs[w].to_dict(), "steps": len(record["actions"]),
                             **{key: record[key] for key in ("episode_validity", "score_outcome", "termination_cause", "controller_events")}}
-                    arrays = {"observations/" + key: np.stack([o[key] for o in record["observations"]])
+                    arrays = {("observations/" if key in TABLE_IMU_POLICY_KEYS else "privileged_oracle/") + key:
+                              np.stack([o[key] for o in record["observations"]])
                               for key in record["observations"][0]}
                     for key, width in (("actions", 7), ("ctrl", batch.raw_model.nu), ("actuator_force", batch.raw_model.nu),
                                        ("contacts", 4), ("qpos", batch.raw_model.nq), ("qvel", batch.raw_model.nv)):
@@ -239,10 +257,10 @@ def main(argv=None):
                     arrays["metadata_json"] = np.asarray(json.dumps(_json_ready(meta), sort_keys=True, allow_nan=False))
                     _write_npz(args.output / name, arrays)
                     manifest["episodes"].append({"file": name, "sha256": hashlib.sha256((args.output / name).read_bytes()).hexdigest(),
-                                                 "state_id": state["state_id"], "steps": meta["steps"],
+                                                 "state_id": state["state_id"], "gamma": gamma, "steps": meta["steps"],
                                                  **{key: meta[key] for key in ("episode_validity", "score_outcome", "termination_cause")}})
                 write_json_atomic(args.output / "manifest.json", manifest)
-                print(f"Collected {len(manifest['episodes'])}/{len(states)} episodes; batch rollout {elapsed:.2f}s", flush=True)
+                print(f"Collected {len(manifest['episodes'])}/{len(states) * len(gammas)} episodes; batch rollout {elapsed:.2f}s", flush=True)
                 del batch
             finally:
                 for env in envs:

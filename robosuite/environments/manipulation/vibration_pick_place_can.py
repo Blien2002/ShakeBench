@@ -15,10 +15,12 @@ import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import ShakeBenchArena
 from robosuite.models.tasks import ManipulationTask
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, xml_path_completion
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.shakebench_deck import DeckDriver, DeckDriverConfig, audit_compiled_deck_model
+from robosuite.utils.shakebench_isolator import AXES as ISOLATOR_AXES, static_equilibrium_offset
+from robosuite.utils.shakebench_calibration import CalibrationError, build_vibration_program, vibration_record
 from robosuite.utils.shakebench_excitation import ExcitationProgram
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_metrics import (
@@ -49,9 +51,10 @@ from robosuite.utils.shakebench_privilege import (
 )
 from robosuite.utils.shakebench_providers import (
     COMMON_STATE_KEYS,
+    POLICY_FIELD_CONTRACT,
     TIER_POLICY_KEYS,
     ShakeBenchProviderError,
-    make_vibration_provider,
+    TableIMUProvider,
     normalize_observation_tier,
     observation_contract_for_tier,
 )
@@ -65,6 +68,7 @@ from robosuite.utils.shakebench_scene import (
 )
 from robosuite.utils.shakebench_sensors import (
     CANONICAL_IMU_PROFILE,
+    CANONICAL_IMU_PROFILE_HASH,
     IMU_DT_S,
     CanonicalIMU,
     ShakeBenchSensorError,
@@ -159,7 +163,10 @@ class VibrationPickPlaceCan(ManipulationEnv):
         observation_tier=None,
         imu_mode="canonical_noisy_v1",
         imu_seed=None,
+        table_imu_position_m=(0.0, 0.0, -0.03),
+        table_imu_quat_wxyz=(1.0, 0.0, 0.0, 0.0),
         excitation_program=None,
+        vibration=None,
         privileged_recorder=None,
         scene_config=None,
         scene_visual=True,
@@ -282,6 +289,13 @@ class VibrationPickPlaceCan(ManipulationEnv):
             )
         self.observation_tier = observation_tier
         self.imu_mode = imu_mode
+        self.table_imu_position_m = _finite_vector("table_imu_position_m", table_imu_position_m, 3)
+        self.table_imu_quat_wxyz = _finite_vector("table_imu_quat_wxyz", table_imu_quat_wxyz, 4)
+        if np.linalg.norm(self.table_imu_quat_wxyz) <= 0.0:
+            raise ValueError("table_imu_quat_wxyz must have non-zero norm")
+        self.table_imu_quat_wxyz = tuple(
+            np.asarray(self.table_imu_quat_wxyz) / np.linalg.norm(self.table_imu_quat_wxyz)
+        )
         requested_imu_seed = seed if imu_seed is None and seed is not None else (0 if imu_seed is None else imu_seed)
         if isinstance(requested_imu_seed, (bool, np.bool_)):
             raise ValueError("imu_seed must be a non-negative integer")
@@ -322,6 +336,16 @@ class VibrationPickPlaceCan(ManipulationEnv):
             except PhysicsProfileError as exc:
                 raise ValueError(str(exc)) from exc
         self.deck_config = deck_config
+        if vibration is not None:
+            if deck_trajectory is not None or excitation_program is not None:
+                raise ValueError("vibration cannot be combined with deck_trajectory or excitation_program")
+            try:
+                excitation_program = build_vibration_program(vibration)
+            except CalibrationError as exc:
+                raise ValueError(str(exc)) from exc
+        self.vibration_record = (
+            None if excitation_program is None or vibration is None else vibration_record(excitation_program)
+        )
         if observation_tier == "V3":
             if excitation_program is None and isinstance(deck_trajectory, ExcitationProgram):
                 excitation_program = deck_trajectory
@@ -349,23 +373,15 @@ class VibrationPickPlaceCan(ManipulationEnv):
             },
             required_roles=("isolated_worktable", "deck_visual"),
         )
-        if observation_tier is None:
-            self.vibration_provider = None
-        else:
-            try:
-                self.vibration_provider = make_vibration_provider(
-                    observation_tier,
-                    seed=self.imu_seed,
-                    imu_mode=imu_mode,
-                    program=excitation_program,
-                    deck_body_name=self.deck_config.deck_body_name,
-                    imu_body_name="robot0_base",
-                    table_body_name="worktable",
-                    nominal_frame_position_m=self.deck_config.deck_pos_m,
-                    nominal_frame_quat_wxyz=self.deck_config.deck_quat_wxyz,
-                )
-            except (ShakeBenchProviderError, ShakeBenchSensorError) as exc:
-                raise ValueError(str(exc)) from exc
+        try:
+            self.table_imu_provider = TableIMUProvider(
+                seed=self.imu_seed,
+                imu_mode=imu_mode,
+                sensor_position_body_m=self.table_imu_position_m,
+                sensor_quat_body_wxyz=self.table_imu_quat_wxyz,
+            )
+        except (ShakeBenchProviderError, ShakeBenchSensorError) as exc:
+            raise ValueError(str(exc)) from exc
 
         # The driver must be installed before the first model compile.  The
         # parent supports load_model_on_init=False as an additive seam; the
@@ -412,10 +428,9 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self.deck_driver.install(self)
         self.add_sim_initialization_hook(self._audit_compiled_contract)
         self.add_post_physics_step_hook(self._record_post_physics_metrics)
-        if self.observation_tier is not None:
-            # The provider runs after the DeckDriver has recorded the current
-            # realized body state and before the policy observation is read.
-            self.add_post_physics_step_hook(self._update_phase05_provider)
+        # The sole table IMU is sampled independently of model-input selection.
+        self.add_post_physics_step_hook(self._update_phase05_provider)
+        if self.privileged_recorder is not None:
             self.add_post_physics_step_hook(self._record_phase05_privileged)
         if self._requested_load_model_on_init:
             self.reset()
@@ -577,66 +592,22 @@ class VibrationPickPlaceCan(ManipulationEnv):
             visual=self.scene_visual,
             scene_config=self.scene_config,
         )
-        support = ET.SubElement(self.arena.worldbody, "body", {"name": "robot_support"})
-        for part in ("foundation",):
-            spec = self.geometry_profile["robot_support"]
-            ET.SubElement(
-                support,
-                "geom",
-                {
-                    "name": "robot_support_" + part,
-                    "type": "box",
-                    "pos": array_to_string(spec[part + "_pos_m"]),
-                    "size": array_to_string(spec[part + "_half_size_m"]),
-                    "material": "shakebench_floor_slab",
-                    "contype": "1",
-                    "conaffinity": "1",
-                    "group": "1",
-                },
-            )
-        foundation = self.geometry_profile["robot_support"]
-        center = np.asarray(foundation["foundation_pos_m"], dtype=float)
-        half = np.asarray(foundation["foundation_half_size_m"], dtype=float)
-        trim_rgba = "0.13 0.14 0.145 1" if self.scene_visual else "0.13 0.14 0.145 0"
-        wall_rgba = "0.04 0.043 0.045 1" if self.scene_visual else "0.04 0.043 0.045 0"
-        for name, pos, size, rgba in (
-            ("front", (center[0] + half[0] - 0.08, center[1], 0.005), (0.08, half[1], 0.005), trim_rgba),
-            ("south", (center[0], center[1] - half[1] + 0.08, 0.005), (half[0], 0.08, 0.005), trim_rgba),
-            ("north", (center[0], center[1] + half[1] - 0.08, 0.005), (half[0], 0.08, 0.005), trim_rgba),
-            (
-                "front_wall",
-                (center[0] + half[0] + 0.005, center[1], center[2]),
-                (0.005, half[1], half[2]),
-                wall_rgba,
-            ),
-            (
-                "south_wall",
-                (center[0], center[1] - half[1] - 0.005, center[2]),
-                (half[0], 0.005, half[2]),
-                wall_rgba,
-            ),
-            (
-                "north_wall",
-                (center[0], center[1] + half[1] + 0.005, center[2]),
-                (half[0], 0.005, half[2]),
-                wall_rgba,
-            ),
-        ):
-            ET.SubElement(
-                support,
-                "geom",
-                {
-                    "name": "robot_support_trim_" + name,
-                    "type": "box",
-                    "pos": array_to_string(pos),
-                    "size": array_to_string(size),
-                    "rgba": rgba,
-                    "contype": "0",
-                    "conaffinity": "0",
-                    "density": "0",
-                    "group": "1",
-                },
-            )
+        self.arena.table_imu_site.set("pos", array_to_string(self.table_imu_position_m))
+        self.arena.table_imu_site.set("quat", array_to_string(self.table_imu_quat_wxyz))
+        support = (
+            ET.parse(xml_path_completion(self.geometry_profile["robot_support_mjcf"]))
+            .getroot()
+            .find("./worldbody/body[@name='robot_support']")
+        )
+        if support is None:
+            raise ValueError("robot support MJCF must contain a worldbody/robot_support body")
+        if not self.scene_visual:
+            for geom in support.iter("geom"):
+                if geom.get("rgba") is not None:
+                    rgba = np.fromstring(geom.get("rgba"), sep=" ")
+                    rgba[3] = 0.0
+                    geom.set("rgba", array_to_string(rgba))
+        self.arena.worldbody.append(support)
         self.arena.object_support_geom = self.arena.table_collision
         if self.task_spec is not None and self.task_spec.surface_id == "mat":
             self.arena.add_table_mat()
@@ -739,12 +710,18 @@ class VibrationPickPlaceCan(ManipulationEnv):
         )
         compiled_envelope.assert_matches(self.can_collision_envelope)
         self.can_collision_envelope = compiled_envelope
-        if self.vibration_provider is not None:
-            self._imu_mount_audit = self.vibration_provider.audit_compiled_mount(self.sim)
+        self._imu_mount_audit = self.table_imu_provider.audit_compiled_mount(self.sim)
 
     def _setup_observables(self):
         observables = super()._setup_observables()
         if self.observation_tier is None:
+            for name in self.table_imu_provider.policy_keys:
+
+                @sensor(modality=f"shakebench_{name}")
+                def table_imu_sensor(obs_cache, provider_key=name):
+                    return self.table_imu_provider.observation(self.sim)[provider_key]
+
+                observables[name] = Observable(name=name, sensor=table_imu_sensor, sampling_rate=self.control_freq)
             if not self.use_object_obs:
                 return observables
             modality = "object"
@@ -947,23 +924,117 @@ class VibrationPickPlaceCan(ManipulationEnv):
 
     def _reset_internal(self):
         super()._reset_internal()
+        self.reset_settle_duration_s = 0.0
         if not self.deterministic_reset:
             object_placements = self.placement_initializer.sample(on_top=False)
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate((np.asarray(obj_pos), np.asarray(obj_quat))))
-        # Placement is applied after the parent reset housekeeping.  Refresh
-        # derived MuJoCo state before using it to seed the IMU's static history
-        # so the first delivered window contains a real physical reading.
-        if self.observation_tier is not None:
-            self.sim.forward()
-            self.vibration_provider.reset(self.sim, timestamp_s=0.0)
-            if self.privileged_recorder is not None:
-                self.privileged_recorder.reset()
+            self._settle_reset_support()
+        self.sim.forward()
+        self.deck_driver.reset_trace()
+        self.table_imu_provider.reset(self.sim, timestamp_s=0.0)
+        if self.privileged_recorder is not None:
+            self.privileged_recorder.reset()
         self._phase05_last_action = np.zeros(self.action_dim if hasattr(self, "action_dim") else 0, dtype=np.float32)
         if self.metrics is not None:
             self.metrics.reset()
         self.success_evaluator.reset()
         self._last_success_evaluation = None
+
+    def _settle_reset_support(self):
+        """Find loaded contact equilibrium before starting the episode clock.
+
+        Native integration includes the compliant deck weld and object contacts.
+        Robot joints stay at their reset pose; no policy, excitation, sensor or
+        metric hooks run during initialization.
+        """
+        model, data = self.sim.model._model, self.sim.data._data
+        self._seed_loaded_support_equilibrium(model, data)
+        moving_bodies = {int(model.body(self.deck_config.deck_body_name).id), self.can_body_id}
+        for body in range(1, model.nbody):
+            if int(model.body_parentid[body]) in moving_bodies:
+                moving_bodies.add(body)
+        moving = np.isin(model.dof_bodyid, list(moving_bodies))
+        support = moving & (model.dof_bodyid != self.can_body_id)
+        object_dofs = model.dof_bodyid == self.can_body_id
+        fixed_qpos = np.ones(model.nq, dtype=bool)
+        for joint in range(model.njnt):
+            if int(model.jnt_bodyid[joint]) in moving_bodies:
+                start = int(model.jnt_qposadr[joint])
+                end = int(model.jnt_qposadr[joint + 1]) if joint + 1 < model.njnt else model.nq
+                fixed_qpos[start:end] = False
+        robot_pose = data.qpos[fixed_qpos].copy()
+        quiet_steps = 0
+        required_quiet_steps = int(np.ceil(0.1 / model.opt.timestep))
+        sample_stride = max(1, int(round(0.005 / model.opt.timestep)))
+        # ponytail: bounded native settle; use a contact equilibrium solver if
+        # initialization cost becomes significant at large collection scale.
+        for step in range(int(np.ceil(5.0 / model.opt.timestep))):
+            mujoco.mj_step(model, data)
+            data.qpos[fixed_qpos] = robot_pose
+            data.qvel[~moving] = 0.0
+            if not np.isfinite(data.qpos).all() or not np.isfinite(data.qvel).all():
+                raise RuntimeError("reset equilibrium produced non-finite state")
+            if (step + 1) % sample_stride:
+                continue
+            object_velocity = data.qvel[object_dofs]
+            quiet = (
+                np.max(np.abs(data.qvel[support])) < 1e-5
+                and np.max(np.abs(data.qacc[support])) < 0.05
+                and np.max(np.abs(object_velocity[:3])) < 0.001
+                and np.max(np.abs(object_velocity[3:])) < 0.02
+            )
+            quiet_steps = quiet_steps + sample_stride if quiet else 0
+            if quiet_steps >= required_quiet_steps:
+                break
+        else:
+            raise RuntimeError(
+                "reset support did not reach equilibrium within 5 simulation seconds: "
+                f"qvel={data.qvel[moving]}, qacc={data.qacc[moving]}"
+            )
+        self.reset_settle_duration_s = (step + 1) * float(model.opt.timestep)
+        data.qvel[:] = 0.0
+        data.qacc_warmstart[:] = 0.0
+        data.time = 0.0
+
+    def _seed_loaded_support_equilibrium(self, model, data):
+        """Start the settle from the analytic loaded equilibrium.
+
+        The isolator ``springref`` compensates only the 32 kg table, so the
+        placed object would otherwise make the 5 Hz support ring down from the
+        unloaded pose.  Seeding the six isolator coordinates removes that
+        transient; the settle below only has to absorb what the linear model
+        cannot express, namely the compliant deck weld and object contact.
+        """
+
+        self.sim.forward()
+        table_id = int(model.body(self.arena.worktable_body_name).id)
+        table_position = np.array(data.xpos[table_id], dtype=float, copy=True)
+        table_rotation = np.array(data.xmat[table_id], dtype=float).reshape(3, 3)
+        object_position = np.array(data.xpos[self.can_body_id], dtype=float, copy=True)
+        object_rotation = np.array(data.xmat[self.can_body_id], dtype=float).reshape(3, 3)
+        offset = static_equilibrium_offset(
+            self.arena.isolator_parameters,
+            payload_mass_kg=self.object_mass_kg,
+            payload_com_m=object_position - table_position,
+        )
+        for index, axis in enumerate(ISOLATOR_AXES):
+            joint_id = int(model.joint("isolator_" + axis).id)
+            data.qpos[int(model.jnt_qposadr[joint_id])] = float(offset[index])
+            data.qvel[int(model.jnt_dofadr[joint_id])] = 0.0
+        mujoco.mj_forward(model, data)
+        # The object rests on the support, so carry it with the same rigid
+        # transform instead of letting it drop the few tenths of a millimetre
+        # onto the seeded table pose.
+        moved_rotation = np.array(data.xmat[table_id], dtype=float).reshape(3, 3)
+        moved_position = np.array(data.xpos[table_id], dtype=float)
+        delta_rotation = moved_rotation.dot(table_rotation.T)
+        delta_position = moved_position - delta_rotation.dot(table_position)
+        quaternion = np.zeros(4, dtype=float)
+        mujoco.mju_mat2Quat(quaternion, delta_rotation.dot(object_rotation).reshape(-1))
+        self.sim.data.set_joint_qpos(
+            self.can.joints[0], np.concatenate((delta_rotation.dot(object_position) + delta_position, quaternion))
+        )
 
     def _pre_action(self, action, policy_step=False):
         if self.observation_tier is not None and policy_step:
@@ -971,11 +1042,10 @@ class VibrationPickPlaceCan(ManipulationEnv):
         super()._pre_action(action, policy_step=policy_step)
 
     def _update_phase05_provider(self, sample_time_s, policy_step=False):
-        if self.vibration_provider is not None:
-            self.vibration_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
+        self.table_imu_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
 
     def _record_phase05_privileged(self, sample_time_s, policy_step=False):
-        if self.privileged_recorder is None or self.observation_tier is None:
+        if self.privileged_recorder is None:
             return
         if self._control_steps and (self._physics_step_index + 1) % self._control_steps != 0:
             return
@@ -987,7 +1057,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         )
         target_world = self.target_frame_world_position()
         metrics_report = self.metrics.to_dict() if self.metrics is not None and self.metrics.latest is not None else {}
-        provider_truth = self.vibration_provider.privileged_snapshot(self.sim, time_s=float(sample_time_s))
+        provider_truth = self.table_imu_provider.privileged_snapshot(self.sim, time_s=float(sample_time_s))
         success_report = metrics_report.get("success", {})
         if not isinstance(success_report, dict):
             success_report = {}
@@ -1054,9 +1124,8 @@ class VibrationPickPlaceCan(ManipulationEnv):
         self._compiled_contract = self.audit_compiled_model(sim)
         self._compiled_contract["scene"] = self._scene_audit.to_dict()
         self._compiled_contract["scene_clearance"] = self._scene_clearance.to_dict()
-        if self.vibration_provider is not None:
-            self._imu_mount_audit = self.vibration_provider.audit_compiled_mount(sim)
-            self._compiled_contract["imu_mount"] = self._imu_mount_audit
+        self._imu_mount_audit = self.table_imu_provider.audit_compiled_mount(sim)
+        self._compiled_contract["imu_mount"] = self._imu_mount_audit
 
     def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
         if self.metrics is None:
@@ -1111,7 +1180,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
         """Return only the dedicated vibration keys visible at this tier."""
 
         if self.observation_tier is None:
-            return ()
+            return tuple(self.table_imu_provider.policy_keys)
         return tuple(TIER_POLICY_KEYS[self.observation_tier])
 
     @property
@@ -1168,6 +1237,15 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "mass_kg": float(self.arena.isolator_parameters.mass_kg),
                 "inertia_kg_m2": list(self.arena.isolator_parameters.inertia_kg_m2),
             },
+            "table_imu": {
+                "sensor_parent": "worktable",
+                "sensor_site_name": "table_imu_site",
+                "position_m_in_worktable": list(self.table_imu_position_m),
+                "quaternion_wxyz_in_worktable": list(self.table_imu_quat_wxyz),
+                "profile_id": CANONICAL_IMU_PROFILE.profile_id,
+                "profile_sha256": CANONICAL_IMU_PROFILE_HASH,
+                "sensor_config_sha256": self._imu_mount_audit["sensor_config_sha256"],
+            },
             "can": {
                 "mass_kg": float(self.object_mass_kg),
                 "inertia_kg_m2": list(self.can_inertia) if self.can_inertia is not None else None,
@@ -1221,12 +1299,13 @@ class VibrationPickPlaceCan(ManipulationEnv):
         """Return the declared public State shape/unit/frame contract."""
 
         if self.observation_tier is None:
-            return {}
+            return {key: dict(POLICY_FIELD_CONTRACT[key]) for key in self.table_imu_provider.policy_keys}
         return observation_contract_for_tier(self.observation_tier)
 
     def _get_observations(self, force_update=False):
         observations = super()._get_observations(force_update=force_update)
         if self.observation_tier is None:
+            observations.update(self.table_imu_provider.observation(self.sim))
             assert_policy_observation_is_clean(observations)
             return observations
 
@@ -1373,13 +1452,20 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "conaffinity": int(raw_model.geom_conaffinity[geom_id]),
                 "world_position_m": np.asarray(self.sim.data.geom_xpos[geom_id], dtype=float).tolist(),
             }
+        support_geometry = {}
+        for part in ("foundation", "mount_plate"):
+            geom_id = int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, "robot_support_" + part))
+            if geom_id < 0:
+                raise ShakeBenchMetricsError(f"robot support MJCF is missing {part}")
+            support_geometry[part + "_pos_m"] = raw_model.geom_pos[geom_id].tolist()
+            support_geometry[part + "_half_size_m"] = raw_model.geom_size[geom_id].tolist()
         robot_mount_audit = {
             "requested_base_type": self.base_types,
             "compiled_mount_type": self.robot_mount_type,
             "robot_base_body_name": self.robot_base_body_name,
             "support_body_name": "robot_support",
             "support_parent": parent_name("robot_support"),
-            "support_geometry": copy.deepcopy(self.geometry_profile["robot_support"]),
+            "support_geometry": support_geometry,
             "robot_base_pose_in_world": {
                 "pos_m": np.asarray(raw_model.body_pos[robot_base_id], dtype=float).tolist(),
                 "quat_wxyz": np.asarray(raw_model.body_quat[robot_base_id], dtype=float).tolist(),
@@ -1425,8 +1511,7 @@ class VibrationPickPlaceCan(ManipulationEnv):
                 "enabled": self.scene_visual,
             },
         }
-        if self.vibration_provider is not None:
-            result["imu_mount"] = self.vibration_provider.audit_compiled_mount(sim_or_model)
+        result["imu_mount"] = self.table_imu_provider.audit_compiled_mount(sim_or_model)
         return result
 
     def reward(self, action=None):

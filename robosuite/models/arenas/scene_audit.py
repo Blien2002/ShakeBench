@@ -677,6 +677,8 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
     platen_top = extrema("shakebench_platen_surface", upper=True)
     configured_top = float(config.section("platen")["nominal_top_z_m"])
     mount_bottom = support_top = None
+    plate_assembly_error = None
+    plate_within_foundation = True
     mount_names = []
     support_body = config.section("clearance").get("world_robot_support_body")
     if support_body is not None:
@@ -696,8 +698,15 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
             mount_bottom = float(raw_data.xpos[base_id, 2])
             mount_geoms = [(mount_bottom, support_body + ":authored_mount_datum")]
         beam_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, "robot_support_foundation")
-        _, upper = _geom_aabb(raw_model, raw_data, beam_id)
+        foundation_lower, upper = _geom_aabb(raw_model, raw_data, beam_id)
         support_top = float(upper[2])
+        plate_id = _mujoco_id(raw_model, mujoco.mjtObj.mjOBJ_GEOM, "robot_support_mount_plate")
+        plate_lower, plate_upper = _geom_aabb(raw_model, raw_data, plate_id)
+        plate_assembly_error = float(plate_lower[2]) - support_top
+        plate_within_foundation = bool(
+            np.all(plate_lower[:2] >= foundation_lower[:2]) and np.all(plate_upper[:2] <= upper[:2])
+        )
+        support_top = float(plate_upper[2])
         mount_names = [name for _, name in mount_geoms]
     return {
         "method": "compiled table support extrema and world-fixed robot installation datum",
@@ -712,6 +721,8 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
         "worktable_foot_lowest_support_z_m": table_bottom,
         "robot_mount_lowest_support_z_m": mount_bottom,
         "world_robot_support_top_z_m": support_top,
+        "mount_plate_assembly_error_m": plate_assembly_error,
+        "mount_plate_within_foundation": plate_within_foundation,
         "worktable_assembly_error_m": None if table_bottom is None or platen_top is None else table_bottom - platen_top,
         "robot_mount_assembly_error_m": None if mount_bottom is None else mount_bottom - support_top,
         "robot_mount_support_geoms": mount_names,
@@ -973,7 +984,9 @@ def scene_clearance_report(
     warnings = []
     if support["robot_mount_lowest_support_z_m"] is None:
         warnings.append("robot mount support proxy was not found; mount clearance is incomplete")
-    passed = not unexpected and not support_errors and bool(stewart_report["passed"])
+    plate_error = support["mount_plate_assembly_error_m"]
+    plate_passed = support["mount_plate_within_foundation"] and (plate_error is None or abs(plate_error) <= 1e-6)
+    passed = not unexpected and not support_errors and plate_passed and bool(stewart_report["passed"])
     nominal = {
         "deck_pose_wxyz_m": nominal_pose.tolist(),
         "sample_count": 1,

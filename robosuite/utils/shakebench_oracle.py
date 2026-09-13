@@ -935,31 +935,20 @@ def vibration_estimate_from_public_observation(
             confidence = 0.20
 
     if tier == "V1":
-        imu = np.asarray(observation["deck_imu_window"], dtype=float)
+        imu = np.asarray(observation["table_imu_window"], dtype=float)
         if imu.shape != (10, 6):
-            raise ShakeBenchOracleError("V1 deck_imu_window must have shape (10, 6)")
+            raise ShakeBenchOracleError("table_imu_window must have shape (10, 6)")
         if v1_estimator is None:
             v1_estimator = V1IMUEstimator(profile)
         motion, angular, measurement_time = v1_estimator.estimate(
             imu,
-            float(np.asarray(observation["deck_imu_dt_s"])),
+            float(np.asarray(observation["table_imu_dt_s"])),
             policy_time_s=policy_time,
         )
-        # The IMU observes the rigid deck/base.  A causal, fixed-frequency
-        # relative isolator response maps it to the same table/target support
-        # quantity used by V2; unknown transient state is represented by a
-        # confidence below one rather than by a different semantic field.
-        transfer = abs(
-            complex(
-                relative_transfer_function(
-                    profile.v1_model_frequency_hz,
-                    profile.future_isolator_fn_hz[0],
-                    profile.future_isolator_zeta[0],
-                )
-            )
-        )
-        current_acceleration[:3] = motion * transfer
-        current_acceleration[3:] = angular * transfer
+        # This IMU already observes the isolated worktable; applying the old
+        # deck-to-table transfer model here would compensate the motion twice.
+        current_acceleration[:3] = motion
+        current_acceleration[3:] = angular
         legacy_current_linear = motion.copy()
         if (
             profile.public_history_estimator_enabled
@@ -967,7 +956,7 @@ def vibration_estimate_from_public_observation(
             and relative_kinematics.history_valid
         ):
             current_twist = relative_kinematics.target_frame_twist_robot_base.copy()
-        source = "causal_noisy_delayed_imu_relative_model"
+        source = "causal_noisy_delayed_table_imu"
         confidence = 0.35
     elif tier in {"V2", "V3"}:
         legacy_current_linear = np.asarray(observation["table_accel_in_deck_frame"], dtype=float)[:3].copy()
@@ -1123,10 +1112,8 @@ class OracleControllerProfile:
     future_isolator_fn_hz: tuple[float, ...] = DEFAULT_FUTURE_ISOLATOR_FN_HZ
     future_isolator_zeta: tuple[float, ...] = DEFAULT_FUTURE_ISOLATOR_ZETA
     future_deck_to_control_rotation: tuple[float, ...] = DEFAULT_DECK_TO_CONTROL_ROTATION
-    # R5 prediction grid and the causal V1 model operating point are frozen
-    # profile inputs, not values selected from positive-Gamma outcomes.
+    # Prediction grid is fixed rather than selected from positive-Gamma outcomes.
     prediction_grid_s: tuple[float, ...] = (0.020, 0.040, 0.060, 0.080, 0.100)
-    v1_model_frequency_hz: float = 4.0
     diagnostic_mode: str = "main"
     compensation_enabled: bool = True
     current_state_compensation_enabled: bool = True
@@ -1213,8 +1200,6 @@ class OracleControllerProfile:
             or np.any(np.diff(prediction_grid) <= 0.0)
         ):
             raise ShakeBenchOracleError("prediction_grid_s must be a strictly increasing positive grid")
-        if not np.isfinite(self.v1_model_frequency_hz) or self.v1_model_frequency_hz <= 0.0:
-            raise ShakeBenchOracleError("v1_model_frequency_hz must be finite and positive")
         if self.grasp_hold_max_opening_rad < self.grasp_hold_min_opening_rad:
             raise ShakeBenchOracleError("grasp aperture upper bound must exceed lower bound")
         if self.gripper_open_action != -1.0 or self.gripper_close_action != 1.0:
