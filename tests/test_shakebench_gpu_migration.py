@@ -1,0 +1,90 @@
+"""Current-scene expert regression and optional real CUDA consistency check.
+
+Run CUDA with SHAKEBENCH_TEST_DEVICE=cuda:0 and requirements-gpu.txt installed.
+"""
+
+import os
+
+import numpy as np
+import pytest
+
+from robosuite.scripts.shakebench_gpu_batch import make_environment
+from robosuite.utils.shakebench_expert import ORACLE_STATE_KEYS, oracle_observation
+from robosuite.utils.shakebench_oracle import ShakeBenchOracleController, WorktableTaskContext
+from robosuite.utils.shakebench_providers import TABLE_IMU_POLICY_KEYS
+
+
+@pytest.mark.parametrize("gamma", [0.0, 0.15])
+def test_current_scene_expert_and_optional_cuda(gamma):
+    state = {"seed": 42, "object_xy_m": [-0.08, -0.13]}
+    env, program = make_environment(state, gamma=gamma, horizon=3,
+                                    physics_profile=os.environ.get("SHAKEBENCH_TEST_PHYSICS_PROFILE", "official"))
+    try:
+        public = env._get_observations(force_update=True)
+        public_before = {key: np.asarray(value).copy() for key, value in public.items()}
+        obs = oracle_observation(env, public)
+        assert set(obs) == set(ORACLE_STATE_KEYS)
+        assert "robot0_eef_pos_robot_base" not in public
+        assert "object_pos_robot_base" not in public  # truth is collection-only
+        for key in public:
+            np.testing.assert_array_equal(public[key], public_before[key])
+        assert env.geometry_profile["profile_id"] == "world_fixed_arm_v1"
+        assert env.table_imu_provider.audit_compiled_mount(env.sim)["parent_body_name"] == "worktable"
+        sample = program.evaluate(np.linspace(0, 3, 61))
+        if gamma == 0:
+            for values in (sample.q, sample.qdot, sample.qdd):
+                np.testing.assert_array_equal(values, np.zeros_like(values))
+        else:
+            assert np.max(np.abs(sample.q)) > 0
+        controller = ShakeBenchOracleController(
+            task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
+        )
+        batch = None
+        if os.environ.get("SHAKEBENCH_TEST_DEVICE"):
+            # An explicitly requested CUDA check must fail, never skip or fall
+            # back to CPU, if the dependency/device is unavailable.
+            from robosuite.utils.shakebench_mjwarp import MJWarpBatch
+
+            batch = MJWarpBatch([env], [program], device=os.environ["SHAKEBENCH_TEST_DEVICE"])
+            np.testing.assert_allclose(batch.model.opt.tolerance.numpy(), env.sim.model.opt.tolerance, rtol=1e-6, atol=0)
+            initial = batch.reset()[0]
+            assert set(initial) == set(ORACLE_STATE_KEYS) | set(TABLE_IMU_POLICY_KEYS)
+            assert batch.e.imu_body == env.worktable_body_id
+        base = env.sim.data.xpos[env.robot_base_body_id].copy()
+        for step in range(3):
+            action = controller.action(obs, time_s=step / 20)
+            if step == 1:
+                action[:3] = [0.05, -0.05, 0.05]  # exercise OSC motion as well as hold
+            assert action.shape == (7,) and np.isfinite(action).all()
+            env.step(np.clip(action, -1, 1))
+            obs = oracle_observation(env)
+            np.testing.assert_array_equal(env.sim.data.xpos[env.robot_base_body_id], base)
+            if batch is not None:
+                gpu_obs, metrics = batch.step(np.asarray([action]))
+                assert not metrics["invalid"][0]
+                np.testing.assert_allclose(metrics["qpos"][0], env.sim.data.qpos, atol=1e-3, rtol=0)
+                for key in ("robot0_eef_pos_robot_base", "object_pos_robot_base", "goal_frame_pos_robot_base"):
+                    np.testing.assert_allclose(gpu_obs[0][key], obs[key], atol=1e-3, rtol=0)
+                cpu_imu = env.table_imu_provider.observation()
+                np.testing.assert_allclose(
+                    gpu_obs[0]["table_imu_window"], cpu_imu["table_imu_window"], atol=0.1, rtol=0.01
+                )
+                np.testing.assert_allclose(
+                    gpu_obs[0]["table_imu_timestamps_s"], cpu_imu["table_imu_timestamps_s"], atol=1e-12, rtol=0
+                )
+                # Isolate sensor decoding from cross-backend trajectory error:
+                # native RNE on the downloaded GPU state must give the same IMU.
+                import mujoco
+                import mujoco_warp as mjw
+                from robosuite.utils.shakebench_sensors import clean_imu_measurement_from_sim
+
+                raw = env.sim.model._model
+                downloaded = mujoco.MjData(raw)
+                mjw.get_data_into(downloaded, raw, batch.data, world_id=0)
+                clean, _ = clean_imu_measurement_from_sim(
+                    raw, "worktable", data=downloaded, sensor_position_body_m=env.table_imu_position_m,
+                    sensor_quat_body_wxyz=env.table_imu_quat_wxyz,
+                )
+                np.testing.assert_allclose(batch.e.imu.numpy()[0, -1], clean, atol=1e-5, rtol=1e-5)
+    finally:
+        env.close()

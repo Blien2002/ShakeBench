@@ -10,7 +10,7 @@ import mujoco
 import numpy as np
 import pytest
 
-from robosuite.environments.manipulation.vibration_pick_place_can import VibrationPickPlaceCan
+from robosuite.environments.manipulation.vibration_pick_place import VibrationPickPlace
 from robosuite.models.arenas import ShakeBenchArena
 from robosuite.utils.shakebench_deck import DeckDriverConfig
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
@@ -137,7 +137,6 @@ def test_visual_switch_preserves_name_based_physics_signature():
 def test_visual_switch_preserves_named_state_and_metric_trace():
     kwargs = {
         "robots": "Panda",
-        "observation_tier": None,
         "use_camera_obs": False,
         "has_renderer": False,
         "has_offscreen_renderer": False,
@@ -147,8 +146,8 @@ def test_visual_switch_preserves_named_state_and_metric_trace():
         "horizon": 2,
         "hard_reset": False,
     }
-    visible = VibrationPickPlaceCan(scene_visual=True, **kwargs)
-    hidden = VibrationPickPlaceCan(scene_visual=False, **kwargs)
+    visible = VibrationPickPlace(scene_visual=True, **kwargs)
+    hidden = VibrationPickPlace(scene_visual=False, **kwargs)
     try:
         named_bodies = ("deck", "worktable", "robot0_base", "can_main")
         visible_obs = visible.reset()
@@ -221,9 +220,8 @@ def test_lab_wheels_touch_floor_and_buried_wheel_is_rejected():
 
 
 def test_nominal_and_registered_safe_scene_clearance_passes():
-    env = VibrationPickPlaceCan(
+    env = VibrationPickPlace(
         robots="Panda",
-        observation_tier=None,
         use_camera_obs=False,
         has_renderer=False,
         has_offscreen_renderer=False,
@@ -246,9 +244,8 @@ def test_nominal_and_registered_safe_scene_clearance_passes():
 
 
 def test_negative_clearance_fixture_rejects_table_leg_inside_mount_proxy():
-    env = VibrationPickPlaceCan(
+    env = VibrationPickPlace(
         robots="Panda",
-        observation_tier=None,
         use_camera_obs=False,
         has_renderer=False,
         has_offscreen_renderer=False,
@@ -289,9 +286,8 @@ def test_floor_visual_switch_does_not_change_physical_floor_contact_semantics():
 
 
 def test_scene_cameras_are_named_and_present_in_the_compiled_task():
-    env = VibrationPickPlaceCan(
+    env = VibrationPickPlace(
         robots="Panda",
-        observation_tier=None,
         use_camera_obs=False,
         has_renderer=False,
         has_offscreen_renderer=False,

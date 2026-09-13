@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import mujoco
 import numpy as np
 
-from robosuite.environments.manipulation.vibration_pick_place_can import VibrationPickPlaceCan
+from robosuite.environments.manipulation.vibration_pick_place import VibrationPickPlace
 
 
 def add_native_imu(xml):
@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=False)
     vibration = {"mode": "multisine_v1", "gamma": args.gamma, "seed": 42, "t0_s": 0.0}
-    env = VibrationPickPlaceCan(
+    env = VibrationPickPlace(
         physics_profile="probe", vibration=vibration, seed=42, imu_seed=42,
         imu_mode="canonical_noisy_v1", load_model_on_init=False,
         has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,

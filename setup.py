@@ -33,25 +33,22 @@ setup(
             "mink==0.0.5",
         ],
     },
-    # Keep the Phase 06 profile/protocol and flat physics artifacts discoverable
-    # from wheels as well as sdists.  MANIFEST.in remains the source archive
-    # contract for the complete asset tree.
+    # Keep the current physics profile, runtime contract, scene assets and state
+    # tables discoverable from wheels as well as sdists.  MANIFEST.in remains
+    # the source archive contract for the complete asset tree.
     package_data={
         "robosuite": [
             "models/assets/shakebench_official_physics.yaml",
             "models/assets/shakebench_runtime_contract.json",
-            "models/assets/shakebench_history_rewrite_map_v2.json",
+            "models/assets/shakebench_geometry_world_fixed_arm_v1.json",
+            "models/assets/shakebench_scene_world_fixed_arm_v1.json",
+            "models/assets/arenas/*.xml",
             "models/assets/shakebench_states_dev.json",
             "models/assets/shakebench_states_official.json",
             "models/assets/shakebench_states_knee.json",
             "models/assets/shakebench_task_states_official_v2.json",
             "models/assets/shakebench_task_states_knee_v2.json",
             "models/assets/shakebench_scene_visual_v1.json",
-            "models/assets/shakebench_scene_direct_mount_v1.json",
-            "models/assets/shakebench_geometry_direct_mount_v1.json",
-            "models/assets/shakebench_phase07_5a_requalification.json",
-            "models/assets/shakebench_phase07_5a_final_authority.json",
-            "models/assets/shakebench_phase07_5a_evidence_binding.json",
             "models/assets/textures/shakebench_*.png",
             "models/assets/textures/shakebench_lab_materials.md",
         ],

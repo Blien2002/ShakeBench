@@ -150,13 +150,13 @@ def validate_controller_events(events: Any) -> None:
             raise OutcomeContractError(f"controller event {index} lacks phase or decision")
         summary = event.get("observation_summary")
         if not isinstance(summary, Mapping) or set(summary) != {
-            "can_pos_robot_base",
+            "object_pos_robot_base",
             "eef_pos_robot_base",
             "recovery_count",
         }:
             raise OutcomeContractError(f"controller event {index} lacks public observation summary")
         try:
-            can = [float(value) for value in summary["can_pos_robot_base"]]
+            can = [float(value) for value in summary["object_pos_robot_base"]]
             eef = [float(value) for value in summary["eef_pos_robot_base"]]
             recovery_count = int(summary["recovery_count"])
         except (KeyError, TypeError, ValueError) as exc:

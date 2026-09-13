@@ -38,7 +38,7 @@ from robosuite.utils.shakebench_oracle import (
 )
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause, validate_outcome
 from robosuite.utils.shakebench_scene import load_scene_visual_config
-from robosuite.utils.shakebench_expert import ORACLE_STATE_KEYS, oracle_observation
+from robosuite.utils.shakebench_expert import oracle_observation
 
 SCHEMA_ID = "shakebench.oracle_gamma_videos"
 SCHEMA_VERSION = 1
@@ -95,7 +95,7 @@ def record_episode(state, *, gamma, mode, args, output):
             if max(np.max(np.abs(sample.q)), np.max(np.abs(sample.qdot)), np.max(np.abs(sample.qdd))) != 0.0:
                 raise AssertionError(f"Gamma=0 must command zero excitation, got {sample.q} at t={sample_time_s}s")
     env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"),
         has_renderer=False,
@@ -105,7 +105,7 @@ def record_episode(state, *, gamma, mode, args, output):
         physics_profile="official",
         geometry_profile=GEOMETRY_PROFILE,
         vibration=vibration,
-        can_start_xy=tuple(state["can_xy_m"]),
+        object_start_xy=tuple(state["object_xy_m"]),
         imu_seed=int(state.get("imu_seed", seed)),
         horizon=args.horizon_steps,
         ignore_done=True,
@@ -131,7 +131,7 @@ def record_episode(state, *, gamma, mode, args, output):
     try:
         observation = oracle_observation(env, env.reset())
         controller = ShakeBenchOracleController(
-            TIER, profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
+            profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
         )
         worktable_id = env.sim.model.body_name2id(env.arena.worktable_body_name)
         reference = np.asarray(env.sim.data.xpos[worktable_id], dtype=float).copy()

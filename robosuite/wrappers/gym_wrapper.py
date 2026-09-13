@@ -62,19 +62,16 @@ class GymWrapper(Wrapper, gym.Env):
         self.reward_range = (0, self.env.reward_scale)
 
         if keys is None:
-            if getattr(self.env, "observation_tier", None) is not None and hasattr(self.env, "policy_observation_keys"):
-                keys = list(self.env.policy_observation_keys)
-            else:
-                keys = []
-                # Add object obs if requested
-                if self.env.use_object_obs:
-                    keys += ["object-state"]
-                # Add image obs if requested
-                if self.env.use_camera_obs:
-                    keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
-                # Iterate over all robots to add to state
-                for idx in range(len(self.env.robots)):
-                    keys += ["robot{}_proprio-state".format(idx)]
+            keys = []
+            # Add object obs if requested
+            if self.env.use_object_obs:
+                keys += ["object-state"]
+            # Add image obs if requested
+            if self.env.use_camera_obs:
+                keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
+            # Iterate over all robots to add to state
+            for idx in range(len(self.env.robots)):
+                keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
         if any(str(key).startswith("privileged_") for key in self.keys):
             raise ValueError("GymWrapper refuses privileged observation keys")
@@ -84,11 +81,6 @@ class GymWrapper(Wrapper, gym.Env):
 
         # set up observation and action spaces
         obs = self.env.reset()
-        if getattr(self.env, "observation_tier", None) is not None:
-            missing = [key for key in self.keys if key not in obs]
-            if missing:
-                raise ValueError("GymWrapper requested unavailable State key(s): " + ", ".join(missing))
-
         # Whether to flatten the observation space
         self.flatten_obs: bool = flatten_obs
 

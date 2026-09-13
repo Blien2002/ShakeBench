@@ -64,9 +64,9 @@ def build_phase07_dev_state_artifact() -> dict[str, Any]:
             {
                 "state_id": f"shakebench-dev-v0-{index:03d}",
                 "split": "dev",
-                "can_pose_worktable": [x, y, 0.07, 1.0, 0.0, 0.0, 0.0],
-                "can_xy_m": [x, y],
-                "can_yaw_rad": 0.0,
+                "object_pose_worktable": [x, y, 0.07, 1.0, 0.0, 0.0, 0.0],
+                "object_xy_m": [x, y],
+                "object_yaw_rad": 0.0,
                 "target_reference": {
                     "frame": "worktable",
                     "frame_origin_m": [-0.10, 0.17, 0.042],
@@ -76,7 +76,7 @@ def build_phase07_dev_state_artifact() -> dict[str, Any]:
                 "seed": _integer_word(index, "excitation_seed"),
                 "t0_s": _uniform_word(index, "t0_s"),
                 "imu_seed": _integer_word(index, "imu_seed"),
-                "can_initial_velocity": [0.0] * 6,
+                "object_initial_velocity": [0.0] * 6,
             }
         )
     payload = {
@@ -95,7 +95,7 @@ def build_phase07_dev_state_artifact() -> dict[str, Any]:
             "can_nominal_xy_m": list(CAN_NOMINAL_XY_M),
             "can_xy_distribution": "independent_uniform",
             "can_xy_half_range_m": CAN_XY_HALF_RANGE_M,
-            "can_yaw_rad": 0.0,
+            "object_yaw_rad": 0.0,
             "development_gamma_commanded": [0.0, 0.15, 0.30],
             "gamma_is_run_condition": True,
         },

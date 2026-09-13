@@ -36,8 +36,8 @@ def oracle_observation(env, observation=None):
             rotation @ (data.geom_xpos[env.sim.model.geom_name2id(name)] - base)
             for name in env.finger_pad_geom_names
         ]),
-        "can_pos_robot_base": rotation @ (data.xpos[env.can_body_id] - base),
-        "can_quat_robot_base": T.mat2quat(rotation @ np.asarray(data.xmat[env.can_body_id]).reshape(3, 3)),
+        "object_pos_robot_base": rotation @ (data.xpos[env.can_body_id] - base),
+        "object_quat_robot_base": T.mat2quat(rotation @ np.asarray(data.xmat[env.can_body_id]).reshape(3, 3)),
         "goal_frame_pos_robot_base": rotation @ (goal - base),
         "goal_frame_quat_robot_base": T.mat2quat(rotation @ table_rotation),
         "goal_inner_half_extents_target": np.asarray(env.target_inner_xy_m) / 2,

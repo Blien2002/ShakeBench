@@ -94,22 +94,6 @@ def test_filtered_noise_rms_matches_noise_density_times_enbw():
     np.testing.assert_allclose(filtered.std(axis=0), expected, rtol=0.06, atol=1e-8)
 
 
-def test_filtered_noise_rms_matches_noise_density_times_enbw():
-    profile = CanonicalIMUProfile(
-        accel_initial_bias_std_m_s2=0.0,
-        gyro_initial_bias_std_rad_s=0.0,
-        accel_bias_diffusion_m_s2_sqrt_s=0.0,
-        gyro_bias_diffusion_rad_s_sqrt_s=0.0,
-    )
-    sensor = CanonicalIMU(seed=101, profile=profile)
-    filtered = np.asarray(
-        [sensor.acquire(np.zeros(6)).filtered_measurement for _ in range(30000)],
-        dtype=float,
-    )[1000:]
-    expected = profile.noise_density * np.sqrt(profile.enbw_hz)
-    np.testing.assert_allclose(filtered.std(axis=0), expected, rtol=0.06, atol=1e-8)
-
-
 def test_ideal_smoke_has_static_prefill_and_no_noise_or_quantization():
     profile = _zero_noise_profile()
     sensor = CanonicalIMU(seed=11, mode="ideal_smoke", profile=profile)

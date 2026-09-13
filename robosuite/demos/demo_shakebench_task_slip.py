@@ -63,7 +63,7 @@ def _frame(
 
 def _sample(env, spec: TaskSpec) -> dict:
     report = env.get_metrics(update=True)
-    worktable = report["can"]["worktable"]
+    worktable = report["object"]["worktable"]
     # The object z-axis in the worktable frame exposes tipping / rolling, so
     # translational displacement after a tip is never mislabeled pure slide.
     body_id = env.can_body_id
@@ -108,10 +108,8 @@ def record_variant(
     gamma_rollout = calibrate_gamma(program, duration_s=duration_s).gamma_commanded
     env = make_task_env(
         spec,
-        observation_tier="V0",
         excitation_program=program,
         physics_profile="official",
-        geometry_profile="direct_mount_v1",
         imu_mode="canonical_noisy_v1",
         hard_reset=False,
         horizon=int(np.ceil(duration_s * 20.0)) + 2,
@@ -244,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
             "level_scale": level_scale,
             "duration_s": args.duration_s,
             "physics_profile": "official",
-            "geometry_profile": "direct_mount_v1",
+            "geometry_profile": "world_fixed_arm_v1",
         },
         "video_playback": {"fps": args.fps, "slowdown": args.playback_slowdown},
         "summary": summaries,

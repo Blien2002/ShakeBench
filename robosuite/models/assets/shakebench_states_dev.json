@@ -1,6 +1,6 @@
 {
   "artifact_lock": {
-    "payload_sha256": "2b0924a361182f34f5660a739a027021dfdd335c0b7ba38fc861e2bba589cb9c",
+    "payload_sha256": "1f68f671329ea3974d0852cb1ec9967e27d8af4de79c9afd3b82f0e3e121afd9",
     "update_reason": "Phase 07 dependency repair: materialize only the prerequisite ten dev states"
   },
   "generator": {
@@ -19,143 +19,460 @@
   "split": "dev",
   "states": [
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.08043175281706891, -0.1282130896590818, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.08043175281706891, -0.1282130896590818],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 2644042071,
       "imu_seed": 2180681104,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.08043175281706891,
+        -0.1282130896590818,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.08043175281706891,
+        -0.1282130896590818
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 2644042071,
       "split": "dev",
       "state_id": "shakebench-dev-v0-000",
       "t0_s": 0.42270208850830454,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.08756430320709228, -0.14979991860121772, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.08756430320709228, -0.14979991860121772],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 1542839160,
       "imu_seed": 4161332905,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.08756430320709228,
+        -0.14979991860121772,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.08756430320709228,
+        -0.14979991860121772
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 1542839160,
       "split": "dev",
       "state_id": "shakebench-dev-v0-001",
       "t0_s": 0.7019079618185695,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.11550081866835216, -0.13804566168851862, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.11550081866835216, -0.13804566168851862],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 1135775518,
       "imu_seed": 2184590949,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.11550081866835216,
+        -0.13804566168851862,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.11550081866835216,
+        -0.13804566168851862
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 1135775518,
       "split": "dev",
       "state_id": "shakebench-dev-v0-002",
       "t0_s": 0.7467481336119215,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.10634717013991618, -0.13827535365403104, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.10634717013991618, -0.13827535365403104],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 532186765,
       "imu_seed": 807870138,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.10634717013991618,
+        -0.13827535365403104,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.10634717013991618,
+        -0.13827535365403104
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 532186765,
       "split": "dev",
       "state_id": "shakebench-dev-v0-003",
       "t0_s": 0.08330496916766184,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.08516282109404219, -0.13857563860208724, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.08516282109404219, -0.13857563860208724],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 3951389627,
       "imu_seed": 368632537,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.08516282109404219,
+        -0.13857563860208724,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.08516282109404219,
+        -0.13857563860208724
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 3951389627,
       "split": "dev",
       "state_id": "shakebench-dev-v0-004",
       "t0_s": 0.8776988204638079,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.1162402984096652, -0.11408066826042859, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.1162402984096652, -0.11408066826042859],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 1702439837,
       "imu_seed": 2102517261,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.1162402984096652,
+        -0.11408066826042859,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.1162402984096652,
+        -0.11408066826042859
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 1702439837,
       "split": "dev",
       "state_id": "shakebench-dev-v0-005",
       "t0_s": 0.762395194052443,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.11469799462750394, -0.1492660272454099, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.11469799462750394, -0.1492660272454099],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 3203974856,
       "imu_seed": 125221143,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.11469799462750394,
+        -0.1492660272454099,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.11469799462750394,
+        -0.1492660272454099
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 3203974856,
       "split": "dev",
       "state_id": "shakebench-dev-v0-006",
       "t0_s": 0.49339236669463316,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.10967321476539581, -0.13084610970068383, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.10967321476539581, -0.13084610970068383],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 448992658,
       "imu_seed": 4222847631,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.10967321476539581,
+        -0.13084610970068383,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.10967321476539581,
+        -0.13084610970068383
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 448992658,
       "split": "dev",
       "state_id": "shakebench-dev-v0-007",
       "t0_s": 0.2738840071260488,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.0914447398604131, -0.14100970459658996, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.0914447398604131, -0.14100970459658996],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 135369182,
       "imu_seed": 2690989359,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.0914447398604131,
+        -0.14100970459658996,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.0914447398604131,
+        -0.14100970459658996
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 135369182,
       "split": "dev",
       "state_id": "shakebench-dev-v0-008",
       "t0_s": 0.7859853203996287,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     },
     {
-      "can_initial_velocity": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      "can_pose_worktable": [-0.11574555392139932, -0.12151863544326678, 0.07, 1.0, 0.0, 0.0, 0.0],
-      "can_xy_m": [-0.11574555392139932, -0.12151863544326678],
-      "can_yaw_rad": 0.0,
       "excitation_seed": 3719640555,
       "imu_seed": 2773745183,
+      "object_initial_velocity": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_pose_worktable": [
+        -0.11574555392139932,
+        -0.12151863544326678,
+        0.07,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_xy_m": [
+        -0.11574555392139932,
+        -0.12151863544326678
+      ],
+      "object_yaw_rad": 0.0,
       "seed": 3719640555,
       "split": "dev",
       "state_id": "shakebench-dev-v0-009",
       "t0_s": 0.542770747217271,
-      "target_reference": {"frame": "worktable", "frame_origin_m": [-0.1, 0.17, 0.042], "orientation_wxyz": [1.0, 0.0, 0.0, 0.0]}
+      "target_reference": {
+        "frame": "worktable",
+        "frame_origin_m": [
+          -0.1,
+          0.17,
+          0.042
+        ],
+        "orientation_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     }
   ],
   "status": "frozen_dev_only",
   "task_contract": {
-    "can_nominal_xy_m": [-0.1, -0.13],
+    "can_nominal_xy_m": [
+      -0.1,
+      -0.13
+    ],
     "can_xy_distribution": "independent_uniform",
     "can_xy_half_range_m": 0.02,
-    "can_yaw_rad": 0.0,
-    "development_gamma_commanded": [0.0, 0.15, 0.3],
-    "gamma_is_run_condition": true
+    "development_gamma_commanded": [
+      0.0,
+      0.15,
+      0.3
+    ],
+    "gamma_is_run_condition": true,
+    "object_yaw_rad": 0.0
   }
 }

@@ -1,0 +1,2 @@
+# This release writes LeRobot dataset format v2.1. New releases may write v3.
+lerobot==0.3.3

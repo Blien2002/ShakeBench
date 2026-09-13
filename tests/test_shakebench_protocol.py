@@ -13,7 +13,6 @@ from robosuite.utils.shakebench_committed_states import (
     build_committed_state_artifact,
     verify_committed_state_artifact,
     verify_committed_state_pair,
-    verify_phase07_5a_evidence_binding,
 )
 from robosuite.scripts.shakebench_run_oracle import load_state_asset
 
@@ -66,8 +65,3 @@ def test_committed_state_loader_keeps_authority_and_execution_payload():
     assert {"excitation_seed", "imu_seed", "t0_s", "authority_hashes", "canonical_payload_sha256"} <= set(state)
 
 
-def test_phase07_5a_evidence_binding_is_package_owned_and_authenticated():
-    binding = verify_phase07_5a_evidence_binding()
-    assert binding["evidence_core_payload_sha256"] == (
-        "9b2c56416de2d88d78062b698004605c551bac37671d10a3600fccec1eb4f2dd"
-    )

@@ -232,7 +232,7 @@ class MJWarpBatch:
         self.imu_stride = round(0.005 / self.dt)
         if self.steps != 250 or not np.isclose(self.dt, 0.0002) or self.imu_stride != 25:
             raise ValueError("collector requires the current 5 kHz physics / 20 Hz policy scheduler")
-        if env.geometry_profile["profile_id"] != "world_fixed_arm_v1" or env.observation_tier is not None:
+        if env.geometry_profile["profile_id"] != "world_fixed_arm_v1":
             raise ValueError("collector requires the migrated world-fixed scene observation contract")
         signature = self._signature(env)
         if any(self._signature(other) != signature for other in envs):
@@ -292,7 +292,7 @@ class MJWarpBatch:
         import json
         # XML includes assets and physics options; initial qpos is data, not XML.
         xml = env.sim.model.get_xml()
-        return (hashlib.sha256(xml.encode()).hexdigest(), env.observation_tier,
+        return (hashlib.sha256(xml.encode()).hexdigest(),
                 json.dumps(env.robots[0].composite_controller_config, sort_keys=True))
 
     def _array(self, data, dtype=float):
@@ -487,8 +487,8 @@ class MJWarpBatch:
                                                     v[self.robots._ref_gripper_joint_vel_indexes["right"]])),
             "robot0_wrist_force": packet[126:129], "robot0_wrist_torque": packet[129:132],
             "robot0_fingertip_pos_robot_base": ((packet[120:126].reshape(2, 3) - base.position_world_m) @ rotation.T).flatten(),
-            "can_pos_robot_base": rotation @ (obj.position_world_m - base.position_world_m),
-            "can_quat_robot_base": T.mat2quat(rotation @ obj.rotation_world),
+            "object_pos_robot_base": rotation @ (obj.position_world_m - base.position_world_m),
+            "object_quat_robot_base": T.mat2quat(rotation @ obj.rotation_world),
             "goal_frame_pos_robot_base": rotation @ (origin - base.position_world_m),
             "goal_frame_quat_robot_base": T.mat2quat(rotation @ table.rotation_world),
         })

@@ -50,7 +50,7 @@ def _bounds_ok(values: np.ndarray, metadata: list[dict[str, Any]], field: str) -
 def run_actuator_positive_controls(output: str | Path | None = None) -> dict[str, Any]:
     profile = OracleControllerProfile()
     env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"),
         has_renderer=False,
@@ -58,7 +58,6 @@ def run_actuator_positive_controls(output: str | Path | None = None) -> dict[str
         use_camera_obs=False,
         use_object_obs=False,
         physics_profile="official",
-        observation_tier="V0",
         imu_mode="ideal_smoke",
         horizon=2,
         ignore_done=True,
@@ -70,7 +69,7 @@ def run_actuator_positive_controls(output: str | Path | None = None) -> dict[str
         actuator_metadata = _actuator_metadata_from_model(raw_model)
         for channel_index, channel_name in enumerate(CHANNEL_NAMES):
             for sign in (-1, 1):
-                observation = env.reset()
+                env.reset()
                 arm = env.robots[0].part_controllers["right"]
                 action = np.zeros(7, dtype=np.float32)
                 action[channel_index] = sign
@@ -86,8 +85,6 @@ def run_actuator_positive_controls(output: str | Path | None = None) -> dict[str
                 after_ori = np.asarray(arm.goal_ori, dtype=float).copy()
                 ctrl = np.asarray(env.sim.data.ctrl, dtype=float).copy()
                 force = np.asarray(env.sim.data.actuator_force, dtype=float).copy()
-                position_delta = after_pos - expected_pos
-                rotation_delta = after_ori - expected_ori
                 if channel_index < 3:
                     target_response = float(scaled_arm_action[channel_index] * sign)
                     non_target_response = float(np.linalg.norm(np.delete(scaled_arm_action[:3], channel_index)))

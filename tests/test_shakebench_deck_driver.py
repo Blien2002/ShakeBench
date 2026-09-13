@@ -271,6 +271,19 @@ def test_trace_separates_tracking_pose_error_from_raw_weld_diagnostics():
         trace.field_contract["actual_twist"] = "mutated"
 
 
+def test_trace_serialization_covers_contract_and_returns_independent_lists():
+    populated, _ = run_trace(dt=0.0002, duration_s=0.002)
+    for trace in (DeckDriver().trace, populated):
+        payload = trace.to_dict()
+        assert set(payload) == set(trace.field_contract) | {
+            "schema_id", "schema_version", "axis_order", "field_contract"
+        }
+        for name in trace.field_contract:
+            assert payload[name] == getattr(trace, name).tolist()
+        payload["sample_time_s"].append(-1.0)
+        assert len(payload["sample_time_s"]) == trace.sample_time_s.size + 1
+
+
 def test_probe_matrix_records_each_required_coverage_axis_and_line():
     result = run_probe_suite(dt=0.0005, duration_s=0.1, spectrum_duration_s=2.0)
     families = {row["case_family"]: row for row in result["coverage_matrix"]}

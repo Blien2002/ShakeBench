@@ -16,11 +16,11 @@ from robosuite.utils.shakebench_outcomes import (
     validate_outcome,
 )
 from robosuite.utils.shakebench_scoring import EpisodeResult, ScorecardError, build_scorecard
-from tests.shakebench_test_helpers import build_tier_observation
+from tests.shakebench_test_helpers import build_current_observation
 
 
 def _observation() -> dict:
-    return build_tier_observation("V0", goal_frame_pos=(0.0, 0.0, 0.0))
+    return build_current_observation(goal_frame_pos=(0.0, 0.0, 0.0))
 
 
 def _result(*, state_id: str, validity: str, outcome: str | None, cause: str) -> EpisodeResult:
@@ -88,13 +88,13 @@ def test_controller_events_require_finite_time_and_public_observation_summary(ti
 
 
 def test_recovery_settle_timeout_stays_in_same_rollout_when_public_state_is_safe():
-    controller = ShakeBenchOracleController("V0", OracleControllerProfile(recovery_budget=2))
+    controller = ShakeBenchOracleController(OracleControllerProfile(recovery_budget=2))
     observation = _observation()
     controller.executive.phase = TaskPhase.WAIT_PUBLIC_SETTLE
     controller.executive.phase_entered_s = 0.0
     # Finite, table-supported and inside the envelope, but deliberately not
     # stable enough to open yet.
-    observation["can_pos_robot_base"] = np.array((0.0, 0.0, 0.070297), dtype=np.float32)
+    observation["object_pos_robot_base"] = np.array((0.0, 0.0, 0.070297), dtype=np.float32)
     controller.action(observation, time_s=controller.profile.recovery_settle_s + 0.01)
     assert controller.executive.phase is TaskPhase.WAIT_PUBLIC_SETTLE
     assert controller.executive.abort_reason is None
@@ -102,9 +102,9 @@ def test_recovery_settle_timeout_stays_in_same_rollout_when_public_state_is_safe
 
 
 def test_edge_risk_is_a_controller_abort_not_a_task_rule_violation():
-    controller = ShakeBenchOracleController("V0")
+    controller = ShakeBenchOracleController()
     observation = _observation()
-    observation["can_pos_robot_base"] = np.array((0.5, 0.5, 0.04), dtype=np.float32)
+    observation["object_pos_robot_base"] = np.array((0.5, 0.5, 0.04), dtype=np.float32)
     controller.executive.phase = TaskPhase.VERIFY
     controller.action(observation, time_s=controller.profile.verify_s)
     assert controller.executive.phase is TaskPhase.ABORTED

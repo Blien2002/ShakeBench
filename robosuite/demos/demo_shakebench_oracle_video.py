@@ -1,6 +1,6 @@
 """Record a reproducible qualitative video of the ShakeBench oracle.
 
-The controller consumes only the selected public state-observation tier.
+The controller consumes only the current single public observation contract.
 Camera pixels are rendered separately after each policy step and never enter
 the action, trace, success metric, or scientific evidence path.
 
@@ -25,7 +25,7 @@ import cv2
 import mujoco
 import numpy as np
 
-from robosuite.environments.manipulation.vibration_pick_place_can import WRIST_CAMERA
+from robosuite.environments.manipulation.vibration_pick_place import WRIST_CAMERA
 from robosuite.scripts.shakebench_run_oracle import load_dev_states, run_episode
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController
@@ -151,7 +151,7 @@ def annotate_frame(
     cv2.addWeighted(overlay, 0.76, image, 0.24, 0.0, image)
     font = cv2.FONT_HERSHEY_SIMPLEX
     lines = (
-        "ShakeBench | VibrationPickPlaceCan | Panda oracle",
+        "ShakeBench | VibrationPickPlace | Panda oracle",
         f"tier={tier}   Gamma={gamma:.2f}   state={state_id}",
         f"t={step / policy_rate_hz:05.2f}s   step={step:04d}   phase={phase}",
     )
@@ -307,7 +307,12 @@ def build_parser() -> argparse.ArgumentParser:
     scene_config = load_scene_visual_config()
     render_config = scene_config.section("render")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tier", choices=("V0", "V1", "V2", "V3"), default="V0")
+    parser.add_argument(
+        "--tier",
+        choices=("V0",),
+        default="V0",
+        help="deprecated label for the current single-lane expert; not an observation tier",
+    )
     parser.add_argument("--gamma", type=float, default=0.15)
     parser.add_argument("--state-id", default=DEFAULT_STATE_ID)
     parser.add_argument("--states", type=Path, default=Path("robosuite/models/assets/shakebench_states_dev.json"))
@@ -325,7 +330,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--height", type=int, default=int(render_config["default_height"]))
     parser.add_argument("--fps", type=int, default=int(render_config["default_fps"]))
     parser.add_argument("--horizon-steps", type=int, default=1200)
-    parser.add_argument("--geometry-profile", choices=("canonical", "direct_mount_v1"), default="direct_mount_v1")
+    parser.add_argument("--geometry-profile", choices=("world_fixed_arm_v1",), default="world_fixed_arm_v1")
     parser.add_argument("--wrist-inset", action="store_true", help="Overlay a synchronized wrist view at bottom right")
     return parser
 
@@ -355,7 +360,6 @@ def main(argv: list[str] | None = None) -> int:
     try:
         episode = run_episode(
             state,
-            tier=args.tier,
             gamma_commanded=args.gamma,
             profile=profile,
             horizon_steps=args.horizon_steps,
@@ -364,7 +368,6 @@ def main(argv: list[str] | None = None) -> int:
             # Rendering remains bound to the frozen scene so the visual
             # diagnostic is interpretable, but this code path never emits a
             # scoreable raw artifact or Phase 9 measurement authority.
-            allow_unverified_geometry=False,
         )
     except Exception:
         observer.close(success=False, hold_seconds=0.0)

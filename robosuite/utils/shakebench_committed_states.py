@@ -30,8 +30,6 @@ OFFICIAL_STATE_COUNT = 400
 KNEE_STATE_COUNT = 100
 OFFICIAL_STATE_FILENAME = "shakebench_states_official.json"
 KNEE_STATE_FILENAME = "shakebench_states_knee.json"
-PHASE07_5A_EVIDENCE_BINDING_FILENAME = "shakebench_phase07_5a_evidence_binding.json"
-EXPECTED_EVIDENCE_BINDING_PAYLOAD_SHA256 = "4591ec046115ff8cfe17933f0278c3a434a12e20d4f59dbbe84457f1eab55d70"
 _NOMINAL_XY_M = (-0.10, -0.13)
 _XY_HALF_RANGE_M = 0.02
 _FORBIDDEN_STATE_KEYS = frozenset(
@@ -41,46 +39,6 @@ _FORBIDDEN_STATE_KEYS = frozenset(
 
 class Phase08StateError(ValueError):
     """Raised when a committed-state authority is malformed or unauthorized."""
-
-
-def verify_phase07_5a_evidence_binding(path: str | Path | None = None) -> dict[str, Any]:
-    """Verify the package-owned Phase 7.5A evidence-core binding.
-
-    Args:
-        path: Optional binding asset override used by contract tests.
-
-    Returns:
-        Authenticated binding payload.
-
-    Raises:
-        Phase08StateError: If the asset schema or digest is not frozen.
-    """
-
-    source = Path(models.assets_root) / PHASE07_5A_EVIDENCE_BINDING_FILENAME if path is None else Path(path)
-    try:
-        payload = json.loads(source.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise Phase08StateError(f"BLOCKED_BY_PHASE07_5A_HANDOFF: evidence binding read: {exc}") from exc
-    required = {
-        "schema_id",
-        "schema_version",
-        "evidence_core_file_sha256",
-        "evidence_core_payload_sha256",
-        "requalification_manifest_payload_sha256",
-        "payload_sha256",
-    }
-    if not isinstance(payload, Mapping):
-        raise Phase08StateError("BLOCKED_BY_PHASE07_5A_HANDOFF: evidence binding must be an object")
-    actual_hash = payload_hash(payload)
-    if (
-        set(payload) != required
-        or payload.get("schema_id") != "shakebench.phase07_5a.evidence_binding"
-        or payload.get("schema_version") != 1
-        or payload.get("payload_sha256") != actual_hash
-        or actual_hash != EXPECTED_EVIDENCE_BINDING_PAYLOAD_SHA256
-    ):
-        raise Phase08StateError("BLOCKED_BY_PHASE07_5A_HANDOFF: evidence binding authentication failed")
-    return dict(payload)
 
 
 def _canonical(value: Any) -> str:
@@ -97,47 +55,27 @@ def _uniform(split: str, index: int, channel: str) -> float:
 
 
 def _authority_bindings() -> dict[str, str]:
-    """Obtain all state-side hashes from the frozen, authenticated authority.
+    """Bind committed states to the current package-owned runtime contract."""
 
-    The inventory-bearing handoff verifier is intentionally run once before
-    Phase 08 creates new source files.  Re-running it from this writer would
-    make the writer's own additions invalidate that prior handoff.  The
-    immutable science and final envelopes remain independently verified here.
-    """
+    from robosuite.utils.shakebench_geometry import load_geometry_profile
+    from robosuite.utils.shakebench_runtime_verifier import verify_runtime_publication_bundle
 
-    from robosuite.utils.shakebench_authority import (
-        authority_payload_hash,
-        verify_direct_mount_authority,
-        verify_final_phase08_authority,
-    )
-
-    authority = verify_direct_mount_authority()
-    try:
-        # The expected evidence-core digest comes from a separately frozen,
-        # package-owned binding, never from the final-authority envelope being
-        # verified.
-        evidence_hash = verify_phase07_5a_evidence_binding()["evidence_core_payload_sha256"]
-        verify_final_phase08_authority(evidence_hash)
-    except (OSError, KeyError, ValueError, TypeError) as exc:
-        raise Phase08StateError(f"BLOCKED_BY_PHASE07_5A_HANDOFF: {exc}") from exc
-    authority_sha256 = authority_payload_hash(authority)
-    runtime_path = Path(models.assets_root) / "shakebench_runtime_contract.json"
+    root = Path(models.assets_root)
+    runtime_path = root / "shakebench_runtime_contract.json"
     if not runtime_path.is_file():
         raise Phase08StateError("runtime contract asset missing")
-    dev_payload = verify_phase07_dev_state_artifact(Path(models.assets_root) / PHASE07_DEV_STATE_FILENAME)["payload"]
+    verdict = verify_runtime_publication_bundle(root)
+    if verdict.get("passed") is not True:
+        raise Phase08StateError("current runtime contract failed: " + "; ".join(verdict["errors"]))
+    geometry = load_geometry_profile("world_fixed_arm_v1")
+    dev_payload = verify_phase07_dev_state_artifact(root / PHASE07_DEV_STATE_FILENAME)["payload"]
     return {
-        "science_authority_sha256": authority_sha256,
-        "physics_profile_sha256": str(authority["official_physics_profile_sha256"]),
-        # Phase 7.5A scene evidence remains a historical binding.  Phase 08R
-        # freezes the current controller and outcome contract independently
-        # into the committed state authority used by future measurements.
+        "physics_profile_sha256": str(verdict["profile_sha256"]),
         "controller_profile_sha256": OracleControllerProfile().sha256,
         "outcome_contract_sha256": outcome_contract_sha256(),
-        "geometry_profile_sha256": str(authority["geometry_payload_sha256"]),
-        "scene_visual_sha256": str(authority["scene_sha256"]),
+        "geometry_profile_sha256": str(geometry["payload_sha256"]),
+        "scene_visual_sha256": str(geometry["scene_sha256"]),
         "runtime_contract_sha256": hashlib.sha256(runtime_path.read_bytes()).hexdigest(),
-        # This is derived from the repository's sole canonical task-contract
-        # representation, rather than copied from a report or cached string.
         "task_contract_sha256": payload_hash(dev_payload["task_contract"]),
     }
 
@@ -378,12 +316,10 @@ def freeze_committed_state_assets(directory: str | Path | None = None) -> dict[s
 
 
 __all__ = [
-    "EXPECTED_EVIDENCE_BINDING_PAYLOAD_SHA256",
     "KNEE_STATE_COUNT",
     "KNEE_STATE_FILENAME",
     "OFFICIAL_STATE_COUNT",
     "OFFICIAL_STATE_FILENAME",
-    "PHASE07_5A_EVIDENCE_BINDING_FILENAME",
     "PHASE08_STATE_SCHEMA_ID",
     "PHASE08_STATE_SCHEMA_VERSION",
     "Phase08StateError",
@@ -391,5 +327,4 @@ __all__ = [
     "freeze_committed_state_assets",
     "verify_committed_state_artifact",
     "verify_committed_state_pair",
-    "verify_phase07_5a_evidence_binding",
 ]

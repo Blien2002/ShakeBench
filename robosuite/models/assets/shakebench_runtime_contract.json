@@ -1,56 +1,24 @@
 {
-  "compact_assets": {
-    "shakebench_phase_06_final_status.json": "12de5a4cb5a61ecea1fc2e8e7bf3659d1623891c61d5391b62b38566fcb6b2a9",
-    "shakebench_phase_06_to_07_handoff.json": "cb91f5badf4e424ab9e2275f80644e9416215cca9edc6cf2e459640588b0082c",
-    "shakebench_phase_06f_contact_selection.json": "fe3532ac3f03bc7f71f77da3473ef2d4f60b478df77ddf6e41364ec22610aba1",
-    "shakebench_phase_06f_dependent_manifest.json": "3a50be6c84fc5d9b4c4efb6dfccc373ba7ed4bbc683dac177772ce437b9da582",
-    "shakebench_phase_06f_protocol.yaml": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0",
-    "shakebench_phase_06fr2_handoff.json": "4cc83107000a12c85f1aa1b8f89dfa547566d556fa0dc75b3a0a274c6d429e79",
-    "shakebench_phase_06fr2_protocol.yaml": "80cddbc8cf2ca2984336fb54ec197a427aedf597e80735300a11e4f73318a2fc",
-    "shakebench_phase_06fr2_status.json": "0b3dac29c08ef693eba9d599c2d9fa1a756a6831a52b6f4890473c033231a169",
-    "shakebench_history_rewrite_map_v2.json": "551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493",
-    "shakebench_official_physics.yaml": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674",
-    "shakebench_states_dev.json": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
-  },
-  "contract_id": "shakebench.runtime.publication.v1",
-  "history_rewrite": {
-    "map_path": "docs/shakebench_history_rewrite_map_v2.json",
-    "asset_filename": "shakebench_history_rewrite_map_v2.json",
-    "map_sha256": "551036b0f8c242450830591761d35dceca17260613c3f585c82836c8544f5493",
-    "schema_version": 2,
-    "status": "complete"
-  },
+  "contract_id": "shakebench.runtime.publication.v2",
   "package_contract": {
     "full_audit_requires_explicit_evidence": true,
     "network_access_required": false,
     "raw_archive_required_for_runtime": false,
-    "runtime_verification": "compact_profile_protocol_manifest_hashes_only"
+    "runtime_verification": "compact_asset_hashes_only"
   },
+  "payload_sha256": "bc5602c9219c72bad4c4aa940e14f62a672376c8eeb62c6f834ba9523f635af1",
   "physics_profile": {
-    "asset_sha256": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674",
     "asset_filename": "shakebench_official_physics.yaml",
+    "asset_sha256": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674",
     "profile_id": "shakebench.official.physics.v2",
     "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
   },
-  "protocol": {
-    "asset_filename": "shakebench_phase_06f_protocol.yaml",
-    "sha256": "54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0"
-  },
-  "science_bindings": {
-    "controller_profile_id": "shakebench.reference_oracle.v3",
-    "controller_profile_sha256": "60a5d351913a48d64480ea004eaabb2f91ea7f40add4968fefbeafb3a958991c",
-    "official_physics_profile_id": "shakebench.official.physics.v2",
-    "official_physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-    "dev_state_asset_sha256": "07de20b40b2500923f44c6b5edd179378ef7475a600752a08f1f7b000cd000c6"
+  "scene_assets": {
+    "arenas/shakebench_arena.xml": "dbadb4220bee5ab811afb03142cad7d0550990b4cf6d14ff1312ced9ebeddb06",
+    "arenas/shakebench_robot_support.xml": "32e28e847a966306be9231e6897fba00a9044884ae19c031df5bd404885328a8",
+    "shakebench_geometry_world_fixed_arm_v1.json": "959713b9b2f6c3e1c87918217f3a40c15a9e607f24f1512458642f033ce9c75e",
+    "shakebench_scene_world_fixed_arm_v1.json": "96e507381075a3231601792d6bddd4554d0204573c7044d95c3f84ab7917f794"
   },
   "schema_id": "shakebench.runtime.publication_contract",
-  "schema_version": 1,
-  "selected_tuple": {
-    "contact_candidate_id": "c3_nominal",
-    "physics_profile_id": "shakebench.official.physics.v2",
-    "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-    "task": "VibrationPickPlaceCan",
-    "robot": "Panda"
-  },
-  "payload_sha256": "748b745d67feca159334b4135378c620cecf83d4d715f2a20d8d0cee6a62e0e6"
+  "schema_version": 1
 }

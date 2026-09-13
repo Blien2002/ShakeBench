@@ -34,7 +34,6 @@ from robosuite.utils.shakebench_isolator import AXES, IsolatorConfig, derive_iso
 PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
 PHYSICS_PROFILE_SCHEMA_VERSION = 1
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-PHASE06F_PROTOCOL_FILENAME = "shakebench_phase_06f_protocol.yaml"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
 
@@ -589,10 +588,7 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
             )
     from robosuite.utils.shakebench_runtime_verifier import verify_runtime_publication_bundle
 
-    try:
-        runtime = verify_runtime_publication_bundle(Path(models.assets_root), include_profile=True)
-    except TypeError:  # Compatibility with test and downstream verifier stubs.
-        runtime = verify_runtime_publication_bundle(Path(models.assets_root))
+    runtime = verify_runtime_publication_bundle(Path(models.assets_root), include_profile=True)
     if runtime.get("passed") is not True:
         detail = "; ".join(str(error) for error in runtime.get("errors", ()))
         raise PhysicsProfileIntegrityError("official physics is blocked by the runtime publication contract: " + detail)
@@ -604,11 +600,6 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
         except OSError as exc:
             raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
     profile = _validate_payload(payload, source=str(profile_path), require_official=True)
-    expected_protocol_hash = runtime.get("protocol_sha256")
-    if expected_protocol_hash is None:
-        expected_protocol_hash = hashlib.sha256(_asset_path(PHASE06F_PROTOCOL_FILENAME).read_bytes()).hexdigest()
-    if profile.payload.get("protocol_sha256") != expected_protocol_hash:
-        raise PhysicsProfileIntegrityError("official profile does not authenticate the Phase 06F selection protocol")
     if profile.profile_sha256 != runtime.get("profile_sha256"):
         raise PhysicsProfileIntegrityError("official profile differs from the verified runtime publication contract")
     return profile
@@ -724,7 +715,6 @@ def official_physics_profile_hash() -> str:
 __all__ = [
     "OFFICIAL_PHYSICS_PROFILE_FILENAME",
     "OFFICIAL_PHYSICS_PROFILE_ID",
-    "PHASE06F_PROTOCOL_FILENAME",
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",

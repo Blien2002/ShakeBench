@@ -29,20 +29,18 @@ from robosuite.utils.shakebench_calibration import vibration_record
 from robosuite.utils.shakebench_providers import TABLE_IMU_POLICY_KEYS
 
 
-def make_environment(state, *, gamma, horizon, mode="multisine_v1", tier=None, physics_profile="official"):
+def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_profile="official"):
     """Use the same inputs and reset sequence as the CPU oracle runner."""
     import robosuite
     from robosuite.controllers import load_composite_controller_config
     from robosuite.utils.shakebench_tasks import task_env_kwargs
 
-    if tier not in (None, "V0"):
-        raise ValueError("migrated collection uses the current-state expert, not V1–V3")
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
     t0 = float(state.get("t0_s", 0.0))
     variant = "task" in state
-    kwargs = task_env_kwargs(state) if variant else {"can_start_xy": tuple(state["can_xy_m"])}
+    kwargs = task_env_kwargs(state) if variant else {"object_start_xy": tuple(state["object_xy_m"])}
     env = robosuite.make(
-        "VibrationPickPlace" if variant else "VibrationPickPlaceCan", robots="Panda",
+        "VibrationPickPlace", robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"), has_renderer=False,
         has_offscreen_renderer=False, use_camera_obs=False, use_object_obs=False,
         physics_profile=physics_profile, geometry_profile="world_fixed_arm_v1",
@@ -80,7 +78,7 @@ def collect_batch(batch, states, *, horizon, profile=None):
     if profile.policy_rate_hz != 20:
         raise ValueError("GPU collector requires policy_rate_hz=20")
     observations = batch.reset()
-    controllers = [ShakeBenchOracleController("V0", profile, task_context=WorktableTaskContext.from_mapping(
+    controllers = [ShakeBenchOracleController(profile, task_context=WorktableTaskContext.from_mapping(
         env.get_policy_task_context().get("task_context"))) for env in batch.envs]
     # ponytail: worlds finish as a batch; use masked resets only if tail waste
     # becomes a measured throughput bottleneck. Terminal snapshots are retained.
@@ -150,7 +148,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--states", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--tier", choices=("V0",), help="deprecated alias for the current-state expert; not an environment tier")
+    parser.add_argument(
+        "--tier", choices=("V0",), default="V0",
+        help="deprecated alias kept for old commands; the current expert is the single-lane one",
+    )
     gamma_args = parser.add_mutually_exclusive_group()
     gamma_args.add_argument("--gamma", type=float, help="one Gamma (default: 0)")
     gamma_args.add_argument("--gammas", type=float, nargs="+", help="Gamma sweep, e.g. 0 0.15 0.3 0.6")

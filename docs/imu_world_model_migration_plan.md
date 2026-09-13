@@ -1,11 +1,11 @@
 # ShakeBench：IMU 辅助世界模型技术迁移方案
 
 日期：2026-09-12
-状态：B 场景迁移已完成，实体地基布局已通过场景预检及 39 项定向测试；完整世界模型迁移尚未完成。场景实现与验收范围见 [当前场景说明](world_fixed_arm_scene.md)。
+状态：B 场景迁移、C 桌下 IMU 与 D 振动模式接口已完成；实体地基布局已通过场景预检及 39 项定向测试，桌下 IMU 已接入当前环境，振动接口已通过 25 项激励、标定与入口定向测试；完整世界模型迁移尚未完成。场景实现与验收范围见 [当前场景说明](world_fixed_arm_scene.md)。
 
 本文整合以下要求：机械臂基座相对世界固定；仅保留一个刚性安装于工作台桌面下方的 IMU；模型输入为历史视频与 IMU，输出为未来物体视觉位置，再作为先验辅助其他 policy 学习；振动条件采用“Gamma × 振动模式”；项目代码、配置、测试与实施文档只保留最新设计，删除历史实现和兼容分支。
 
-本文保留完整迁移路线。当前执行范围仅为阶段 B 及其必要的安装配置、上下文与审计变更；其余阶段不据此视为完成。
+本文保留完整迁移路线。阶段 B、C、D 已完成；其余阶段不据此视为完成。
 
 ## 1. 迁移原则与目标边界
 
@@ -141,6 +141,8 @@ vibration:
 | `single_sine_v1` | 每个启用轴仅保留一个频率分量 |
 | `custom_multisine_v1` | 开放各轴中心频率、带宽、相对幅值和谱线数量 |
 
+`custom_multisine_v1` 在 `mode_params.bands` 中按轴覆盖 `center_hz`、`bandwidth_ratio`、`relative_accel_rms` 和 `tones`；未覆盖的轴沿用 `multisine_v1` 参数。谱线数量上限为 12。
+
 保留现有多正弦是复用最新设计仍需要的波形能力，不保留它原先的独立运行路径、旧协议或旧兼容入口。
 
 后续增加扫频、间歇振动等模式时，再扩展波形求值；统一返回 `q/qdot/qdd`，保持位移、速度、加速度相互一致，处理 ramp 和包络的导数。第一轮不建立插件系统或复杂继承结构。
@@ -207,7 +209,7 @@ future_object_position = predictor(video_history, table_imu_history)
 
 ## 6. 预测先验与 policy 接入
 
-仓库目前以仿真、oracle 和验证工具为主，尚未发现可直接复用的视频世界模型训练实现。迁移先完成数据与接口，模型训练放在独立模块，不将整个训练框架引入环境代码。
+仓库目前以仿真、oracle 和验证工具为主，尚未包含视频世界模型训练实现。`robosuite.utils.shakebench_starvla` 已提供视觉、机器人状态、桌下 IMU、英文指令和归一化动作的 StarVLA 环境与客户端边界；模型训练仍放在独立模块，不将整个训练框架引入环境代码。
 
 统一先验格式：
 
@@ -274,7 +276,7 @@ prediction_time
 
 ### 7.4 GPU 路径
 
-[shakebench_mjwarp.py](../robosuite/utils/shakebench_mjwarp.py) 的 IMU 采样当前硬编码读取机械臂基座。先完成 CPU 路径；如果本轮不迁移 GPU，就删除旧 ShakeBench GPU 采集入口、专属脚本、核函数和过期说明，不保留一个只拒绝新配置的历史后端。
+CPU 桌下 IMU 路径已经完成。根据后续 GPU rollout 需求，GPU 采集入口现已改用当前场景和独立专家状态；从编译后的 `table_imu_site` 解析工作台传感器绑定，采用当前桌下 IMU 合同及 collection schema v2。安装和验证命令见 [GPU 采集说明](mjwarp_collection.md)。
 
 若决定同时保留 GPU 功能，则必须改成从当前传感器绑定解析工作台 body，迁移观测与记录格式，并通过 CPU/GPU 一致性检查后才能交付。仍被其他当前功能使用的通用 GPU 能力不属于待删除历史路径。
 
@@ -308,7 +310,7 @@ README、演示说明和实施文档只描述新安装、新 IMU、新振动接�
 | A：收敛当前配置与依赖 | 唯一任务入口、当前参数与 manifest 结构 | 当前环境可构造；不依赖已经替代的历史 authority 链 |
 | B：场景迁移 | 岸边实体地基、世界固定无机座机械臂、拓扑与间隙审计 | 振动时基座世界位姿恒定；工作台仍运动；抓放位置可达 |
 | C：桌下 IMU | 唯一传感器、外参、时间戳、新字段 | 测量匹配工作台安装点运动；reset、延迟和噪声行为正确 |
-| D：模式接口 | mode × Gamma、统一标定、运行身份 | 同配置可重放；Gamma 改变强度而不改变频率和相位；零强度无激励 |
+| D：模式接口（已完成） | mode × Gamma、统一标定、运行身份 | 同配置可重放；Gamma 改变强度而不改变频率和相位；零强度无激励 |
 | E：预测数据 | RGB/IMU 历史、未来位置标签、split | 时间对齐、标签投影正确、无真值或未来输入泄漏 |
 | F：policy 接入 | 一个预测器接口和一个策略适配 | 先验证预测增益，再验证下游收益和延迟影响 |
 | G：彻底清理与交付 | 删除历史代码、资产、输出及实施文档，修复引用 | 无历史兼容入口、失效命令、断链 imports 或指向已删除文件的当前说明 |
@@ -318,3 +320,22 @@ README、演示说明和实施文档只描述新安装、新 IMU、新振动接�
 测试应围绕当前不变量定向更新：基座固定、桌下安装点的运动测量、Gamma 标定与模式可重放、视觉位置标签、输入隔离、当前配置完整性以及任务成功判定。重新验证三物体 × 两表面下的静态和代表性振动条件，不将旧测试改名后直接视为新设计证据。
 
 最终交付包括可运行的当前环境、最新配置与数据合同、一个可用的数据采集入口、预测与 policy 连接接口、当前验收结果，以及仅描述最新设计的项目文档。历史实现和过时实施文档不在最终工作区中保留。
+
+## 10. 2026-09-13 清理记录
+
+本轮按第 7 节执行了一部分阶段 A/G 的清理，已落地：
+
+1. 运行时完整性校验从 Phase 06F 协议链改绑到当前资产清单：`shakebench_runtime_verifier` 只校验 official physics profile 与 geometry/scene/arena/support 资产的字节哈希，并提供 `python -m robosuite.utils.shakebench_runtime_verifier --write` 重建清单；`shakebench_physics.load_official_physics_profile` 不再要求 `shakebench_phase_06f_protocol.yaml`。
+2. 删除 V0–V3 provider 分层：`shakebench_providers` 只保留 `COMMON_STATE_KEYS`、`POLICY_FIELD_CONTRACT`、`TABLE_IMU_POLICY_KEYS`、`ShakeBenchProviderError`、`TableIMUProvider`；环境不再接受 `observation_tier`，`gym_wrapper` 与 `mjwarp` 的 tier 分支已移除。
+3. oracle 链收敛为当前观测：删除 `V1IMUEstimator`、V2 坐标变换、V3 未来激励预览、补偿控制律与 diagnostic mode；`ShakeBenchOracleController(profile, task_context)` 只做任务执行与当前桌下 IMU 观测，runner 不再有 `--diagnostic-mode`。
+4. 合并任务入口：只保留 `VibrationPickPlace`（`robosuite/environments/manipulation/vibration_pick_place.py`），`VibrationPickPlaceCan` 类与 shim 已删除；policy 观测、任务上下文与 dev state 资产统一改为 `object_*` 命名。
+5. 删除 Phase 06–08 选型/发布/证据/handoff 链：9 个 util 模块、21 个脚本、10 个测试文件、约 60 个阶段资产与 9 份过时文档（含 `docs/shakebench_prompts/`）。
+6. `setup.py` 的 package_data 改为当前 physics/geometry/scene/state 资产，移除已删除与已不存在的条目。
+
+尚未完成或需要决定的部分：
+
+1. `shakebench_authority` 与 phase07_5a 资产已删除，`shakebench_committed_states` 改绑当前 runtime contract / geometry / controller / outcome 绑定；official 与 knee committed states、task states v2 已按同一确定性生成器重新冻结，state 数量与数值不变（400 / 100 / 400 / 600），`tests/test_shakebench_protocol.py` 与 `tests/test_shakebench_task_variants.py` 全部通过。
+2. `shakebench_metrics` 的 summary、`audit_compiled_model()` 与消费者已从 `can` 改名为 `object`；`run_oracle` 的 run/episode schema 升到 7，旧 v5 只读 verifier 删除，旧 v6 产物再验证会 fail-closed 失败而不会被误读。
+3. `shakebench_dev_states`、`shakebench_committed_states`、`shakebench_task_states` 的 schema id 仍带 Phase 07/08/09 字样；`shakebench_metrics` 的 `can_collision_envelope` 算法名同样保留旧命名（`CANONICAL_CAN_*` 常量与世界附加 XML 文件名已改为 object/world 命名）。它们不影响运行，属命名收尾。
+4. `out/` 是未纳入 git 跟踪的历史运行产物（旧几何绑定视频与 rollout），删除不可恢复；`SHA256SUMS` 仍指向旧的 r6 证据包。两者都需要确认后再清理。
+5. `shakebench_cpu_batch` 与 `shakebench_scorecard` 已随 Phase 07.5B 批处理链删除；scoring 库（Wilson 区间、paired 比较、scorecard 重算）保留并由 `tests/test_shakebench_scoring.py` 覆盖。`shakebench_cli`、`shakebench_verify_actuators`、`shakebench_probe_deck_driver`、`compare_table_imu`、`shakebench_generate_excitation_golden` 仍待裁决。

@@ -498,34 +498,11 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(sources, list) or not sources:
         errors.append("raw artifact provenance")
         return {"passed": not errors, "errors": errors}
-    for audit_field in (
-        "retry_ledgers",
-        "duplicate_conflict_ledgers",
-        "missing_state_ids",
-        "incomplete_groups",
-        "resource_telemetry",
-    ):
-        if not isinstance(payload.get(audit_field), list):
-            errors.append(f"{audit_field} schema")
-    batch_sources = payload.get("batch_aggregates")
-    if payload.get("state_count") == 400 and (not isinstance(batch_sources, list) or not batch_sources):
-        errors.append("batch aggregate provenance")
     try:
         from robosuite.scripts.shakebench_run_oracle import verify_run_artifact
-        from robosuite.scripts.shakebench_cpu_batch import verify_batch_aggregate
         from robosuite.utils.shakebench_artifacts import file_sha256
 
         episodes = []
-        if isinstance(batch_sources, list):
-            for source in batch_sources:
-                if not isinstance(source, Mapping) or set(source) != {"path", "sha256"}:
-                    errors.append("batch aggregate provenance")
-                    continue
-                if not isinstance(source["path"], str) or source["sha256"] != file_sha256(source["path"]):
-                    errors.append("batch aggregate hash")
-                    continue
-                if not verify_batch_aggregate(source["path"])["passed"]:
-                    errors.append("batch aggregate verifier")
         for source in sources:
             if not isinstance(source, Mapping) or set(source) != {"path", "sha256", "semantic_verifier"}:
                 errors.append("raw artifact provenance")

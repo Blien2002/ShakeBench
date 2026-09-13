@@ -38,11 +38,11 @@ TABLE_OBJECT_INTERFACE = CONTACT_INTERFACE_TABLE_OBJECT
 TARGET_OBJECT_INTERFACE = CONTACT_INTERFACE_TARGET_OBJECT
 FINGER_OBJECT_INTERFACE = CONTACT_INTERFACE_FINGER_OBJECT
 
-CANONICAL_CAN_MASS_KG = 0.349
-CANONICAL_CAN_COM_M = (0.0, 0.0, 0.0)
+CANONICAL_OBJECT_MASS_KG = 0.349
+CANONICAL_OBJECT_COM_M = (0.0, 0.0, 0.0)
 CAN_COLLISION_ENVELOPE_ALGORITHM_VERSION = "shakebench.can_collision_envelope.compiled_support.v1"
-CANONICAL_CAN_COLLISION_ENVELOPE_SOURCE_GEOM_NAMES = ("can_g0",)
-CANONICAL_CAN_COLLISION_ENVELOPE_SOURCE_MODEL_HASH = "c5332fb76e8b2f8c36fe10ac99e51f5e79c189e248d626dacd54cc983629e669"
+CANONICAL_OBJECT_COLLISION_ENVELOPE_SOURCE_GEOM_NAMES = ("can_g0",)
+CANONICAL_OBJECT_COLLISION_ENVELOPE_SOURCE_MODEL_HASH = "c5332fb76e8b2f8c36fe10ac99e51f5e79c189e248d626dacd54cc983629e669"
 TARGET_BOTTOM_SUPPORT_FORCE_THRESHOLD_N = 0.001
 TARGET_BOTTOM_SUPPORT_Z_TOLERANCE_M = 0.00050
 
@@ -114,33 +114,33 @@ class CanCollisionEnvelope:
         }
 
 
-CANONICAL_CAN_COLLISION_ENVELOPE = CanCollisionEnvelope(
-    source_geom_names=CANONICAL_CAN_COLLISION_ENVELOPE_SOURCE_GEOM_NAMES,
+CANONICAL_OBJECT_COLLISION_ENVELOPE = CanCollisionEnvelope(
+    source_geom_names=CANONICAL_OBJECT_COLLISION_ENVELOPE_SOURCE_GEOM_NAMES,
     support_radius_m=0.02509177806572465,
     height_m=0.08000000550552341,
     lower_support_z_m=-0.040297003330440104,
     upper_support_z_m=0.03970300217508332,
-    source_model_hash=CANONICAL_CAN_COLLISION_ENVELOPE_SOURCE_MODEL_HASH,
+    source_model_hash=CANONICAL_OBJECT_COLLISION_ENVELOPE_SOURCE_MODEL_HASH,
 )
 
 # These aliases are retained only as deprecated read-only names for callers
 # from the first Phase 04 implementation.  They point to the compiled
 # envelope authority above; they are not placement-site constants.
-CAN_COLLISION_ENVELOPE_RADIUS_M = CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m
-CAN_COLLISION_ENVELOPE_HEIGHT_M = CANONICAL_CAN_COLLISION_ENVELOPE.height_m
+CAN_COLLISION_ENVELOPE_RADIUS_M = CANONICAL_OBJECT_COLLISION_ENVELOPE.support_radius_m
+CAN_COLLISION_ENVELOPE_HEIGHT_M = CANONICAL_OBJECT_COLLISION_ENVELOPE.height_m
 
 
 def equivalent_cylinder_inertia(
-    mass_kg: float = CANONICAL_CAN_MASS_KG,
+    mass_kg: float = CANONICAL_OBJECT_MASS_KG,
     radius_m: Optional[float] = None,
     height_m: Optional[float] = None,
 ) -> tuple[float, float, float]:
     """Return principal inertia for a solid cylinder collision envelope."""
 
     if radius_m is None:
-        radius_m = CANONICAL_CAN_COLLISION_ENVELOPE.support_radius_m
+        radius_m = CANONICAL_OBJECT_COLLISION_ENVELOPE.support_radius_m
     if height_m is None:
-        height_m = CANONICAL_CAN_COLLISION_ENVELOPE.height_m
+        height_m = CANONICAL_OBJECT_COLLISION_ENVELOPE.height_m
     values = np.asarray((mass_kg, radius_m, height_m), dtype=float)
     if values.shape != (3,) or not np.all(np.isfinite(values)) or np.any(values <= 0.0):
         raise ValueError("mass_kg, radius_m, and height_m must be finite positive values")
@@ -149,7 +149,7 @@ def equivalent_cylinder_inertia(
     return float(transverse), float(transverse), float(axial)
 
 
-CANONICAL_CAN_INERTIA_KG_M2 = equivalent_cylinder_inertia()
+CANONICAL_OBJECT_INERTIA_KG_M2 = equivalent_cylinder_inertia()
 
 
 def _finite_vector(name: str, value: Any, length: int) -> np.ndarray:
@@ -1203,9 +1203,9 @@ def audit_can_compiled_model(
     can_body_name: str,
     can_geom_names: Iterable[str],
     *,
-    expected_mass_kg: float = CANONICAL_CAN_MASS_KG,
-    expected_com_m: Iterable[float] = CANONICAL_CAN_COM_M,
-    expected_inertia_kg_m2: Iterable[float] = CANONICAL_CAN_INERTIA_KG_M2,
+    expected_mass_kg: float = CANONICAL_OBJECT_MASS_KG,
+    expected_com_m: Iterable[float] = CANONICAL_OBJECT_COM_M,
+    expected_inertia_kg_m2: Iterable[float] = CANONICAL_OBJECT_INERTIA_KG_M2,
     tolerance: float = 1e-10,
 ) -> dict[str, Any]:
     """Assert compiled Can mass, COM, inertia, freejoint, and geoms."""
@@ -1426,7 +1426,7 @@ class MetricsSnapshot:
     def to_dict(self) -> dict[str, Any]:
         return {
             "time_s": self.time_s,
-            "can": {key: value.to_dict() for key, value in self.can.items()},
+            "object": {key: value.to_dict() for key, value in self.can.items()},
             "contacts": self.contacts.to_dict(),
             "max_illegal_penetration_m": self.contacts.max_penetration_m,
             "table_slip_distance_m": self.table_slip_distance_m,
@@ -1443,7 +1443,7 @@ class MetricsSnapshot:
 
 
 class ShakeBenchMetrics:
-    """Stateful metrics collector used by ``VibrationPickPlaceCan``."""
+    """Stateful metrics collector used by ``VibrationPickPlace``."""
 
     def __init__(
         self,

@@ -9,16 +9,11 @@ is responsible for freezing an official profile.
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import math
-import os
-import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
-from pathlib import Path
-import tempfile
 from typing import Any, Iterable, Optional
 import xml.etree.ElementTree as ET
 
@@ -31,9 +26,6 @@ from robosuite.utils.shakebench_deck import (
     DeckDriver,
     DeckDriverConfig,
     DeckDriverTrace,
-    TRACE_FIELD_CONTRACT,
-    TRACE_SCHEMA_ID,
-    TRACE_SCHEMA_VERSION,
     audit_compiled_deck_model,
     audit_deck_xml,
     command_to_world_state,
@@ -42,9 +34,7 @@ from robosuite.utils.shakebench_deck import (
     _quat_inverse_wxyz,
     _quat_multiply_wxyz,
 )
-from robosuite.utils.shakebench_calibration import calibrate_gamma, level_scale_for_gamma
-from robosuite.utils.shakebench_excitation import AXES, build_excitation_program, excitation_profile_hash
-from robosuite.utils.shakebench_safety import check_safety
+from robosuite.utils.shakebench_excitation import AXES
 from robosuite.utils import transform_utils as T
 
 

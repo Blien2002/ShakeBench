@@ -1,6 +1,7 @@
 > **ShakeBench 当前场景（2026-09-12）**：`VibrationPickPlace` 默认使用 `world_fixed_arm_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
-> 当前完成范围为 IMU 世界模型计划的 B 场景迁移；新场景尚未取得实验认证。桌下 IMU、视频历史、预测器和 policy 接入仍待后续阶段实施。
+> 当前完成范围为 IMU 世界模型计划的 B 场景迁移；新场景尚未取得实验认证。桌下 IMU、双相机数据采集和 StarVLA 任务接口已提供，视频历史/预测器训练仍由独立模块负责。
 > 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
+> VLA 接入见 [StarVLA 任务接口](docs/starvla.md)，Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
 
 # robosuite
 

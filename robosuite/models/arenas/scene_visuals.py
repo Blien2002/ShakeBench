@@ -35,7 +35,7 @@ from robosuite.utils.shakebench_scene import (
 
 
 WORLD_VISUALS_FILENAME = "arenas/shakebench_world_visuals.xml"
-DIRECT_WORLD_VISUALS_FILENAME = "arenas/shakebench_direct_mount_world_additions.xml"
+DIRECT_WORLD_VISUALS_FILENAME = "arenas/shakebench_world_additions.xml"
 
 
 def _load_world_visuals(arena: Any, config: SceneVisualConfig) -> None:

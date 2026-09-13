@@ -141,7 +141,7 @@ class TaskExecutive:
         self.phase_entered_s = float(time_s)
 
     def _current_can_worktable_transform(self, observation: Mapping[str, Any]) -> np.ndarray:
-        can_base = _pose_transform_from_observation(observation, "can_pos_robot_base", "can_quat_robot_base")
+        can_base = _pose_transform_from_observation(observation, "object_pos_robot_base", "object_quat_robot_base")
         table_base = _worktable_transform_robot_base(observation, self.context)
         return np.linalg.inv(table_base).dot(can_base)
 
@@ -213,13 +213,13 @@ class TaskExecutive:
 
     def _table_edge_margin_m(self, observation: Mapping[str, Any], position: np.ndarray | None = None) -> float:
         point = (
-            np.asarray(observation["can_pos_robot_base"], dtype=float)
+            np.asarray(observation["object_pos_robot_base"], dtype=float)
             if position is None
             else np.asarray(position, dtype=float)
         )
         local = robot_base_to_worktable_local(observation, point, self.context)
         half = np.asarray(self.context.worktable_half_extents_xy_m, dtype=float)
-        return float(np.min(half - np.abs(local[:2]) - self.context.can_collision_radius_m))
+        return float(np.min(half - np.abs(local[:2]) - self.context.object_collision_radius_m))
 
     def public_tool_clearance_certificate(
         self, observation: Mapping[str, Any], can_position: np.ndarray | None = None
@@ -227,7 +227,7 @@ class TaskExecutive:
         """Check the complete public finger-pad support points above the Can."""
 
         can = (
-            np.asarray(observation["can_pos_robot_base"], dtype=float)
+            np.asarray(observation["object_pos_robot_base"], dtype=float)
             if can_position is None
             else np.asarray(can_position, dtype=float)
         )
@@ -238,7 +238,7 @@ class TaskExecutive:
         tip_local = np.asarray(
             [robot_base_to_worktable_local(observation, tip, self.context) for tip in tips.reshape(2, 3)]
         )
-        can_top = can_local[2] + self.context.can_collision_upper_support_m
+        can_top = can_local[2] + self.context.object_collision_upper_support_m
         lowest_tip = float(np.min(tip_local[:, 2]))
         clearance = lowest_tip - can_top
         half = np.asarray(self.context.worktable_half_extents_xy_m, dtype=float)
@@ -310,7 +310,7 @@ class TaskExecutive:
             raise ShakeBenchOracleError("robot0_gripper_state must be a finite four-vector")
         opening = float(np.sum(np.abs(gripper_state[:2])))
         tips = np.asarray(observation["robot0_fingertip_pos_robot_base"], dtype=float)
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         wrist_force = np.asarray(observation["robot0_wrist_force"], dtype=float)
         wrist_torque = np.asarray(observation["robot0_wrist_torque"], dtype=float)
@@ -352,7 +352,7 @@ class TaskExecutive:
         can_from_midpoint = can - fingertip_midpoint
         along_closing_axis = float(np.dot(can_from_midpoint, closing_axis))
         perpendicular_to_axis = float(np.linalg.norm(can_from_midpoint - along_closing_axis * closing_axis))
-        half_corridor = 0.5 * pad_span + self.context.can_collision_radius_m + self.profile.grasp_corridor_margin_m
+        half_corridor = 0.5 * pad_span + self.context.object_collision_radius_m + self.profile.grasp_corridor_margin_m
         corridor_ok = abs(along_closing_axis) <= half_corridor
         base_eef = _pose_transform_from_observation(
             observation, "robot0_eef_pos_robot_base", "robot0_eef_quat_robot_base"
@@ -411,7 +411,7 @@ class TaskExecutive:
         base_eef = _pose_transform_from_observation(
             observation, "robot0_eef_pos_robot_base", "robot0_eef_quat_robot_base"
         )
-        base_can = _pose_transform_from_observation(observation, "can_pos_robot_base", "can_quat_robot_base")
+        base_can = _pose_transform_from_observation(observation, "object_pos_robot_base", "object_quat_robot_base")
         self._grasp_eef_can_transform = np.linalg.inv(base_eef).dot(base_can)
         self._grasp_reference_established = True
 
@@ -430,7 +430,7 @@ class TaskExecutive:
                 self.context,
             )
         self._prelift_start_can_height_m = self._target_local_z(
-            observation, np.asarray(observation["can_pos_robot_base"], dtype=float)
+            observation, np.asarray(observation["object_pos_robot_base"], dtype=float)
         )
         self._prelift_follow_samples = 0
         self._grasp_loss_samples = 0
@@ -442,7 +442,7 @@ class TaskExecutive:
         base_eef = _pose_transform_from_observation(
             observation, "robot0_eef_pos_robot_base", "robot0_eef_quat_robot_base"
         )
-        base_can = _pose_transform_from_observation(observation, "can_pos_robot_base", "can_quat_robot_base")
+        base_can = _pose_transform_from_observation(observation, "object_pos_robot_base", "object_quat_robot_base")
         current = np.linalg.inv(base_eef).dot(base_can)
         translation = float(np.linalg.norm(current[:3, 3] - self._grasp_eef_can_transform[:3, 3]))
         rotation = float(
@@ -462,10 +462,10 @@ class TaskExecutive:
         return bool(np.any(np.abs(local[:, :2]) > extents + self.profile.public_risk_margin_m))
 
     def _public_recoverability(self, observation: Mapping[str, Any]) -> Mapping[str, Any]:
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         local_can = robot_base_to_worktable_local(observation, can, self.context)
-        lower_support = float(local_can[2] + self.context.can_collision_lower_support_m)
+        lower_support = float(local_can[2] + self.context.object_collision_lower_support_m)
         edge_margin = self._table_edge_margin_m(observation, can)
         envelope_inside = bool(edge_margin >= 0.0)
         table_height_error = abs(lower_support - self.context.table_surface_z_in_worktable_m)
@@ -537,7 +537,7 @@ class TaskExecutive:
                 "phase": self.phase.value,
                 "decision": decision,
                 "observation_summary": {
-                    "can_pos_robot_base": np.asarray(observation["can_pos_robot_base"], dtype=float).tolist(),
+                    "object_pos_robot_base": np.asarray(observation["object_pos_robot_base"], dtype=float).tolist(),
                     "eef_pos_robot_base": np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float).tolist(),
                     "recovery_count": self.recovery_count,
                 },
@@ -581,9 +581,9 @@ class TaskExecutive:
         )
         target_rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
         can_worktable = robot_base_to_worktable_local(
-            observation, np.asarray(observation["can_pos_robot_base"], dtype=float), self.context
+            observation, np.asarray(observation["object_pos_robot_base"], dtype=float), self.context
         )
-        current_lower_support = can_worktable[2] + self.context.can_collision_lower_support_m
+        current_lower_support = can_worktable[2] + self.context.object_collision_lower_support_m
         lower_distance = max(0.0, current_lower_support - self.context.table_surface_z_in_worktable_m)
         self._recovery_lower_goal = self._recovery_reverse_goal.copy()
         if lower_distance > 0.0 and self._prelift_start_eef_position is None:
@@ -605,7 +605,7 @@ class TaskExecutive:
         return target_local_to_robot_base(observation, local_position)
 
     def _public_can_inside_target(self, observation: Mapping[str, Any]) -> bool:
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         frame = np.asarray(observation["goal_frame_pos_robot_base"], dtype=float)
         extents = np.asarray(observation["goal_inner_half_extents_target"], dtype=float)
         if can.shape != (3,) or frame.shape != (3,) or extents.shape != (2,):
@@ -615,21 +615,21 @@ class TaskExecutive:
         )
         # The profile radius is the conservative horizontal support envelope
         # of the compiled Can collision geometry, not a visual/COM proxy.
-        radius = float(self.context.can_collision_radius_m)
+        radius = float(self.context.object_collision_radius_m)
         return bool(np.all(np.abs(local[:2]) + radius <= extents))
 
     def _public_can_at_target_support(self, observation: Mapping[str, Any]) -> bool:
         """Public height gate for a release: lower Can support near target bottom."""
 
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
-        support_z_target = self._target_local_z(observation, can) + self.context.can_collision_lower_support_m
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
+        support_z_target = self._target_local_z(observation, can) + self.context.object_collision_lower_support_m
         return bool(abs(support_z_target) <= self.profile.placement_support_tolerance_m)
 
     def _update_public_kinematics(self, observation: Mapping[str, Any], time_s: float) -> None:
-        can_position = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can_position = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef_position = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         if can_position.shape != (3,) or not np.all(np.isfinite(can_position)):
-            raise ShakeBenchOracleError("can_pos_robot_base must be finite length three")
+            raise ShakeBenchOracleError("object_pos_robot_base must be finite length three")
         if eef_position.shape != (3,) or not np.all(np.isfinite(eef_position)):
             raise ShakeBenchOracleError("robot0_eef_pos_robot_base must be finite length three")
         self._relative_kinematics = self._relative_kinematics_tracker.update(observation, float(time_s))
@@ -655,7 +655,7 @@ class TaskExecutive:
         self._last_public_can_position = can_position.copy()
         self._last_public_eef_position = eef_position.copy()
         self._last_public_can_rotation = _quat_xyzw_to_matrix(
-            np.asarray(observation["can_quat_robot_base"], dtype=float)
+            np.asarray(observation["object_quat_robot_base"], dtype=float)
         )
         self._last_public_time_s = float(time_s)
 
@@ -669,10 +669,10 @@ class TaskExecutive:
         )
 
     def _phase_goal(self, observation: Mapping[str, Any]) -> tuple[np.ndarray, float]:
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         if can.shape != (3,):
-            raise ShakeBenchOracleError("can_pos_robot_base must be length three")
+            raise ShakeBenchOracleError("object_pos_robot_base must be length three")
         z_bounds = np.asarray(observation["goal_z_bounds_target"], dtype=float)
         if z_bounds.shape != (2,):
             raise ShakeBenchOracleError("goal_z_bounds_target must be length two")
@@ -725,7 +725,7 @@ class TaskExecutive:
                 # Descend on the already aligned transport x/y.  A lateral
                 # recentering command while lowering pulls a gripped Can out
                 # of the shallow target and creates an avoidable slip.
-                support_error = self._target_local_z(observation, can) + self.context.can_collision_lower_support_m
+                support_error = self._target_local_z(observation, can) + self.context.object_collision_lower_support_m
                 normal_correction = -support_error * target_z
                 placement = eef + normal_correction
                 return (
@@ -781,7 +781,7 @@ class TaskExecutive:
 
     def _advance(self, observation: Mapping[str, Any], time_s: float) -> None:
         elapsed = float(time_s) - self.phase_entered_s
-        can = np.asarray(observation["can_pos_robot_base"], dtype=float)
+        can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         if float(np.linalg.norm(can)) > self.profile.public_workspace_radius_m:
             self._recover_or_fail(observation, time_s, "workspace_risk")
             return
@@ -830,7 +830,7 @@ class TaskExecutive:
             loss = not held or slip_translation > self.profile.grasp_slip_tolerance_m
             self._grasp_loss_samples = self._grasp_loss_samples + 1 if loss else 0
             severe_slip = slip_translation >= (
-                self.profile.grasp_severe_slip_fraction_of_can_radius * self.context.can_collision_radius_m
+                self.profile.grasp_severe_slip_fraction_of_can_radius * self.context.object_collision_radius_m
             )
             if severe_slip or self._grasp_loss_samples >= self.profile.grasp_loss_confirm_samples:
                 self._recover_or_fail(
@@ -1021,7 +1021,6 @@ class TaskExecutive:
                     "max_translation_normalized": self._capability_policy().max_translation_normalized,
                     "max_orientation_normalized": self._capability_policy().max_orientation_normalized,
                     "gripper_action": self._capability_policy().gripper_action,
-                    "vibration_feedforward_allowed": self._capability_policy().vibration_feedforward_allowed,
                 },
                 "phase_entered_s": self.phase_entered_s,
                 "failure_reason": self.failure_reason,

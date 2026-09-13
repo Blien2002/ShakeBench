@@ -4,7 +4,7 @@
   "phase": "04",
   "status": "PASS",
   "environment": {
-    "name": "VibrationPickPlaceCan",
+    "name": "VibrationPickPlace",
     "robots": ["Panda"],
     "model_timestep_s": 0.0002,
     "control_freq_hz": 20,

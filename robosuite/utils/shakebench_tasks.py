@@ -277,7 +277,3 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
         raise ValueError("task states require their registered upright pose, yaw and zero velocity")
     return {"task": spec, "object_start_xy": tuple(xy), "object_start_yaw_rad": yaw}
 
-
-def legacy_oracle_observation(observation: Mapping[str, Any]) -> dict[str, Any]:
-    """Adapt the existing Can-named oracle wire format without extra truth."""
-    return {("can_" + key[7:] if key.startswith("object_") else key): value for key, value in observation.items()}

@@ -25,7 +25,6 @@ import numpy as np
 import robosuite
 from robosuite import models
 from robosuite.controllers import load_composite_controller_config
-from robosuite.utils.shakebench_authority import DirectMountAuthorityError, verify_direct_mount_authority
 from robosuite.utils.shakebench_calibration import level_scale_for_gamma
 from robosuite.utils.shakebench_dev_states import (
     PHASE07_DEV_STATE_FILENAME,
@@ -35,11 +34,12 @@ from robosuite.utils.shakebench_excitation import build_excitation_program
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_geometry import geometry_scene_path, load_geometry_profile
 from robosuite.utils.shakebench_oracle import (
+    ORACLE_TASK_KEYS,
     OracleControllerProfile,
     ShakeBenchOracleController,
     ShakeBenchOracleError,
     WorktableTaskContext,
-    profile_for_diagnostic_mode,
+    _public_copy,
 )
 from robosuite.utils.shakebench_outcomes import (
     TERMINATION_CAUSES,
@@ -51,7 +51,7 @@ from robosuite.utils.shakebench_outcomes import (
     validate_controller_events,
     validate_outcome,
 )
-from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, TIER_POLICY_KEYS, observation_contract_for_tier
+from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, POLICY_FIELD_CONTRACT, TABLE_IMU_POLICY_KEYS
 from robosuite.utils.shakebench_scene import load_scene_visual_config
 
 
@@ -60,11 +60,17 @@ class OracleRunError(RuntimeError):
 
 
 RUN_SCHEMA_ID = "shakebench.phase07.oracle_run"
-RUN_SCHEMA_VERSION = 6
+RUN_SCHEMA_VERSION = 7
 EPISODE_SCHEMA_ID = "shakebench.phase07.oracle_episode"
-EPISODE_SCHEMA_VERSION = 6
-LEGACY_RUN_SCHEMA_VERSION = 5
-LEGACY_EPISODE_SCHEMA_VERSION = 5
+EPISODE_SCHEMA_VERSION = 7
+# The current contract has one observation lane.  Run and episode artifacts
+# keep their frozen ``tier`` provenance field so existing readers and run IDs
+# stay valid; no caller may select another lane.
+CURRENT_TIER_ALIAS = "V0"
+# Canonical field-contract lookup for the oracle wire names.
+_CONTRACT_KEY_FOR_WIRE = {
+    **{wire: canonical for canonical, wire in zip(COMMON_STATE_KEYS, ORACLE_TASK_KEYS)},
+}
 DETERMINISM_SCHEMA_ID = "shakebench.phase07.determinism_manifest"
 DETERMINISM_SCHEMA_VERSION = 5
 DEV_STATE_PRE_HISTORY_REWRITE_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
@@ -118,7 +124,7 @@ def load_dev_states(path: str | Path) -> list[dict[str, Any]]:
         if not isinstance(row, Mapping):
             raise OracleRunError("each dev state must be an object")
         state_id = row.get("state_id")
-        xy = np.asarray(row.get("can_xy_m"), dtype=float)
+        xy = np.asarray(row.get("object_xy_m"), dtype=float)
         if (
             not isinstance(state_id, str)
             or not state_id
@@ -126,12 +132,12 @@ def load_dev_states(path: str | Path) -> list[dict[str, Any]]:
             or xy.shape != (2,)
             or not np.all(np.isfinite(xy))
         ):
-            raise OracleRunError("dev states require unique state_id and finite can_xy_m[2]")
+            raise OracleRunError("dev states require unique state_id and finite object_xy_m[2]")
         seen.add(state_id)
         result.append(
             {
                 "state_id": state_id,
-                "can_xy_m": xy.tolist(),
+                "object_xy_m": xy.tolist(),
                 "seed": int(row.get("excitation_seed", row.get("seed", 0))),
                 "imu_seed": int(row.get("imu_seed", row.get("seed", 0))),
                 "t0_s": float(row.get("t0_s", 0.0)),
@@ -331,34 +337,26 @@ def scene_visual_identity(scene_config) -> dict[str, Any]:
     }
 
 
-def geometry_authority_identity(geometry_profile: str, *, allow_unverified: bool = False) -> dict[str, Any]:
-    """Return the v6 geometry and outcome authority for a rollout."""
+def geometry_authority_identity(geometry_profile: str) -> dict[str, Any]:
+    """Return the current world-fixed geometry and outcome authority for a rollout."""
 
-    if geometry_profile == "canonical":
-        return {
-            "kind": "canonical",
-            "scoreable": True,
-            "controller_profile_sha256": OracleControllerProfile().sha256,
-            "outcome_contract_sha256": outcome_contract_sha256(),
-        }
-    try:
-        return {
-            "kind": "phase08r",
-            "scoreable": True,
-            "prior_geometry_authority": dict(verify_direct_mount_authority()),
-            "controller_profile_sha256": OracleControllerProfile().sha256,
-            "outcome_contract_sha256": outcome_contract_sha256(),
-        }
-    except DirectMountAuthorityError as exc:
-        if allow_unverified:
-            return {
-                "kind": "phase08r",
-                "scoreable": False,
-                "verification": "not_authorized_for_scoreable_run",
-                "controller_profile_sha256": OracleControllerProfile().sha256,
-                "outcome_contract_sha256": outcome_contract_sha256(),
-            }
-        raise OracleRunError(f"direct-mount authority failed: {exc}") from exc
+    from robosuite.utils.shakebench_runtime_verifier import RUNTIME_CONTRACT_FILENAME
+
+    if geometry_profile != "world_fixed_arm_v1":
+        raise OracleRunError("geometry_profile must be world_fixed_arm_v1")
+    contract = Path(models.assets_root) / RUNTIME_CONTRACT_FILENAME
+    if not contract.is_file():
+        raise OracleRunError("runtime contract asset missing")
+    return {
+        "kind": "world_fixed_arm_v1",
+        # The current topology still requires fresh experimental certification.
+        "scoreable": False,
+        "runtime_contract_sha256": hashlib.sha256(contract.read_bytes()).hexdigest(),
+        "controller_profile_sha256": OracleControllerProfile().sha256,
+        "outcome_contract_sha256": outcome_contract_sha256(),
+    }
+
+
 
 
 def _actuator_metadata_from_model(raw_model: Any) -> list[dict[str, Any]]:
@@ -378,10 +376,21 @@ def _actuator_metadata_from_model(raw_model: Any) -> list[dict[str, Any]]:
     return result
 
 
+def current_contract_observation(env: Any, observation: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Expert task fields plus the delivered worktable IMU payload."""
+
+    from robosuite.utils.shakebench_expert import oracle_observation
+
+    raw = env._get_observations() if observation is None else observation
+    values = oracle_observation(env, raw)
+    values.update({key: raw[key] for key in TABLE_IMU_POLICY_KEYS})
+    return values
+
+
 @lru_cache(maxsize=1)
 def _official_actuator_metadata() -> tuple[dict[str, Any], ...]:
     env = robosuite.make(
-        "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"),
         has_renderer=False,
@@ -389,7 +398,6 @@ def _official_actuator_metadata() -> tuple[dict[str, Any], ...]:
         use_camera_obs=False,
         use_object_obs=False,
         physics_profile="official",
-        observation_tier="V0",
         imu_mode="ideal_smoke",
         horizon=1,
         ignore_done=True,
@@ -499,12 +507,10 @@ def _compare_actuator_metadata(actual: Any, errors: list[str]) -> None:
 def run_episode(
     state: Mapping[str, Any],
     *,
-    tier: str,
     gamma_commanded: float,
     profile: OracleControllerProfile,
     horizon_steps: int = 1200,
-    geometry_profile: str = "canonical",
-    allow_unverified_geometry: bool = False,
+    geometry_profile: str = "world_fixed_arm_v1",
     hard_reset: bool = True,
     step_observer: Callable[[Any, int, Mapping[str, Any], ShakeBenchOracleController], None] | None = None,
 ) -> dict[str, Any]:
@@ -524,12 +530,12 @@ def run_episode(
         raise OracleRunError("gamma_commanded must be finite and non-negative")
     level_scale = level_scale_for_gamma(gamma_commanded, seed=seed, t0=t0_s)
     program = build_excitation_program(seed=seed, t0=t0_s, level_scale=level_scale)
-    from robosuite.utils.shakebench_tasks import legacy_oracle_observation, task_env_kwargs
+    from robosuite.utils.shakebench_tasks import task_env_kwargs
 
     variant = "task" in state
-    task_kwargs = task_env_kwargs(state) if variant else {"can_start_xy": tuple(state["can_xy_m"])}
+    task_kwargs = task_env_kwargs(state) if variant else {"object_start_xy": tuple(state["object_xy_m"])}
     env = robosuite.make(
-        "VibrationPickPlace" if variant else "VibrationPickPlaceCan",
+        "VibrationPickPlace",
         robots="Panda",
         controller_configs=load_composite_controller_config(robot="Panda"),
         has_renderer=False,
@@ -538,7 +544,6 @@ def run_episode(
         use_object_obs=False,
         physics_profile="official",
         geometry_profile=geometry_profile,
-        observation_tier=tier,
         imu_mode="canonical_noisy_v1",
         excitation_program=program,
         **task_kwargs,
@@ -552,13 +557,13 @@ def run_episode(
     )
     try:
         scene_identity = scene_visual_identity(env.scene_config)
-        geometry_authority = geometry_authority_identity(geometry_profile, allow_unverified=allow_unverified_geometry)
+        geometry_authority = geometry_authority_identity(geometry_profile)
         scoreable = bool(env.get_policy_task_context()["physics_profile"]["scoreable"])
         if scoreable != (bool(geometry_authority["scoreable"]) and not variant):
             raise OracleRunError("environment and geometry authority scoreability disagree")
         task_context = WorktableTaskContext.from_mapping(env.get_policy_task_context().get("task_context"))
-        controller = ShakeBenchOracleController(tier, profile, task_context=task_context)
-        observation = legacy_oracle_observation(env.reset())
+        controller = ShakeBenchOracleController(profile, task_context=task_context)
+        observation = current_contract_observation(env, env.reset())
         raw_model = getattr(env.sim.model, "_model", env.sim.model)
         actuator_metadata = _actuator_metadata_from_model(raw_model)
         trace = []
@@ -600,7 +605,7 @@ def run_episode(
             clipped = np.clip(normalized, -1.0, 1.0)
             try:
                 observation, _, _, _ = env.step(clipped)
-                observation = legacy_oracle_observation(observation)
+                observation = current_contract_observation(env, observation)
             except Exception:
                 episode_validity = "invalid"
                 termination_cause = "invalid_execution"
@@ -632,19 +637,18 @@ def run_episode(
                     "policy_time_s": float(step / profile.policy_rate_hz),
                     "measurement_time_s": float(controller.last_trace["measurement_time_s"]),
                     "latency_s": float(controller.last_trace["latency_s"]),
-                    "task_state": {key: policy_observation[key].copy() for key in COMMON_STATE_KEYS},
-                    "task_state_sha256": _digest({key: policy_observation[key].copy() for key in COMMON_STATE_KEYS}),
-                    "policy_input": {key: policy_observation[key].copy() for key in sorted(policy_observation)},
+                    "task_state": {key: policy_observation[key].copy() for key in ORACLE_TASK_KEYS},
+                    "task_state_sha256": _digest({key: policy_observation[key].copy() for key in ORACLE_TASK_KEYS}),
+                    "policy_input": {key: _public_copy(policy_observation[key]) for key in sorted(policy_observation)},
                     "provider_payload": {
-                        key: policy_observation[key].copy() for key in controller.last_trace["provider_payload_keys"]
+                        key: _public_copy(policy_observation[key])
+                        for key in controller.last_trace["provider_payload_keys"]
                     },
-                    "post_task_state": {key: observation[key].copy() for key in COMMON_STATE_KEYS},
-                    "post_task_state_sha256": _digest({key: observation[key].copy() for key in COMMON_STATE_KEYS}),
+                    "post_task_state": {key: observation[key].copy() for key in ORACLE_TASK_KEYS},
+                    "post_task_state_sha256": _digest({key: observation[key].copy() for key in ORACLE_TASK_KEYS}),
                     "estimate": controller.last_trace["estimate"],
-                    "control_law": controller.last_trace["control_law"],
                     "relative_kinematics": controller.last_trace["relative_kinematics"],
                     "task_desired_action": controller.last_trace["task_desired_action"],
-                    "pre_capability_compensated_action": controller.last_trace["pre_capability_compensated_action"],
                     "phase_capability": controller.last_trace["phase_capability"],
                     "capability_limits": controller.last_trace["capability_limits"],
                     "post_capability_normalized_action": controller.last_trace["post_capability_normalized_action"],
@@ -712,7 +716,7 @@ def run_episode(
             "schema_id": EPISODE_SCHEMA_ID,
             "schema_version": EPISODE_SCHEMA_VERSION,
             "state_id": state_id,
-            "tier": tier,
+            "tier": CURRENT_TIER_ALIAS,
             "gamma_commanded": gamma_commanded,
             "horizon_steps": horizon_steps,
             "program": {"seed": seed, "t0_s": t0_s, "level_scale": level_scale},
@@ -755,7 +759,12 @@ def main(argv: list[str] | None = None) -> int:
         default=str(Path(models.assets_root) / PHASE07_DEV_STATE_FILENAME),
         help="frozen ten-State dev JSON (defaults to the package asset)",
     )
-    parser.add_argument("--tier", choices=("V0", "V1", "V2", "V3"), required=False)
+    parser.add_argument(
+        "--tier",
+        choices=(CURRENT_TIER_ALIAS,),
+        default=CURRENT_TIER_ALIAS,
+        help="deprecated alias for the current single-lane expert; not an observation tier",
+    )
     parser.add_argument("--gamma", type=float, required=False)
     parser.add_argument("--output", required=False)
     parser.add_argument("--limit", type=int, default=None)
@@ -767,23 +776,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument(
         "--geometry-profile",
-        choices=("canonical", "direct_mount_v1"),
-        default="canonical",
+        choices=("world_fixed_arm_v1",),
+        default="world_fixed_arm_v1",
         help="explicit assembly profile; direct_mount_v1 remains Phase-07 requalification evidence until authorized",
-    )
-    parser.add_argument(
-        "--diagnostic-mode",
-        choices=(
-            "main",
-            "task_executive_only",
-            "compensation_off",
-            "common_public_history",
-            "current_state_compensation",
-            "preview_off",
-            "preview_on",
-        ),
-        default="main",
-        help="explicit R5 diagnostic profile; main is the scoreable reference profile",
     )
     parser.add_argument(
         "--resume",
@@ -805,8 +800,8 @@ def main(argv: list[str] | None = None) -> int:
             horizon_steps=args.horizon_steps,
             geometry_profile=args.geometry_profile,
         )["exit_code"]
-    if args.tier is None or args.gamma is None or args.output is None:
-        parser.error("--tier, --gamma, and --output are required for a normal run")
+    if args.gamma is None or args.output is None:
+        parser.error("--gamma and --output are required for a normal run")
     state_asset = load_state_asset(args.states)
     states = state_asset["states"]
     if args.state_id is not None and args.state_ids is not None:
@@ -827,7 +822,7 @@ def main(argv: list[str] | None = None) -> int:
             raise OracleRunError("--limit must be in [1, 10]")
         states = states[: args.limit]
     states = sorted(states, key=lambda state: state["state_id"])
-    profile = profile_for_diagnostic_mode(args.diagnostic_mode)
+    profile = OracleControllerProfile()
     geometry_profile = load_geometry_profile(args.geometry_profile)
     scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))
     geometry_payload = geometry_profile if geometry_profile is not None else None
@@ -847,10 +842,9 @@ def main(argv: list[str] | None = None) -> int:
                 partial_verdict["passed"]
                 and partial.get("schema_id") == RUN_SCHEMA_ID
                 and partial.get("schema_version") == RUN_SCHEMA_VERSION
-                and partial.get("tier") == args.tier
+                and partial.get("tier") == CURRENT_TIER_ALIAS
                 and float(partial.get("gamma_commanded")) == float(args.gamma)
                 and _values_equal(partial.get("controller_profile"), profile.to_dict(), atol=0.0)
-                and partial.get("diagnostic_mode") == profile.diagnostic_mode
                 and partial.get("evaluator_post_complete_settle_s") == profile.completion_evaluator_settle_s
                 and partial.get("scene_visual") == scene_identity
                 and partial.get("geometry_authority") == geometry_authority
@@ -872,7 +866,6 @@ def main(argv: list[str] | None = None) -> int:
         episodes.append(
             run_episode(
                 state,
-                tier=args.tier,
                 gamma_commanded=args.gamma,
                 profile=profile,
                 horizon_steps=args.horizon_steps,
@@ -882,10 +875,9 @@ def main(argv: list[str] | None = None) -> int:
         partial_payload = {
             "schema_id": RUN_SCHEMA_ID,
             "schema_version": RUN_SCHEMA_VERSION,
-            "tier": args.tier,
+            "tier": CURRENT_TIER_ALIAS,
             "gamma_commanded": args.gamma,
             "controller_profile": profile.to_dict(),
-            "diagnostic_mode": profile.diagnostic_mode,
             "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
             "dev_state_anchor": (
                 _dev_state_anchor(args.states) if state_asset["authority"]["kind"] == "dev" else _dev_state_anchor()
@@ -905,7 +897,7 @@ def main(argv: list[str] | None = None) -> int:
         }
         partial_payload["run_id"] = _digest(
             {
-                "tier": args.tier,
+                "tier": CURRENT_TIER_ALIAS,
                 "gamma_commanded": args.gamma,
                 "controller_profile": profile.to_dict(),
                 "scene_visual": scene_identity,
@@ -922,10 +914,9 @@ def main(argv: list[str] | None = None) -> int:
     payload = {
         "schema_id": RUN_SCHEMA_ID,
         "schema_version": RUN_SCHEMA_VERSION,
-        "tier": args.tier,
+        "tier": CURRENT_TIER_ALIAS,
         "gamma_commanded": args.gamma,
         "controller_profile": profile.to_dict(),
-        "diagnostic_mode": profile.diagnostic_mode,
         "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
         "dev_state_anchor": (
             _dev_state_anchor(args.states) if state_asset["authority"]["kind"] == "dev" else _dev_state_anchor()
@@ -945,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     payload["run_id"] = _digest(
         {
-            "tier": args.tier,
+            "tier": CURRENT_TIER_ALIAS,
             "gamma_commanded": args.gamma,
             "controller_profile": profile.to_dict(),
             "scene_visual": payload["scene_visual"],
@@ -1030,10 +1021,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         return {"passed": False, "errors": [f"artifact read: {exc}"], "run_id": None}
     if not isinstance(payload, Mapping):
         return {"passed": False, "errors": ["run payload must be an object"], "run_id": None}
-    # Historical v5 evidence is intentionally verified as v5, never promoted
-    # to the outcome contract or mixed into a v6 score group.
-    if payload.get("schema_id") == RUN_SCHEMA_ID and payload.get("schema_version") == LEGACY_RUN_SCHEMA_VERSION:
-        return verify_legacy_run_artifact(payload)
     if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != RUN_SCHEMA_VERSION:
         errors.append("run schema")
     if payload.get("outcome_contract") != outcome_contract() or payload.get("outcome_contract_sha256") != outcome_contract_sha256():
@@ -1044,7 +1031,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "tier",
         "gamma_commanded",
         "controller_profile",
-        "diagnostic_mode",
         "evaluator_post_complete_settle_s",
         "dev_state_anchor",
         "physics_authority",
@@ -1139,10 +1125,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         expected_profile = parsed_profile.to_dict()
     if not _values_equal(payload.get("controller_profile"), expected_profile, atol=1.0e-12):
         errors.append("controller profile")
-    if payload.get("diagnostic_mode", expected_profile.get("diagnostic_mode")) != expected_profile.get(
-        "diagnostic_mode"
-    ):
-        errors.append("diagnostic mode")
     copied = dict(payload)
     expected_payload_hash = copied.pop("payload_sha256", None)
     try:
@@ -1206,9 +1188,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         ):
             errors.append(prefix + " outcome contract authority")
         tier = episode.get("tier")
-        if tier != payload.get("tier") or tier not in TIER_POLICY_KEYS:
+        if tier != payload.get("tier"):
             errors.append(prefix + " tier")
-            tier = "V0" if tier not in TIER_POLICY_KEYS else tier
         if float(episode.get("gamma_commanded", float("nan"))) != float(payload.get("gamma_commanded", float("nan"))):
             errors.append(prefix + " gamma")
         state_id = episode.get("state_id")
@@ -1226,8 +1207,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                     errors.append(prefix + " task contract binding")
                 context = episode.get("task_context", {})
                 lower, upper, radius = OBJECT_SUPPORT[spec.object_id]
-                for key, value in (("can_collision_lower_support_m", lower),
-                                   ("can_collision_upper_support_m", upper), ("can_collision_radius_m", radius)):
+                for key, value in (("object_collision_lower_support_m", lower),
+                                   ("object_collision_upper_support_m", upper), ("object_collision_radius_m", radius)):
                     if not _values_equal(context.get(key), value, atol=1e-10):
                         errors.append(prefix + " object geometry binding")
             if episode.get("state_sha256") != _digest(state):
@@ -1303,9 +1284,12 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         except (TypeError, ValueError, ShakeBenchOracleError) as exc:
             errors.append(prefix + f" task context: {exc}")
             task_context = WorktableTaskContext()
-        controller = ShakeBenchOracleController(tier, parsed_profile, task_context=task_context)
-        expected_keys = set(COMMON_STATE_KEYS) | set(TIER_POLICY_KEYS[tier])
-        contract = observation_contract_for_tier(tier)
+        controller = ShakeBenchOracleController(parsed_profile, task_context=task_context)
+        expected_keys = set(ORACLE_TASK_KEYS) | set(TABLE_IMU_POLICY_KEYS)
+        contract = {
+            **{wire: POLICY_FIELD_CONTRACT[_CONTRACT_KEY_FOR_WIRE[wire]] for wire in ORACLE_TASK_KEYS},
+            **{key: POLICY_FIELD_CONTRACT[key] for key in TABLE_IMU_POLICY_KEYS},
+        }
         for row_index, row in enumerate(trace):
             row_prefix = f"{prefix}.trace[{row_index}]"
             if not isinstance(row, Mapping):
@@ -1323,10 +1307,8 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 "post_task_state",
                 "post_task_state_sha256",
                 "estimate",
-                "control_law",
                 "relative_kinematics",
                 "task_desired_action",
-                "pre_capability_compensated_action",
                 "phase_capability",
                 "capability_limits",
                 "post_capability_normalized_action",
@@ -1370,13 +1352,13 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 if not _array_contract_ok(policy_input.get(key), field_contract):
                     errors.append(row_prefix + f" field {key}")
             provider_payload = row.get("provider_payload")
-            if not isinstance(provider_payload, Mapping) or set(provider_payload) != set(TIER_POLICY_KEYS[tier]):
+            if not isinstance(provider_payload, Mapping) or set(provider_payload) != set(TABLE_IMU_POLICY_KEYS):
                 errors.append(row_prefix + " provider payload key set")
             elif any(not _values_equal(provider_payload[key], policy_input[key], atol=0.0) for key in provider_payload):
                 errors.append(row_prefix + " provider payload mismatch")
             task_state = row.get("task_state")
             if not isinstance(task_state, Mapping) or not _values_equal(
-                {key: policy_input.get(key) for key in COMMON_STATE_KEYS}, task_state, atol=0.0
+                {key: policy_input.get(key) for key in ORACLE_TASK_KEYS}, task_state, atol=0.0
             ):
                 errors.append(row_prefix + " task state mismatch")
             if row.get("task_state_sha256") != _digest(task_state):
@@ -1389,8 +1371,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 recomputed_trace = controller.last_trace
                 if not _values_equal(row["estimate"], recomputed_trace["estimate"], atol=1.0e-6):
                     errors.append(row_prefix + " estimate recomputation")
-                if not _values_equal(row["control_law"], recomputed_trace["control_law"], atol=1.0e-6):
-                    errors.append(row_prefix + " control-law recomputation")
                 if not _values_equal(row["phase"], recomputed_trace["phase"], atol=1.0e-6):
                     errors.append(row_prefix + " phase recomputation")
                 if not _values_equal(row["controller_events"], controller.executive.controller_events, atol=1.0e-6):
@@ -1401,7 +1381,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                     errors.append(row_prefix + " relative kinematics recomputation")
                 for trace_key in (
                     "task_desired_action",
-                    "pre_capability_compensated_action",
                     "phase_capability",
                     "capability_limits",
                     "post_capability_normalized_action",
@@ -1428,7 +1407,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 errors.append(row_prefix + f" controller replay: {exc}")
             for key in ("task_state", "post_task_state"):
                 state_payload = row.get(key)
-                if not isinstance(state_payload, Mapping) or set(state_payload) != set(COMMON_STATE_KEYS):
+                if not isinstance(state_payload, Mapping) or set(state_payload) != set(ORACLE_TASK_KEYS):
                     errors.append(row_prefix + f" {key} schema")
                 elif not _finite_json(state_payload):
                     errors.append(row_prefix + f" {key} finite")
@@ -1460,14 +1439,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                     errors.append(row_prefix + " estimate schema")
                 if estimate_payload.get("schema_version") != 1:
                     errors.append(row_prefix + " estimate schema version")
-                prediction_times = estimate_payload.get("prediction_timestamps_s")
-                try:
-                    if not prediction_times or any(
-                        float(value) <= float(row["policy_time_s"]) for value in prediction_times
-                    ):
-                        errors.append(row_prefix + " prediction causality")
-                except (TypeError, ValueError):
-                    errors.append(row_prefix + " prediction causality")
         success = episode.get("success")
         termination = episode.get("termination_category")
         failure = episode.get("failure_reason")
@@ -1531,46 +1502,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "run_id": payload.get("run_id"),
         "trace_count": sum(len(row.get("trace", ())) for row in episodes if isinstance(row, Mapping)),
         "dev_state_anchor_mode": anchor_mode,
-    }
-
-
-def verify_legacy_run_artifact(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Read-only verifier for pre-08R artifacts; it never reinterprets them."""
-
-    errors: list[str] = []
-    if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != LEGACY_RUN_SCHEMA_VERSION:
-        errors.append("legacy run schema")
-    if "outcome_contract" in payload or "outcome_contract_sha256" in payload:
-        errors.append("legacy/new schema mixture")
-    copied = dict(payload)
-    expected_hash = copied.pop("payload_sha256", None)
-    try:
-        if expected_hash != _digest(copied):
-            errors.append("legacy payload digest")
-    except (TypeError, ValueError):
-        errors.append("legacy payload digest")
-    episodes = payload.get("episodes")
-    if not isinstance(episodes, list) or not episodes:
-        errors.append("legacy episodes")
-        episodes = []
-    for index, episode in enumerate(episodes):
-        prefix = f"episode[{index}]"
-        if not isinstance(episode, Mapping) or episode.get("schema_version") != LEGACY_EPISODE_SCHEMA_VERSION:
-            errors.append(prefix + " legacy schema")
-            continue
-        if any(key in episode for key in ("episode_validity", "score_outcome", "termination_cause", "controller_events")):
-            errors.append(prefix + " legacy/new schema mixture")
-        trace = episode.get("trace")
-        try:
-            if not isinstance(trace, list) or episode.get("trace_sha256") != _digest(trace):
-                errors.append(prefix + " legacy trace digest")
-        except (TypeError, ValueError):
-            errors.append(prefix + " legacy trace digest")
-    return {
-        "passed": not errors,
-        "errors": sorted(set(errors)),
-        "run_id": payload.get("run_id"),
-        "legacy_schema": True,
     }
 
 
