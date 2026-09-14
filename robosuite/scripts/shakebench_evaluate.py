@@ -17,12 +17,20 @@ import hashlib
 import importlib
 import inspect
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
+from robosuite.scripts.shakebench_export_sft_subset import SUBSET_PROVENANCE_FILENAME
 from robosuite.scripts.shakebench_run_oracle import load_state_asset
-from robosuite.utils.shakebench_rollout import OBSERVATION_SOURCES, ShakeBenchTaskEnv, rollout_policy
-from robosuite.utils.shakebench_train_states import assert_split_disjoint
+from robosuite.utils.shakebench_artifacts import write_json_atomic
+from robosuite.utils.shakebench_rollout import (
+    OBSERVATION_SOURCES,
+    ShakeBenchTaskEnv,
+    invalid_episode_result,
+    rollout_policy,
+)
+from robosuite.utils.shakebench_train_states import assert_split_disjoint, split_overlap
 
 EVALUATION_SCHEMA_ID = "shakebench.policy_evaluation"
 EVALUATION_SCHEMA_VERSION = 1
@@ -73,7 +81,13 @@ def build_policy(factory, *, arguments, inference_timeout_s):
 
 
 def observation_config_from_collection(path):
-    """Read the observation contract of the dataset a policy was trained on."""
+    """Read the observation contract of the dataset a policy was trained on.
+
+    Training states come from the manifest of the data actually present, so an
+    exported SFT subset reports only the states it kept; the subset provenance,
+    when present, links that selection back to its source manifest.
+    """
+
     source = Path(path)
     manifest_path = source / "meta" / COLLECTION_MANIFEST_NAME if source.is_dir() else source
     manifest_bytes = manifest_path.read_bytes()
@@ -82,14 +96,18 @@ def observation_config_from_collection(path):
         raise ValueError("training dataset manifest must be complete before evaluation")
     info = json.loads((manifest_path.parent / "info.json").read_text(encoding="utf-8"))
     shape = info["features"]["observation.images.main"]["shape"]
+    provenance_path = manifest_path.parent / SUBSET_PROVENANCE_FILENAME
     return {
         "main_camera": manifest.get("cameras", {}).get("observation.images.main", "task_close"),
         "height": int(shape[0]),
         "width": int(shape[1]),
-        "train_state_ids": [episode["state"]["state_id"] for episode in manifest["episodes"]],
+        "train_states": [episode["state"] for episode in manifest["episodes"]],
         "dataset": manifest_path.parent.parent.name,
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "selection_rule": manifest.get("sft_subset", {}).get("selection_rule"),
+        "subset_provenance": (
+            json.loads(provenance_path.read_text(encoding="utf-8")) if provenance_path.is_file() else None
+        ),
     }
 
 
@@ -167,21 +185,21 @@ def main(argv=None):
         "width": args.width or 256,
     }
     train_split = {"status": "unavailable", "reason": "no --dataset was given"}
-    train_ids = []
+    train_states = []
     if args.dataset is not None:
         trained_on = observation_config_from_collection(args.dataset)
-        train_ids = trained_on.pop("train_state_ids")
+        train_states = trained_on.pop("train_states")
         camera_config = {
             "main_camera": args.main_camera or trained_on["main_camera"],
             "height": args.height or trained_on["height"],
             "width": args.width or trained_on["width"],
         }
-        train_split = {"status": "checked", **trained_on, "train_state_count": len(train_ids)}
-    if train_ids and not args.allow_train_states:
-        assert_split_disjoint(train_ids, [state["state_id"] for state in states])
+        train_split = {"status": "checked", **trained_on, "train_state_count": len(train_states)}
+    if train_states and not args.allow_train_states:
+        assert_split_disjoint(train_states, states)
         train_split["overlap"] = 0
-    elif train_ids:
-        train_split["overlap"] = len(set(train_ids) & {state["state_id"] for state in states})
+    elif train_states:
+        train_split["overlap"] = len(split_overlap(train_states, states))
         train_split["status"] = "train_states_allowed"
 
     policy = build_policy(
@@ -190,16 +208,58 @@ def main(argv=None):
         inference_timeout_s=args.inference_timeout_s,
     )
     episodes = []
+
+    def result_payload():
+        return {
+            "schema_id": EVALUATION_SCHEMA_ID,
+            "schema_version": EVALUATION_SCHEMA_VERSION,
+            "scoreable": False,
+            "scoreable_reason": "policy evaluation evidence; official scorecards come from shakebench_run_oracle",
+            "policy": {
+                "spec": args.policy,
+                "policy_id": args.policy_id or args.policy,
+                "identity": policy.identity if isinstance(getattr(policy, "identity", None), dict) else None,
+                "chunk_size": int(policy.chunk_size),
+            },
+            "run_contract": {
+                "gamma": args.gamma,
+                "horizon_steps": args.horizon_steps,
+                "action_horizon": args.action_horizon,
+                "inference_timeout_s": args.inference_timeout_s,
+                "observation_source": args.observation_source,
+                "observation": {
+                    "source": args.observation_source,
+                    **({} if args.observation_source == "contract" else camera_config),
+                    "identity": episodes[0].get("observation_identity") if episodes else None,
+                },
+                "action_space": (episodes[0].get("task_context") or {}).get("action_space") if episodes else None,
+                "timing": episodes[0].get("timing") if episodes else None,
+                "state_asset": str(args.states),
+            },
+            "train_split_check": train_split,
+            "episodes": episodes,
+            "summary": summarize(episodes),
+        }
+
+    def save_results():
+        """Persist what finished; a mid-batch failure must not lose earlier episodes."""
+
+        payload = result_payload()
+        if args.output is not None:
+            write_json_atomic(args.output, payload)
+        return payload
+
     try:
         for state in states:
-            task = ShakeBenchTaskEnv(
-                state,
-                gamma=args.gamma,
-                horizon=args.horizon_steps,
-                observation_source=args.observation_source,
-                **camera_config,
-            )
+            task = None
             try:
+                task = ShakeBenchTaskEnv(
+                    state,
+                    gamma=args.gamma,
+                    horizon=args.horizon_steps,
+                    observation_source=args.observation_source,
+                    **camera_config,
+                )
                 episodes.append(
                     rollout_policy(
                         task,
@@ -209,49 +269,33 @@ def main(argv=None):
                         policy_id=args.policy_id or args.policy,
                     )
                 )
+            except Exception as exc:  # noqa: BLE001 - one unusable state must not end the batch
+                episodes.append(
+                    invalid_episode_result(
+                        state_id=state.get("state_id"),
+                        reason=f"{type(exc).__name__}: {exc}",
+                        task=task,
+                        policy_id=args.policy_id or args.policy,
+                        gamma=args.gamma,
+                        horizon_steps=args.horizon_steps,
+                        action_horizon=args.action_horizon,
+                        inference_timeout_s=args.inference_timeout_s,
+                    )
+                )
+                print(f"{state.get('state_id')}: invalid_execution: {type(exc).__name__}: {exc}", file=sys.stderr)
             finally:
-                task.close()
+                if task is not None:
+                    task.close()
+            save_results()
     finally:
         close = getattr(policy, "close", None)
         if callable(close):
             close()
 
-    payload = {
-        "schema_id": EVALUATION_SCHEMA_ID,
-        "schema_version": EVALUATION_SCHEMA_VERSION,
-        "scoreable": False,
-        "scoreable_reason": "policy evaluation evidence; official scorecards come from shakebench_run_oracle",
-        "policy": {
-            "spec": args.policy,
-            "policy_id": args.policy_id or args.policy,
-            "identity": policy.identity if isinstance(getattr(policy, "identity", None), dict) else None,
-            "chunk_size": int(policy.chunk_size),
-        },
-        "run_contract": {
-            "gamma": args.gamma,
-            "horizon_steps": args.horizon_steps,
-            "action_horizon": args.action_horizon,
-            "inference_timeout_s": args.inference_timeout_s,
-            "observation_source": args.observation_source,
-            "observation": {
-                "source": args.observation_source,
-                **({} if args.observation_source == "contract" else camera_config),
-                "identity": episodes[0]["observation_identity"] if episodes else None,
-            },
-            "action_space": episodes[0]["task_context"]["action_space"] if episodes else None,
-            "timing": episodes[0]["timing"] if episodes else None,
-            "state_asset": str(args.states),
-        },
-        "train_split_check": train_split,
-        "episodes": episodes,
-        "summary": summarize(episodes),
-    }
-    record = json.dumps(payload, indent=2, sort_keys=True)
+    payload = save_results()
     if args.output is None:
-        print(record)
+        print(json.dumps(payload, indent=2, sort_keys=True))
     else:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(record + "\n", encoding="utf-8")
         print(json.dumps(payload["summary"], sort_keys=True))
     return 0
 

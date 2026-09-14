@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import inspect
+
 import numpy as np
 import pytest
 
 from robosuite.scripts.shakebench_gpu_batch import make_environment
-from robosuite.scripts.shakebench_run_oracle import load_state_asset
+from robosuite.scripts.shakebench_run_oracle import _digest, load_state_asset, run_episode
 from robosuite.utils.shakebench_state_schema import StateSchemaError, normalize_state
 
 OFFICIAL_ASSET = "robosuite/models/assets/shakebench_states_official.json"
@@ -72,3 +74,19 @@ def test_verified_official_asset_builds_and_steps_an_environment():
         assert np.isfinite(float(reward))
     finally:
         env.close()
+
+
+def test_episode_state_hash_binds_the_committed_record_not_the_normalized_copy():
+    """Regression: hashing the alias-normalized copy failed the run verifier.
+
+    A full episode check needs the ~80 s MuJoCo model compile, so this pins the
+    binding at the source and proves the two digests really do disagree.
+    """
+
+    committed = load_state_asset(OFFICIAL_ASSET)["states"][0]
+    source = inspect.getsource(run_episode)
+
+    assert "committed_state = state" in source
+    assert '"state_sha256": _digest(committed_state)' in source
+    assert _digest(normalize_state(committed)) != _digest(committed)
+    assert _digest(committed) == "53d0ea9f5967d3968bed6914515668e7d29373d29f7887136c172ac39cfd38ab"

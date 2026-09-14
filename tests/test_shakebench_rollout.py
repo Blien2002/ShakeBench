@@ -55,8 +55,11 @@ class _StubTask:
         return {"task_id": "stub"}
 
 
-def _policy(predict, *, chunk_size=2):
-    return SimpleNamespace(chunk_size=chunk_size, predict=predict)
+def _policy(predict, *, chunk_size=2, deadline_s=None, reset=None):
+    policy = SimpleNamespace(chunk_size=chunk_size, predict=predict, deadline_s=deadline_s)
+    if reset is not None:
+        policy.reset = reset
+    return policy
 
 
 def test_policy_output_violation_ends_the_episode_with_a_record():
@@ -86,14 +89,74 @@ def test_policy_exception_and_timeout_are_distinguished():
 
     exception_record = rollout_policy(_StubTask(), _policy(explode))
     timeout_record = rollout_policy(_StubTask(), _policy(deadline))
-    late_record = rollout_policy(_StubTask(), _policy(stall), inference_timeout_s=0.01)
+    late_record = rollout_policy(_StubTask(), _policy(stall, deadline_s=0.01), inference_timeout_s=0.01)
 
     assert exception_record["policy_errors"][0]["error_type"] == "policy_exception"
     assert "RuntimeError" in exception_record["policy_errors"][0]["message"]
     assert timeout_record["policy_errors"][0]["error_type"] == "policy_timeout"
     assert late_record["policy_errors"][0]["error_type"] == "policy_timeout"
-    assert "deadline 0.01s" in late_record["policy_errors"][0]["message"]
+    assert "past the 0.01s deadline it declares" in late_record["policy_errors"][0]["message"]
     assert late_record["episode_validity"] == "valid"
+
+
+def test_inference_timeout_needs_a_deadline_the_policy_can_enforce():
+    """A blocking predict() cannot be interrupted from outside, so say so instead of pretending."""
+
+    stalling = _policy(lambda _: np.zeros((1, 7)))
+    with pytest.raises(ValueError, match="enforceable deadline"):
+        rollout_policy(_StubTask(), stalling, inference_timeout_s=0.01)
+    with pytest.raises(ValueError, match="exceeds the configured inference_timeout_s"):
+        rollout_policy(_StubTask(), _policy(lambda _: np.zeros((1, 7)), deadline_s=5.0), inference_timeout_s=0.01)
+    with pytest.raises(ValueError, match="positive number of seconds"):
+        rollout_policy(_StubTask(), _policy(lambda _: np.zeros((1, 7)), deadline_s=0.0))
+
+
+def test_each_episode_starts_with_a_policy_reset():
+    """Regression: a stateful policy used to carry its state across episodes."""
+
+    class StatefulPolicy:
+        chunk_size = 1
+
+        def __init__(self):
+            self.resets, self.calls = 0, 0
+
+        def reset(self):
+            self.resets, self.calls = self.resets + 1, 0
+
+        def predict(self, observation):
+            self.calls += 1
+            return np.full((1, 7), self.calls / 10.0)
+
+    policy = StatefulPolicy()
+    first_task, second_task = _StubTask(terminate_after=1), _StubTask(terminate_after=1)
+
+    rollout_policy(first_task, policy)
+    rollout_policy(second_task, policy)
+
+    assert policy.resets == 2
+    assert first_task.actions[0][0] == pytest.approx(0.1)
+    assert second_task.actions[0][0] == pytest.approx(0.1)
+
+
+def test_episode_setup_failure_keeps_its_place_in_the_batch():
+    """Regression: a reset exception used to escape instead of recording invalid_execution."""
+
+    class BrokenReset(_StubTask):
+        def reset(self):
+            raise RuntimeError("reset initialization failed")
+
+    record = rollout_policy(BrokenReset(), _policy(lambda _: np.zeros((1, 7))))
+
+    assert record["termination_cause"] == "invalid_execution"
+    assert record["episode_validity"] == "invalid" and record["score_outcome"] is None
+    assert "reset initialization failed" in record["invalid_execution_reason"]
+    assert record["policy_calls"] == 0 and record["executed_action_count"] == 0
+    assert record["policy_errors"] == [] and record["steps"] == 0
+    validate_outcome(
+        episode_validity=record["episode_validity"],
+        score_outcome=record["score_outcome"],
+        termination_cause=record["termination_cause"],
+    )
 
 
 def test_environment_failure_is_recorded_as_invalid_execution():

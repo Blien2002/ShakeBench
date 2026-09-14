@@ -2,6 +2,7 @@
 
 import copy
 import xml.etree.ElementTree as ET
+from types import SimpleNamespace
 
 import mujoco
 import numpy as np
@@ -9,6 +10,7 @@ import pytest
 
 from robosuite.utils.shakebench_metrics import extract_can_collision_envelope
 from robosuite.utils.shakebench_physics import resolve_physics_profile
+from robosuite.utils.shakebench_rollout import task_description
 from robosuite.utils.shakebench_task_states import build_task_state_artifact, verify_task_state_artifact
 from robosuite.utils.shakebench_tasks import (
     OBJECT_SUPPORT,
@@ -211,3 +213,61 @@ def test_compiled_task_reset_step_contact_roles_and_public_interface(spec):
         assert env.get_policy_task_context()["physics_profile"]["scoreable"] is False
     finally:
         env.close()
+
+
+def test_variant_demonstrations_carry_their_own_language_label(tmp_path, monkeypatch, official_states):
+    """Regression: the collector wrote the can instruction into every variant dataset."""
+
+    from robosuite.scripts import shakebench_collect_lerobot as collector
+
+    states = [
+        next(row for row in official_states["states"] if row["task"]["object_id"] == object_id)
+        for object_id in ("bread", "cookie_box")
+    ]
+    labels = []
+
+    def fake_make_environment(state, **kwargs):
+        env = SimpleNamespace(
+            control_freq=20,
+            action_dim=7,
+            get_policy_task_context=lambda: {"task_context": {}},
+            _get_observations=lambda: {},
+            step=lambda action: ({}, 1.0, True, {}),
+            get_metrics=lambda: {"max_illegal_penetration_m": 0.0, "success": {"passed": True}},
+            _imu_mount_audit={},
+            observation_contract=lambda: {},
+            close=lambda: None,
+        )
+        program = SimpleNamespace(
+            evaluate=lambda time_s: SimpleNamespace(q=np.zeros(1), qdot=np.zeros(1), qdd=np.zeros(1))
+        )
+        return env, program
+
+    monkeypatch.setattr(collector, "make_environment", fake_make_environment)
+    monkeypatch.setattr(collector, "WorktableTaskContext", SimpleNamespace(from_mapping=lambda value: value))
+    monkeypatch.setattr(
+        collector,
+        "ShakeBenchOracleController",
+        lambda *args, **kwargs: SimpleNamespace(action=lambda *a, **k: np.zeros(7), abort_requested=False),
+    )
+    monkeypatch.setattr(
+        collector,
+        "ShakeBenchCameraObservation",
+        lambda *args, **kwargs: SimpleNamespace(read=lambda observation: {}, close=lambda: None),
+    )
+    monkeypatch.setattr(collector, "oracle_observation", lambda env: {})
+    monkeypatch.setattr(collector, "vibration_record", lambda program: {})
+    dataset = SimpleNamespace(
+        fps=20,
+        root=tmp_path / "dataset",
+        num_episodes=1,
+        add_frame=lambda frame, **kwargs: labels.append(kwargs["task"]),
+        save_episode=lambda: None,
+    )
+
+    records = [collector.collect_episode(dataset, state, horizon=1, width=4, height=4) for state in states]
+
+    expected = [task_description(state)["instruction"] for state in states]
+    assert labels == expected
+    assert [record["instruction"] for record in records] == expected
+    assert all("can" not in label for label in expected)

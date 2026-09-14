@@ -39,6 +39,14 @@ class PolicyOutputError(ValueError):
     """Raised when a policy returns actions that violate the action contract."""
 
 
+ERROR_TAXONOMY = {
+    "policy_output_violation": "model returned actions outside the 7D [-1,1] contract",
+    "policy_timeout": "model service or inference exceeded the configured deadline",
+    "policy_exception": "adapter raised while serving one request",
+    "invalid_execution": "environment or stepping failure; not a model result",
+}
+
+
 def task_description(state: Mapping[str, Any]) -> dict[str, str]:
     if "task" not in state:
         return {"task_id": "pick_place.can", "instruction": TASK}
@@ -376,7 +384,13 @@ class ShakeBenchTaskEnv:
 
 
 def _predict(policy, observation, *, inference_timeout_s, policy_deadline_s):
-    """One policy call with a wall-clock deadline and typed failures."""
+    """One policy call plus a check that the adapter honored its own deadline.
+
+    A synchronous ``predict()`` cannot be interrupted once it has started, so the
+    enforceable bound is the transport deadline the adapter declares; this
+    measurement only proves the adapter kept it.  ``rollout_policy`` refuses to
+    configure an inference timeout without such a declaration.
+    """
     started = time.perf_counter()
     try:
         actions = policy.predict(observation)
@@ -385,10 +399,73 @@ def _predict(policy, observation, *, inference_timeout_s, policy_deadline_s):
     elapsed = time.perf_counter() - started
     if inference_timeout_s is not None and elapsed > inference_timeout_s:
         raise PolicyTimeoutError(
-            f"policy answered after {elapsed:.3f}s, deadline {inference_timeout_s}s "
-            f"(transport deadline {policy_deadline_s})"
+            f"policy answered after {elapsed:.3f}s, past the {inference_timeout_s}s deadline it declares "
+            f"for itself (adapter deadline_s {policy_deadline_s}); the adapter must enforce its own deadline"
         )
     return validated_actions(actions), elapsed
+
+
+def declared_deadline_s(policy) -> float | None:
+    """The executable per-request deadline a policy declares, if any."""
+
+    deadline = getattr(policy, "deadline_s", None)
+    if deadline is None:
+        return None
+    if isinstance(deadline, bool) or not isinstance(deadline, (int, float)) or not np.isfinite(deadline) or deadline <= 0:
+        raise ValueError("policy deadline_s must be a positive number of seconds when declared")
+    return float(deadline)
+
+
+def _task_hook(task, name):
+    hook = getattr(task, name, None)
+    return hook() if callable(hook) else None
+
+
+def invalid_episode_result(
+    *,
+    state_id,
+    reason,
+    task=None,
+    policy_id=None,
+    gamma=None,
+    horizon_steps=None,
+    action_horizon=None,
+    inference_timeout_s=None,
+) -> dict[str, Any]:
+    """Result record for an episode whose task could not be built or started.
+
+    The episode keeps its place in the attempted denominator as an invalid
+    execution.  It is not a model result, so ``policy_errors`` stays empty and
+    every execution field is zero.
+    """
+
+    validity, score_outcome = episode_outcome("invalid_execution")
+    validate_outcome(episode_validity=validity, score_outcome=score_outcome, termination_cause="invalid_execution")
+    return {
+        "state_id": state_id,
+        "gamma": gamma,
+        "horizon_steps": horizon_steps,
+        "policy_id": policy_id,
+        "success": False,
+        "episode_validity": validity,
+        "score_outcome": score_outcome,
+        "termination_cause": "invalid_execution",
+        "steps": 0,
+        "terminated": False,
+        "truncated": False,
+        "invalid_execution_reason": reason,
+        "reward_sum": 0.0,
+        "policy_calls": 0,
+        "policy_errors": [],
+        "error_taxonomy": ERROR_TAXONOMY,
+        "inference_wall_time_s": 0.0,
+        "action_horizon": action_horizon,
+        "inference_timeout_s": inference_timeout_s,
+        "observation_identity": _task_hook(task, "observation_identity"),
+        "task_context": _task_hook(task, "get_task_context"),
+        "timing": "synchronous_simulation_paused_during_inference",
+        **action_evidence([]),
+    }
 
 
 def rollout_policy(
@@ -404,7 +481,13 @@ def rollout_policy(
 
     Failures are typed and recorded instead of raised: policy output violations and
     request timeouts end the episode as "policy_error", while an environment or
-    stepping failure is "invalid_execution".
+    stepping failure is "invalid_execution".  Episode setup failures (policy reset,
+    task reset) are recorded the same way, so one broken state cannot lose the
+    rest of a batch.
+
+    ``inference_timeout_s`` requires the policy to declare an enforceable
+    ``deadline_s``; a blocking ``predict()`` can only be bounded from inside the
+    adapter.  A policy with an optional ``reset()`` gets it called once per episode.
     """
     if not isinstance(action_horizon, int) or isinstance(action_horizon, bool) or action_horizon < 1:
         raise ValueError("action_horizon must be a positive integer")
@@ -417,15 +500,34 @@ def rollout_policy(
         or inference_timeout_s <= 0
     ):
         raise ValueError("inference_timeout_s must be a positive number of seconds")
-    policy_deadline_s = getattr(policy, "deadline_s", None)
-    observation, _ = task.reset()
+    policy_deadline_s = declared_deadline_s(policy)
+    if inference_timeout_s is not None:
+        if policy_deadline_s is None:
+            raise ValueError(
+                "inference_timeout_s needs an enforceable deadline: this policy declares no deadline_s, and a "
+                "synchronous predict() call cannot be interrupted once it has started"
+            )
+        if policy_deadline_s > inference_timeout_s:
+            raise ValueError(
+                f"policy deadline_s {policy_deadline_s} exceeds the configured inference_timeout_s "
+                f"{inference_timeout_s}; nothing can bound the call past the adapter's own deadline"
+            )
     predictions, inference_s, reward_sum = 0, 0.0, 0.0
     executed, policy_errors = [], []
     termination_cause, invalid_reason = None, None
+    observation = None
 
     def record(error_type, message):
         policy_errors.append({"step": len(executed), "error_type": error_type, "message": message})
         return "policy_error"
+
+    try:
+        reset = getattr(policy, "reset", None)
+        if callable(reset):
+            reset()
+        observation, _ = task.reset()
+    except Exception as exc:  # noqa: BLE001 - episode setup failure, not a model result
+        termination_cause, invalid_reason = "invalid_execution", f"{type(exc).__name__}: {exc}"
 
     while termination_cause is None:
         try:
@@ -477,12 +579,7 @@ def rollout_policy(
         "policy_calls": predictions,
         "policy_errors": policy_errors,
         "error_taxonomy": error_taxonomy
-        or {
-            "policy_output_violation": "model returned actions outside the 7D [-1,1] contract",
-            "policy_timeout": "model service or inference exceeded the configured deadline",
-            "policy_exception": "adapter raised while serving one request",
-            "invalid_execution": "environment or stepping failure; not a model result",
-        },
+        or ERROR_TAXONOMY,
         "inference_wall_time_s": inference_s,
         "action_horizon": action_horizon,
         "inference_timeout_s": inference_timeout_s,
@@ -496,6 +593,7 @@ def rollout_policy(
 __all__ = [
     "ACTION_NAMES",
     "CAMERAS",
+    "ERROR_TAXONOMY",
     "OBSERVATION_SOURCES",
     "PolicyOutputError",
     "PolicyTimeoutError",
@@ -504,7 +602,9 @@ __all__ = [
     "ShakeBenchTaskEnv",
     "TASK",
     "action_evidence",
+    "declared_deadline_s",
     "episode_outcome",
+    "invalid_episode_result",
     "observation_features",
     "rollout_policy",
     "task_description",

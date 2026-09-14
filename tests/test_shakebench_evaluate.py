@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import runpy
+from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 from robosuite.scripts.shakebench_evaluate import (
@@ -15,10 +18,25 @@ from robosuite.scripts.shakebench_evaluate import (
     requested_state_ids,
     summarize,
 )
-from robosuite.utils.shakebench_train_states import TrainStateError
+from robosuite.utils.shakebench_dev_states import build_phase07_dev_state_artifact
+from robosuite.utils.shakebench_train_states import TrainStateError, execution_state_fingerprint
+
+_STUB_TASK = runpy.run_path("tests/test_shakebench_rollout.py")["_StubTask"]
+# The frozen dev records, i.e. exactly what a dev-state collection manifest holds.
+_DEV_STATES = build_phase07_dev_state_artifact()["states"]
 
 
-def _collection(tmp_path, *, state_ids, main_camera="task_close", height=64, width=64, complete=True):
+def _state(state_id, *, xy=(-0.10, -0.13)):
+    return {
+        "state_id": state_id,
+        "object_xy_m": list(xy),
+        "excitation_seed": 7,
+        "imu_seed": 8,
+        "t0_s": 0.25,
+    }
+
+
+def _collection(tmp_path, *, states, main_camera="task_close", height=64, width=64, complete=True):
     dataset = tmp_path / "dataset"
     meta = dataset / "meta"
     meta.mkdir(parents=True)
@@ -30,7 +48,7 @@ def _collection(tmp_path, *, state_ids, main_camera="task_close", height=64, wid
             {
                 "complete": complete,
                 "cameras": {"observation.images.main": main_camera},
-                "episodes": [{"state": {"state_id": state_id}} for state_id in state_ids],
+                "episodes": [{"state": state} for state in states],
                 "sft_subset": {"selection_rule": "termination_cause == success_latched"},
             }
         )
@@ -67,17 +85,34 @@ def test_policy_arguments_and_call_signature_are_respected():
 
 
 def test_observation_config_comes_from_the_training_dataset(tmp_path):
-    dataset = _collection(tmp_path, state_ids=["shakebench-train-v0-0000"], main_camera="robot0_eye_in_hand", height=48)
+    dataset = _collection(
+        tmp_path,
+        states=[_state("shakebench-train-v0-s2-r0.02-0000")],
+        main_camera="robot0_eye_in_hand",
+        height=48,
+    )
 
     config = observation_config_from_collection(dataset)
 
     assert config["main_camera"] == "robot0_eye_in_hand"
     assert (config["height"], config["width"]) == (48, 64)
-    assert config["train_state_ids"] == ["shakebench-train-v0-0000"]
+    assert [state["state_id"] for state in config["train_states"]] == ["shakebench-train-v0-s2-r0.02-0000"]
+    assert config["subset_provenance"] is None
     assert len(config["manifest_sha256"]) == 64
     assert observation_config_from_collection(dataset / "meta" / "shakebench_collection.json")["height"] == 48
     with pytest.raises(ValueError, match="complete"):
-        observation_config_from_collection(_collection(tmp_path / "b", state_ids=[], complete=False))
+        observation_config_from_collection(_collection(tmp_path / "b", states=[], complete=False))
+
+
+def test_subset_provenance_links_the_export_to_its_source_manifest(tmp_path):
+    dataset = _collection(tmp_path, states=[_state("state-0")])
+    provenance = {"schema_id": "shakebench.sft_subset", "source_manifest_sha256": "a" * 64}
+    (dataset / "meta" / "shakebench_sft_subset.json").write_text(json.dumps(provenance))
+
+    config = observation_config_from_collection(dataset)
+
+    assert config["subset_provenance"] == provenance
+    assert config["manifest_sha256"] != provenance["source_manifest_sha256"]
 
 
 def test_state_selection_rejects_unknown_and_duplicate_ids():
@@ -131,7 +166,8 @@ def test_summary_keeps_the_failure_denominator():
 
 
 def test_overlapping_train_states_stop_the_run_before_any_policy_is_built(tmp_path):
-    dataset = _collection(tmp_path, state_ids=["shakebench-dev-v0-000"])
+    dev_state = _DEV_STATES[0]
+    dataset = _collection(tmp_path, states=[dev_state])
 
     with pytest.raises(TrainStateError, match="overlap"):
         main(
@@ -141,12 +177,94 @@ def test_overlapping_train_states_stop_the_run_before_any_policy_is_built(tmp_pa
                 "--dataset",
                 str(dataset),
                 "--state-ids",
-                "shakebench-dev-v0-000",
+                dev_state["state_id"],
                 "--output",
                 str(tmp_path / "results.json"),
             ]
         )
     assert not (tmp_path / "results.json").exists()
+
+
+def test_split_guard_also_rejects_a_renamed_training_execution_state(tmp_path):
+    """The training state leaked through a different state ID, so IDs alone cannot guard."""
+
+    dev_state = _DEV_STATES[1]
+    dataset = _collection(tmp_path, states=[{**dev_state, "state_id": "some-other-pool-0000"}])
+
+    with pytest.raises(TrainStateError, match="overlap"):
+        main(
+            [
+                "--policy",
+                "robosuite.scripts.shakebench_evaluate:load_policy_factory",
+                "--dataset",
+                str(dataset),
+                "--state-ids",
+                dev_state["state_id"],
+                "--output",
+                str(tmp_path / "results.json"),
+            ]
+        )
+
+
+def _write_states(path, states):
+    path.write_text(json.dumps({"states": states}))
+    return path
+
+
+def test_a_failing_reset_cannot_end_the_batch_or_lose_finished_episodes(tmp_path):
+    """Regression: reset used to escape the batch and the results were never written."""
+
+    visited = []
+
+    class EvaluationTask(_STUB_TASK):
+        def __init__(self, state, **kwargs):
+            super().__init__(terminate_after=1)
+            self.state = state
+
+        def reset(self):
+            visited.append(self.state["state_id"])
+            if self.state["state_id"] == "b":
+                raise RuntimeError("second reset failed")
+            return super().reset()
+
+        def close(self):
+            pass
+
+    class Policy:
+        chunk_size = 1
+
+        def predict(self, observation):
+            return np.zeros((1, 7))
+
+    states = _write_states(tmp_path / "states.json", [_state(name) for name in "abc"])
+    output = tmp_path / "results.json"
+    with (
+        patch(
+            "robosuite.scripts.shakebench_evaluate.load_state_asset",
+            return_value={"states": [_state(name) for name in "abc"]},
+        ),
+        patch("robosuite.scripts.shakebench_evaluate.load_policy_factory", return_value=Policy),
+        patch("robosuite.scripts.shakebench_evaluate.ShakeBenchTaskEnv", EvaluationTask),
+    ):
+        assert main(["--policy", "stub:Policy", "--states", str(states), "--output", str(output)]) == 0
+
+    payload = json.loads(output.read_text())
+    assert visited == ["a", "b", "c"]
+    assert payload["summary"]["attempted_episodes"] == 3
+    assert payload["summary"]["invalid_execution_episodes"] == 1
+    assert payload["summary"]["success"] == 2
+    assert [episode["termination_cause"] for episode in payload["episodes"]] == [
+        "success_latched",
+        "invalid_execution",
+        "success_latched",
+    ]
+    assert "second reset failed" in payload["episodes"][1]["invalid_execution_reason"]
+    assert payload["episodes"][1]["policy_errors"] == []
+
+
+def test_states_that_fingerprint_the_same_are_compared_as_the_same_initial_state():
+    assert execution_state_fingerprint(_state("a")) == execution_state_fingerprint(_state("b", xy=(-0.10, -0.13)))
+    assert execution_state_fingerprint(_state("a")) != execution_state_fingerprint(_state("a", xy=(-0.11, -0.13)))
 
 
 def test_results_are_never_overwritten(tmp_path):

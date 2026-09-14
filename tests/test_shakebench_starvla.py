@@ -5,6 +5,7 @@ import os
 import runpy
 import shutil
 import threading
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -12,6 +13,7 @@ import numpy as np
 import pytest
 
 from robosuite.scripts.shakebench_collect_lerobot import dataset_features
+from robosuite.utils.shakebench_rollout import PolicyTimeoutError
 from robosuite.utils.shakebench_starvla import (
     CAMERAS,
     StarVLAEnvironment,
@@ -100,6 +102,57 @@ def test_official_websocket_client():
             server.shutdown()
             thread.join(timeout=5)
     assert requests[0]["examples"][0]["image"][0].shape == (224, 224, 3)
+
+
+def test_a_timed_out_request_never_answers_the_next_episode():
+    """Regression: the late response used to be read as the next episode's action."""
+
+    server_module = pytest.importorskip("websockets.sync.server")
+    msgpack = pytest.importorskip("deployment.model_server.tools.msgpack_numpy")
+    late_response_sent = threading.Event()
+    connections = []
+
+    def handler(socket):
+        connections.append(1)
+        socket.send(
+            msgpack.packb(
+                {
+                    "available_unnorm_keys": ["new_embodiment"],
+                    "action_chunk_size": 1,
+                    "action_keys": ["action.osc", "action.gripper"],
+                }
+            )
+        )
+        socket.recv()
+        try:
+            if len(connections) == 1:
+                time.sleep(0.1)  # answer the first request late, after its deadline
+            socket.send(msgpack.packb({"ok": True, "data": {"actions": np.full((1, 1, 7), 0.1 * len(connections))}}))
+        finally:
+            late_response_sent.set()
+        try:
+            socket.recv()  # a client that kept the timed-out connection would ask again here
+            socket.send(msgpack.packb({"ok": True, "data": {"actions": np.full((1, 1, 7), 0.3)}}))
+        except Exception:  # noqa: BLE001 - the dropped connection is expected to fail here
+            pass
+
+    with server_module.serve(handler, "127.0.0.1", 0) as server:
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        policy = StarVLAPolicy(port=server.socket.getsockname()[1], deadline_s=0.02)
+        try:
+            observation = {key: np.zeros((4, 4, 3), dtype=np.uint8) for key in CAMERAS}
+            observation["task"] = "first episode"
+            with pytest.raises(PolicyTimeoutError):
+                policy.predict(observation)
+            assert late_response_sent.wait(5), "the timed-out request did not answer"
+            observation["task"] = "second episode"
+            np.testing.assert_allclose(policy.predict(observation), 0.2)
+            assert len(connections) == 2, "the timed-out connection must not be reused"
+        finally:
+            policy.close()
+            server.shutdown()
+            thread.join(timeout=5)
 
 
 def test_official_starvla_loader(tmp_path):

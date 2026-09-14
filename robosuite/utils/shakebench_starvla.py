@@ -59,23 +59,44 @@ class StarVLAPolicy:
         ):
             raise ValueError("deadline_s must be a positive number of seconds")
         self.deadline_s = deadline_s
+        self.host, self.port = host, port
+        self.client = None
+        self.chunk_size = None
+        self._connect()
+
+    def _connect(self):
+        """Open a fresh connection and re-check the server contract."""
+
         from deployment.model_server.tools.websocket_policy_client import WebsocketClientPolicy
 
-        self.client = WebsocketClientPolicy(host, port)
+        client = WebsocketClientPolicy(self.host, self.port)
         try:
-            meta = self.client.get_server_metadata()
+            meta = client.get_server_metadata()
             if "new_embodiment" not in meta.get("available_unnorm_keys", []):
                 raise ValueError("server checkpoint must use the ShakeBench data registry and statistics")
             if meta.get("action_keys") != ["action.osc", "action.gripper"]:
                 raise ValueError("server action contract does not match the ShakeBench registry")
             if meta.get("state_keys"):
                 raise ValueError("this client requires the image/language ShakeBench registry (include_state=false)")
-            self.chunk_size = int(meta["action_chunk_size"])
-            if self.chunk_size < 1:
+            chunk_size = int(meta["action_chunk_size"])
+            if chunk_size < 1:
                 raise ValueError("invalid server action_chunk_size")
         except BaseException:
-            self.client.close()
+            client.close()
             raise
+        self.client = client
+        self.chunk_size = chunk_size
+
+    def _discard_connection(self):
+        """Close a connection that may still deliver a late response.
+
+        A timed-out request leaves its answer in flight, so the socket must not
+        serve the next episode; the next predict() opens a fresh one.
+        """
+
+        client, self.client = self.client, None
+        if client is not None:
+            client.close()
 
     @property
     def identity(self) -> dict:
@@ -112,11 +133,18 @@ class StarVLAPolicy:
             "lang": observation["task"],
         }
         query = {"examples": [example], "unnorm_key": "new_embodiment"}
+        if self.client is None:
+            self._connect()
         deadline_s = getattr(self, "deadline_s", None)
-        if deadline_s is None:
-            response = self.client.predict_action(query)
-        else:
-            response = self._request_with_deadline(query, deadline_s)
+        try:
+            if deadline_s is None:
+                response = self.client.predict_action(query)
+            else:
+                response = self._request_with_deadline(query, deadline_s)
+        except PolicyTimeoutError:
+            # The late answer must never be read as this or the next episode's action.
+            self._discard_connection()
+            raise
         if response.get("ok") is not True:
             raise RuntimeError(f"StarVLA inference failed: {response.get('error', response)}")
         actions = np.asarray(response["data"]["actions"])
@@ -126,7 +154,7 @@ class StarVLAPolicy:
         return validated_actions(actions[0])
 
     def close(self):
-        self.client.close()
+        self._discard_connection()
 
 
 def make_policy(*, host="127.0.0.1", port=10093, inference_timeout_s=None):

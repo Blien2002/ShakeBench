@@ -1,8 +1,10 @@
 """Export a success-only SFT dataset from a collected ShakeBench LeRobot dataset.
 
 Failed rollouts stay in the source dataset for audit.  The exported copy holds
-only episodes selected by the frozen rule (``success_latched``) and records the
-source manifest hash, so a trainer can prove which demonstrations it consumed.
+only episodes selected by the frozen rule (``success_latched``), renumbered from
+zero so the official LeRobot reader can enumerate it, and records the source
+manifest hash plus the source index of every exported episode, so a trainer can
+prove which demonstrations it consumed.
 """
 
 from __future__ import annotations
@@ -15,8 +17,18 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 SUBSET_PROVENANCE_FILENAME = "shakebench_sft_subset.json"
+SOURCE_MANIFEST_FILENAME = "shakebench_source_collection.json"
+COLLECTION_MANIFEST_FILENAME = "shakebench_collection.json"
 SELECTION_RULE = "termination_cause == success_latched"
+# Format metadata that is copied verbatim.  StarVLA's derived training caches
+# (stats_gr00t.json, steps_data_index.pkl) describe the source episodes and must
+# not travel with a subset that holds different ones, so this is an allowlist,
+# not a copy of the meta directory.  info.json, episodes.jsonl,
+# episodes_stats.jsonl and stats.json are rewritten from the selected episodes.
+FORMAT_METADATA_FILES = ("tasks.jsonl", "modality.json")
 
 
 def is_successful_episode(episode: Mapping[str, Any]) -> bool:
@@ -69,11 +81,76 @@ def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
+def _counter_stats(values: Sequence[float]) -> dict[str, Any]:
+    """Per-episode LeRobot stats for one per-frame scalar column."""
+
+    array = np.asarray(values, dtype=np.float64)
+    return {
+        "min": [array.min().item()],
+        "max": [array.max().item()],
+        "mean": [array.mean().item()],
+        "std": [array.std().item()],
+        "count": [int(array.size)],
+    }
+
+
+def aggregate_episode_stats(stats_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Merge per-episode LeRobot stats with the writer's count-weighted rule."""
+
+    features = set(stats_rows[0])
+    for row in stats_rows[1:]:
+        features &= set(row)
+    aggregated = {}
+    for feature in sorted(features):
+        entries = [row[feature] for row in stats_rows]
+        counts = np.stack([np.asarray(entry["count"], dtype=np.float64) for entry in entries])
+        means = np.stack([np.asarray(entry["mean"], dtype=np.float64) for entry in entries])
+        variances = np.stack([np.asarray(entry["std"], dtype=np.float64) ** 2 for entry in entries])
+        total_count = counts.sum(axis=0)
+        while counts.ndim < means.ndim:
+            counts = np.expand_dims(counts, axis=-1)
+        total_mean = (means * counts).sum(axis=0) / total_count
+        total_variance = ((variances + (means - total_mean) ** 2) * counts).sum(axis=0) / total_count
+        aggregated[feature] = {
+            "min": np.min(np.stack([np.asarray(entry["min"], dtype=np.float64) for entry in entries]), axis=0).tolist(),
+            "max": np.max(np.stack([np.asarray(entry["max"], dtype=np.float64) for entry in entries]), axis=0).tolist(),
+            "mean": np.asarray(total_mean).tolist(),
+            "std": np.asarray(np.sqrt(total_variance)).tolist(),
+            "count": np.asarray(total_count).tolist(),
+        }
+    return aggregated
+
+
+def _write_renumbered_parquet(source: Path, target: Path, *, episode_index: int, first_frame_index: int) -> int:
+    """Copy one episode parquet under the exported episode and global frame indices."""
+
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    table = pq.read_table(source)
+    length = table.num_rows
+    for name, values in (
+        ("episode_index", np.full(length, episode_index, dtype=np.int64)),
+        ("index", np.arange(first_frame_index, first_frame_index + length, dtype=np.int64)),
+    ):
+        table = table.set_column(table.schema.get_field_index(name), name, pa.array(values))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    pq.write_table(table, target)
+    return length
+
+
 def export_subset(dataset: Path, output: Path, *, include_failures: bool = False) -> dict[str, Any]:
-    """Copy ``dataset`` into ``output`` keeping only the selected episodes."""
+    """Copy ``dataset`` into ``output`` keeping only the selected episodes.
+
+    Exported episodes are renumbered from zero.  The official reader enumerates
+    ``range(total_episodes)`` and refuses a sparse directory, so file names,
+    episode metadata, the parquet episode/frame index columns, and the exported
+    collection manifest all describe the exported numbering; source indices stay
+    in the provenance record.
+    """
 
     meta = dataset / "meta"
-    manifest_bytes = (meta / "shakebench_collection.json").read_bytes()
+    manifest_bytes = (meta / COLLECTION_MANIFEST_FILENAME).read_bytes()
     manifest = json.loads(manifest_bytes)
     selected = select_successful_episodes(manifest)
     if include_failures:
@@ -89,46 +166,98 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
     episode_rows = {row["episode_index"]: row for row in _read_jsonl(meta / "episodes.jsonl")}
     stats_rows = {row["episode_index"]: row for row in _read_jsonl(meta / "episodes_stats.jsonl")}
     chunk_size = int(info["chunks_size"])
-    indices = [int(episode["episode_index"]) for episode in selected]
-    frame_count = 0
+    source_indices = [int(episode["episode_index"]) for episode in selected]
     for episode in selected:
         index = int(episode["episode_index"])
         if index not in episode_rows or index not in stats_rows:
             raise ValueError(f"episode {index} is missing from the dataset metadata")
         if int(episode_rows[index]["length"]) != int(episode["steps"]):
             raise ValueError(f"episode {index} length disagrees with the collection manifest")
-        frame_count += int(episode["steps"])
 
-    shutil.copytree(meta, output / "meta")
-    for index in indices:
-        relative = Path(info["data_path"].format(episode_chunk=index // chunk_size, episode_index=index))
-        target = output / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(dataset / relative, target)
-    _write_jsonl(output / "meta" / "episodes.jsonl", [episode_rows[index] for index in indices])
-    _write_jsonl(output / "meta" / "episodes_stats.jsonl", [stats_rows[index] for index in indices])
+    exported_meta = output / "meta"
+    exported_meta.mkdir(parents=True, exist_ok=True)
+    for name in FORMAT_METADATA_FILES:
+        if (meta / name).is_file():
+            shutil.copy2(meta / name, exported_meta / name)
+    (exported_meta / SOURCE_MANIFEST_FILENAME).write_bytes(manifest_bytes)
+
+    episodes_jsonl, stats_jsonl, manifest_episodes = [], [], []
+    first_frame_index = 0
+    for new_index, episode in enumerate(selected):
+        source_index = int(episode["episode_index"])
+        source_relative = Path(
+            info["data_path"].format(episode_chunk=source_index // chunk_size, episode_index=source_index)
+        )
+        target_relative = Path(
+            info["data_path"].format(episode_chunk=new_index // chunk_size, episode_index=new_index)
+        )
+        length = _write_renumbered_parquet(
+            dataset / source_relative,
+            output / target_relative,
+            episode_index=new_index,
+            first_frame_index=first_frame_index,
+        )
+        episodes_jsonl.append(dict(episode_rows[source_index], episode_index=new_index))
+        stats = dict(stats_rows[source_index].get("stats", {}))
+        if "episode_index" in stats:
+            stats["episode_index"] = _counter_stats([new_index] * length)
+        if "index" in stats:
+            stats["index"] = _counter_stats(range(first_frame_index, first_frame_index + length))
+        stats_jsonl.append({"episode_index": new_index, "stats": stats})
+        manifest_episodes.append(dict(episode, episode_index=new_index, source_episode_index=source_index))
+        first_frame_index += length
+
+    _write_jsonl(exported_meta / "episodes.jsonl", episodes_jsonl)
+    _write_jsonl(exported_meta / "episodes_stats.jsonl", stats_jsonl)
+    if (meta / "stats.json").is_file():
+        aggregated = aggregate_episode_stats([row["stats"] for row in stats_jsonl])
+        (exported_meta / "stats.json").write_text(json.dumps(aggregated, indent=4) + "\n", encoding="utf-8")
     info.update(
         {
-            "total_episodes": len(indices),
-            "total_frames": frame_count,
-            "total_chunks": len({index // chunk_size for index in indices}),
-            "splits": {"train": f"0:{len(indices)}"},
+            "total_episodes": len(selected),
+            "total_frames": first_frame_index,
+            "total_chunks": len({new_index // chunk_size for new_index in range(len(selected))}),
+            "splits": {"train": f"0:{len(selected)}"},
         }
     )
-    (output / "meta" / "info.json").write_text(json.dumps(info, indent=4) + "\n", encoding="utf-8")
+    (exported_meta / "info.json").write_text(json.dumps(info, indent=4) + "\n", encoding="utf-8")
+
+    source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+    selection_rule = "all episodes" if include_failures else SELECTION_RULE
+    exported_manifest = {
+        **{key: value for key, value in manifest.items() if key not in {"episodes", "requested_states", "sft_subset"}},
+        "complete": True,
+        "source_dataset": dataset.name,
+        "source_manifest_sha256": source_manifest_sha256,
+        "requested_states": [episode["state"]["state_id"] for episode in manifest_episodes],
+        "episodes": manifest_episodes,
+        "sft_subset": {
+            **sft_subset_summary(manifest_episodes),
+            "selection_rule": selection_rule,
+            "source_episode_indices": source_indices,
+        },
+    }
+    (exported_meta / COLLECTION_MANIFEST_FILENAME).write_text(
+        json.dumps(exported_manifest, indent=2) + "\n", encoding="utf-8"
+    )
     provenance = {
         "schema_id": "shakebench.sft_subset",
-        "schema_version": 1,
+        "schema_version": 2,
         "source_dataset": dataset.name,
-        "source_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
-        "selection_rule": "all episodes" if include_failures else SELECTION_RULE,
-        "selected_episode_indices": indices,
-        "selected_frame_count": frame_count,
+        "source_manifest_sha256": source_manifest_sha256,
+        "source_manifest_copy": SOURCE_MANIFEST_FILENAME,
+        "selection_rule": selection_rule,
+        "source_episode_indices": source_indices,
+        "exported_episode_indices": list(range(len(selected))),
+        "exported_episode_count": len(selected),
+        "exported_frame_count": first_frame_index,
         "attempted_episode_count": len(manifest["episodes"]),
         "excluded_failure_count": len(manifest["episodes"]) - len(selected),
         "failures_retained_in_source_only": not include_failures,
     }
-    (output / "meta" / SUBSET_PROVENANCE_FILENAME).write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+    (exported_meta / SUBSET_PROVENANCE_FILENAME).write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
     return provenance
 
 
@@ -148,12 +277,11 @@ def main(argv=None):
     from lerobot.datasets.lerobot_dataset import LeRobotDataset
 
     dataset = LeRobotDataset("shakebench/oracle-gamma-zero", root=args.output)
-    assert dataset.num_episodes == len(provenance["selected_episode_indices"]), dataset.num_episodes
-    assert len(dataset) == provenance["selected_frame_count"], len(dataset)
-    assert (
-        sorted({int(dataset[index]["episode_index"]) for index in range(len(dataset))})
-        == provenance["selected_episode_indices"]
-    )
+    assert dataset.num_episodes == provenance["exported_episode_count"], dataset.num_episodes
+    assert len(dataset) == provenance["exported_frame_count"], len(dataset)
+    assert sorted({int(dataset[index]["episode_index"]) for index in range(len(dataset))}) == provenance[
+        "exported_episode_indices"
+    ]
     print(json.dumps(provenance, sort_keys=True))
     return 0
 

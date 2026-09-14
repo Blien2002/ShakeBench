@@ -17,10 +17,13 @@ from pathlib import Path
 from typing import Any
 
 from robosuite.utils.shakebench_dev_states import CAN_NOMINAL_XY_M, CAN_XY_HALF_RANGE_M
+from robosuite.utils.shakebench_state_schema import normalize_state
 
 TRAIN_STATE_SCHEMA = "shakebench.train_states"
-TRAIN_STATE_SCHEMA_VERSION = 1
-TRAIN_STATE_GENERATOR_ID = "shakebench.sha256_uniform.v1"
+TRAIN_STATE_SCHEMA_VERSION = 2
+# Own namespace: sharing the Phase 07 dev namespace made generate_train_states
+# reproduce the frozen dev execution states word for word.
+TRAIN_STATE_GENERATOR_ID = "shakebench.sha256_uniform.train.v1"
 TRAIN_STATE_SEED_CEILING = 2**32
 
 
@@ -37,6 +40,41 @@ def _uniform_word(seed: int, index: int, channel: str) -> float:
 def _integer_word(seed: int, index: int, channel: str) -> int:
     token = f"{TRAIN_STATE_GENERATOR_ID}:{seed}:{index}:{channel}"
     return int.from_bytes(hashlib.sha256(token.encode("ascii")).digest()[:4], "big")
+
+
+def execution_state_fingerprint(state: Mapping[str, Any]) -> str:
+    """Execution identity of one state, independent of its chosen ID and split.
+
+    The comparison covers the inputs that decide an episode: the object start
+    position and task spec, the excitation and IMU seeds, and the time offset.
+    Worktable pose, yaw and initial velocity are derived from those by every
+    state producer and are omitted entirely by the frozen dev asset, so they are
+    not part of the identity.
+    """
+
+    normalized = normalize_state(state)
+    try:
+        seed = int(normalized.get("excitation_seed", normalized.get("seed", 0)))
+        payload = {
+            "object_xy_m": [float(value) for value in normalized["object_xy_m"]],
+            "task": normalized.get("task"),
+            "excitation_seed": seed,
+            "imu_seed": int(normalized.get("imu_seed", seed)),
+            "t0_s": float(normalized.get("t0_s", 0.0)),
+        }
+    except (TypeError, ValueError):
+        raise TrainStateError("state must carry numeric object_xy_m, seeds and t0_s") from None
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _state_identity(value: Any) -> tuple[str, str]:
+    """Return the comparison key and the human label of one state or state ID."""
+
+    if isinstance(value, Mapping):
+        label = str(value.get("state_id") or "unnamed-state")
+        return execution_state_fingerprint(value), label
+    return str(value), str(value)
 
 
 def train_state_artifact_hash(payload: Mapping[str, Any]) -> str:
@@ -76,7 +114,7 @@ def generate_train_states(count: int, *, seed: int, half_range_m: float = CAN_XY
         excitation_seed = _integer_word(seed, index, "excitation_seed")
         states.append(
             {
-                "state_id": f"shakebench-train-v0-{index:04d}",
+                "state_id": f"shakebench-train-v0-s{seed}-r{half_range:g}-{index:04d}",
                 "split": "train",
                 "object_pose_worktable": [x, y, 0.07, 1.0, 0.0, 0.0, 0.0],
                 "object_xy_m": [x, y],
@@ -164,12 +202,33 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
     }
 
 
-def assert_split_disjoint(
-    train_ids: Iterable[str], eval_ids: Iterable[str], *, train_label: str = "train", eval_label: str = "evaluation"
-) -> None:
-    """Fail closed when an evaluation state list reuses training states."""
+def split_overlap(train_states: Iterable[Any], eval_states: Iterable[Any]) -> list[str]:
+    """Labels of the evaluation states that repeat a training execution state.
 
-    overlap = sorted(set(train_ids) & set(eval_ids))
+    Accepts state mappings, compared by :func:`execution_state_fingerprint`, or
+    bare state IDs, compared as strings.
+    """
+
+    train = {identity: label for identity, label in map(_state_identity, train_states)}
+    evaluation = {identity for identity, _ in map(_state_identity, eval_states)}
+    return sorted(train[identity] for identity in set(train) & evaluation)
+
+
+def assert_split_disjoint(
+    train_states: Iterable[Any],
+    eval_states: Iterable[Any],
+    *,
+    train_label: str = "train",
+    eval_label: str = "evaluation",
+) -> None:
+    """Fail closed when evaluation reuses a training state.
+
+    Bare state IDs alone cannot see two generators that emit different names for
+    the same execution state, so pass the state records to compare them by
+    execution fingerprint.
+    """
+
+    overlap = split_overlap(train_states, eval_states)
     if overlap:
         raise TrainStateError(
             f"{train_label}/{eval_label} state overlap: {overlap[:5]}"
@@ -182,7 +241,9 @@ __all__ = [
     "TrainStateError",
     "assert_split_disjoint",
     "build_train_state_artifact",
+    "execution_state_fingerprint",
     "generate_train_states",
+    "split_overlap",
     "train_state_artifact_hash",
     "verify_train_state_artifact",
 ]

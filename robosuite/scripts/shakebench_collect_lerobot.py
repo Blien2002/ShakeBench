@@ -20,9 +20,9 @@ from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_rollout import (
     ACTION_NAMES,
     CAMERAS,
-    TASK,
     ShakeBenchCameraObservation,
     observation_features,
+    task_description,
 )
 from robosuite.utils.shakebench_starvla import modality_metadata
 
@@ -40,6 +40,7 @@ def dataset_features(height, width):
 def collect_episode(dataset, state, *, horizon, width, height, main_camera="task_close"):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
     profile = OracleControllerProfile()
+    instruction = task_description(state)["instruction"]
     env, program = make_environment(state, gamma=0.0, horizon=horizon)
     reader = None
     try:
@@ -76,7 +77,7 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
             frame["next.reward"] = np.array([reward], dtype=np.float32)
             frame["next.done"] = np.array([cause is not None], dtype=bool)
             frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
-            dataset.add_frame(frame, task=TASK, timestamp=step / dataset.fps)
+            dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
             if cause is not None:
                 break
         dataset.save_episode()
@@ -86,6 +87,7 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
             {
                 "episode_index": dataset.num_episodes - 1,
                 "state": state,
+                "instruction": instruction,
                 "steps": step + 1,
                 "success": cause == "success_latched",
                 "termination_cause": cause,
@@ -144,6 +146,7 @@ def main(argv=None):
 
     if CODEBASE_VERSION != "v2.1":
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
+    instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in states))
     dataset = LeRobotDataset.create(
         repo_id=args.repo_id,
         root=args.output,
@@ -159,7 +162,7 @@ def main(argv=None):
         "physics_backend": "mujoco_cpu",
         "physics_profile": "official",
         "geometry_profile": "world_fixed_arm_v1",
-        "task": TASK,
+        "tasks": instructions,
         "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
         "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
         "action_space": {

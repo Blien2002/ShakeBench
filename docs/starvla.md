@@ -19,7 +19,8 @@ MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m robosuite.scripts.shakebench_colle
 先前生成的缺少 state 的样例不能补造真实 state，需重新采集。
 
 注册指向的训练数据必须是成功子集：先按 [采集说明](lerobot_collection.md) 导出
-`meta/shakebench_sft_subset.json` 标记的成功 episode 目录，再让 `data_root_dir`/mixture 指向该目录。
+`meta/shakebench_sft_subset.json` 标记的成功 episode 目录（已从 0 连续重编号、不含源目录的派生训练缓存），
+再让 `data_root_dir`/mixture 指向该目录。
 未筛选的采集目录包含 timeout、`task_rule_violation` 等失败 rollout，直接训练会把这些示范当作正常行为。
 
 在外部 StarVLA 仓库注册本接口（将路径替换为实际路径）：
@@ -82,8 +83,13 @@ PYTHONPATH=/path/to/starVLA MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
 实际执行动作摘要、policy 身份与分类后的 policy 错误。
 
 用训练过的数据集评测时传 `--dataset <采集目录>`：runner 从中读取相机与分辨率，取代默认 256x256 `task_close`，
-并检查评测状态与训练状态无交集（确实要复现训练状态时才用 `--allow-train-states`）。
-`--inference-timeout-s` 给每次请求设置硬 deadline；超时记为 `policy_timeout`，不会无限等待。
+并检查评测状态与训练状态无交集：按执行状态指纹（物体起始位置、excitation/IMU seed、t0、task 规格）比较，
+所以换一个 state ID 也拦得住（确实要复现训练状态时才用 `--allow-train-states`）。
+每个 episode 开始时调用 policy 的可选 `reset()`，状态策略不会把上一轮的隐状态带进下一轮。
+`--inference-timeout-s` 要求 policy 自己声明可执行的 `deadline_s`（本适配器就是它）：同步的
+`predict()` 一旦开始无法被外部打断，未声明 deadline 的策略会被直接拒绝，而不是事后补记一个假的硬超时。
+超时记为 `policy_timeout`，并丢弃当前 WebSocket 连接、下一次推理前重连，避免把迟到的响应当成下一
+episode 的动作。
 
 客户端发送 `examples=[{image: [main, wrist], lang: instruction}]` 和 `unnorm_key=new_embodiment`，
 图像使用与固定版本 loader 一致的 PIL resize 到 224×224，采集原图仍为 256×256。

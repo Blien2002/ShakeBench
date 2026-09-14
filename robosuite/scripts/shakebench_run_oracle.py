@@ -539,6 +539,10 @@ def run_episode(
     observation or the scoreable trace.
     """
 
+    # The verifier binds this episode to the committed record it reloads from the
+    # asset, so hash exactly that mapping; the alias-normalized copy is only for
+    # execution, and adding object_* keys would otherwise change the digest.
+    committed_state = state
     state = normalize_state(state)
     state_id = str(state["state_id"])
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
@@ -753,7 +757,7 @@ def run_episode(
             "geometry_profile": env.geometry_profile,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
-            "state_sha256": _digest(state),
+            "state_sha256": _digest(committed_state),
             **({"task_contract": env.task_spec.contract()} if variant else {}),
             "outcome_contract": outcome_contract(),
             "outcome_contract_sha256": outcome_contract_sha256(),

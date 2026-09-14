@@ -23,8 +23,11 @@ python -m robosuite.scripts.shakebench_collect_lerobot --states robosuite/models
   --output out/lerobot_gamma_zero_train
 ```
 
-train 状态池按 seed 确定性重建，`scoreable=false`，与冻结的 dev/official/knee 资产各自独立校验；
-评测必须使用与训练无交集的状态（见 `shakebench_evaluate` 的 `--dataset` 检查）。
+train 状态池按 seed 确定性重建，state ID 含 seed 与 half-range（`shakebench-train-v0-s<seed>-r<range>-<index>`），
+因此不同池不会重名、按 ID 合并不会替换错 episode；生成命名空间与 dev 生成器分开，避免与冻结 dev 状态
+逐字重复。`scoreable=false`，与冻结的 dev/official/knee 资产各自独立校验。
+评测必须使用与训练无交集的状态：`shakebench_evaluate --dataset` 按执行状态指纹（物体起始位置、
+excitation/IMU seed、t0、task 规格）比较，而不只是比 state ID（见 `shakebench_evaluate` 的 `--dataset` 检查）。
 输出目录必须不存在，不覆盖、不上传。
 这是实时 MuJoCo CPU 物理 rollout，EGL 渲染双相机；不是合成动作，也不是实物机器人采集。
 使用当前 `world_fixed_arm_v1` 场景、`official` 物理配置及隔离的当前状态专家。
@@ -44,7 +47,10 @@ Gamma 固定为零，没有命令行改写入口；零外部激励不等于 IMU 
 | `task_index` | 指向 `meta/tasks.jsonl` 中的英文指令，官方读取器将其解析为 `task` |
 | `next.reward / next.done / next.success` | 当前动作后的奖励、episode 结束标记、成功标记；超时的 done=true 不代表成功 |
 
-任务指令：**Pick up the can from the table and place it in the target tray.**
+任务指令：默认 can 任务为 **Pick up the can from the table and place it in the target tray.**；
+bread/cookie-box 等任务变体按当前状态的 `task_description` 写入（例如 **Pick up the bread from the table
+and place it in the target basket.**），manifest 用 `tasks` 列出本次采集写入的所有指令，
+每个 episode 记录自己的 `instruction`。
 动作前三维控制器缩放为每步 ±0.05 m，中三维为 ±0.5 rad，夹爪 -1 打开、+1 闭合。
 oracle 自身的阶段限幅仍生效。采样率固定 20 Hz，`timestamp=t/20`；不补帧、不添加视频展示用的停留帧。
 
@@ -71,8 +77,16 @@ python -m robosuite.scripts.shakebench_export_sft_subset \
   --dataset out/lerobot_gamma_zero_train --output out/lerobot_gamma_zero_train_sft
 ```
 
-导出器只复制 `success_latched` episode 的 parquet 与元数据，重写 `info.json` 计数，写入
-`meta/shakebench_sft_subset.json`（来源 manifest 哈希、选中索引、帧数），并用官方读取器回读校验。
+导出器只复制 `success_latched` episode，并把它们**从 0 连续重编号**：parquet 文件名、`episodes.jsonl`、
+`episodes_stats.jsonl`、parquet 的 `episode_index`/`index` 列以及 `info.json` 计数都描述导出编号
+（官方读取器会枚举 `range(total_episodes)`，稀疏目录会直接读失败）。元数据只复制格式文件
+（`tasks.jsonl`、`modality.json` 以及存在时的 `stats.json` 聚合副本），不继承 StarVLA 生成的
+`stats_gr00t.json`、`steps_data_index.pkl` 等派生训练缓存——它们描述源 episode，会让子集报告错的
+步数、索引和 min-max 归一化统计。
+导出的 `meta/shakebench_collection.json` 只描述导出数据（episode 重编号并另存 `source_episode_index`，
+`requested_states` 只列保留状态，`sft_subset.selection_rule` 标明本次选择规则）；源 manifest 原样
+保存在 `meta/shakebench_source_collection.json`。`meta/shakebench_sft_subset.json` 记录来源 manifest
+哈希、源 episode 索引、导出索引与帧数，`shakebench_evaluate --dataset` 会读取它作为溯源。
 失败 episode 仍留在源目录供审计；确实要用失败示范时需显式传 `--include-failures`。
 中断时 `complete=false`，已保存 episode 保留，当前未保存 episode 不视为完整数据；不自动续跑。
 这些训练采集数据的 `scoreable=false`，不能替代正式 benchmark 评分。
