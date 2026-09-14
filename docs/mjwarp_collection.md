@@ -85,8 +85,13 @@ SHAKEBENCH_TEST_DEVICE=cuda:0 SHAKEBENCH_TEST_PHYSICS_PROFILE=probe /tmp/shakebe
 运行时盖写到模型相机 `frontview`，因此 GPU 渲染只吃模型相机也能复现 CPU 的取景。
 输出 `scoreable=false`；CPU 路径仍是评分与参考通道。
 
-当前状态（2026-09-14）：链路已通，但任务级等价性未标定。同一 dev state 上
-CPU official 在 173 步成功；GPU `probe` 在第 49 步命中穿透规则
-（`max_illegal_penetration_m = 0.5 mm`，静止期实测约 0.12 mm），
-GPU `official` 跑满 1200 步未成功。下一步是接触标定（solref/solimp/impratio 与穿透度量），
-并加一条「同一 state 在 CPU/GPU 上同结果」的门槛测试。
+当前状态（2026-09-14）：链路已通，任务级等价性未达成，根因已定位到运输段的抓取保持。
+
+- 穿透度量不是问题：同一 dev state、同一动作序列下 CPU/GPU 的 `max_illegal_penetration_m`
+  逐步一致（official 抓取段 3.1e-5 vs 1.8e-5；probe 两侧都在第 48 步越过 0.5 mm 阈值，
+  episode 最大值 1.011e-3 vs 1.022e-3）。GPU `probe` 那次失败是 probe 这个 profile
+  本身违规则，与后端无关。
+- 真正的差异在 official：CPU 第 172 步 latch success（物体—目标间距收敛到 0.0428 m），
+  GPU 从运输段起物体不再跟随，间距冻结在 0.2593 m，即 GPU 侧抓取在运输中丢失。
+- 下一步：定位抓取保持差异（手指接触力/摩擦、`osc_warp` 的抓取保持、oracle 的 grasp-loss 判据），
+  再决定是否需要接触标定；完成后加一条「同一 state 在 CPU/GPU 上同结果」的门槛测试。
