@@ -10,7 +10,9 @@ non-scoreable (see docs/mjwarp_collection.md); the CPU collector remains the sco
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -57,90 +59,135 @@ def resolve_main_camera(model, requested) -> str:
     return requested
 
 
-def collect_episode(dataset, state, *, horizon, width, height, device, physics_profile, main_camera):
-    """Store (observation_t, applied_action_t, outcome_t+1), rendered on the device."""
+def _frame(observation, action, rendered, *, main_name, world):
+    """Build one pre-step frame and copy only this world's rendered pixels."""
+    return {
+        "action": np.asarray(action, dtype=np.float32).copy(),
+        "observation.images.main": rendered[main_name][world].copy(),
+        "observation.images.wrist": rendered[WRIST_CAMERA][world].copy(),
+        "observation.state": state_vector(observation),
+        "observation.table_imu_window": np.asarray(observation["table_imu_window"], dtype=np.float32),
+        "observation.table_imu_timestamps_s": np.asarray(observation["table_imu_timestamps_s"], dtype=np.float64),
+        "observation.table_imu_dt_s": np.atleast_1d(np.asarray(observation["table_imu_dt_s"], dtype=np.float32)),
+    }
+
+
+def collect_batch(dataset, states, *, horizon, width, height, device, physics_profile, main_camera):
+    """Run and save one homogeneous batch; one LeRobot episode is emitted per world."""
     from robosuite.utils.shakebench_mjwarp import MJWarpBatch
 
+    if not states:
+        raise ValueError("at least one state is required")
     profile = OracleControllerProfile()
-    instruction = task_description(state)["instruction"]
-    env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
+    envs, programs = [], []
     try:
-        if env.control_freq != dataset.fps or env.action_dim != 7:
+        for state in states:
+            env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
+            envs.append(env)
+            programs.append(program)
+        if any(env.control_freq != dataset.fps or env.action_dim != 7 for env in envs):
             raise ValueError("dataset must match the current 20 Hz, 7D oracle contract")
-        model = env.sim.model._model
-        main_name = resolve_main_camera(model, main_camera)
-        batch = MJWarpBatch([env], [program], device=device)
+        main_names = [resolve_main_camera(env.sim.model._model, main_camera) for env in envs]
+        if len(set(main_names)) != 1:
+            raise ValueError("all worlds in a batch must use the same main camera")
+        main_name = main_names[0]
+        batch = MJWarpBatch(envs, programs, device=device)
         batch.enable_rendering([main_name, WRIST_CAMERA], resolution=(width, height))
         observations = batch.reset()
-        controller = ShakeBenchOracleController(
-            profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
-        )
-        cause = None
+        controllers = [
+            ShakeBenchOracleController(
+                profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
+            )
+            for env in envs
+        ]
+        causes = [None] * len(states)
+        frames = [[] for _ in states]
         for step in range(horizon):
-            sample = program.evaluate(step / dataset.fps)
-            if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
-                raise ValueError("gamma=0 must command zero external excitation")
-            observation = observations[0]
-            action = np.clip(controller.action(observation, time_s=step / dataset.fps), -1, 1)
-            if action.shape != (7,) or not np.isfinite(action).all():
-                raise ValueError("oracle produced an invalid action")
+            active = [world for world, cause in enumerate(causes) if cause is None]
+            if not active:
+                break
+            actions = np.zeros((len(states), 7), dtype=np.float32)
+            for world in active:
+                sample = programs[world].evaluate(step / dataset.fps)
+                if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
+                    raise ValueError("gamma=0 must command zero external excitation")
+                action = np.clip(controllers[world].action(observations[world], time_s=step / dataset.fps), -1, 1)
+                if action.shape != (7,) or not np.isfinite(action).all():
+                    raise ValueError("oracle produced an invalid action")
+                actions[world] = action
             rendered = batch.render_rgb()
-            frame = {
-                "action": action.astype(np.float32),
-                "observation.images.main": rendered[main_name][0],
-                "observation.images.wrist": rendered[WRIST_CAMERA][0],
-                "observation.state": state_vector(observation),
-                "observation.table_imu_window": np.asarray(observation["table_imu_window"], dtype=np.float32),
-                "observation.table_imu_timestamps_s": np.asarray(
-                    observation["table_imu_timestamps_s"], dtype=np.float64
-                ),
-                "observation.table_imu_dt_s": np.atleast_1d(
-                    np.asarray(observation["table_imu_dt_s"], dtype=np.float32)
-                ),
+            pre_step_frames = {
+                world: _frame(observations[world], actions[world], rendered, main_name=main_name, world=world)
+                for world in active
             }
-            # Only executed actions are recorded; images and IMU are pre-step device state.
-            observations, metrics = batch.step([action])
-            cause = (
-                "invalid_execution"
-                if metrics["invalid"][0]
-                else resolve_termination_cause(
-                    prior_cause=None,
-                    task_rule_violation=bool(
-                        metrics["contacts"][0, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
-                    ),
-                    success_latched=bool(metrics["success"][0]),
-                    policy_abort=controller.abort_requested,
-                    horizon_exhausted=step + 1 == horizon,
+            # Every world advances together; inactive tails receive a zero action and are not recorded.
+            observations, metrics = batch.step(actions)
+            for world in active:
+                cause = (
+                    "invalid_execution"
+                    if metrics["invalid"][world]
+                    else resolve_termination_cause(
+                        prior_cause=None,
+                        task_rule_violation=bool(
+                            metrics["contacts"][world, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
+                        ),
+                        success_latched=bool(metrics["success"][world]),
+                        policy_abort=controllers[world].abort_requested,
+                        horizon_exhausted=step + 1 == horizon,
+                    )
+                )
+                frame = pre_step_frames[world]
+                frame["next.reward"] = np.array([1.0 if cause == "success_latched" else 0.0], dtype=np.float32)
+                frame["next.done"] = np.array([cause is not None], dtype=bool)
+                frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
+                frames[world].append(frame)
+                causes[world] = cause
+        episodes = []
+        for world, (state, env, program) in enumerate(zip(states, envs, programs)):
+            cause = causes[world] or "horizon_exhausted"
+            instruction = task_description(state)["instruction"]
+            for step, frame in enumerate(frames[world]):
+                dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
+            dataset.save_episode()
+            # PNG bytes are embedded by the official writer; temporary image files are redundant.
+            shutil.rmtree(dataset.root / "images", ignore_errors=True)
+            episodes.append(
+                _json_ready(
+                    {
+                        "episode_index": dataset.num_episodes - 1,
+                        "state": state,
+                        "instruction": instruction,
+                        "steps": len(frames[world]),
+                        "success": cause == "success_latched",
+                        "termination_cause": cause,
+                        "vibration": vibration_record(program),
+                        "imu_mount": env._imu_mount_audit,
+                        "task_context": env.get_policy_task_context(),
+                        "controller_profile": profile.to_dict(),
+                        "physics_backend": "mujoco_warp",
+                        "physics_profile": physics_profile,
+                        "main_camera": main_name,
+                    }
                 )
             )
-            frame["next.reward"] = np.array([1.0 if cause == "success_latched" else 0.0], dtype=np.float32)
-            frame["next.done"] = np.array([cause is not None], dtype=bool)
-            frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
-            dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
-            if cause is not None:
-                break
-        dataset.save_episode()
-        # PNG bytes are embedded by the official writer; temporary image files are redundant.
-        shutil.rmtree(dataset.root / "images", ignore_errors=True)
-        return _json_ready(
-            {
-                "episode_index": dataset.num_episodes - 1,
-                "state": state,
-                "instruction": instruction,
-                "steps": step + 1,
-                "success": cause == "success_latched",
-                "termination_cause": cause,
-                "vibration": vibration_record(program),
-                "imu_mount": env._imu_mount_audit,
-                "task_context": env.get_policy_task_context(),
-                "controller_profile": profile.to_dict(),
-                "physics_backend": "mujoco_warp",
-                "physics_profile": physics_profile,
-                "main_camera": main_name,
-            }
-        )
+        return episodes
     finally:
-        env.close()
+        for env in envs:
+            env.close()
+
+
+def collect_episode(dataset, state, *, horizon, width, height, device, physics_profile, main_camera):
+    """Backward-compatible single-world wrapper around :func:`collect_batch`."""
+    return collect_batch(
+        dataset,
+        [state],
+        horizon=horizon,
+        width=width,
+        height=height,
+        device=device,
+        physics_profile=physics_profile,
+        main_camera=main_camera,
+    )[0]
 
 
 def build_parser():
@@ -149,25 +196,39 @@ def build_parser():
     parser.add_argument("--repo-id", default="shakebench/oracle-gamma-zero-gpu", help="Local dataset ID; no upload")
     parser.add_argument("--states", type=Path, default=Path("robosuite/models/assets/shakebench_states_dev.json"))
     parser.add_argument("--state-id", action="append", help="Select state IDs; default: all in the asset")
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--limit", type=int, default=None, help="Per-shard episode budget")
+    parser.add_argument("--num-worlds", type=int, default=4, help="States simulated and rendered together per batch")
+    parser.add_argument("--num-shards", type=int, default=1, help="Number of independent state-list shards")
+    parser.add_argument("--shard-index", type=int, default=0, help="Zero-based shard selected by this process")
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--height", type=int, default=256)
     parser.add_argument("--main-camera", default=TASK_CLOSE_CAMERA, help="task_close preset or a compiled camera")
-    parser.add_argument("--device", default="cuda:0", help="cuda:N; the CPU fallback is not offered here")
+    parser.add_argument("--device", default="cuda:0", help="cuda:N; cpu is available for debugging")
+    parser.add_argument("--image-writer-processes", type=int, default=0)
+    parser.add_argument("--image-writer-threads", type=int, default=4)
     parser.add_argument(
         "--physics-profile",
         choices=PHYSICS_PROFILES,
-        default="probe",
-        help="probe uses the legacy 20 ms contacts; official applies device-side contact calibration",
+        default="official",
+        help="official applies device-side contact calibration; probe is the legacy exploratory profile",
     )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    if min(args.width, args.height, args.horizon_steps) <= 0 or (args.limit is not None and args.limit <= 0):
-        raise ValueError("dimensions, horizon and limit must be positive")
+    if (
+        min(args.width, args.height, args.horizon_steps, args.num_worlds, args.num_shards) <= 0
+        or (args.limit is not None and args.limit <= 0)
+        or args.shard_index < 0
+        or args.shard_index >= args.num_shards
+        or args.image_writer_processes < 0
+        or args.image_writer_threads < 0
+        or (args.image_writer_processes == 0 and args.image_writer_threads == 0)
+        or (args.image_writer_processes > 0 and args.image_writer_threads == 0)
+    ):
+        raise ValueError("dimensions, batch size, shard values, limit and image writer settings are invalid")
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     state_asset = load_state_asset(args.states)
@@ -177,8 +238,13 @@ def main(argv=None):
         if unknown:
             raise ValueError(f"unknown state IDs: {sorted(unknown)}")
         states = [state for state in states if state["state_id"] in args.state_id]
+    states = states[args.shard_index :: args.num_shards]
+    if args.limit is not None and args.limit > len(states):
+        raise ValueError(f"--limit {args.limit} exceeds the {len(states)} states assigned to this shard")
     if args.limit is not None:
         states = states[: args.limit]
+    if not states:
+        raise ValueError("no states selected for this shard")
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
@@ -190,6 +256,8 @@ def main(argv=None):
         robot_type="Panda",
         features=dataset_features(args.height, args.width),
         use_videos=False,
+        image_writer_processes=args.image_writer_processes,
+        image_writer_threads=args.image_writer_threads,
     )
     instructions = {state["state_id"]: task_description(state)["instruction"] for state in states}
     manifest = {
@@ -213,31 +281,44 @@ def main(argv=None):
         },
         "requested_states": [state["state_id"] for state in states],
         "state_authority": state_asset["authority"],
+        "batch_size": args.num_worlds,
+        "shard": {"index": args.shard_index, "num_shards": args.num_shards},
+        "image_writer": {
+            "processes": args.image_writer_processes,
+            "threads": args.image_writer_threads,
+        },
         "episodes": [],
     }
     manifest_path = args.output / "meta" / "shakebench_collection.json"
     write_json_atomic(args.output / "meta" / "modality.json", modality_metadata())
     write_json_atomic(manifest_path, manifest)
+    grouped = defaultdict(list)
+    for state in states:
+        grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
     try:
-        for state in states:
-            episode = collect_episode(
-                dataset,
-                state,
-                horizon=args.horizon_steps,
-                width=args.width,
-                height=args.height,
-                device=str(args.device),
-                physics_profile=args.physics_profile,
-                main_camera=args.main_camera,
-            )
-            manifest["episodes"].append(episode)
-            write_json_atomic(manifest_path, manifest)
-            print(f"{state['state_id']}: {episode['steps']} steps, {episode['termination_cause']}", flush=True)
+        for group in grouped.values():
+            for begin in range(0, len(group), args.num_worlds):
+                selected = group[begin : begin + args.num_worlds]
+                episodes = collect_batch(
+                    dataset,
+                    selected,
+                    horizon=args.horizon_steps,
+                    width=args.width,
+                    height=args.height,
+                    device=str(args.device),
+                    physics_profile=args.physics_profile,
+                    main_camera=args.main_camera,
+                )
+                for state, episode in zip(selected, episodes):
+                    manifest["episodes"].append(episode)
+                    write_json_atomic(manifest_path, manifest)
+                    print(f"{state['state_id']}: {episode['steps']} steps, {episode['termination_cause']}", flush=True)
         manifest["complete"] = True
     except BaseException as exc:
         manifest["error"] = f"{type(exc).__name__}: {exc}"
         raise
     finally:
+        dataset.stop_image_writer()
         manifest["sft_subset"] = sft_subset_summary(manifest["episodes"])
         write_json_atomic(manifest_path, manifest)
     return 0

@@ -76,7 +76,9 @@ SHAKEBENCH_TEST_DEVICE=cuda:0 SHAKEBENCH_TEST_PHYSICS_PROFILE=probe /tmp/shakebe
 
 ```bash
 /tmp/shakebench-lerobot-venv/bin/python -m robosuite.scripts.shakebench_collect_lerobot_gpu \
-  --output out/lerobot_task_close_gpu --limit 1 [--physics-profile probe|official]
+  --output out/lerobot_task_close_gpu \
+  --states robosuite/models/assets/shakebench_task_states_official_v2.json \
+  --num-worlds 8 --image-writer-threads 8 --device cuda:0
 ```
 
 与 CPU 采集器 `shakebench_collect_lerobot` 共用同一套 LeRobot v2.1 schema、动作空间、
@@ -85,6 +87,26 @@ SHAKEBENCH_TEST_DEVICE=cuda:0 SHAKEBENCH_TEST_PHYSICS_PROFILE=probe /tmp/shakebe
 主视角 `task_close` 姿态由 `demo_shakebench_oracle_video.task_close_camera_pose` 提供，
 运行时盖写到模型相机 `frontview`，因此 GPU 渲染只吃模型相机也能复现 CPU 的取景。
 输出 `scoreable=false`；CPU 路径仍是评分与参考通道。
+
+采集器会按任务变体分组，在同一批次中执行 `--num-worlds` 个 state；不同物体或台面配置不会混进同一
+MJCF batch。每个 world 仍保存为独立 LeRobot episode，帧的 pre-step 图像、动作、状态和 next outcome
+保持原有对齐。默认使用 4 个 world 和 4 个异步图像写线程；服务器可根据显存和 CPU 写盘能力调大这两个值。
+
+多进程服务器不要并发写同一个 LeRobot 根目录。用 state-list 分片，并为每个分片指定独立输出目录：
+下面示例假设每个进程独占一张 GPU。
+
+```bash
+for shard in 0 1 2 3; do
+  /tmp/shakebench-lerobot-venv/bin/python -m robosuite.scripts.shakebench_collect_lerobot_gpu \
+    --states robosuite/models/assets/shakebench_task_states_official_v2.json \
+    --output "out/lerobot_gpu/shard_${shard}" \
+    --num-shards 4 --shard-index "${shard}" --num-worlds 8 --device "cuda:${shard}" &
+done
+wait
+```
+
+每个分片的 `meta/shakebench_collection.json` 记录 state 列表、分片编号、batch 大小和图像写线程数，
+便于之后审计或合并。`--limit` 在分片之后生效，适合做每个服务器进程的预算限制。
 
 当前状态（2026-09-14）：GPU official rollout 已能完成一次成功判定；GPU 输出仍为 `scoreable=false`。
 

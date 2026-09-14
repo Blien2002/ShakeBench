@@ -352,6 +352,7 @@ class MJWarpBatch:
             size = 132 + self.raw_model.nq + self.raw_model.nv + 2 * self.raw_model.nu
             self.packet = wp.empty((self.nworld, size), dtype=float)
             self.graph = None
+            self.render_buffers = None
             self.reset()
             if capture and self.device.is_cuda:
                 # Warm compilation first. Capture a 5 ms block and replay it ten
@@ -581,17 +582,20 @@ class MJWarpBatch:
                 cam_active=active,
                 render_skybox=render_skybox,
             )
+            self.render_buffers = {
+                name: wp.empty((self.nworld, self.render_resolution[1], self.render_resolution[0]), dtype=wp.vec3)
+                for name in self.render_cameras
+            }
 
     def render_rgb(self):
         """Render the current device state; returns {camera: uint8 (nworld, height, width, 3)}."""
         if getattr(self, "render_context", None) is None:
             raise RuntimeError("call enable_rendering() before render_rgb()")
-        width, height = self.render_resolution
         with wp.ScopedDevice(self.device):
             mjw.render(self.model, self.data, self.render_context)
             frames = {}
             for index, name in enumerate(self.render_cameras):
-                buffer = wp.empty((self.nworld, height, width), dtype=wp.vec3)
+                buffer = self.render_buffers[name]
                 mjw.get_rgb(self.render_context, index, buffer)
                 frames[name] = (np.clip(buffer.numpy(), 0.0, 1.0) * 255.0).astype(np.uint8)
         return frames

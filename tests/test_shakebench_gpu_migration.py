@@ -58,9 +58,13 @@ def test_current_scene_expert_and_optional_cuda(gamma):
             assert set(initial) == set(ORACLE_STATE_KEYS) | set(TABLE_IMU_POLICY_KEYS)
             assert batch.e.imu_body == env.worktable_body_id
             batch.enable_rendering(["agentview"], resolution=(64, 64))
+            render_buffer = batch.render_buffers["agentview"]
             frames = batch.render_rgb()["agentview"]
+            next_frames = batch.render_rgb()["agentview"]
             assert frames.shape == (1, 64, 64, 3) and frames.dtype == np.uint8
+            assert next_frames.shape == frames.shape and next_frames.dtype == frames.dtype
             assert np.ptp(frames) > 20  # a rendered scene, not a flat buffer
+            assert batch.render_buffers["agentview"] is render_buffer
         base = env.sim.data.xpos[env.robot_base_body_id].copy()
         for step in range(3):
             action = controller.action(obs, time_s=step / 20)
