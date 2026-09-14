@@ -36,6 +36,15 @@ from robosuite.utils.shakebench_rotations import wxyz_to_matrix
 
 wp.set_module_options({"enable_backward": False})
 
+# The official profile pins finger-can contacts to a 4e-4 s hard contact. The
+# float32 device solver cannot hold that stiffness against a position servo that
+# keeps closing, so the can slips out of the grasp during transport. Relax only
+# the two finger-can pairs on the device side; can-table and can-target keep the
+# authored 4e-4 values the penetration rule is calibrated against.
+# ponytail: one constant for both finger pairs; give each pair its own value if a
+# second contact ever needs separate calibration.
+DEVICE_FINGER_CAN_CONTACT_TIMECONST_S = 4.0e-3
+
 
 @dataclass(frozen=True)
 class RigidBodyState:
@@ -333,6 +342,7 @@ class MJWarpBatch:
             self.model.opt.tolerance.fill_(float(self.raw_model.opt.tolerance))
             if self.model.is_sparse:
                 raise ValueError("Panda collector currently requires dense MJWarp inertia storage")
+            self._calibrate_finger_contacts()
             self.data = mjw.make_data(self.raw_model, nworld=self.nworld, nconmax=nconmax, njmax=njmax)
             self.k = self._kinematics()
             self.c = self._controller()
@@ -353,6 +363,22 @@ class MJWarpBatch:
                     self._block()
                 self.graph = captured.graph
                 self.reset()
+
+    def _calibrate_finger_contacts(self):
+        """Relax the device-side stiffness of the two finger-can contact pairs."""
+        host = self.raw_model
+        pad_ids = {host.geom(name).id for name in self.envs[0].finger_pad_geom_names}
+        can_ids = {host.geom(name).id for name in self.envs[0].can.contact_geoms}
+        solref = self.model.pair_solref.numpy()
+        matched = 0
+        for index in range(host.npair):
+            pair = {int(host.pair_geom1[index]), int(host.pair_geom2[index])}
+            if pair & pad_ids and pair & can_ids:
+                solref.reshape(-1, host.npair, solref.shape[-1])[..., index, 0] = DEVICE_FINGER_CAN_CONTACT_TIMECONST_S
+                matched += 1
+        if matched != len(pad_ids):
+            raise ValueError(f"expected one finger-can pair per finger pad, matched {matched}")
+        self.model.pair_solref.assign(solref)
 
     @staticmethod
     def _signature(env):
