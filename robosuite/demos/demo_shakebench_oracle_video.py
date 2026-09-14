@@ -57,13 +57,10 @@ def _task_close_camera() -> mujoco.MjvCamera:
     LIBERO's orientation carries no roll, which is what MuJoCo free cameras
     provide (right axis horizontal to 1e-7).
     """
-    profile = load_geometry_profile()
-    deck_top = np.asarray(profile["table_top_pos_m"], dtype=float)
-    scale = float(profile["retained_table_dimensions_m"][0]) / LIBERO_AGENTVIEW_TABLE_M
+    position, quat, deck_top = task_close_camera_pose()
     rotated = np.zeros(9)
-    mujoco.mju_quat2Mat(rotated, np.array(LIBERO_AGENTVIEW_QUAT_WXYZ))
+    mujoco.mju_quat2Mat(rotated, quat)
     forward = -rotated.reshape(3, 3)[:, 2]
-    position = deck_top + scale * (np.array(LIBERO_AGENTVIEW_POS_M) - np.array(LIBERO_AGENTVIEW_TABLE_TOP_M))
     camera = mujoco.MjvCamera()
     camera.type = mujoco.mjtCamera.mjCAMERA_FREE
     # Aim the optical axis at the deck plane, as LIBERO's axis lands on its own tabletop.
@@ -73,6 +70,20 @@ def _task_close_camera() -> mujoco.MjvCamera:
     camera.azimuth = float(np.degrees(np.arctan2(forward[1], forward[0])))
     camera.elevation = float(np.degrees(np.arcsin(forward[2])))
     return camera
+
+
+def task_close_camera_pose(profile=None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return (position_m, quat_wxyz, deck_top_m) of the main task view in world coordinates.
+
+    Renderers that only accept model cameras (mujoco_warp's ray tracer, for example)
+    use this pose directly, so their images frame the task exactly like the CPU
+    free-camera preset does.
+    """
+    profile = profile or load_geometry_profile()
+    deck_top = np.asarray(profile["table_top_pos_m"], dtype=float)
+    scale = float(profile["retained_table_dimensions_m"][0]) / LIBERO_AGENTVIEW_TABLE_M
+    position = deck_top + scale * (np.array(LIBERO_AGENTVIEW_POS_M) - np.array(LIBERO_AGENTVIEW_TABLE_TOP_M))
+    return position, np.array(LIBERO_AGENTVIEW_QUAT_WXYZ, dtype=float), deck_top
 
 
 class FFmpegVideoWriter:
@@ -287,10 +298,19 @@ class VideoObserver:
         metrics = env.get_metrics()
         self.last_step = step
         self.last_phase = _phase_label(controller)
-        self.last_frame = raw if self.raw else annotate_frame(
-            raw, tier=self.tier, gamma=self.gamma, state_id=self.state_id, step=step,
-            policy_rate_hz=self.policy_rate_hz, phase=self.last_phase,
-            success=bool(metrics["success"]["passed"]),
+        self.last_frame = (
+            raw
+            if self.raw
+            else annotate_frame(
+                raw,
+                tier=self.tier,
+                gamma=self.gamma,
+                state_id=self.state_id,
+                step=step,
+                policy_rate_hz=self.policy_rate_hz,
+                phase=self.last_phase,
+                success=bool(metrics["success"]["passed"]),
+            )
         )
         self.writer.append_data(self.last_frame)
 

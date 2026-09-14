@@ -70,3 +70,23 @@ SHAKEBENCH_TEST_DEVICE=cuda:0 SHAKEBENCH_TEST_PHYSICS_PROFILE=probe /tmp/shakebe
 物理为 float32，OSC 小矩阵使用 float64。GPU 模型上传后恢复 MJCF 中的 solver tolerance，
 避免 MJWarp 默认放宽到 1e-6 后过早终止；实际值写入每个 episode。
 一致性检查不要求逐位相同，也不能用短程检查推断完整任务成功率。
+
+## GPU 数据采集（LeRobot v2.1）
+
+```bash
+/tmp/shakebench-lerobot-venv/bin/python -m robosuite.scripts.shakebench_collect_lerobot_gpu \
+  --output out/lerobot_task_close_gpu --limit 1 [--physics-profile probe|official]
+```
+
+与 CPU 采集器 `shakebench_collect_lerobot` 共用同一套 LeRobot v2.1 schema、动作空间、
+8 维状态和 IMU 字段，区别只在后端：物理走 MJWarp，图像走 mujoco_warp 的 CUDA 光追
+（`MJWarpBatch.enable_rendering` / `render_rgb`，不需要 EGL）。宿主只为播种设备模型而编译 MJCF。
+主视角 `task_close` 姿态由 `demo_shakebench_oracle_video.task_close_camera_pose` 提供，
+运行时盖写到模型相机 `frontview`，因此 GPU 渲染只吃模型相机也能复现 CPU 的取景。
+输出 `scoreable=false`；CPU 路径仍是评分与参考通道。
+
+当前状态（2026-09-14）：链路已通，但任务级等价性未标定。同一 dev state 上
+CPU official 在 173 步成功；GPU `probe` 在第 49 步命中穿透规则
+（`max_illegal_penetration_m = 0.5 mm`，静止期实测约 0.12 mm），
+GPU `official` 跑满 1200 步未成功。下一步是接触标定（solref/solimp/impratio 与穿透度量），
+并加一条「同一 state 在 CPU/GPU 上同结果」的门槛测试。
