@@ -20,7 +20,7 @@ Gamma 固定为零，没有命令行改写入口；零外部激励不等于 IMU 
 
 | 字段 | 内容 |
 | --- | --- |
-| `observation.images.main` | 默认 LIBERO `agentview` 姿态主视角（见下），RGB 256×256；`--main-camera task_close` 切回 oracle 视频的近距离视角，也可直接传编译场景中的相机名 |
+| `observation.images.main` | 主视角 `task_close`，即 LIBERO `agentview` 姿态（见下），RGB 256×256；也可用 `--main-camera` 直接传编译场景中的相机名 |
 | `observation.images.wrist` | `robot0_eye_in_hand` 腕部相机，与主相机同一仿真时刻 |
 | `observation.state` | float32[8]，base 系末端位置/轴角及左右夹爪关节位置 |
 | `action` | float32[7]，Panda OSC_POSE，机器人 base 系的归一化位姿增量及夹爪控制，范围 [-1, 1] |
@@ -34,14 +34,15 @@ Gamma 固定为零，没有命令行改写入口；零外部激励不等于 IMU 
 动作前三维控制器缩放为每步 ±0.05 m，中三维为 ±0.5 rad，夹爪 -1 打开、+1 闭合。
 oracle 自身的阶段限幅仍生效。采样率固定 20 Hz，`timestamp=t/20`；不补帧、不添加视频展示用的停留帧。
 
-主相机默认使用 LIBERO 的 `agentview` 姿态：LIBERO 在 `libero/libero/envs/bddl_base_domain.py` 的
+主视角 `task_close` 用的就是 LIBERO 的 `agentview` 姿态：LIBERO 在 `libero/libero/envs/bddl_base_domain.py` 的
 `BenchmarkEnv._setup_camera` 中把观测相机设为 pos `[0.5886, 0, 1.4904]`、quat wxyz
 `[0.6380, 0.3049, 0.3049, 0.6380]`（`env_wrapper.py` 的 `camera_names[0]`，另一台
 `canonical_agentview` 只是同一姿态后退 0.05 m），对应台面中心 `(0, 0, 0.8)` 的 0.8 m 方桌。
-这里把同一相机-台面偏移整体搬到 ShakeBench 台面中心，姿态与到台面的距离都不变（MuJoCo 自由相机，
-45° fovy，与 LIBERO 一致），因此物体的像素尺度与 LIBERO 相同；ShakeBench 台面为 0.65 m×0.60 m，
-在画面中的占比略小于 LIBERO 的 0.8 m 方桌。相机实现见 `robosuite/utils/shakebench_starvla.py` 的
-`libero_agentview_camera`。
+这里把同一相机-台面偏移按台面尺寸比 `0.65/0.80` 缩放后搬到 ShakeBench 台面中心，姿态不变
+（MuJoCo 自由相机，45° fovy，与 LIBERO 一致），因此 0.65 m×0.60 m 台面在画面中的占比与
+LIBERO 的 0.8 m 方桌相当（近端台角同样超出画面），物体比 LIBERO 近 `1/0.8125 ≈ 1.23` 倍、
+像素尺度相应放大。相机实现见
+`robosuite/demos/demo_shakebench_oracle_video.py` 的 `_task_close_camera`（oracle 视频与数据集共用同一台相机）。
 
 图像以无损 PNG 字节嵌入 `data/chunk-000/episode_XXXXXX.parquet`，这是 LeRobot v2.1 的 image 模式，
 无需外部 MP4。采集器另生成 StarVLA 所需的 `meta/modality.json`，接入见 [StarVLA 文档](starvla.md)。官方写入器同时生成 `meta/info.json`、`tasks.jsonl`、`episodes.jsonl`、`episodes_stats.jsonl`。
