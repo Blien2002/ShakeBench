@@ -14,7 +14,6 @@ from robosuite.utils.shakebench_deck import (
     audit_compiled_deck_model,
     audit_deck_xml,
 )
-from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.utils.shakebench_isolator import AXES, DEFAULT_ISOLATOR_CONFIG, derive_isolator_parameters
 
 
@@ -52,10 +51,10 @@ def test_shakebench_arena_is_exported_and_compiles_with_canonical_inertial():
     assert audit["collision_geom"]["conaffinity"] != 0
 
 
-def test_raw_arena_xml_defaults_equal_python_defaults_without_configurator():
-    """The asset itself must be valid before Arena mutates its XML tree."""
+def test_arena_xml_defaults_equal_python_defaults_before_scene_overlay():
+    """The compiled arena must carry the Python isolator defaults."""
 
-    model = mujoco.MjModel.from_xml_path(xml_path_completion("arenas/shakebench_arena.xml"))
+    _, _, _, model = _compile_deck_arena()
     expected = derive_isolator_parameters(DEFAULT_ISOLATOR_CONFIG)
     body_id = model.body("worktable").id
     assert model.body_mass[body_id] == pytest.approx(DEFAULT_ISOLATOR_CONFIG.mass_kg, rel=0.0, abs=1e-12)

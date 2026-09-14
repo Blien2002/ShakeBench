@@ -337,5 +337,5 @@ README、演示说明和实施文档只描述新安装、新 IMU、新振动接�
 1. `shakebench_authority` 与 phase07_5a 资产已删除，`shakebench_committed_states` 改绑当前 runtime contract / geometry / controller / outcome 绑定；official 与 knee committed states、task states v2 已按同一确定性生成器重新冻结，state 数量与数值不变（400 / 100 / 400 / 600），`tests/test_shakebench_protocol.py` 与 `tests/test_shakebench_task_variants.py` 全部通过。
 2. `shakebench_metrics` 的 summary、`audit_compiled_model()` 与消费者已从 `can` 改名为 `object`；`run_oracle` 的 run/episode schema 升到 7，旧 v5 只读 verifier 删除，旧 v6 产物再验证会 fail-closed 失败而不会被误读。
 3. `shakebench_dev_states`、`shakebench_committed_states`、`shakebench_task_states` 的 schema id 仍带 Phase 07/08/09 字样；`shakebench_metrics` 的 `can_collision_envelope` 算法名同样保留旧命名（`CANONICAL_CAN_*` 常量与世界附加 XML 文件名已改为 object/world 命名）。它们不影响运行，属命名收尾。
-4. `out/` 是未纳入 git 跟踪的历史运行产物（旧几何绑定视频与 rollout），删除不可恢复；`SHA256SUMS` 仍指向旧的 r6 证据包。两者都需要确认后再清理。
+4. `out/` 是未纳入 git 跟踪的历史运行产物（旧几何绑定视频与 rollout，约 2.7 GB），删除不可恢复，需要确认后再清理。旧的 `SHA256SUMS` 与 `docs/phase_09_qualification_manifest.json` 已随过时证据链删除。
 5. `shakebench_cpu_batch` 与 `shakebench_scorecard` 已随 Phase 07.5B 批处理链删除；scoring 库（Wilson 区间、paired 比较、scorecard 重算）保留并由 `tests/test_shakebench_scoring.py` 覆盖。`shakebench_cli`、`shakebench_verify_actuators`、`shakebench_probe_deck_driver`、`compare_table_imu`、`shakebench_generate_excitation_golden` 仍待裁决。
