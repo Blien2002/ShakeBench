@@ -50,6 +50,10 @@ def test_current_scene_expert_and_optional_cuda(gamma):
             initial = batch.reset()[0]
             assert set(initial) == set(ORACLE_STATE_KEYS) | set(TABLE_IMU_POLICY_KEYS)
             assert batch.e.imu_body == env.worktable_body_id
+            batch.enable_rendering(["agentview"], resolution=(64, 64))
+            frames = batch.render_rgb()["agentview"]
+            assert frames.shape == (1, 64, 64, 3) and frames.dtype == np.uint8
+            assert np.ptp(frames) > 20  # a rendered scene, not a flat buffer
         base = env.sim.data.xpos[env.robot_base_body_id].copy()
         for step in range(3):
             action = controller.action(obs, time_s=step / 20)
