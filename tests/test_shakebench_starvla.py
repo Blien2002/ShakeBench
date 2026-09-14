@@ -8,6 +8,7 @@ import threading
 from pathlib import Path
 from types import SimpleNamespace
 
+import mujoco
 import numpy as np
 import pytest
 
@@ -16,6 +17,7 @@ from robosuite.utils.shakebench_starvla import (
     CAMERAS,
     StarVLAEnvironment,
     StarVLAPolicy,
+    libero_agentview_camera,
     modality_metadata,
     observation_features,
     rollout_starvla,
@@ -132,3 +134,31 @@ def test_official_starvla_loader(tmp_path):
     restored = dataset.transforms.unapply(dataset.transforms(raw))
     for key in config.action_keys:
         np.testing.assert_allclose(restored[key], original[key], atol=1e-6)
+
+
+def test_libero_agentview_camera_reproduces_the_libero_pose():
+    """Pin the transplant against LIBERO's own numbers, not against our constants.
+
+    Upstream source: libero/libero/envs/bddl_base_domain.py::BenchmarkEnv._setup_camera,
+    which sets the observation camera for a tabletop centred at (0, 0, 0.8).
+    """
+    deck_top = np.array([0.11, 0.0, 0.299])
+    libero_pos = np.array([0.5886131746834771, 0.0, 1.4903500240372423])
+    libero_quat = [0.6380177736282349, 0.3048497438430786, 0.30484986305236816, 0.6380177736282349]
+    camera = libero_agentview_camera(deck_top)
+    assert camera.type == mujoco.mjtCamera.mjCAMERA_FREE
+    rotated = np.zeros(9)
+    mujoco.mju_quat2Mat(rotated, np.array(libero_quat))
+    rotated = rotated.reshape(3, 3)
+    assert abs(rotated[2, 0]) < 1e-6  # LIBERO's view has no roll, so a free camera can hold it
+    forward = -rotated[:, 2]
+    azimuth, elevation = np.radians(camera.azimuth), np.radians(camera.elevation)
+    # MuJoCo free-camera convention: pos = lookat - distance * (cos el cos az, cos el sin az, sin el).
+    direction = np.array([np.cos(elevation) * np.cos(azimuth), np.cos(elevation) * np.sin(azimuth), np.sin(elevation)])
+    np.testing.assert_allclose(direction, forward, atol=1e-6)  # mju_quat2Mat is single precision
+    np.testing.assert_allclose(
+        camera.lookat - camera.distance * direction, deck_top + (libero_pos - [0.0, 0.0, 0.8]), atol=1e-6
+    )
+    assert camera.lookat[2] == pytest.approx(deck_top[2])  # optical axis lands on the deck plane
+    assert abs(camera.azimuth) == pytest.approx(180.0)  # camera stands on +x looking back at the deck
+    assert camera.elevation == pytest.approx(-38.922, abs=1e-3)

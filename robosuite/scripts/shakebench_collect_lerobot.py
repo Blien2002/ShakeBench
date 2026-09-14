@@ -19,6 +19,7 @@ from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_starvla import (
     ACTION_NAMES,
     CAMERAS,
+    LIBERO_AGENTVIEW,
     TASK,
     StarVLAObservation,
     modality_metadata,
@@ -36,7 +37,7 @@ def dataset_features(height, width):
     }
 
 
-def collect_episode(dataset, state, *, horizon, width, height, main_camera="task_close"):
+def collect_episode(dataset, state, *, horizon, width, height, main_camera=LIBERO_AGENTVIEW):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
     profile = OracleControllerProfile()
     env, program = make_environment(state, gamma=0.0, horizon=horizon)
@@ -111,7 +112,11 @@ def build_parser():
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--height", type=int, default=256)
-    parser.add_argument("--main-camera", default="task_close", help="task_close preset or a compiled camera name")
+    parser.add_argument(
+        "--main-camera",
+        default=LIBERO_AGENTVIEW,
+        help=f"{LIBERO_AGENTVIEW} or task_close preset, or a compiled camera name",
+    )
     return parser
 
 

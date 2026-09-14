@@ -15,9 +15,44 @@ from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_tasks import TaskSpec
 
 TASK = "Pick up the can from the table and place it in the target tray."
-CAMERAS = {"observation.images.main": "task_close", "observation.images.wrist": "robot0_eye_in_hand"}
+LIBERO_AGENTVIEW = "libero_agentview"
+# LIBERO pins the camera behind every benchmark observation in
+# libero/libero/envs/bddl_base_domain.py::BenchmarkEnv._setup_camera: pos
+# [0.5886, 0, 1.4904], quat wxyz [0.6380, 0.3049, 0.3049, 0.6380] ("agentview",
+# used as camera_names[0] by libero/libero/envs/env_wrapper.py; the sibling
+# "canonical_agentview" is the same pose 0.05 m further back) for a tabletop whose
+# centre is (0, 0, 0.8). The same camera-to-tabletop offset is reused here.
+LIBERO_CAMERA_POS_M = np.array([0.5886131746834771, 0.0, 1.4903500240372423])
+LIBERO_CAMERA_QUAT_WXYZ = np.array([0.6380177736282349, 0.3048497438430786, 0.30484986305236816, 0.6380177736282349])
+LIBERO_CAMERA_TABLE_TOP_M = np.array([0.0, 0.0, 0.8])
+CAMERAS = {"observation.images.main": LIBERO_AGENTVIEW, "observation.images.wrist": "robot0_eye_in_hand"}
 ACTION_NAMES = ["delta_x", "delta_y", "delta_z", "delta_rx", "delta_ry", "delta_rz", "gripper"]
 STATE_NAMES = ["eef_x", "eef_y", "eef_z", "eef_rx", "eef_ry", "eef_rz", "left_finger_qpos", "right_finger_qpos"]
+
+
+def libero_agentview_camera(table_top_pos_m):
+    """Free camera holding LIBERO's agentview pose relative to a deck top at @table_top_pos_m.
+
+    The offset is transplanted unchanged, so the camera sits as far from the deck
+    as LIBERO's does from its tabletop and objects keep their LIBERO pixel size;
+    the 0.65 m ShakeBench deck only fills less of the 45 degree frame than
+    LIBERO's 0.8 m table. LIBERO's orientation needs no roll, which is what
+    MuJoCo free cameras provide (its right axis is horizontal to 1e-7).
+    """
+    rotated = np.zeros(9)
+    mujoco.mju_quat2Mat(rotated, LIBERO_CAMERA_QUAT_WXYZ)
+    forward = -rotated.reshape(3, 3)[:, 2]
+    deck_top = np.asarray(table_top_pos_m, dtype=float)
+    position = deck_top + (LIBERO_CAMERA_POS_M - LIBERO_CAMERA_TABLE_TOP_M)
+    # Aim the optical axis at the deck plane, as LIBERO's ray does at its own tabletop.
+    camera = mujoco.MjvCamera()
+    camera.type = mujoco.mjtCamera.mjCAMERA_FREE
+    camera.distance = float((position[2] - deck_top[2]) / -forward[2])
+    camera.lookat[:] = position + camera.distance * forward
+    # MuJoCo free-camera convention: forward = (cos el cos az, cos el sin az, sin el).
+    camera.azimuth = float(np.degrees(np.arctan2(forward[1], forward[0])))
+    camera.elevation = float(np.degrees(np.arcsin(forward[2])))
+    return camera
 
 
 def task_description(state):
@@ -68,7 +103,7 @@ def validated_actions(value):
 class StarVLAObservation:
     """Shared camera and sensor extraction for both collection and policy evaluation."""
 
-    def __init__(self, env, *, height=256, width=256, main_camera="task_close"):
+    def __init__(self, env, *, height=256, width=256, main_camera=LIBERO_AGENTVIEW):
         self.env = env
         if not isinstance(height, int) or isinstance(height, bool) or height <= 0:
             raise ValueError("height must be a positive integer")
@@ -83,6 +118,8 @@ class StarVLAObservation:
         self.cameras = {**CAMERAS, "observation.images.main": main_camera}
         if main_camera == "task_close":
             self.cameras["observation.images.main"] = _task_close_camera()
+        elif main_camera == LIBERO_AGENTVIEW:
+            self.cameras["observation.images.main"] = libero_agentview_camera(env.table_offset)
         else:
             try:
                 env.sim.model.camera_name2id(main_camera)
@@ -149,7 +186,7 @@ class StarVLAEnvironment:
         horizon=1200,
         height=256,
         width=256,
-        main_camera="task_close",
+        main_camera=LIBERO_AGENTVIEW,
         mode="multisine_v1",
         physics_profile="official",
     ):
