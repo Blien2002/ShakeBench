@@ -31,8 +31,9 @@ CUDA 不可用时直接失败，不会退回 CPU；`--device cpu --no-capture` �
 默认捕获 25 个物理子步的 CUDA Graph，每个 20 Hz 动作重放十次。
 `--nconmax`、`--njmax` 控制容量；溢出记录为 `invalid_execution`。
 
-默认 `official` 保留冻结的 0.4 ms 硬接触，但在当前 MJWarp float32 后端中，
-桌面静止接触的加速度会与 CPU double 后端产生可测差异，尚未通过 IMU 一致性检查。
+默认 `official` 保留 MJCF 的 0.4 ms 硬接触设定；GPU 后端会对罐体的手指抓取、桌面和托盘支撑接触
+做设备侧标定，但不改变 CPU 物理或成功阈值。当前 MJWarp float32 后端中，桌面静止接触的加速度仍会
+与 CPU double 后端产生可测差异，尚未通过 IMU 一致性检查。
 `probe` 使用仓库已有的 20 ms 非正式接触配置，并通过下方的完整 CPU/GPU 状态与 IMU 对照；
 因此示例使用它。两种输出均为非评分采集数据。
 
@@ -85,13 +86,10 @@ SHAKEBENCH_TEST_DEVICE=cuda:0 SHAKEBENCH_TEST_PHYSICS_PROFILE=probe /tmp/shakebe
 运行时盖写到模型相机 `frontview`，因此 GPU 渲染只吃模型相机也能复现 CPU 的取景。
 输出 `scoreable=false`；CPU 路径仍是评分与参考通道。
 
-当前状态（2026-09-14）：链路已通，任务级等价性未达成，根因已定位到运输段的抓取保持。
+当前状态（2026-09-14）：GPU official rollout 已能完成一次成功判定；GPU 输出仍为 `scoreable=false`。
 
-- 穿透度量不是问题：同一 dev state、同一动作序列下 CPU/GPU 的 `max_illegal_penetration_m`
-  逐步一致（official 抓取段 3.1e-5 vs 1.8e-5；probe 两侧都在第 48 步越过 0.5 mm 阈值，
-  episode 最大值 1.011e-3 vs 1.022e-3）。GPU `probe` 那次失败是 probe 这个 profile
-  本身违规则，与后端无关。
-- 真正的差异在 official：CPU 第 172 步 latch success（物体—目标间距收敛到 0.0428 m），
-  GPU 从运输段起物体不再跟随，间距冻结在 0.2593 m，即 GPU 侧抓取在运输中丢失。
-- 下一步：定位抓取保持差异（手指接触力/摩擦、`osc_warp` 的抓取保持、oracle 的 grasp-loss 判据），
-  再决定是否需要接触标定；完成后加一条「同一 state 在 CPU/GPU 上同结果」的门槛测试。
+- 根因是 float32 设备求解器下 4e-4 s 接触产生微小弹跳：托盘支撑接触断续，连续 0.5 s
+  成功窗口无法累积。`MJWarpBatch` 现在按接触类别标定手指抓取和桌面/托盘支撑接触。
+- 同一 dev state、同一动作序列下，CPU 在 policy step 173 latch success，GPU 在 step 174 latch
+  success；GPU 最大非法穿透约 `2.4e-4 m`，低于 `5e-4 m` 阈值。
+- 这只修复 rollout 无法完成的问题；GPU 与 CPU 的逐位物理/IMU 等价性仍需单独验证，CPU 继续作为评分参考。

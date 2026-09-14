@@ -159,7 +159,7 @@ def build_parser():
         "--physics-profile",
         choices=PHYSICS_PROFILES,
         default="probe",
-        help="probe is the profile that still matches the CPU/GPU consistency check; official is not matched yet",
+        help="probe uses the legacy 20 ms contacts; official applies device-side contact calibration",
     )
     return parser
 

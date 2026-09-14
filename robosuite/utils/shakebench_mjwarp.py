@@ -36,14 +36,14 @@ from robosuite.utils.shakebench_rotations import wxyz_to_matrix
 
 wp.set_module_options({"enable_backward": False})
 
-# The official profile pins finger-can contacts to a 4e-4 s hard contact. The
-# float32 device solver cannot hold that stiffness against a position servo that
-# keeps closing, so the can slips out of the grasp during transport. Relax only
-# the two finger-can pairs on the device side; can-table and can-target keep the
-# authored 4e-4 values the penetration rule is calibrated against.
-# ponytail: one constant for both finger pairs; give each pair its own value if a
-# second contact ever needs separate calibration.
-DEVICE_FINGER_CAN_CONTACT_TIMECONST_S = 4.0e-3
+# The official profile pins every can contact to a 4e-4 s hard contact. On the
+# float32 device solver that makes grasp and resting support contacts chatter,
+# so the continuous 0.5 s success window never fills. Calibrate the device by
+# contact class; CPU physics and success thresholds stay unchanged.
+# ponytail: one setting per contact class; give a pair its own value if a second
+# contact ever needs separate calibration.
+DEVICE_FINGER_CAN_CONTACT_SOLREF = (4.0e-3, 1.0)  # (timeconst_s, damping ratio)
+DEVICE_SUPPORT_CONTACT_SOLREF = (4.0e-3, 4.0)
 
 
 @dataclass(frozen=True)
@@ -342,7 +342,7 @@ class MJWarpBatch:
             self.model.opt.tolerance.fill_(float(self.raw_model.opt.tolerance))
             if self.model.is_sparse:
                 raise ValueError("Panda collector currently requires dense MJWarp inertia storage")
-            self._calibrate_finger_contacts()
+            self._calibrate_contacts()
             self.data = mjw.make_data(self.raw_model, nworld=self.nworld, nconmax=nconmax, njmax=njmax)
             self.k = self._kinematics()
             self.c = self._controller()
@@ -364,21 +364,41 @@ class MJWarpBatch:
                 self.graph = captured.graph
                 self.reset()
 
-    def _calibrate_finger_contacts(self):
-        """Relax the device-side stiffness of the two finger-can contact pairs."""
+    def _calibrate_contacts(self):
+        """Relax and damp the device-side can contact pairs (see module constants)."""
         host = self.raw_model
-        pad_ids = {host.geom(name).id for name in self.envs[0].finger_pad_geom_names}
-        can_ids = {host.geom(name).id for name in self.envs[0].can.contact_geoms}
+        env = self.envs[0]
+        can_ids = {host.geom(name).id for name in env.can.contact_geoms}
+        classes = {
+            "finger": (
+                {host.geom(name).id for name in env.finger_pad_geom_names},
+                DEVICE_FINGER_CAN_CONTACT_SOLREF,
+            ),
+            "support": (
+                {
+                    host.geom(name).id
+                    for name in env.table_contact_geom_names + env.target_bottom_geom_names + env.target_wall_geom_names
+                },
+                DEVICE_SUPPORT_CONTACT_SOLREF,
+            ),
+        }
         solref = self.model.pair_solref.numpy()
-        matched = 0
+        view = solref.reshape(-1, host.npair, solref.shape[-1])
+        matched = {name: set() for name in classes}
         for index in range(host.npair):
             pair = {int(host.pair_geom1[index]), int(host.pair_geom2[index])}
-            if pair & pad_ids and pair & can_ids:
-                solref.reshape(-1, host.npair, solref.shape[-1])[..., index, 0] = DEVICE_FINGER_CAN_CONTACT_TIMECONST_S
-                matched += 1
-        if matched != len(pad_ids):
-            raise ValueError(f"expected one finger-can pair per finger pad, matched {matched}")
+            other = pair - can_ids
+            if not pair & can_ids or len(other) != 1:  # only one can geom against one partner geom
+                continue
+            partner = other.pop()
+            for name, (ids, values) in classes.items():
+                if partner in ids:
+                    view[..., index, :] = values
+                    matched[name].add(partner)
         self.model.pair_solref.assign(solref)
+        for name, (ids, _) in classes.items():
+            if matched[name] != ids:
+                raise ValueError(f"missing can-{name} contact pairs: {sorted(ids - matched[name])}")
 
     @staticmethod
     def _signature(env):
