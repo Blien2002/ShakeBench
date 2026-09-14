@@ -29,7 +29,6 @@ from robosuite.utils.shakebench_deck import (
     audit_compiled_deck_model,
     audit_deck_xml,
     command_to_world_state,
-    rotation_vector_to_quat,
     quat_to_rotation_vector,
     _quat_inverse_wxyz,
     _quat_multiply_wxyz,
@@ -52,20 +51,6 @@ LOAD_CASE_WORKTABLE_REFERENCE_PROXY = LOAD_CASE_PANDA_PLUS_WORKTABLE_REFERENCE_P
 CANONICAL_LOAD_CASES = (LOAD_CASE_EMPTY, LOAD_CASE_PANDA_PLUS_WORKTABLE_REFERENCE_PROXY)
 PANDA_BASE_ROLE = "panda_base"
 PANDA_BASE_BODY_NAME = "robot0_base"
-ARTIFACT_SCHEMA_ID = "shakebench.phase02r.conformance_matrix"
-ARTIFACT_SCHEMA_VERSION = 3
-CONTROLLED_ARTIFACT_NAME = "shakebench_phase_02r_probe.json"
-REQUIRED_COVERAGE_FAMILIES = {
-    "zero",
-    "single_axis",
-    "authored_spectrum",
-    "target_gamma",
-    "load",
-    "dt_convergence",
-    "solver_sensitivity",
-}
-
-
 @dataclass(frozen=True)
 class Phase02R4Thresholds:
     """Pre-registered physics-only gates shared by generation and verification."""
@@ -525,97 +510,6 @@ def _program_world_motion(program: Any, time_s: np.ndarray, config: DeckDriverCo
     return pose, twist, acceleration
 
 
-def canonical_gamma_conformance(
-    trace: DeckDriverTrace,
-    program: Any,
-    *,
-    config: DeckDriverConfig,
-    point_offset_m: Iterable[float] = (0.65, 0.0, 0.0),
-    support_normal: Iterable[float] = (0.0, 0.0, 1.0),
-    gravity_m_s2: float = 9.81,
-    discard_s: float = 0.0,
-    include_centripetal: bool = False,
-) -> dict[str, Any]:
-    """Compare commanded and realized Gamma at one physical workpiece point.
-
-    Both quantities are evaluated at the post-step sample timestamps. The
-    actual deck state is never shifted to align it with an earlier command.
-    Spatial acceleration uses ``a + alpha x r`` and, explicitly, the
-    centripetal ``omega x (omega x r)`` term when explicitly enabled. The
-    provisional Phase 02R Gamma definition leaves that optional term off so
-    the Phase 01 unit-replay scale and the command definition are identical;
-    the choice is recorded in every result.
-    """
-
-    if trace.sample_timestamps_s.size == 0:
-        raise ValueError("trace is empty")
-    normal = np.asarray(tuple(support_normal), dtype=float)
-    if normal.shape != (3,) or not np.all(np.isfinite(normal)) or np.linalg.norm(normal) <= 0.0:
-        raise ValueError("support_normal must be a non-zero finite 3-vector")
-    normal /= np.linalg.norm(normal)
-    point = np.asarray(tuple(point_offset_m), dtype=float)
-    if point.shape != (3,) or not np.all(np.isfinite(point)):
-        raise ValueError("point_offset_m must be a finite 3-vector")
-    mask = trace.sample_timestamps_s >= float(discard_s)
-    time_s = trace.sample_timestamps_s[mask]
-    command_pose, command_twist, command_acceleration = _program_world_motion(program, time_s, config)
-    command_point_acceleration = np.asarray(
-        [
-            _world_point_acceleration(
-                pose,
-                twist,
-                acceleration,
-                point,
-                include_centripetal=include_centripetal,
-            )
-            for pose, twist, acceleration in zip(command_pose, command_twist, command_acceleration)
-        ],
-        dtype=float,
-    )
-    actual_point_acceleration = np.asarray(
-        [
-            _world_point_acceleration(
-                pose,
-                twist,
-                acceleration,
-                point,
-                include_centripetal=include_centripetal,
-            )
-            for pose, twist, acceleration in zip(
-                trace.actual_pose[mask], trace.actual_twist[mask], trace.actual_acceleration[mask]
-            )
-        ],
-        dtype=float,
-    )
-    command_effective = command_point_acceleration.dot(normal)
-    actual_effective = actual_point_acceleration.dot(normal)
-    command_peak_index = int(np.argmax(np.abs(command_effective)))
-    actual_peak_index = int(np.argmax(np.abs(actual_effective)))
-    command_gamma = float(np.max(np.abs(command_effective)) / float(gravity_m_s2))
-    actual_gamma = float(np.max(np.abs(actual_effective)) / float(gravity_m_s2))
-    return {
-        "Gamma_commanded": command_gamma,
-        "Gamma_deck_actual": actual_gamma,
-        "gamma_commanded": command_gamma,
-        "gamma_deck_actual": actual_gamma,
-        "relative_error_abs": abs(actual_gamma / command_gamma - 1.0) if command_gamma else 0.0,
-        "command_peak_time_s": float(time_s[command_peak_index]),
-        "actual_peak_time_s": float(time_s[actual_peak_index]),
-        "command_peak_acceleration_m_s2": float(np.max(np.abs(command_effective))),
-        "actual_peak_acceleration_m_s2": float(np.max(np.abs(actual_effective))),
-        "gravity_m_s2": float(gravity_m_s2),
-        "point_offset_m": point.tolist(),
-        "support_normal_world": normal.tolist(),
-        "include_alpha_cross_r": True,
-        "include_centripetal": bool(include_centripetal),
-        "frame": "world",
-        "origin": "deck body origin",
-        "sample_count": int(time_s.size),
-        "sample_time_grid_s": time_s.tolist(),
-        "time_convention": "command evaluated and actual sampled at the same post-step sample timestamp",
-    }
-
-
 def spectrum_conformance(
     trace: DeckDriverTrace,
     program: Any,
@@ -767,125 +661,6 @@ def minimum_line_spacing_hz(program: Any) -> float:
     return float(np.min(spacings))
 
 
-def synthetic_spectrum_estimator_validation(
-    program: Any,
-    *,
-    sample_dt_s: float = 0.0005,
-    amplitude_scale: float = 1.002,
-    phase_perturbation_deg: float = 0.25,
-) -> dict[str, Any]:
-    """Validate the line estimator on a known perturbed multi-line trace.
-
-    The synthetic trace uses the same sample grid and the same post-ramp fit
-    contract as the real driver. It is evaluated before any MuJoCo run so the
-    conditioning and residual thresholds cannot be selected from task or
-    solver outcomes.
-    """
-
-    if not np.isfinite(sample_dt_s) or sample_dt_s <= 0.0:
-        raise ValueError("sample_dt_s must be finite and positive")
-    if not np.isfinite(amplitude_scale) or amplitude_scale <= 0.0:
-        raise ValueError("amplitude_scale must be finite and positive")
-    if not np.isfinite(phase_perturbation_deg):
-        raise ValueError("phase_perturbation_deg must be finite")
-    minimum_spacing = minimum_line_spacing_hz(program)
-    beat_period = 1.0 / minimum_spacing
-    required_window = 2.0 * beat_period
-    discard_s = max(0.75, float(program.config.ramp_duration_s) + 0.25)
-    duration_s = discard_s + required_window + sample_dt_s
-    sample_count = int(math.ceil(duration_s / sample_dt_s))
-    time_s = np.arange(1, sample_count + 1, dtype=float) * sample_dt_s
-    motion = program.evaluate(time_s)
-    phase_perturbation_rad = math.radians(phase_perturbation_deg)
-    actual_coordinates = np.zeros_like(motion.q)
-    for axis_index in range(len(AXES)):
-        active_lines = np.flatnonzero(program.line_mask[axis_index])
-        for line_index in active_lines:
-            omega = program.line_omega_rad_s[axis_index, line_index]
-            amplitude = program.line_accel_amplitude[axis_index, line_index] / omega**2
-            phase = program.line_phase_at_episode_zero[axis_index, line_index] + phase_perturbation_rad
-            actual_coordinates[:, axis_index] += -amplitude_scale * amplitude * np.sin(omega * time_s + phase)
-    actual_pose = np.empty((time_s.size, 7), dtype=float)
-    actual_pose[:, :3] = actual_coordinates[:, :3]
-    for index, rotation_vector in enumerate(actual_coordinates[:, 3:]):
-        actual_pose[index, 3:] = rotation_vector_to_quat(rotation_vector)
-    zeros = np.zeros((time_s.size, 6), dtype=float)
-    trace = DeckDriverTrace(
-        integration_target_time_s=time_s.copy(),
-        sample_target_time_s=time_s.copy(),
-        integration_application_time_s=time_s.copy(),
-        sample_application_time_s=time_s.copy(),
-        sample_time_s=time_s.copy(),
-        command_pose=actual_pose.copy(),
-        actual_pose=actual_pose,
-        command_twist=zeros.copy(),
-        actual_twist=zeros.copy(),
-        command_acceleration=zeros.copy(),
-        actual_acceleration=zeros.copy(),
-        sample_target_pose=actual_pose.copy(),
-        sample_target_twist=zeros.copy(),
-        sample_target_acceleration=zeros.copy(),
-        deck_tracking_pose_error=zeros.copy(),
-        weld_constraint_residual_raw=zeros.copy(),
-        weld_constraint_force_raw=zeros.copy(),
-        solver_iterations=np.zeros(time_s.size, dtype=np.int64),
-        solver_niter=np.zeros((time_s.size, 1), dtype=np.int64),
-        warning_number_delta=np.zeros((time_s.size, 1), dtype=np.int64),
-        warning_lastinfo=np.zeros((time_s.size, 1), dtype=np.int64),
-    )
-    fit = spectrum_conformance(trace, program, discard_s=discard_s, max_fit_samples=50000)
-    line_results = [
-        line
-        for axis in fit["axes"].values()
-        for line in axis["line_fits"]
-    ]
-    max_amplitude_error = max(
-        abs(line["amplitude_ratio"] - amplitude_scale) for line in line_results
-    )
-    max_phase_error = max(
-        abs(abs(line["phase_error_deg"]) - abs(phase_perturbation_deg)) for line in line_results
-    )
-    max_relative_residual = max(
-        axis["actual_fit_residual_rms"] / axis["actual_rms"]
-        if axis["actual_rms"]
-        else 0.0
-        for axis in fit["axes"].values()
-    )
-    conditioning_rule = {
-        "max_condition_number": 10000.0,
-        "max_relative_fit_residual": 1e-3,
-        "phase_recovery_tolerance_deg": 0.01,
-        "amplitude_recovery_tolerance": 1e-4,
-    }
-    return {
-        "sample_dt_s": float(sample_dt_s),
-        "discard_s": float(discard_s),
-        "fit_window_s": float(time_s[-1] - time_s[time_s >= discard_s][0]),
-        "minimum_line_spacing_hz": minimum_spacing,
-        "beat_period_s": beat_period,
-        "required_fit_window_s": required_window,
-        "line_count": len(line_results),
-        "known_amplitude_scale": float(amplitude_scale),
-        "known_phase_perturbation_deg": float(phase_perturbation_deg),
-        "max_amplitude_recovery_error": max_amplitude_error,
-        "max_phase_recovery_error_deg": max_phase_error,
-        "max_relative_fit_residual": max_relative_residual,
-        "max_condition_number": max(line["condition_number"] for line in line_results),
-        "conditioning_rule": conditioning_rule,
-        "resolution_passed": fit["fit_window_meets_resolution"],
-        "passed": (
-            fit["fit_window_meets_resolution"]
-            and max_amplitude_error <= conditioning_rule["amplitude_recovery_tolerance"]
-            and max_phase_error <= conditioning_rule["phase_recovery_tolerance_deg"]
-            and max_relative_residual <= conditioning_rule["max_relative_fit_residual"]
-            and max(line["condition_number"] for line in line_results)
-            <= conditioning_rule["max_condition_number"]
-        ),
-        "line_fits": line_results,
-        "phase_convention": fit["phase_convention"],
-    }
-
-
 def _spectrum_line_entries(conformance: Mapping[str, Any]) -> list[tuple[str, Mapping[str, Any], Mapping[str, Any]]]:
     """Flatten spectrum line records while retaining the axis RMS context."""
 
@@ -951,105 +726,6 @@ def spectrum_gate_reasons(
     return reasons
 
 
-def _candidate_screen_reasons(
-    candidate: Mapping[str, Any], *, thresholds: Phase02R4Thresholds = DEFAULT_THRESHOLDS
-) -> list[str]:
-    reasons: list[str] = []
-    if candidate.get("frequency_sampling_passed") is not True and candidate.get(
-        "frequency_sampling_condition", {}
-    ).get("passed") is not True:
-        reasons.append("frequency_sampling_condition_failed")
-    if candidate.get("solref_relation_passed") is not True and candidate.get(
-        "eq_solref_time_constant_condition", candidate.get("solref_relation_condition", {})
-    ).get("passed") is not True:
-        reasons.append("eq_solref_ge_2dt_condition_failed")
-    screening = candidate.get("screening")
-    if not isinstance(screening, Mapping):
-        return reasons + ["screening_results_missing"]
-    zero = screening.get("zero")
-    if not isinstance(zero, Mapping) or zero.get("passed") is not True:
-        reasons.append("zero_screen_failed")
-    single_axis = screening.get("single_axis")
-    if not isinstance(single_axis, Mapping):
-        reasons.append("single_axis_screen_results_missing")
-    else:
-        for axis in AXES:
-            record = single_axis.get(axis)
-            if not isinstance(record, Mapping) or record.get("passed") is not True:
-                reasons.append(f"single_axis_screen_failed:{axis}")
-    spectrum = screening.get("authored_spectrum")
-    if not isinstance(spectrum, Mapping):
-        reasons.append("authored_spectrum_screen_results_missing")
-    else:
-        conformance = spectrum.get("conformance", spectrum)
-        if not isinstance(conformance, Mapping):
-            reasons.append("authored_spectrum_screen_results_invalid")
-        else:
-            reasons.extend(f"authored_spectrum:{reason}" for reason in spectrum_gate_reasons(conformance, thresholds=thresholds))
-    target_gamma = screening.get("target_gamma")
-    if isinstance(target_gamma, Mapping):
-        if target_gamma.get("status", "measured") != "measured":
-            reasons.append("target_gamma_screen_not_measured")
-        elif target_gamma.get("relative_error_abs", float("inf")) > thresholds.gamma_relative_error:
-            reasons.append("target_gamma_screen_failed")
-    return reasons
-
-
-def candidate_screen_passed(
-    candidate: Mapping[str, Any], *, thresholds: Phase02R4Thresholds = DEFAULT_THRESHOLDS
-) -> bool:
-    """Evaluate the complete pre-registered candidate screen."""
-
-    return not _candidate_screen_reasons(candidate, thresholds=thresholds)
-
-
-def _candidate_max_phase_error(candidate: Mapping[str, Any]) -> float:
-    spectrum = candidate.get("screening", {}).get("authored_spectrum", {})
-    conformance = spectrum.get("conformance", spectrum) if isinstance(spectrum, Mapping) else {}
-    phase_errors = [abs(float(line.get("phase_error_deg"))) for _, _, line in _spectrum_line_entries(conformance)]
-    return max(phase_errors) if phase_errors else float("inf")
-
-
-def select_candidate(
-    candidate_grid: Iterable[Mapping[str, Any]], *, thresholds: Phase02R4Thresholds = DEFAULT_THRESHOLDS
-) -> dict[str, Any]:
-    """Select a candidate using only the pre-registered physics screen."""
-
-    candidates = list(candidate_grid)
-    rejections = {}
-    eligible = []
-    for candidate in candidates:
-        candidate_id = str(candidate.get("candidate_id", "<missing>")) if isinstance(candidate, Mapping) else "<invalid>"
-        reasons = (
-            _candidate_screen_reasons(candidate, thresholds=thresholds)
-            if isinstance(candidate, Mapping)
-            else ["candidate_record_invalid"]
-        )
-        rejections[candidate_id] = reasons
-        if not reasons:
-            eligible.append(candidate)
-    eligible.sort(
-        key=lambda candidate: (
-            -float(candidate.get("dt_s", float("nan"))),
-            _candidate_max_phase_error(candidate),
-            str(candidate.get("candidate_id", "")),
-        )
-    )
-    selected = eligible[0] if eligible else None
-    return {
-        "selection_status": "selected" if selected is not None else "blocked_no_candidate",
-        "selected_candidate_id": selected.get("candidate_id") if selected is not None else None,
-        "eligible_candidate_ids": [candidate.get("candidate_id") for candidate in eligible],
-        "rejections": rejections,
-        "selection_rule": {
-            "primary": "maximum_dt_among_screening_passes",
-            "secondary": "minimum_max_absolute_line_phase_error_deg_at_equal_dt",
-            "tertiary": "lexicographic_candidate_id",
-        },
-        "thresholds": thresholds.to_dict(),
-    }
-
-
 def _spectrum_record_gate_passed(
     record: Mapping[str, Any], *, thresholds: Phase02R4Thresholds = DEFAULT_THRESHOLDS
 ) -> bool:
@@ -1093,173 +769,6 @@ def _gamma_record_gate_passed(
         and abs(float(actual) / float(commanded) - 1.0) <= thresholds.gamma_relative_error
         and float(record.get("relative_error_abs", float("inf"))) <= thresholds.gamma_relative_error
     )
-
-
-def compute_gate_summary(
-    result: Mapping[str, Any], *, thresholds: Phase02R4Thresholds = DEFAULT_THRESHOLDS
-) -> dict[str, Any]:
-    """Recompute all R4 physics gates from raw result records.
-
-    This is intentionally the single gate implementation used both by the
-    generator and by :func:`verify_artifact`; a changed metric cannot leave a
-    stale hand-written gate summary behind.
-    """
-
-    provenance = result.get("provenance", {}) if isinstance(result, Mapping) else {}
-    candidate_grid = provenance.get("candidate_grid", ()) if isinstance(provenance, Mapping) else ()
-    candidate_grid = list(candidate_grid) if isinstance(candidate_grid, list) else []
-    selection = select_candidate(candidate_grid, thresholds=thresholds)
-    stored_selected = provenance.get("selected_provisional_candidate_id") if isinstance(provenance, Mapping) else None
-    candidate_screening_pass = bool(candidate_grid) and all(
-        isinstance(candidate, Mapping)
-        and candidate.get("status") in {"measured", "screen_rejected_preflight"}
-        and isinstance(candidate.get("screening"), Mapping)
-        for candidate in candidate_grid
-    )
-    candidate_selection_record = provenance.get("candidate_selection") if isinstance(provenance, Mapping) else None
-    candidate_selection_pass = (
-        selection["selected_candidate_id"] is not None
-        and stored_selected == selection["selected_candidate_id"]
-        and isinstance(candidate_selection_record, Mapping)
-        and candidate_selection_record.get("selected_candidate_id") == stored_selected
-    )
-    selected_candidate = next(
-        (
-            candidate
-            for candidate in candidate_grid
-            if isinstance(candidate, Mapping) and candidate.get("candidate_id") == stored_selected
-        ),
-        None,
-    )
-    selected_screening = selected_candidate.get("screening", {}) if isinstance(selected_candidate, Mapping) else {}
-    zero_pass = _zero_record_gate_passed(selected_screening.get("zero", {}))
-    single_axis_records = selected_screening.get("single_axis", {}) if isinstance(selected_screening, Mapping) else {}
-    single_axis_pass = (
-        isinstance(single_axis_records, Mapping)
-        and set(single_axis_records) == set(AXES)
-        and all(record.get("passed") is True for record in single_axis_records.values() if isinstance(record, Mapping))
-        and all(isinstance(record, Mapping) for record in single_axis_records.values())
-    )
-    screened_spectrum = selected_screening.get("authored_spectrum", {}) if isinstance(selected_screening, Mapping) else {}
-    screened_spectrum_conformance = (
-        screened_spectrum.get("conformance", screened_spectrum)
-        if isinstance(screened_spectrum, Mapping)
-        else {}
-    )
-    screened_spectrum_pass = (
-        isinstance(screened_spectrum_conformance, Mapping)
-        and not spectrum_gate_reasons(screened_spectrum_conformance, thresholds=thresholds)
-    )
-
-    gamma_records = result.get("gamma", {}) if isinstance(result, Mapping) else {}
-    expected_gamma_keys = {"0.15", "0.3", "0.5"}
-    canonical_gamma_pass = (
-        isinstance(gamma_records, Mapping)
-        and expected_gamma_keys.issubset(gamma_records)
-        and all(
-            _gamma_record_gate_passed(gamma_records[key], thresholds=thresholds)
-            for key in expected_gamma_keys
-        )
-    )
-    top_spectrum = result.get("spectrum", {}) if isinstance(result, Mapping) else {}
-    estimator = top_spectrum.get("estimator_validation", {}) if isinstance(top_spectrum, Mapping) else {}
-    estimator_pass = isinstance(estimator, Mapping) and estimator.get("passed") is True
-
-    load_matrix = result.get("load_matrix", ()) if isinstance(result, Mapping) else ()
-    load_records = list(load_matrix) if isinstance(load_matrix, list) else []
-    expected_pairs = {
-        (gamma, load_case)
-        for gamma in (0.15, 0.3, 0.5)
-        for load_case in CANONICAL_LOAD_CASES
-    }
-    actual_pairs = {
-        (record.get("target_Gamma_commanded"), record.get("load_case"))
-        for record in load_records
-        if isinstance(record, Mapping)
-    }
-    gamma_load_pass = expected_pairs == actual_pairs and len(load_records) == len(expected_pairs) and all(
-        _gamma_record_gate_passed(record, thresholds=thresholds)
-        for record in load_records
-        if isinstance(record, Mapping)
-    )
-    confirmatory_spectrum_pass = (
-        expected_pairs == actual_pairs
-        and len(load_records) == len(expected_pairs)
-        and all(
-            isinstance(record, Mapping)
-            and _spectrum_record_gate_passed(record, thresholds=thresholds)
-            for record in load_records
-        )
-    )
-    panda_records = [
-        record
-        for record in load_records
-        if isinstance(record, Mapping) and record.get("load_case") == LOAD_CASE_PANDA_PLUS_WORKTABLE_REFERENCE_PROXY
-    ]
-    panda_pass = (
-        len(panda_records) == 3
-        and all(
-            record.get("audit", {}).get("load_provenance", {}).get("panda_base_included") is True
-            and record.get("audit", {}).get("load_provenance", {}).get("compiled_model_assertions", {}).get("passed") is True
-            for record in panda_records
-        )
-    )
-    dt_convergence_pass = len(result.get("dt_convergence", ())) == 3 if isinstance(result, Mapping) else False
-    sensitivity_pass = len(result.get("sensitivity", ())) == 3 if isinstance(result, Mapping) else False
-
-    gates = {
-        "candidate_screening_gate": {
-            "passed": candidate_screening_pass,
-            "scope": "all pre-registered candidates complete zero/six-axis/64-line empty-deck screen",
-        },
-        "candidate_selection_gate": {
-            "passed": candidate_selection_pass,
-            "scope": "deterministic maximum-dt physics-only selection after screening",
-            "selection": selection,
-        },
-        "zero_fixture_gate": {"passed": zero_pass, "scope": "selected candidate empty zero response"},
-        "single_axis_minimal_gate": {
-            "passed": single_axis_pass,
-            "scope": "selected candidate six single-axis screen fits",
-        },
-        "authored_spectrum_line_gate": {
-            "passed": screened_spectrum_pass,
-            "scope": "selected candidate empty-deck 64-line screening fit",
-        },
-        "spectrum_estimator_gate": {
-            "passed": estimator_pass,
-            "scope": "pre-registered synthetic recovery with resolution/conditioning rule",
-        },
-        "canonical_gamma_minimal_gate": {
-            "passed": canonical_gamma_pass,
-            "scope": "selected candidate target Gamma records",
-        },
-        "gamma_load_gate": {
-            "passed": gamma_load_pass,
-            "scope": "confirmatory 3x2 Gamma records",
-        },
-        "confirmatory_spectrum_line_gate": {
-            "passed": confirmatory_spectrum_pass,
-            "scope": "every line in every confirmatory Gamma x load spectrum",
-        },
-        "panda_base_compiled_audit_gate": {
-            "passed": panda_pass,
-            "scope": "actual robosuite Panda subtree plus 32 kg worktable proxy compiled audit",
-        },
-        "dt_convergence_gate": {"passed": dt_convergence_pass, "scope": "three declared timestep records"},
-        "solver_sensitivity_gate": {"passed": sensitivity_pass, "scope": "three declared solver records"},
-    }
-    physics_gate_values = [value["passed"] for value in gates.values()]
-    overall_pass = bool(physics_gate_values) and all(physics_gate_values)
-    gates["overall_phase02r_status"] = "complete" if overall_pass else "partial_or_blocked"
-    gates["blocked_reason"] = None if overall_pass else [name for name, value in gates.items() if isinstance(value, Mapping) and value.get("passed") is False]
-    # Keep the historical key available to consumers, but derive it from the
-    # same Panda-inclusive audit rather than the old table-only proxy.
-    gates["worktable_proxy_gate"] = {
-        "passed": panda_pass,
-        "scope": "canonical Panda/base-inclusive worktable proxy load",
-    }
-    return gates
 
 
 def _new_probe(
@@ -1494,29 +1003,31 @@ def run_trace(
 
 
 
-def run_probe_suite(*args, **kwargs):
-    from robosuite.scripts.deck_probe_artifacts import run_probe_suite as run
-
-    return run(*args, **kwargs)
-
-
 def _trace_summary(*args, **kwargs):
-    from robosuite.scripts.deck_probe_artifacts import _trace_summary as summarize
+    def summarize(trace: DeckDriverTrace) -> dict[str, Any]:
+        return {
+            "samples": int(trace.sample_timestamps_s.size),
+            "max_deck_tracking_pose_error": (
+                float(np.max(np.abs(trace.deck_tracking_pose_error))) if trace.deck_tracking_pose_error.size else 0.0
+            ),
+            "max_weld_constraint_residual_raw": (
+                float(np.max(np.abs(trace.weld_constraint_residual_raw)))
+                if trace.weld_constraint_residual_raw.size
+                else 0.0
+            ),
+            "max_weld_constraint_force_raw": (
+                float(np.max(np.abs(trace.weld_constraint_force_raw)))
+                if trace.weld_constraint_force_raw.size
+                else 0.0
+            ),
+            "max_actual_twist": float(np.max(np.abs(trace.actual_twist))) if trace.actual_twist.size else 0.0,
+            "max_actual_acceleration": (
+                float(np.max(np.abs(trace.actual_acceleration))) if trace.actual_acceleration.size else 0.0
+            ),
+            "max_solver_iterations": int(np.max(trace.solver_iterations)) if trace.solver_iterations.size else 0,
+            "warning_delta_sum": int(np.sum(trace.warning_number_delta)) if trace.warning_number_delta.size else 0,
+            "warning_delta_max": int(np.max(trace.warning_number_delta)) if trace.warning_number_delta.size else 0,
+        }
+
 
     return summarize(*args, **kwargs)
-
-
-def verify_artifact(*args, **kwargs):
-    from robosuite.scripts.deck_probe_artifacts import verify_artifact as verify
-
-    return verify(*args, **kwargs)
-
-
-def main(argv=None):
-    from robosuite.scripts.deck_probe_artifacts import main as command
-
-    return command(argv)
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

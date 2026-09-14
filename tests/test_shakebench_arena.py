@@ -7,7 +7,7 @@ import pytest
 import mujoco
 
 from robosuite.models.arenas import ShakeBenchArena, TableArena
-from robosuite.scripts.shakebench_probe_deck_driver import DeckProbeEnv
+from tests.shakebench_deck_probe import DeckProbeEnv
 from robosuite.utils.shakebench_deck import (
     DeckDriver,
     DeckDriverConfig,

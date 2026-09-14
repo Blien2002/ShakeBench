@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import copy
 import inspect
-import json
 import math
-from pathlib import Path
 from types import SimpleNamespace
 
 import mujoco
@@ -18,29 +15,18 @@ from robosuite.environments.base import MujocoEnv
 from robosuite.environments.manipulation.lift import Lift
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.scripts.shakebench_probe_deck_driver import (
-    CANONICAL_LOAD_CASES,
+from tests.shakebench_deck_probe import (
     DeckProbeEnv,
-    LOAD_CASE_PANDA_PLUS_WORKTABLE_REFERENCE_PROXY,
-    Phase02R4Thresholds,
     _actual_coordinates,
     _sine_command,
     build_probe_xml,
-    compute_gate_summary,
     gamma_conformance,
-    main as probe_main,
-    minimum_line_spacing_hz,
-    select_candidate,
-    synthetic_spectrum_estimator_validation,
-    verify_artifact,
     run_trace,
-    run_probe_suite,
     sine_conformance,
     spectrum_conformance,
 )
 from robosuite.utils.shakebench_deck import (
     DeckBodyHandles,
-    DeckCommand,
     DeckDriver,
     DeckDriverConfig,
     DeckDriverError,
@@ -284,68 +270,9 @@ def test_trace_serialization_covers_contract_and_returns_independent_lists():
         assert len(payload["sample_time_s"]) == trace.sample_time_s.size + 1
 
 
-def test_probe_matrix_records_each_required_coverage_axis_and_line():
-    result = run_probe_suite(dt=0.0005, duration_s=0.1, spectrum_duration_s=2.0)
-    families = {row["case_family"]: row for row in result["coverage_matrix"]}
-    assert set(families) >= {
-        "zero",
-        "single_axis",
-        "authored_spectrum",
-        "target_gamma",
-        "load",
-        "dt_convergence",
-        "solver_sensitivity",
-    }
-    assert families["single_axis"]["axes"] == ["tx", "ty", "tz", "rx", "ry", "rz"]
-    assert len(result["provenance"]["candidate_grid"]) == 3
-    assert all(candidate["status"] == "measured" for candidate in result["provenance"]["candidate_grid"])
-    assert all("screening" in candidate and "physics_metrics" in candidate for candidate in result["provenance"]["candidate_grid"])
-    assert all(set(candidate["screening"]["single_axis"]) == set(families["single_axis"]["axes"]) for candidate in result["provenance"]["candidate_grid"])
-    assert all(len(candidate["screening"]["authored_spectrum"]["conformance"]["axes"]["tx"]["line_fits"]) == 12 for candidate in result["provenance"]["candidate_grid"])
-    assert result["provenance"]["candidate_selection"]["selection_status"] == "blocked_no_candidate"
-    assert result["confirmatory"]["status"] == "not_run_no_candidate"
-    assert result["phase03_handoff"] == "BLOCKED"
-    assert result["load_cases"] == list(CANONICAL_LOAD_CASES)
-    assert result["load_matrix"] == []
 
 
-def test_probe_matrix_never_labels_level_scale_as_gamma():
-    result = run_probe_suite(dt=0.0005, duration_s=0.1, spectrum_duration_s=2.0)
-    for candidate in result["provenance"]["candidate_grid"]:
-        assert "commanded_level_scale" not in candidate
-        assert "dt_s" in candidate
-        screen = candidate["screening"]
-        assert "level_scale" in screen["authored_spectrum"]
-        assert screen["target_gamma"]["Gamma_commanded"] == pytest.approx(0.30, rel=0.0, abs=0.01)
-        assert "Gamma_deck_actual" in screen["target_gamma"]
 
-
-def test_spectrum_resolution_and_synthetic_estimator_gate_are_pre_registered():
-    program = build_excitation_program(seed=17, level_scale=0.3)
-    spacing = minimum_line_spacing_hz(program)
-    assert spacing == pytest.approx(0.05887579362532458, rel=0.0, abs=1e-12)
-    synthetic = synthetic_spectrum_estimator_validation(program, sample_dt_s=0.0005)
-    assert synthetic["required_fit_window_s"] >= 2.0 / spacing
-    assert synthetic["passed"]
-    assert synthetic["conditioning_rule"]["max_condition_number"] == pytest.approx(10000.0)
-
-
-def test_committed_artifact_has_a_read_only_verification_path():
-    before = Path("tests/shakebench_phase_02r_probe.json").read_bytes()
-    summary = verify_artifact("tests/shakebench_phase_02r_probe.json")
-    assert summary["passed"]
-    assert summary["integrity_valid"] is True
-    assert summary["physics_gates_passed"] is True
-    assert summary["phase03_handoff"] == "PASS"
-    assert summary["schema_id"] == "shakebench.phase02r.conformance_matrix"
-    assert summary["schema_version"] == 3
-    assert Path("tests/shakebench_phase_02r_probe.json").read_bytes() == before
-
-
-def test_controlled_artifact_requires_explicit_update_reason():
-    assert probe_main(["--output", "tests/shakebench_phase_02r_probe.json"]) == 2
-    assert probe_main(["--output", "tests/shakebench_phase_02r_probe.json", "--update"]) == 2
-    assert probe_main(["--verify-artifact", "tests/shakebench_phase_02r_probe.json"]) == 0
 
 
 def test_role_processor_builds_auditable_topology_without_task_names():
@@ -772,7 +699,7 @@ def test_multiple_gamma_scales_keep_command_and_actual_layers(level_scale):
 
 @pytest.mark.parametrize("representative_load", (False, True))
 def test_empty_and_representative_load_paths_compile_and_run(representative_load):
-    from robosuite.scripts.shakebench_probe_deck_driver import run_trace as run_probe_trace
+    from tests.shakebench_deck_probe import run_trace as run_probe_trace
 
     trace, audit = run_probe_trace(
         dt=0.0002,
@@ -905,127 +832,11 @@ def _screening_candidate(candidate_id, dt_s, phase_error_deg, *, passed=True):
     }
 
 
-def test_r4_candidate_selection_is_metric_driven_and_deterministic():
-    candidates = [
-        _screening_candidate("candidate_b", 0.0002, 0.4),
-        _screening_candidate("candidate_a", 0.0001, 0.9),
-        _screening_candidate("candidate_c", 0.0002, 0.8),
-    ]
-    decision = select_candidate(candidates, thresholds=Phase02R4Thresholds())
-    assert decision["selected_candidate_id"] == "candidate_b"
-    assert decision["selection_rule"]["primary"] == "maximum_dt_among_screening_passes"
-
-    candidates[0]["screening"]["authored_spectrum"]["line_fits"][0]["phase_error_deg"] = 1.1
-    decision_after_metric_change = select_candidate(candidates, thresholds=Phase02R4Thresholds())
-    assert decision_after_metric_change["selected_candidate_id"] == "candidate_c"
-
-    candidates[2]["screening"]["authored_spectrum"]["line_fits"][0]["phase_error_deg"] = 1.1
-    decision_after_rejection = select_candidate(candidates, thresholds=Phase02R4Thresholds())
-    assert decision_after_rejection["selected_candidate_id"] == "candidate_a"
-    assert decision_after_rejection["rejections"]["candidate_b"]
-    assert decision_after_rejection["rejections"]["candidate_c"]
 
 
-def test_r4_short_screening_stops_before_confirmatory_matrix():
-    result = run_probe_suite(dt=0.0005, duration_s=0.1, spectrum_duration_s=2.0)
-    selection = result["provenance"]["candidate_selection"]
-    assert selection["selection_status"] == "blocked_no_candidate"
-    assert selection["confirmatory_started"] is False
-    assert result["confirmatory"]["status"] == "not_run_no_candidate"
-    assert result["load_matrix"] == []
-    assert result["phase03_handoff"] == "BLOCKED"
-    assert all(candidate["screening"]["status"] == "measured" for candidate in result["provenance"]["candidate_grid"])
 
 
-def test_r4_panda_base_inclusive_fixture_uses_compiled_robot_subtree():
-    load_case = LOAD_CASE_PANDA_PLUS_WORKTABLE_REFERENCE_PROXY
-    dt = 0.0002
-    config = DeckDriverConfig(eq_solref=(2.0 * dt, 1.0), physics_timestep_s=dt)
-    driver = DeckDriver(
-        config=config,
-        body_handles={
-            "panda_base": "robot0_base",
-            "worktable_reference": "worktable_reference_proxy",
-        },
-    )
-    compiled_xml = driver.processor(build_probe_xml(model_timestep=dt, load_case=load_case))
-    model = mujoco.MjModel.from_xml_string(compiled_xml)
-    base_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "robot0_base")
-    deck_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, config.deck_body_name)
-    assert model.body_parentid[base_id] == deck_id
 
-    trace, audit = run_trace(
-        dt=dt,
-        duration_s=0.02,
-        trajectory=_sine_command(0, 5.0, 0.001),
-        load_case=load_case,
-    )
-    assert trace.sample_timestamps_s.size > 0
-    provenance = audit["load_provenance"]
-    assert provenance["panda_base_included"] is True
-    assert provenance["compiled_model_assertions"]["passed"] is True
-    assert len(provenance["attached_body_names"]) >= 10
-    assert provenance["panda_subtree_mass_kg"] > 0.0
-    assert provenance["panda_subtree_body_masses_kg"]
-    assert provenance["panda_subtree_body_inertia_kg_m2"]
-    assert provenance["initial_joint_state"]
-    assert provenance["controller_started"] is False
-    assert provenance["task_environment"] is False
-
-
-def test_r4_gate_summary_requires_selection_and_panda_confirmatory_evidence():
-    result = run_probe_suite(dt=0.0005, duration_s=0.1, spectrum_duration_s=2.0)
-    gates = compute_gate_summary(result)
-    assert gates["candidate_screening_gate"]["passed"] is True
-    assert gates["candidate_selection_gate"]["passed"] is False
-    assert gates["panda_base_compiled_audit_gate"]["passed"] is False
-    assert gates["overall_phase02r_status"] == "partial_or_blocked"
-
-
-def test_r4_metric_mutation_changes_recomputed_selection_and_handoff():
-    payload = json.loads(Path("tests/shakebench_phase_02r_probe.json").read_text(encoding="utf-8"))
-    mutated = copy.deepcopy(payload)
-    nominal = next(
-        candidate
-        for candidate in mutated["provenance"]["candidate_grid"]
-        if candidate["candidate_id"] == "nominal"
-    )
-    nominal["screening"]["authored_spectrum"]["conformance"]["axes"]["tx"]["line_fits"][0]["phase_error_deg"] = 1.1
-    decision = select_candidate(mutated["provenance"]["candidate_grid"], thresholds=Phase02R4Thresholds())
-    assert decision["selected_candidate_id"] == "fine"
-    gates = compute_gate_summary(mutated)
-    assert gates["candidate_selection_gate"]["passed"] is False
-    assert gates["overall_phase02r_status"] == "partial_or_blocked"
-
-
-def test_r4_controlled_artifact_matches_independent_manifest():
-    manifest = json.loads(Path("tests/shakebench_phase_02r_probe_manifest.json").read_text(encoding="utf-8"))
-    summary = verify_artifact(manifest["artifact_path"])
-    assert summary["file_sha256"] == manifest["file_sha256"]
-    assert summary["payload_sha256"] == manifest["payload_sha256"]
-    assert summary["schema_id"] == manifest["schema_id"]
-    assert summary["schema_version"] == manifest["schema_version"]
-    assert summary["physics_gates_passed"] is manifest["physics_gates_passed"]
-    assert summary["phase03_handoff"] == manifest["phase03_handoff"]
-    payload = json.loads(Path(manifest["artifact_path"]).read_text(encoding="utf-8"))
-    assert payload["provenance"]["selected_provisional_candidate_id"] == manifest["selected_candidate_id"]
-    assert len(payload["load_matrix"]) == manifest["confirmatory_matrix_records"]
-    assert all(
-        sum(len(axis["line_fits"]) for axis in record["spectrum"]["conformance"]["axes"].values())
-        == manifest["spectrum_lines_per_record"]
-        for record in payload["load_matrix"]
-    )
-
-
-def test_r4_artifact_update_reason_and_previous_hash_are_authenticated(tmp_path):
-    payload = json.loads(Path("tests/shakebench_phase_02r_probe.json").read_text(encoding="utf-8"))
-    payload["artifact_update"]["reason"] = "tampered"
-    candidate = tmp_path / "tampered_probe.json"
-    candidate.write_text(json.dumps(payload), encoding="utf-8")
-    summary = verify_artifact(candidate)
-    assert summary["integrity_valid"] is False
-    assert "artifact payload integrity hash is missing or does not verify" in summary["errors"]
-    assert Path("tests/shakebench_phase_02r_probe.json").read_bytes() != candidate.read_bytes()
 
 
 def _fit_fixture_sine(time_s, values, frequency_hz):

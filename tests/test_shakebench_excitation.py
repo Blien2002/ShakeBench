@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from robosuite.scripts.shakebench_generate_excitation_golden import validate_fixture
+from tests.shakebench_excitation_golden import validate_fixture
 from robosuite.utils.shakebench_calibration import (
     authored_point_vertical_acceleration,
     calibrate_gamma,
@@ -24,7 +24,6 @@ from robosuite.utils.shakebench_excitation import (
     quintic_ramp,
 )
 from robosuite.utils.shakebench_safety import (
-    SafetyLimits,
     SafetyViolation,
     check_frequency,
     check_safety,

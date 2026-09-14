@@ -37,7 +37,6 @@
 | `python -m robosuite.scripts.shakebench_run_starvla` | StarVLA 任务接口的采集与回放入口。 |
 | `python -m robosuite.scripts.shakebench_gpu_batch` | MJWarp GPU 批量采集（NPZ 与 JSON 元数据）。 |
 | `python -m robosuite.scripts.shakebench_scene_preflight` | scene／frame／clearance 预检。 |
-| `python -m robosuite.scripts.shakebench_verify_actuators` | Panda OSC_POSE 与 gripper 七通道动作路径验证。 |
 | `python -m robosuite.utils.shakebench_runtime_verifier --write` | 依据当前资产重写 `shakebench_runtime_contract.json`；不带 --write 时校验。 |
 | `python -m robosuite.demos.demo_shakebench_task_variants` | 渲染六个 pick/place 变体的场景预览。 |
 | `python -m robosuite.demos.demo_shakebench_task_slip` | 记录物体在振动条件下的相对滑移视频（非策略能力展示）。 |
