@@ -47,6 +47,7 @@ def _result(*, state_id: str, validity: str, outcome: str | None, cause: str) ->
         "actuators": [],
         "trace_sha256": "c" * 64,
         "metrics": {},
+        "horizon_steps": 1200,
     }
     return EpisodeResult.from_verified_raw(raw, {"passed": True})
 

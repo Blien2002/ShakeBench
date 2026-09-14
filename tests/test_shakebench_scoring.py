@@ -40,6 +40,7 @@ def _raw(state_id: str, tier: str, success: bool) -> dict:
         "actuators": [{"id": 0, "name": "joint0"}],
         "trace_sha256": "1" * 64,
         "metrics": {"success": {"passed": success}},
+        "horizon_steps": 1200,
     }
 
 
@@ -76,6 +77,20 @@ def test_scorecard_requires_one_gamma_and_matched_state_blocks():
     unmatched[-1] = dataclasses.replace(unmatched[-1], state_id="s2")
     with pytest.raises(ScorecardError, match="matched state block"):
         build_scorecard(unmatched)
+    mixed_budget = copy.deepcopy(rows)
+    mixed_budget[-1] = dataclasses.replace(mixed_budget[-1], horizon_steps=1)
+    with pytest.raises(ScorecardError, match="mixed Gamma, outcome contract, or runtime authority"):
+        build_scorecard(mixed_budget)
+
+
+def test_episode_result_requires_a_recorded_positive_horizon():
+    raw = _raw("s0", "V0", True)
+    raw.pop("horizon_steps")
+    with pytest.raises(ScorecardError, match="episode missing: horizon_steps"):
+        EpisodeResult.from_verified_raw(raw, {"passed": True})
+    for value in (0, -5, 1.5, True, None):
+        with pytest.raises(ScorecardError, match="invalid horizon_steps"):
+            EpisodeResult.from_verified_raw({**_raw("s0", "V0", True), "horizon_steps": value}, {"passed": True})
 
 
 def test_scorecard_rejects_unverified_episode_mappings():

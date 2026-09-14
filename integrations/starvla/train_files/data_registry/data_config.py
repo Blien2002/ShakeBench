@@ -39,4 +39,7 @@ class ShakeBenchDataConfig:
 
 
 ROBOT_TYPE_CONFIG_MAP = {"shakebench": ShakeBenchDataConfig()}
+# The mixture entry must name a dataset exported by
+# robosuite.scripts.shakebench_export_sft_subset (success-only), not a raw collection
+# directory: the pinned loader enumerates episodes.jsonl and ignores failure manifests.
 DATASET_NAMED_MIXTURES = {"shakebench": [("oracle-gamma-zero", 1.0, "shakebench")]}

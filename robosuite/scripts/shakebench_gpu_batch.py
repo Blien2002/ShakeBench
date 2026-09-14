@@ -27,6 +27,7 @@ from robosuite.utils.shakebench_oracle import (
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause, validate_outcome
 from robosuite.utils.shakebench_calibration import vibration_record
 from robosuite.utils.shakebench_providers import TABLE_IMU_POLICY_KEYS
+from robosuite.utils.shakebench_state_schema import normalize_state
 
 
 def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_profile="official"):
@@ -35,6 +36,7 @@ def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_prof
     from robosuite.controllers import load_composite_controller_config
     from robosuite.utils.shakebench_tasks import task_env_kwargs
 
+    state = normalize_state(state)
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
     t0 = float(state.get("t0_s", 0.0))
     variant = "task" in state
@@ -68,6 +70,16 @@ def _write_npz(path, arrays):
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
+
+
+def phase_name(controller):
+    """Return the controller phase label recorded in the NPZ phase array.
+
+    The controller trace field of the same name is a diagnostics mapping;
+    writing it into a fixed-width string array silently truncated the text.
+    """
+
+    return str(controller.executive.phase.value)
 
 
 def collect_batch(batch, states, *, horizon, profile=None):
@@ -120,7 +132,7 @@ def collect_batch(batch, states, *, horizon, profile=None):
             record["actions"].append(actions[w].copy())
             for field in ("qpos", "qvel", "ctrl", "actuator_force", "contacts"):
                 record[field].append(metrics[field][w].copy())
-            record["phases"].append(controllers[w].last_trace["phase"])
+            record["phases"].append(phase_name(controllers[w]))
             record["termination_cause"] = resolve_termination_cause(
                 prior_cause=None, task_rule_violation=bool(
                     metrics["contacts"][w, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m),

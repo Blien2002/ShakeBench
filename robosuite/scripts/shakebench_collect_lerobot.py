@@ -9,21 +9,22 @@ from pathlib import Path
 import numpy as np
 
 from robosuite.scripts.shakebench_gpu_batch import make_environment
-from robosuite.scripts.shakebench_run_oracle import _json_ready, load_dev_states
+from robosuite.scripts.shakebench_export_sft_subset import sft_subset_summary
+from robosuite.scripts.shakebench_run_oracle import _json_ready, load_state_asset
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_calibration import vibration_record
 from robosuite.utils.shakebench_expert import oracle_observation
 from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
-from robosuite.utils.shakebench_starvla import (
+from robosuite.utils.shakebench_rollout import (
     ACTION_NAMES,
     CAMERAS,
     TASK,
-    StarVLAObservation,
-    modality_metadata,
+    ShakeBenchCameraObservation,
     observation_features,
 )
+from robosuite.utils.shakebench_starvla import modality_metadata
 
 
 def dataset_features(height, width):
@@ -47,7 +48,7 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
         controller = ShakeBenchOracleController(
             profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
         )
-        reader = StarVLAObservation(env, height=height, width=width, main_camera=main_camera)
+        reader = ShakeBenchCameraObservation(env, height=height, width=width, main_camera=main_camera)
         observation = env._get_observations()
         for step in range(horizon):
             sample = program.evaluate(step / dataset.fps)
@@ -105,9 +106,14 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
     parser.add_argument("--repo-id", default="shakebench/oracle-gamma-zero", help="Local dataset ID; no upload")
-    parser.add_argument("--states", type=Path, default=Path("robosuite/models/assets/shakebench_states_dev.json"))
-    parser.add_argument("--state-id", action="append", help="Select dev state IDs; default: all ten")
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument(
+        "--states",
+        type=Path,
+        default=Path("robosuite/models/assets/shakebench_states_dev.json"),
+        help="Verified state asset: frozen dev, committed official/knee, task variants, or a generated train pool",
+    )
+    parser.add_argument("--state-id", action="append", help="Select exact state IDs; default: every state in the asset")
+    parser.add_argument("--limit", type=int, default=None, help="Episode budget; cannot exceed the selected state count")
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--height", type=int, default=256)
@@ -121,12 +127,18 @@ def main(argv=None):
         raise ValueError("dimensions, horizon and limit must be positive")
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
-    states = load_dev_states(args.states)
+    state_asset = load_state_asset(args.states)
+    states = state_asset["states"]
     if args.state_id:
         unknown = set(args.state_id) - {state["state_id"] for state in states}
         if unknown:
             raise ValueError(f"unknown state IDs: {sorted(unknown)}")
         states = [state for state in states if state["state_id"] in args.state_id]
+    if args.limit is not None and args.limit > len(states):
+        raise ValueError(
+            f"--limit {args.limit} exceeds the {len(states)} selected states; "
+            "generate a larger pool with robosuite.scripts.shakebench_generate_train_states"
+        )
     states = states[: args.limit]
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
@@ -159,6 +171,7 @@ def main(argv=None):
             "gripper": "-1 open, +1 close",
         },
         "requested_states": [state["state_id"] for state in states],
+        "state_authority": state_asset["authority"],
         "episodes": [],
     }
     manifest_path = args.output / "meta" / "shakebench_collection.json"
@@ -182,6 +195,9 @@ def main(argv=None):
         manifest["error"] = f"{type(exc).__name__}: {exc}"
         raise
     finally:
+        # Training consumes the success-only selection; every attempt stays in
+        # this manifest so failures remain auditable.
+        manifest["sft_subset"] = sft_subset_summary(manifest["episodes"])
         write_json_atomic(manifest_path, manifest)
     return 0
 

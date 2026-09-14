@@ -11,7 +11,21 @@ MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m robosuite.scripts.shakebench_colle
 参考：[官方写入器源码](https://github.com/huggingface/lerobot/blob/v0.3.3/src/lerobot/datasets/lerobot_dataset.py)。
 
 默认对冻结的十个 dev states 各执行一次当前 oracle，最多 1200 步。可用 `--limit 1`、
-可重复的 `--state-id` 或 `--horizon-steps 2` 缩小采集范围。输出目录必须不存在，不覆盖、不上传。
+可重复的 `--state-id` 或 `--horizon-steps 2` 缩小采集范围。
+
+`--limit` 是 episode 预算，不得超过所选状态数；超出时报错而不是静默少采，因为重复运行同一状态池
+不会增加场景覆盖。要采集 N 条不同初始状态的示范，先生成独立的 train 状态池，再把它作为 `--states`：
+
+```bash
+python -m robosuite.scripts.shakebench_generate_train_states \
+  --output robosuite/models/assets/shakebench_states_train_pool.json --count 100 --seed 20260914
+python -m robosuite.scripts.shakebench_collect_lerobot --states robosuite/models/assets/shakebench_states_train_pool.json \
+  --output out/lerobot_gamma_zero_train
+```
+
+train 状态池按 seed 确定性重建，`scoreable=false`，与冻结的 dev/official/knee 资产各自独立校验；
+评测必须使用与训练无交集的状态（见 `shakebench_evaluate` 的 `--dataset` 检查）。
+输出目录必须不存在，不覆盖、不上传。
 这是实时 MuJoCo CPU 物理 rollout，EGL 渲染双相机；不是合成动作，也不是实物机器人采集。
 使用当前 `world_fixed_arm_v1` 场景、`official` 物理配置及隔离的当前状态专家。
 Gamma 固定为零，没有命令行改写入口；零外部激励不等于 IMU 为零，接触、重力和传感器噪声仍保留。
@@ -48,6 +62,18 @@ LIBERO 的 0.8 m 方桌相当（近端台角同样超出画面），物体比 LI
 无需外部 MP4。采集器另生成 StarVLA 所需的 `meta/modality.json`，接入见 [StarVLA 文档](starvla.md)。官方写入器同时生成 `meta/info.json`、`tasks.jsonl`、`episodes.jsonl`、`episodes_stats.jsonl`。
 `meta/shakebench_collection.json` 额外保留初始状态、IMU 绑定、控制器配置、动作语义及终止原因。
 失败和超时 rollout 也会保存，可按该文件的 `success` 筛选；程序返回 0 表示采集完成，不表示任务全部成功。
+同一文件还记录 `state_authority`（dev/train/official/knee 身份）与 `sft_subset` 统计
+（选中 episode、成功/失败计数、帧数），后者与导出器共用同一成功规则。
+训练应使用导出的成功子集，而不是未筛选的采集目录：
+
+```bash
+python -m robosuite.scripts.shakebench_export_sft_subset \
+  --dataset out/lerobot_gamma_zero_train --output out/lerobot_gamma_zero_train_sft
+```
+
+导出器只复制 `success_latched` episode 的 parquet 与元数据，重写 `info.json` 计数，写入
+`meta/shakebench_sft_subset.json`（来源 manifest 哈希、选中索引、帧数），并用官方读取器回读校验。
+失败 episode 仍留在源目录供审计；确实要用失败示范时需显式传 `--include-failures`。
 中断时 `complete=false`，已保存 episode 保留，当前未保存 episode 不视为完整数据；不自动续跑。
 这些训练采集数据的 `scoreable=false`，不能替代正式 benchmark 评分。
 

@@ -1,13 +1,18 @@
-"""Run a ShakeBench episode against the official StarVLA WebSocket policy server."""
+"""Run one ShakeBench episode against the official StarVLA WebSocket policy server.
+
+Thin wrapper: the shared runner in robosuite.scripts.shakebench_evaluate owns the
+rollout, result contract, and deadlines; this file only supplies the StarVLA
+policy factory and hosts the documented --host/--port arguments.
+"""
+
+from __future__ import annotations
 
 import argparse
-import json
 
-from robosuite.scripts.shakebench_run_oracle import load_dev_states
-from robosuite.utils.shakebench_starvla import StarVLAEnvironment, StarVLAPolicy, rollout_starvla
+from robosuite.scripts.shakebench_evaluate import main as evaluate_main
 
 
-def main():
+def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=10093)
@@ -16,21 +21,41 @@ def main():
     parser.add_argument("--gamma", type=float, default=0.0)
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--action-horizon", type=int, default=1)
-    args = parser.parse_args()
-    states = {state["state_id"]: state for state in load_dev_states(args.states)}
-    if args.state_id not in states:
-        parser.error(f"unknown state ID: {args.state_id}")
-    task = StarVLAEnvironment(states[args.state_id], gamma=args.gamma, horizon=args.horizon_steps)
-    policy = None
-    try:
-        policy = StarVLAPolicy(host=args.host, port=args.port)
-        print(json.dumps(rollout_starvla(task, policy, action_horizon=args.action_horizon), indent=2))
-    finally:
-        try:
-            task.close()
-        finally:
-            if policy is not None:
-                policy.close()
+    parser.add_argument("--inference-timeout-s", type=float, default=None, help="Hard per-request deadline")
+    parser.add_argument("--dataset", default=None, help="Collected dataset; enables train/eval split checking")
+    parser.add_argument("--output", default=None, help="Result JSON path; default: print the record")
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    forwarded = [
+        "--policy",
+        "robosuite.utils.shakebench_starvla:make_policy",
+        "--policy-id",
+        f"starvla:{args.host}:{args.port}",
+        "--policy-arg",
+        f"host={args.host}",
+        "--policy-arg",
+        f"port={args.port}",
+        "--states",
+        args.states,
+        "--state-ids",
+        args.state_id,
+        "--gamma",
+        str(args.gamma),
+        "--horizon-steps",
+        str(args.horizon_steps),
+        "--action-horizon",
+        str(args.action_horizon),
+    ]
+    if args.inference_timeout_s is not None:
+        forwarded += ["--inference-timeout-s", str(args.inference_timeout_s)]
+    if args.dataset is not None:
+        forwarded += ["--dataset", args.dataset]
+    if args.output is not None:
+        forwarded += ["--output", args.output]
+    return evaluate_main(forwarded)
 
 
 if __name__ == "__main__":

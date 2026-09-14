@@ -38,6 +38,7 @@ from robosuite.utils.shakebench_oracle import (
 )
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause, validate_outcome
 from robosuite.utils.shakebench_scene import load_scene_visual_config
+from robosuite.utils.shakebench_state_schema import normalize_state
 from robosuite.utils.shakebench_expert import oracle_observation
 
 SCHEMA_ID = "shakebench.oracle_gamma_videos"
@@ -84,6 +85,7 @@ def _sha256(path):
 def record_episode(state, *, gamma, mode, args, output):
     """Run one oracle episode and write its EGL-rendered video."""
 
+    state = normalize_state(state)
     profile = OracleControllerProfile()
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
     t0_s = float(state.get("t0_s", 0.0))

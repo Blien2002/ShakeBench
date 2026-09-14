@@ -88,3 +88,20 @@ def test_current_scene_expert_and_optional_cuda(gamma):
                 np.testing.assert_allclose(batch.e.imu.numpy()[0, -1], clean, atol=1e-5, rtol=1e-5)
     finally:
         env.close()
+
+
+def test_recorded_phase_names_are_labels_not_trace_dictionaries():
+    """Regression: the NPZ phase array stored truncated diagnostics text."""
+
+    from types import SimpleNamespace
+
+    from robosuite.scripts.shakebench_gpu_batch import phase_name
+
+    controller = SimpleNamespace(executive=SimpleNamespace(phase=SimpleNamespace(value="settle")))
+    controller.last_trace = {"phase": {"phase": "settle", "task_context_sha256": "0" * 64}}
+
+    recorded = phase_name(controller)
+
+    assert recorded == "settle"
+    assert not recorded.startswith("{")
+    assert np.asarray([recorded, "grasp"], dtype="U64").tolist() == ["settle", "grasp"]

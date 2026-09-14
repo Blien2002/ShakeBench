@@ -26,6 +26,7 @@
 | physics / geometry / scene | 不可变 official/probe physics profile、当前几何 profile、场景视觉与净空审计。 | `robosuite/utils/shakebench_physics.py`、`shakebench_geometry.py`、`shakebench_scene.py` |
 | runtime verifier / artifacts | 当前资产清单（physics profile 与 geometry/scene/arena）的字节与 payload 校验，以及 canonical JSON/hash/原子写入。 | `robosuite/utils/shakebench_runtime_verifier.py`、`shakebench_artifacts.py` |
 | mjwarp / starvla | GPU 采集后端与 StarVLA 观测、动作与客户端边界。 | `robosuite/utils/shakebench_mjwarp.py`、`shakebench_starvla.py` |
+| rollout / state schema / train states | 模型无关的观测-动作-终止边界、执行边界状态字段规范化（committed `can_*` 与 `object_*` 兼容）、可配置 train 状态池与 train/eval 交集检查。 | `robosuite/utils/shakebench_rollout.py`、`shakebench_state_schema.py`、`shakebench_train_states.py` |
 | config / rotations | Phase 00 配置与来源信封；wxyz 精度四元数工具。 | `robosuite/utils/shakebench_config.py`、`shakebench_rotations.py` |
 
 ## 3. 入口与演示
@@ -34,7 +35,10 @@
 | --- | --- |
 | `python -m robosuite.scripts.shakebench_run_oracle` | 在 dev/task states 上运行 reference controller，生成 rollout/run artifact 并 fail-closed 校验。 |
 | `python -m robosuite.scripts.shakebench_collect_lerobot` | 采集 LeRobot v2.1 gamma=0 专家数据集。 |
-| `python -m robosuite.scripts.shakebench_run_starvla` | StarVLA 任务接口的采集与回放入口。 |
+| `python -m robosuite.scripts.shakebench_generate_train_states` | 生成确定性的 train 状态池（count/seed/half-range），供后训练采集使用；永不参与评分。 |
+| `python -m robosuite.scripts.shakebench_export_sft_subset` | 从采集目录导出仅含 `success_latched` episode 的 SFT 子集，并记录来源 manifest 哈希。 |
+| `python -m robosuite.scripts.shakebench_evaluate` | 模型无关评测入口：`--policy module:factory`，记录 state/Gamma/horizon/观测合同/动作证据/policy 错误，并检查 train/eval 状态无交集。 |
+| `python -m robosuite.scripts.shakebench_run_starvla` | StarVLA WebSocket policy 的薄封装，转发到上述通用评测入口。 |
 | `python -m robosuite.scripts.shakebench_gpu_batch` | MJWarp GPU 批量采集（NPZ 与 JSON 元数据）。 |
 | `python -m robosuite.scripts.shakebench_scene_preflight` | scene／frame／clearance 预检。 |
 | `python -m robosuite.utils.shakebench_runtime_verifier --write` | 依据当前资产重写 `shakebench_runtime_contract.json`；不带 --write 时校验。 |

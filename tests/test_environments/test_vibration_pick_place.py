@@ -213,6 +213,42 @@ def test_target_bottom_contact_is_not_support_without_force_or_valid_height():
         env.close()
 
 
+def test_penetration_visible_only_inside_one_control_cycle_fails_the_episode():
+    """A physics-rate violation must survive into the 20 Hz report and the latch."""
+
+    from dataclasses import replace
+
+    env = _make_env(horizon=40)
+    try:
+        env.reset()
+        threshold = float(env.success_evaluator.thresholds.max_illegal_penetration_m)
+        real_snapshot = env.metrics.success_snapshot
+        pending = {"injections": 1}
+
+        def transient_snapshot(sim_or_model, data=None):
+            snapshot = real_snapshot(sim_or_model, data)
+            if pending["injections"] and env._physics_step_index % env._control_steps == 3:
+                pending["injections"] -= 1
+                return replace(snapshot, illegal_penetration_m=2.0 * threshold)
+            return snapshot
+
+        env.metrics.success_snapshot = transient_snapshot
+        for _ in range(6):
+            env.step(np.zeros(env.action_dim))
+        report = env.get_metrics()
+
+        assert pending["injections"] == 0, "the injected substep never ran"
+        assert report["max_illegal_penetration_m"] >= threshold
+        assert env.task_rule_violation()
+        assert not env._check_success()
+
+        env.reset()
+        assert env.get_metrics()["max_illegal_penetration_m"] < threshold
+        assert not env.task_rule_violation()
+    finally:
+        env.close()
+
+
 def test_stateful_table_and_in_hand_slip_metrics_record_first_slip_and_loss():
     env = _make_env()
     try:

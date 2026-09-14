@@ -77,6 +77,7 @@ class EpisodeResult:
     metrics: Mapping[str, Any]
     raw_result_sha256: str
     semantic_verifier_verdict: Mapping[str, Any]
+    horizon_steps: int
     episode_validity: str = "valid"
     score_outcome: str | None = "unsuccessful"
     termination_cause: str = "horizon_exhausted"
@@ -119,12 +120,16 @@ class EpisodeResult:
             "actuators",
             "trace_sha256",
             "metrics",
+            "horizon_steps",
         }
         missing = required.difference(raw)
         if missing:
             raise ScorecardError("episode missing: " + ", ".join(sorted(missing)))
         if raw["tier"] not in _TIERS or not isinstance(raw["success"], bool) or raw["scoreable"] is not True:
             raise ScorecardError("invalid tier, success, or scoreability")
+        horizon_steps = raw["horizon_steps"]
+        if isinstance(horizon_steps, bool) or not isinstance(horizon_steps, int) or horizon_steps < 1:
+            raise ScorecardError("invalid horizon_steps")
         gamma = float(raw["gamma_commanded"])
         if not math.isfinite(gamma) or gamma < 0:
             raise ScorecardError("invalid gamma")
@@ -164,6 +169,7 @@ class EpisodeResult:
             metrics=dict(raw["metrics"]),
             raw_result_sha256=_sha256(raw),
             semantic_verifier_verdict=dict(semantic_verifier_verdict),
+            horizon_steps=horizon_steps,
             episode_validity=str(validity),
             score_outcome=outcome,
             termination_cause=str(cause),
@@ -177,6 +183,7 @@ class EpisodeResult:
             "state_id": self.state_id,
             "tier": self.tier,
             "gamma_commanded": self.gamma_commanded,
+            "horizon_steps": self.horizon_steps,
             "scene_visual": self.scene_visual,
             "geometry_authority": self.geometry_authority,
             "geometry_profile": self.geometry_profile,
@@ -339,6 +346,7 @@ def _validate_comparable(rows: Sequence[EpisodeResult]) -> None:
     identities = {
         (
             row.gamma_commanded,
+            row.horizon_steps,
             _canonical(row.scene_visual),
             _canonical(row.geometry_authority),
             _canonical(row.geometry_profile),

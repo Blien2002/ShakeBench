@@ -35,7 +35,6 @@ def test_live_rollout_v21_roundtrip(tmp_path):
         env, program = make_environment(states[episode_index], gamma=0, horizon=2)
         try:
             controller = ShakeBenchOracleController(
-                "V0",
                 OracleControllerProfile(),
                 task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"]),
             )

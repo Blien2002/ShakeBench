@@ -1498,7 +1498,29 @@ class ShakeBenchMetrics:
         self._first_slip_time_s: Optional[float] = None
         self._had_finger_contact = False
         self._last_finger_contact_loss_after_grasp = False
+        self._episode_max_penetration_m = 0.0
         self.latest: Optional[MetricsSnapshot] = None
+
+    @property
+    def episode_max_penetration_m(self) -> float:
+        """Maximum penetration measured since the last reset."""
+
+        return self._episode_max_penetration_m
+
+    def latch_illegal_penetration(self, penetration_m: Any) -> float:
+        """Fold one measurement into the episode maximum.
+
+        Penetration that appears and disappears between report boundaries is
+        still a task-rule event, so the environment latches the physics-rate
+        measurement here and every consumer reads that single fact until the
+        next reset.
+        """
+
+        value = float(penetration_m)
+        if not np.isfinite(value) or value < 0.0:
+            raise ShakeBenchMetricsError("penetration_m must be finite and non-negative")
+        self._episode_max_penetration_m = max(self._episode_max_penetration_m, value)
+        return self._episode_max_penetration_m
 
     def _response(self, model: Any, data: Any) -> tuple[dict[str, Any], dict[str, Any]]:
         deck = pose_twist_in_frame(self._as_sim_or_model(model, data), self.deck_body_name)
@@ -1654,6 +1676,7 @@ class ShakeBenchMetrics:
             "worktable": can_pose_twist_in_frame(sim_view, self.can_body_name, self.worktable_body_name),
         }
         can_target_primitive, support_points_target, contacts = self._success_primitive(model, raw_data)
+        self.latch_illegal_penetration(contacts.max_penetration_m)
         can["target"] = can_target_primitive
         if self._initial_can_worktable_xy is None:
             self._initial_can_worktable_xy = can["worktable"].position_m[:2].copy()
@@ -1712,7 +1735,13 @@ class ShakeBenchMetrics:
     def to_dict(self) -> dict[str, Any]:
         if self.latest is None:
             return {}
-        return self.latest.to_dict()
+        report = self.latest.to_dict()
+        # Public rule field: the episode maximum, so a violation that only
+        # exists inside one control cycle still fails the episode.
+        report["max_illegal_penetration_m"] = max(
+            self.latest.contacts.max_penetration_m, self._episode_max_penetration_m
+        )
+        return report
 
 
 PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_ID = "shakebench.phase04.environment"

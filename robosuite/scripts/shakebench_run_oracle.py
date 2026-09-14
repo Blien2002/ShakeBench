@@ -53,6 +53,7 @@ from robosuite.utils.shakebench_outcomes import (
 )
 from robosuite.utils.shakebench_providers import COMMON_STATE_KEYS, POLICY_FIELD_CONTRACT, TABLE_IMU_POLICY_KEYS
 from robosuite.utils.shakebench_scene import load_scene_visual_config
+from robosuite.utils.shakebench_state_schema import normalize_state
 
 
 class OracleRunError(RuntimeError):
@@ -164,6 +165,23 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
     if payload.get("schema_id") == "shakebench.phase07.dev_states":
         states = load_dev_states(source)
         return {"states": states, "authority": {"kind": "dev", "dev_state_anchor": _dev_state_anchor(source)}}
+    from robosuite.utils.shakebench_train_states import TRAIN_STATE_SCHEMA, verify_train_state_artifact
+
+    if payload.get("schema_id") == TRAIN_STATE_SCHEMA:
+        verdict = verify_train_state_artifact(payload)
+        if not verdict["passed"]:
+            failed = [key for key, passed in verdict["checks"].items() if not passed]
+            raise OracleRunError("train state authority failed: " + ", ".join(failed))
+        return {
+            "states": verdict["states"],
+            "authority": {
+                "kind": "train",
+                "split": "train",
+                "scoreable": False,
+                "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                "payload_sha256": payload["artifact_lock"]["payload_sha256"],
+            },
+        }
     from robosuite.utils.shakebench_task_states import TASK_STATE_SCHEMA, verify_task_state_artifact
 
     if payload.get("schema_id") == TASK_STATE_SCHEMA:
@@ -521,6 +539,7 @@ def run_episode(
     observation or the scoreable trace.
     """
 
+    state = normalize_state(state)
     state_id = str(state["state_id"])
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
     imu_seed = int(state.get("imu_seed", seed))
@@ -558,9 +577,11 @@ def run_episode(
     try:
         scene_identity = scene_visual_identity(env.scene_config)
         geometry_authority = geometry_authority_identity(geometry_profile)
-        scoreable = bool(env.get_policy_task_context()["physics_profile"]["scoreable"])
-        if scoreable != (bool(geometry_authority["scoreable"]) and not variant):
+        environment_scoreable = bool(env.get_policy_task_context()["physics_profile"]["scoreable"])
+        if environment_scoreable != (bool(geometry_authority["scoreable"]) and not variant):
             raise OracleRunError("environment and geometry authority scoreability disagree")
+        # Train-split states are collected for post-training, never scored.
+        scoreable = environment_scoreable and state.get("split") != "train"
         task_context = WorktableTaskContext.from_mapping(env.get_policy_task_context().get("task_context"))
         controller = ShakeBenchOracleController(profile, task_context=task_context)
         observation = current_contract_observation(env, env.reset())
@@ -827,7 +848,10 @@ def main(argv: list[str] | None = None) -> int:
     scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))
     geometry_payload = geometry_profile if geometry_profile is not None else None
     geometry_authority = geometry_authority_identity(args.geometry_profile)
-    scoreable = bool(geometry_authority["scoreable"]) and state_asset["authority"]["kind"] != "task_variants"
+    scoreable = bool(geometry_authority["scoreable"]) and state_asset["authority"]["kind"] not in {
+        "task_variants",
+        "train",
+    }
     scene_identity = scene_visual_identity(scene_config)
     if args.horizon_steps <= 0:
         raise OracleRunError("--horizon-steps must be positive")
