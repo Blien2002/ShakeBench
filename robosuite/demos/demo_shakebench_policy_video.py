@@ -30,7 +30,7 @@ import numpy as np
 from robosuite.demos.demo_shakebench_oracle_video import FFmpegVideoWriter
 from robosuite.scripts.shakebench_evaluate import build_policy, load_policy_factory, parse_policy_args
 from robosuite.scripts.shakebench_run_oracle import load_state_asset
-from robosuite.utils.shakebench_rollout import ShakeBenchTaskEnv
+from robosuite.utils.shakebench_rollout import ShakeBenchTaskEnv, validated_actions
 
 DEFAULT_STATES = Path("robosuite/models/assets/shakebench_states_dev.json")
 DEFAULT_OUTPUT = Path("out/demo/shakebench_policy.mp4")
@@ -50,14 +50,19 @@ def record_episode(task, policy, writer, *, action_horizon, hold_frames, preview
 
     Frames are composed from the observation that produced the action, so the video shows the
     policy's real input.  Chunk boundaries match `rollout_policy`: predict, execute
-    ``action_horizon`` actions, predict again.
+    ``action_horizon`` actions, predict again.  The policy's optional ``reset()`` runs first,
+    and every chunk passes ``validated_actions``, so the demo accepts the same policies as the
+    evaluator.
     """
+    reset = getattr(policy, "reset", None)
+    if callable(reset):
+        reset()
     observation, _ = task.reset()
     state_id = task.state.get("state_id")
     steps, policy_calls, termination_cause = 0, 0, None
     previews = {}
     while termination_cause is None:
-        actions = policy.predict(observation)
+        actions = validated_actions(policy.predict(observation))
         policy_calls += 1
         for action in actions[:action_horizon]:
             frame = compose_frame(
@@ -139,6 +144,7 @@ def main(argv=None):
     task = ShakeBenchTaskEnv(states[args.state_id], gamma=args.gamma, horizon=args.horizon_steps)
     # The declared observation contract gives the frame size without building the scene twice.
     height, width = task.observation_contract()["observation.images.main"]["shape"][:2]
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     writer = FFmpegVideoWriter(args.output, width=width * 2, height=height, fps=args.fps)
     try:
         result = record_episode(
