@@ -44,9 +44,7 @@ damping_default = 1  # critically damped
 # Define arguments for this test
 parser = argparse.ArgumentParser()
 parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
-# Ignore pytest's command-line options during collection; retain ``--render``
-# for direct manual execution.
-args, _ = parser.parse_known_args()
+args = parser.parse_args()
 
 
 # Running the actual test #

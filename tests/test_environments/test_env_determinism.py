@@ -9,11 +9,8 @@ This runs some basic sanity checks on the environment, namely, checking that:
 Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
 import numpy as np
-import pytest
 
 import robosuite as suite
-
-pytestmark = pytest.mark.renderer
 
 
 def qpos_idx_to_joint_name(sim, idx):
@@ -38,8 +35,6 @@ def test_environment_determinism():
         for robot_name in ("Panda", "Sawyer", "Baxter", "GR1"):
             # create an environment for learning on pixels
             config = None
-            if env_name == "VibrationPickPlace" and robot_name != "Panda":
-                continue
             if "TwoArm" in env_name:
                 if robot_name == "GR1":
                     continue

@@ -6,8 +6,6 @@ import pytest
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 
-pytestmark = pytest.mark.renderer
-
 
 def is_display_available() -> bool:
     return "DISPLAY" in os.environ or "WAYLAND_DISPLAY" in os.environ
@@ -76,20 +74,14 @@ def test_mjviewer_renderer():
         renderer="mjviewer",
     )
 
-    # ``launch_passive`` owns a native GLFW thread. Closing explicitly is
-    # required so its teardown completes before pytest exits; otherwise a test
-    # can report PASS and still crash the interpreter during finalization.
-    try:
-        env.reset()
+    env.reset()
 
-        low, high = env.action_spec
+    low, high = env.action_spec
 
-        for i in range(10):
-            action = np.random.uniform(low, high)
-            obs, reward, done, _ = env.step(action)
-            env.render()
-    finally:
-        env.close()
+    for i in range(10):
+        action = np.random.uniform(low, high)
+        obs, reward, done, _ = env.step(action)
+        env.render()
 
 
 def test_offscreen_renderer():
