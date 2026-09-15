@@ -72,8 +72,12 @@ def _frame(observation, action, rendered, *, main_name, world):
     }
 
 
-def collect_batch(dataset, states, *, horizon, width, height, device, physics_profile, main_camera):
-    """Run and save one homogeneous batch; one LeRobot episode is emitted per world."""
+def collect_batch(dataset, states, *, horizon, width, height, device, physics_profile, main_camera, on_saved=None):
+    """Run and save one homogeneous batch; one LeRobot episode is emitted per world.
+
+    ``on_saved`` receives each episode's metadata immediately after the dataset write, so a
+    later world's failure cannot leave earlier saved episodes out of the manifest.
+    """
     from robosuite.utils.shakebench_mjwarp import MJWarpBatch
 
     if not states:
@@ -88,8 +92,6 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
         if any(env.control_freq != dataset.fps or env.action_dim != 7 for env in envs):
             raise ValueError("dataset must match the current 20 Hz, 7D oracle contract")
         main_names = [resolve_main_camera(env.sim.model._model, main_camera) for env in envs]
-        if len(set(main_names)) != 1:
-            raise ValueError("all worlds in a batch must use the same main camera")
         main_name = main_names[0]
         batch = MJWarpBatch(envs, programs, device=device)
         batch.enable_rendering([main_name, WRIST_CAMERA], resolution=(width, height))
@@ -151,43 +153,30 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
             dataset.save_episode()
             # PNG bytes are embedded by the official writer; temporary image files are redundant.
             shutil.rmtree(dataset.root / "images", ignore_errors=True)
-            episodes.append(
-                _json_ready(
-                    {
-                        "episode_index": dataset.num_episodes - 1,
-                        "state": state,
-                        "instruction": instruction,
-                        "steps": len(frames[world]),
-                        "success": cause == "success_latched",
-                        "termination_cause": cause,
-                        "vibration": vibration_record(program),
-                        "imu_mount": env._imu_mount_audit,
-                        "task_context": env.get_policy_task_context(),
-                        "controller_profile": profile.to_dict(),
-                        "physics_backend": "mujoco_warp",
-                        "physics_profile": physics_profile,
-                        "main_camera": main_name,
-                    }
-                )
+            episode = _json_ready(
+                {
+                    "episode_index": dataset.num_episodes - 1,
+                    "state": state,
+                    "instruction": instruction,
+                    "steps": len(frames[world]),
+                    "success": cause == "success_latched",
+                    "termination_cause": cause,
+                    "vibration": vibration_record(program),
+                    "imu_mount": env._imu_mount_audit,
+                    "task_context": env.get_policy_task_context(),
+                    "controller_profile": profile.to_dict(),
+                    "physics_backend": "mujoco_warp",
+                    "physics_profile": physics_profile,
+                    "main_camera": main_name,
+                }
             )
+            if on_saved is not None:
+                on_saved(episode)
+            episodes.append(episode)
         return episodes
     finally:
         for env in envs:
             env.close()
-
-
-def collect_episode(dataset, state, *, horizon, width, height, device, physics_profile, main_camera):
-    """Backward-compatible single-world wrapper around :func:`collect_batch`."""
-    return collect_batch(
-        dataset,
-        [state],
-        horizon=horizon,
-        width=width,
-        height=height,
-        device=device,
-        physics_profile=physics_profile,
-        main_camera=main_camera,
-    )[0]
 
 
 def build_parser():
@@ -224,9 +213,7 @@ def main(argv=None):
         or args.shard_index < 0
         or args.shard_index >= args.num_shards
         or args.image_writer_processes < 0
-        or args.image_writer_threads < 0
-        or (args.image_writer_processes == 0 and args.image_writer_threads == 0)
-        or (args.image_writer_processes > 0 and args.image_writer_threads == 0)
+        or args.image_writer_threads <= 0
     ):
         raise ValueError("dimensions, batch size, shard values, limit and image writer settings are invalid")
     if args.output.exists():
@@ -295,24 +282,29 @@ def main(argv=None):
     grouped = defaultdict(list)
     for state in states:
         grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
+
+    def record_episode(episode):
+        manifest["episodes"].append(episode)
+        write_json_atomic(manifest_path, manifest)
+        print(
+            f"{episode['state']['state_id']}: {episode['steps']} steps, {episode['termination_cause']}",
+            flush=True,
+        )
+
     try:
         for group in grouped.values():
             for begin in range(0, len(group), args.num_worlds):
-                selected = group[begin : begin + args.num_worlds]
-                episodes = collect_batch(
+                collect_batch(
                     dataset,
-                    selected,
+                    group[begin : begin + args.num_worlds],
                     horizon=args.horizon_steps,
                     width=args.width,
                     height=args.height,
                     device=str(args.device),
                     physics_profile=args.physics_profile,
                     main_camera=args.main_camera,
+                    on_saved=record_episode,
                 )
-                for state, episode in zip(selected, episodes):
-                    manifest["episodes"].append(episode)
-                    write_json_atomic(manifest_path, manifest)
-                    print(f"{state['state_id']}: {episode['steps']} steps, {episode['termination_cause']}", flush=True)
         manifest["complete"] = True
     except BaseException as exc:
         manifest["error"] = f"{type(exc).__name__}: {exc}"
