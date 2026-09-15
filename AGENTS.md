@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Core Python code lives in `robosuite/`. ShakeBench environments are under `robosuite/environments/manipulation/`, reusable simulation logic under `robosuite/utils/`, command-line entry points under `robosuite/scripts/`, and MuJoCo XML, JSON, and textures under `robosuite/models/assets/`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional StarVLA integration code lives in `integrations/starvla/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture.
+Core Python code lives in `robosuite/`. ShakeBench environments are under `robosuite/environments/manipulation/`, reusable simulation logic under `robosuite/utils/`, command-line entry points under `robosuite/scripts/`, and MuJoCo XML, JSON, and textures under `robosuite/models/assets/`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional StarVLA integration code lives in `integrations/starvla/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture. The `docs/` and `tests/` trees are local working copies: the published repository serves the upstream robosuite versions of those files, so keep local edits there uncommitted.
 
 ## Build, Test, and Development Commands
 
@@ -23,4 +23,8 @@ Use pytest. Name files `test_*.py` and tests `test_<behavior>`. Add the smallest
 
 ## Commit & Pull Request Guidelines
 
-Recent commits use short, sentence-case imperative subjects such as `Add mjwarp functionality and tests`. Keep each commit scoped to one change. Pull requests should include an itemized summary, test commands and results, linked issues when applicable, and example scripts or screenshots for new APIs, environments, or visual scene changes. Do not mix generated outputs or unrelated local files into the patch.
+Recent commits use short, sentence-case imperative subjects such as `Add mjwarp functionality and tests`. Keep each commit scoped to one change. Pull requests should include an itemized summary, test commands and results, linked issues when applicable, and example scripts or screenshots for new APIs, environments, or visual scene changes. Do not mix generated outputs, `docs/` or `tests/` edits, or unrelated local files into the patch.
+
+## Local-Only `docs/` and `tests/`
+
+After code edits, commit and push only changes outside `docs/` and `tests/`. Leave local edits in those folders unstaged, even when the task touches them, because the remote keeps the upstream robosuite content for both folders. `git status` will keep reporting those local changes; that is expected. To confirm the published trees still match upstream, run `git diff a85139df HEAD -- docs tests`, which should print nothing.
