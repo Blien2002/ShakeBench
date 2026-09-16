@@ -146,3 +146,6 @@ robosuite/models/assets/demonstrations_private
 
 # Retained historical checkout; active development runs from this project root.
 /out/integration/
+
+# The StarVLA integration is a local working copy; it is not published.
+/integrations/

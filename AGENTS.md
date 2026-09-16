@@ -25,6 +25,6 @@ Use pytest. Name files `test_*.py` and tests `test_<behavior>`. Add the smallest
 
 Recent commits use short, sentence-case imperative subjects such as `Add mjwarp functionality and tests`. Keep each commit scoped to one change. Pull requests should include an itemized summary, test commands and results, linked issues when applicable, and example scripts or screenshots for new APIs, environments, or visual scene changes. Do not mix generated outputs, `docs/` or `tests/` edits, or unrelated local files into the patch.
 
-## Local-Only `docs/` and `tests/`
+## Local-Only `docs/`, `tests/`, and `integrations/`
 
-After code edits, commit and push only changes outside `docs/` and `tests/`. Leave local edits in those folders unstaged, even when the task touches them, because the remote keeps the upstream robosuite content for both folders. `git status` will keep reporting those local changes; that is expected. To confirm the published trees still match upstream, run `git diff a85139df HEAD -- docs tests`, which should print nothing.
+After code edits, commit and push only changes outside `docs/`, `tests/`, and `integrations/`. Leave local edits in those folders unstaged, even when the task touches them, because the remote keeps the upstream robosuite content for `docs/` and `tests/` and does not publish `integrations/` at all. `git status` will keep reporting those local changes; that is expected. To confirm the published trees still match upstream, run `git diff a85139df HEAD -- docs tests`, which should print nothing.
