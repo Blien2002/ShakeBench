@@ -340,6 +340,10 @@ class MJWarpBatch:
             # support it terminates early and creates spurious IMU impulses;
             # retain the authored tolerance (state arithmetic is still float32).
             self.model.opt.tolerance.fill_(float(self.raw_model.opt.tolerance))
+            if self.model.opt.graph_conditional and not wp.is_conditional_graph_supported():
+                # CUDA driver < 12.4 cannot capture the solver's conditional while-node;
+                # fall back to the plain iteration path so capture still works.
+                self.model.opt.graph_conditional = False
             if self.model.is_sparse:
                 raise ValueError("Panda collector currently requires dense MJWarp inertia storage")
             self._calibrate_contacts()
@@ -555,12 +559,13 @@ class MJWarpBatch:
         return copy.deepcopy(self.initial_observations)
 
     def enable_rendering(
-        self, cameras, *, resolution=(256, 256), use_shadows=True, render_skybox=True, geom_groups=(1,)
+        self, cameras, *, resolution=(256, 256), use_shadows=True, render_skybox=True, geom_groups=(1,), supersampling=4
     ):
         """Create a device render context for named model cameras; no EGL or OpenGL involved.
 
         Resolution is (width, height). geom_groups mirrors the CPU collector visibility
         setting geomgroup[0] = 0, geomgroup[1] = 1.
+        Supersampling reduces texture minification aliasing and silhouette jaggies.
         """
         names = [cameras] if isinstance(cameras, str) else list(cameras)
         model = self.raw_model
@@ -568,13 +573,28 @@ class MJWarpBatch:
         if not names or len(set(names)) != len(names) or any(name not in available for name in names):
             raise ValueError(f"unknown or duplicate render cameras {names}; available: {sorted(available)}")
         active = [model.camera(i).name in names for i in range(model.ncam)]
+        if not isinstance(supersampling, int) or supersampling < 1:
+            raise ValueError("supersampling must be a positive integer")
         self.render_cameras = names
         self.render_resolution = (int(resolution[0]), int(resolution[1]))
+        self.render_supersampling = supersampling
+        render_size = tuple(size * supersampling for size in self.render_resolution)
         with wp.ScopedDevice(self.device):
+            # MJWarp 3.9 multiplies explicit mesh UVs by texrepeat; MuJoCo does not.
+            # Keep the correction in the rendering model, leaving physics/assets intact.
+            self.render_model = copy.copy(self.model)
+            repeats = self.model.mat_texrepeat.numpy().copy()
+            for material in np.unique(model.geom_matid[model.geom_type == mujoco.mjtGeom.mjGEOM_MESH]):
+                if material < 0 or np.all(repeats[..., material, :] == 1):
+                    continue
+                if np.any((model.geom_matid == material) & (model.geom_type != mujoco.mjtGeom.mjGEOM_MESH)):
+                    raise ValueError("repeated mesh textures must not share a material with primitive geoms")
+                repeats[..., material, :] = 1
+            self.render_model.mat_texrepeat = self._array(repeats, self.model.mat_texrepeat.dtype)
             self.render_context = mjw.create_render_context(
                 model,
                 nworld=self.nworld,
-                cam_res=resolution,
+                cam_res=render_size,
                 render_rgb=True,
                 use_textures=True,
                 use_shadows=use_shadows,
@@ -583,7 +603,7 @@ class MJWarpBatch:
                 render_skybox=render_skybox,
             )
             self.render_buffers = {
-                name: wp.empty((self.nworld, self.render_resolution[1], self.render_resolution[0]), dtype=wp.vec3)
+                name: wp.empty((self.nworld, render_size[1], render_size[0]), dtype=wp.vec3)
                 for name in self.render_cameras
             }
 
@@ -592,12 +612,17 @@ class MJWarpBatch:
         if getattr(self, "render_context", None) is None:
             raise RuntimeError("call enable_rendering() before render_rgb()")
         with wp.ScopedDevice(self.device):
-            mjw.render(self.model, self.data, self.render_context)
+            # Reset and stepping move geoms beyond the render context's initial bounds.
+            mjw.refit_bvh(self.model, self.data, self.render_context)
+            mjw.render(self.render_model, self.data, self.render_context)
             frames = {}
             for index, name in enumerate(self.render_cameras):
                 buffer = self.render_buffers[name]
                 mjw.get_rgb(self.render_context, index, buffer)
-                frames[name] = (np.clip(buffer.numpy(), 0.0, 1.0) * 255.0).astype(np.uint8)
+                width, height = self.render_resolution
+                scale = self.render_supersampling
+                pixels = buffer.numpy().reshape(self.nworld, height, scale, width, scale, 3).mean(axis=(2, 4))
+                frames[name] = (np.clip(pixels, 0.0, 1.0) * 255.0).astype(np.uint8)
         return frames
 
     def _upload_poses(self):

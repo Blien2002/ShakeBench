@@ -31,6 +31,33 @@ STATE_NAMES = ["eef_x", "eef_y", "eef_z", "eef_rx", "eef_ry", "eef_rz", "left_fi
 OBSERVATION_SOURCES = ("cameras", "contract")
 
 
+def proprioception_metadata():
+    """Define the measured 8D state, following OpenPI's LIBERO field layout."""
+    return {
+        "key": "observation.state",
+        "dtype": "float32",
+        "shape": [8],
+        "names": list(STATE_NAMES),
+        "timing": "state_t, synchronized with images_t, before applying action_t",
+        "normalization": "none; physical units stored, model loader handles normalization",
+        "eef_position": {"slice": [0, 3], "units": "m", "frame": "robot_base", "body": "gripper_body"},
+        "eef_orientation": {
+            "slice": [3, 6],
+            "units": "rad",
+            "frame": "robot_base",
+            "representation": "rotation_vector (unit axis * angle), not Euler angles",
+        },
+        "gripper_position": {
+            "slice": [6, 8],
+            "units": "m",
+            "representation": "measured signed slide-joint positions",
+            "joint_order": ["finger_joint1", "finger_joint2"],
+            "joint_limits": [[0.0, 0.04], [-0.04, 0.0]],
+        },
+        "reference": "https://github.com/Physical-Intelligence/openpi/blob/main/examples/libero/main.py",
+    }
+
+
 class PolicyTimeoutError(TimeoutError):
     """Raised when a policy request exceeds its deadline."""
 
@@ -165,6 +192,7 @@ class ShakeBenchCameraObservation:
             "source": "shakebench.camera_observation",
             "height": self.height,
             "width": self.width,
+            "proprioception": proprioception_metadata(),
             "cameras": {key: self._camera_identity(camera) for key, camera in self.cameras.items()},
         }
 

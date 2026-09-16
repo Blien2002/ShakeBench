@@ -28,7 +28,7 @@ from robosuite.utils.shakebench_calibration import vibration_record
 from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
-from robosuite.utils.shakebench_rollout import CAMERAS, task_description
+from robosuite.utils.shakebench_rollout import CAMERAS, proprioception_metadata, task_description
 from robosuite.utils.shakebench_starvla import modality_metadata
 
 MAIN_CAMERA_HOST = "frontview"  # compiled model camera that carries the main-view pose
@@ -267,6 +267,7 @@ def main(argv=None):
             "gripper": "-1 open, +1 close",
         },
         "requested_states": [state["state_id"] for state in states],
+        "proprioception": proprioception_metadata(),
         "state_authority": state_asset["authority"],
         "batch_size": args.num_worlds,
         "shard": {"index": args.shard_index, "num_shards": args.num_shards},

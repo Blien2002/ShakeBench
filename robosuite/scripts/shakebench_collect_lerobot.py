@@ -22,6 +22,7 @@ from robosuite.utils.shakebench_rollout import (
     CAMERAS,
     ShakeBenchCameraObservation,
     observation_features,
+    proprioception_metadata,
     task_description,
 )
 from robosuite.utils.shakebench_starvla import modality_metadata
@@ -174,6 +175,7 @@ def main(argv=None):
             "gripper": "-1 open, +1 close",
         },
         "requested_states": [state["state_id"] for state in states],
+        "proprioception": proprioception_metadata(),
         "state_authority": state_asset["authority"],
         "episodes": [],
     }
