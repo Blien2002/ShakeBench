@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from contextlib import ExitStack
 from pathlib import Path
 
 import numpy as np
@@ -143,6 +144,7 @@ def run_batch(policy, states, *, args, policy_id):
     if callable(reset):
         reset()
     envs, programs = [], []
+    videos = ExitStack()
     try:
         for state in states:
             env, program = make_environment(
@@ -160,13 +162,35 @@ def run_batch(policy, states, *, args, policy_id):
         observations = batch.reset()
         instructions = [task_description(state)["instruction"] for state in states]
         records = [_new_record(state, args, policy_id) for state in states]
+        writers = []
+        if getattr(args, "video_dir", None) is not None:
+            from robosuite.demos.demo_shakebench_oracle_video import FFmpegVideoWriter
+
+            args.video_dir.mkdir(parents=True, exist_ok=True)
+            for state, record in zip(states, records):
+                name = str(state["state_id"])
+                if Path(name).name != name or name in {".", ".."}:
+                    raise ValueError("state ID must be a plain filename for video recording")
+                path = args.video_dir / f"{name}.mp4"
+                if path.exists():
+                    raise FileExistsError(path)
+                writer = FFmpegVideoWriter(path, width=2 * args.width, height=args.height, fps=20)
+                videos.callback(writer.close)
+                writers.append(writer)
+                record.update(video=str(path), video_frames=0, video_fps=20)
+
+        def record_frames(rendered, worlds):
+            for w in worlds:
+                writers[w].append_data(np.concatenate([rendered[main_name][w], rendered[WRIST_CAMERA][w]], axis=1))
+                records[w]["video_frames"] += 1
+
         queues = [[] for _ in states]
         for step in range(args.horizon_steps):
             active = [w for w, record in enumerate(records) if record["termination_cause"] is None]
             if not active:
                 break
             refill = [w for w in active if not queues[w]]
-            if refill:
+            if refill or writers:
                 try:
                     rendered = batch.render_rgb()
                 except Exception as exc:
@@ -174,6 +198,8 @@ def run_batch(policy, states, *, args, policy_id):
                         records[w]["invalid_execution_reason"] = f"{type(exc).__name__}: {exc}"
                         _terminate(records[w], "invalid_execution")
                     break
+                if writers:
+                    record_frames(rendered, active)
                 for w in refill:
                     observation = {
                         "observation.images.main": rendered[main_name][w],
@@ -224,6 +250,10 @@ def run_batch(policy, states, *, args, policy_id):
                     )
                 if cause is not None:
                     _terminate(record, cause)
+            if writers:
+                finished = [w for w in active if records[w]["termination_cause"] is not None]
+                if finished:
+                    record_frames(batch.render_rgb(), finished)
         episodes = []
         for world, record in enumerate(records):
             if record["termination_cause"] is None:
@@ -244,8 +274,11 @@ def run_batch(policy, states, *, args, policy_id):
             episodes.append(record)
         return episodes
     finally:
-        for env in envs:
-            env.close()
+        try:
+            videos.close()
+        finally:
+            for env in envs:
+                env.close()
 
 
 def build_parser():
@@ -270,6 +303,7 @@ def build_parser():
     parser.add_argument("--device", default="cuda:0", help="cuda:N; cpu is available for debugging")
     parser.add_argument("--physics-profile", choices=PHYSICS_PROFILES, default="official")
     parser.add_argument("--output", type=Path, required=True, help="New JSON result path; never overwritten")
+    parser.add_argument("--video-dir", type=Path, help="Record main and wrist MJWarp views side by side at 20 fps")
     return parser
 
 
