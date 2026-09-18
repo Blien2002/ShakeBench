@@ -156,8 +156,6 @@ def verify_runtime_publication_bundle(asset_root: str | Path, *, include_profile
 
     if profile:
         computed_profile = _profile_hash(profile)
-        if computed_profile != profile.get("profile_sha256"):
-            errors.append("official profile payload hash mismatch")
         if computed_profile != profile_spec.get("profile_sha256"):
             errors.append("official profile contract hash mismatch")
         if profile.get("profile_id") != OFFICIAL_PHYSICS_PROFILE_ID:

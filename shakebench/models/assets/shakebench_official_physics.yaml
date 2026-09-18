@@ -152,4 +152,3 @@ physics:
     - can_target_bottom
     - can_target_walls
     - can_panda_finger_pads
-profile_sha256: c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c

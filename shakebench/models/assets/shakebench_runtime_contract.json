@@ -6,10 +6,10 @@
     "raw_archive_required_for_runtime": false,
     "runtime_verification": "compact_asset_hashes_only"
   },
-  "payload_sha256": "bc5602c9219c72bad4c4aa940e14f62a672376c8eeb62c6f834ba9523f635af1",
+  "payload_sha256": "11b3ea10bbd0ddc8d8ddeaa0839e69ce0f3fb02ef61b659713f5c974e265e7ab",
   "physics_profile": {
     "asset_filename": "shakebench_official_physics.yaml",
-    "asset_sha256": "d34364eec8d7280a56ba23cef4e35bd10908de0d4e6f97eeaea137414a855674",
+    "asset_sha256": "a5777149fd64c9644abf9ad43bac666dd9b4955dded01954cc5cebdb8695dd52",
     "profile_id": "shakebench.official.physics.v2",
     "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
   },

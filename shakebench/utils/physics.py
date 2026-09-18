@@ -16,7 +16,6 @@ needed to audit it.
 from __future__ import annotations
 
 import copy
-import hashlib
 import json
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
@@ -44,27 +43,6 @@ class PhysicsProfileError(ValueError):
 
 class PhysicsProfileIntegrityError(PhysicsProfileError):
     """Raised when a package profile or its embedded hash is tampered with."""
-
-
-def canonical_profile_payload(payload: Mapping[str, Any]) -> str:
-    """Return the canonical hash representation of a profile.
-
-    ``profile_sha256`` is the only excluded field because it points to this
-    representation.  No provenance, candidate result, or update field is
-    excluded.
-    """
-
-    if not isinstance(payload, Mapping):
-        raise PhysicsProfileError("physics profile must be an object")
-    content = copy.deepcopy(_json_ready(payload))
-    content.pop("profile_sha256", None)
-    return json.dumps(content, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
-
-
-def physics_profile_hash(payload: Mapping[str, Any]) -> str:
-    """Compute the SHA-256 hash used by an embedded profile."""
-
-    return hashlib.sha256(canonical_profile_payload(payload).encode("utf-8")).hexdigest()
 
 
 def _freeze(value: Any) -> Any:
@@ -156,14 +134,11 @@ class PhysicsProfile:
 
     payload: Mapping[str, Any]
     source: str
-    profile_sha256: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.payload, Mapping):
             raise PhysicsProfileError("payload must be a mapping")
         object.__setattr__(self, "payload", _freeze(_json_ready(self.payload)))
-        if len(self.profile_sha256) != 64:
-            raise PhysicsProfileIntegrityError("profile_sha256 must be a SHA-256 digest")
 
     @property
     def profile_id(self) -> str:
@@ -282,10 +257,6 @@ class PhysicsProfile:
     @property
     def c(self) -> tuple[float, ...]:
         return self.isolator_c
-
-    @property
-    def profile_hash(self) -> str:
-        return self.profile_sha256
 
     @property
     def contact_profile(self) -> Mapping[str, Any]:
@@ -413,7 +384,6 @@ class PhysicsProfile:
         parameters = derive_isolator_parameters(self.isolator_config())
         return {
             "profile_id": self.profile_id,
-            "profile_sha256": self.profile_sha256,
             "source": self.source,
             "status": self.status,
             "scoreable": self.scoreable,
@@ -438,8 +408,6 @@ class PhysicsProfile:
         }
 
     def assert_valid(self) -> "PhysicsProfile":
-        if self.profile_sha256 != physics_profile_hash(self.payload):
-            raise PhysicsProfileIntegrityError("physics profile hash does not match its payload")
         if self.schema_id != PHYSICS_PROFILE_SCHEMA_ID:
             raise PhysicsProfileError("unexpected physics profile schema")
         if self.schema_version != PHYSICS_PROFILE_SCHEMA_VERSION:
@@ -549,19 +517,11 @@ class PhysicsProfile:
 
 
 def _validate_payload(payload: Mapping[str, Any], *, source: str, require_official: bool) -> PhysicsProfile:
-    required = {"schema_id", "schema_version", "profile_id", "status", "scoreable", "physics", "profile_sha256"}
+    required = {"schema_id", "schema_version", "profile_id", "status", "scoreable", "physics"}
     missing = sorted(required - set(payload))
     if missing:
         raise PhysicsProfileError("physics profile is missing: " + ", ".join(missing))
-    embedded = payload.get("profile_sha256")
-    if not isinstance(embedded, str) or len(embedded) != 64:
-        raise PhysicsProfileIntegrityError("profile_sha256 is missing or malformed")
-    computed = physics_profile_hash(payload)
-    if embedded.lower() != computed:
-        raise PhysicsProfileIntegrityError(
-            f"physics profile hash mismatch: embedded={embedded.lower()} computed={computed}"
-        )
-    profile = PhysicsProfile(payload=payload, source=source, profile_sha256=computed)
+    profile = PhysicsProfile(payload=payload, source=source)
     profile.assert_valid()
     if require_official:
         if profile.status != "official_immutable" or profile.scoreable is not True:
@@ -600,8 +560,6 @@ def load_official_physics_profile(path: Optional[str | Path] = None) -> PhysicsP
         except OSError as exc:
             raise PhysicsProfileIntegrityError(f"cannot read physics profile: {profile_path}") from exc
     profile = _validate_payload(payload, source=str(profile_path), require_official=True)
-    if profile.profile_sha256 != runtime.get("profile_sha256"):
-        raise PhysicsProfileIntegrityError("official profile differs from the verified runtime publication contract")
     return profile
 
 
@@ -668,7 +626,6 @@ def make_probe_physics_profile() -> PhysicsProfile:
             },
         },
     }
-    payload["profile_sha256"] = physics_profile_hash(payload)
     return _validate_payload(payload, source="generated probe profile", require_official=False)
 
 
@@ -681,7 +638,7 @@ def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
         resolved = profile.assert_valid()
         if resolved.scoreable:
             official = load_official_physics_profile()
-            if resolved.profile_sha256 != official.profile_sha256:
+            if dict(resolved.payload) != dict(official.payload):
                 raise PhysicsProfileIntegrityError("scoreable in-memory profile is not the package official profile")
         return resolved
     if isinstance(profile, str) and profile in {"probe", "training", "probe_non_scoreable"}:
@@ -700,16 +657,8 @@ def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
         payload = dict(profile)
         if payload.get("scoreable") is True:
             raise PhysicsProfileError("scoreable mappings must be loaded from the package official profile")
-        if "profile_sha256" not in payload:
-            payload["profile_sha256"] = physics_profile_hash(payload)
         return _validate_payload(payload, source="in-memory physics profile", require_official=False)
     raise PhysicsProfileError("physics_profile must be official, probe, a path, mapping, or PhysicsProfile")
-
-
-def official_physics_profile_hash() -> str:
-    """Return the verified official profile hash."""
-
-    return load_official_physics_profile().profile_sha256
 
 
 __all__ = [
@@ -721,10 +670,7 @@ __all__ = [
     "PhysicsProfile",
     "PhysicsProfileError",
     "PhysicsProfileIntegrityError",
-    "canonical_profile_payload",
     "load_official_physics_profile",
     "make_probe_physics_profile",
-    "official_physics_profile_hash",
-    "physics_profile_hash",
     "resolve_physics_profile",
 ]
