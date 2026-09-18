@@ -46,13 +46,10 @@ class TaskExecutive:
     _eef_reference_rotation: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _initial_target_rotation: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _grasp_eef_can_transform: Optional[np.ndarray] = field(default=None, init=False, repr=False)
-    _last_public_can_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _last_public_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
-    _last_public_can_rotation: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _last_public_time_s: Optional[float] = field(default=None, init=False, repr=False)
     _public_linear_speed_m_s: float = field(default=0.0, init=False, repr=False)
     _public_angular_speed_rad_s: float = field(default=0.0, init=False, repr=False)
-    _public_eef_speed_m_s: float = field(default=0.0, init=False, repr=False)
     _public_eef_velocity_m_s: np.ndarray = field(
         default_factory=lambda: np.zeros(3, dtype=float), init=False, repr=False
     )
@@ -68,9 +65,6 @@ class TaskExecutive:
     _recovery_events: list[dict[str, Any]] = field(default_factory=list, init=False, repr=False)
     _anchor_worktable_can_transform: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _anchor_worktable_eef_goal: Optional[np.ndarray] = field(default=None, init=False, repr=False)
-    _anchor_clearance_certificate: Mapping[str, Any] = field(default_factory=dict, init=False, repr=False)
-    _anchor_timestamp_s: Optional[float] = field(default=None, init=False, repr=False)
-    _clearance_start_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _placement_start_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _release_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _recovery_start_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
@@ -97,13 +91,10 @@ class TaskExecutive:
         self._eef_reference_rotation = None
         self._initial_target_rotation = None
         self._grasp_eef_can_transform = None
-        self._last_public_can_position = None
         self._last_public_eef_position = None
-        self._last_public_can_rotation = None
         self._last_public_time_s = None
         self._public_linear_speed_m_s = 0.0
         self._public_angular_speed_rad_s = 0.0
-        self._public_eef_speed_m_s = 0.0
         self._public_eef_velocity_m_s = np.zeros(3, dtype=float)
         self._public_stable_samples = 0
         self._last_slip_translation_m = 0.0
@@ -117,9 +108,6 @@ class TaskExecutive:
         self._recovery_events = []
         self._anchor_worktable_can_transform = None
         self._anchor_worktable_eef_goal = None
-        self._anchor_clearance_certificate = {}
-        self._anchor_timestamp_s = None
-        self._clearance_start_eef_position = None
         self._placement_start_eef_position = None
         self._release_eef_position = None
         self._recovery_start_eef_position = None
@@ -157,8 +145,6 @@ class TaskExecutive:
         eef_worktable = np.linalg.inv(table_base).dot(eef_base)
         eef_worktable[:3, 3] = can_position + np.array((0.0, 0.0, self.profile.grasp_height_m), dtype=float)
         self._anchor_worktable_eef_goal = eef_worktable
-        self._anchor_clearance_certificate = dict(self.public_tool_clearance_certificate(observation))
-        self._anchor_timestamp_s = float(time_s)
 
     def _begin_lateral_alignment(self, observation: Mapping[str, Any], time_s: float) -> None:
         """Freeze the Can and enter the already-clear lateral standoff move."""
@@ -166,7 +152,7 @@ class TaskExecutive:
         self._capture_grasp_anchor(observation, time_s)
         self._align_stable_samples = 0
         self._transition(TaskPhase.LATERAL_ALIGN_ABOVE_CAN, time_s)
-        lateral_goal = self._phase_goal(observation)[0]
+        lateral_goal = self._phase_goal(observation)
         self._last_swept_clearance_certificate = dict(
             self._swept_clearance_to_goal(observation, lateral_goal, self._anchored_can_base(observation))
         )
@@ -450,17 +436,6 @@ class TaskExecutive:
         )
         return translation, rotation
 
-    def _public_container_risk(self, observation: Mapping[str, Any]) -> bool:
-        """Conservative public fingertip/EEF wall-risk check in target frame."""
-        if not self._public_can_inside_target(observation):
-            return False
-        tips = np.asarray(observation["robot0_fingertip_pos_robot_base"], dtype=float).reshape(2, 3)
-        frame = np.asarray(observation["goal_frame_pos_robot_base"], dtype=float)
-        rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
-        extents = np.asarray(observation["goal_inner_half_extents_target"], dtype=float)
-        local = (tips - frame).dot(rotation)
-        return bool(np.any(np.abs(local[:, :2]) > extents + self.profile.public_risk_margin_m))
-
     def _public_recoverability(self, observation: Mapping[str, Any]) -> Mapping[str, Any]:
         can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
@@ -636,12 +611,10 @@ class TaskExecutive:
         self._public_linear_speed_m_s = self._relative_kinematics.target_can_linear_speed_m_s
         self._public_angular_speed_rad_s = self._relative_kinematics.target_can_angular_speed_rad_s
         self._public_eef_velocity_m_s = np.zeros(3, dtype=float)
-        self._public_eef_speed_m_s = 0.0
         if self._last_public_eef_position is not None and self._last_public_time_s is not None:
             dt = float(time_s) - self._last_public_time_s
             if dt > 0.0:
                 self._public_eef_velocity_m_s = (eef_position - self._last_public_eef_position) / dt
-                self._public_eef_speed_m_s = float(np.linalg.norm(self._public_eef_velocity_m_s))
         if self._relative_kinematics.history_valid:
             if (
                 self._public_linear_speed_m_s <= self.profile.verify_linear_speed_limit_m_s
@@ -652,11 +625,7 @@ class TaskExecutive:
                 self._public_stable_samples = 0
         else:
             self._public_stable_samples = 1
-        self._last_public_can_position = can_position.copy()
         self._last_public_eef_position = eef_position.copy()
-        self._last_public_can_rotation = _quat_xyzw_to_matrix(
-            np.asarray(observation["object_quat_robot_base"], dtype=float)
-        )
         self._last_public_time_s = float(time_s)
 
     def _public_verify_ok(self, observation: Mapping[str, Any]) -> bool:
@@ -668,7 +637,9 @@ class TaskExecutive:
             and self._public_stable_samples >= self.profile.verify_stability_samples
         )
 
-    def _phase_goal(self, observation: Mapping[str, Any]) -> tuple[np.ndarray, float]:
+    def _phase_goal(self, observation: Mapping[str, Any]) -> np.ndarray:
+        """Return the current waypoint; the gripper is owned by the phase capability."""
+
         can = np.asarray(observation["object_pos_robot_base"], dtype=float)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         if can.shape != (3,):
@@ -678,48 +649,33 @@ class TaskExecutive:
             raise ShakeBenchOracleError("goal_z_bounds_target must be length two")
         target_top = float(z_bounds[1])
         if self.phase in {TaskPhase.SETTLE, TaskPhase.APPROACH}:
-            return can + np.array((0.0, 0.0, self.profile.approach_height_m)), self.profile.gripper_open_action
+            return can + np.array((0.0, 0.0, self.profile.approach_height_m))
         target_rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
         target_z = target_rotation[:, 2]
-        if self.phase == TaskPhase.CLEARANCE_LIFT:
-            if self._clearance_start_eef_position is None:
-                self._clearance_start_eef_position = eef.copy()
-            return (
-                self._clearance_start_eef_position + target_z * self.profile.clearance_lift_height_m,
-                self.profile.gripper_open_action,
-            )
-        if self.phase == TaskPhase.LATERAL_ALIGN_ABOVE_CAN:
-            anchor_can = self._anchored_can_base(observation)
-            return anchor_can + target_z * self.profile.approach_height_m, self.profile.gripper_open_action
-        if self.phase == TaskPhase.ALIGN_SETTLE:
-            anchor_can = self._anchored_can_base(observation)
-            return anchor_can + target_z * self.profile.approach_height_m, self.profile.gripper_open_action
-        if self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND}:
+        if self.phase in {TaskPhase.LATERAL_ALIGN_ABOVE_CAN, TaskPhase.ALIGN_SETTLE}:
+            return self._anchored_can_base(observation) + target_z * self.profile.approach_height_m
+        if self.phase in {
+            TaskPhase.DESCEND,
+            TaskPhase.VERTICAL_DESCEND,
+            TaskPhase.GRASP,
+            TaskPhase.GRASP_CLOSE,
+        }:
             anchor_can = (
                 self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
             )
-            return anchor_can + target_z * self.profile.grasp_height_m, self.profile.gripper_open_action
-        if self.phase in {TaskPhase.GRASP, TaskPhase.GRASP_CLOSE}:
-            anchor_can = (
-                self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
-            )
-            return anchor_can + target_z * self.profile.grasp_height_m, self.profile.gripper_close_action
+            return anchor_can + target_z * self.profile.grasp_height_m
         if self.phase == TaskPhase.PRELIFT_VERIFY:
             if self._prelift_start_eef_position is None:
                 raise ShakeBenchOracleError("PRELIFT_VERIFY requires a saved EEF reference")
-            target_rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
-            return (
-                self._prelift_start_eef_position + target_z * self.profile.prelift_height_m,
-                self.profile.gripper_close_action,
-            )
+            return self._prelift_start_eef_position + target_z * self.profile.prelift_height_m
         if self.phase == TaskPhase.LIFT:
             anchor_can = (
                 self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
             )
-            return anchor_can + target_z * self.profile.transport_height_m, self.profile.gripper_close_action
+            return anchor_can + target_z * self.profile.transport_height_m
         target = self._target_base(observation, np.array((0.0, 0.0, target_top + self.profile.transport_height_m)))
         if self.phase == TaskPhase.TRANSPORT:
-            return target, self.profile.gripper_close_action
+            return target
         if self.phase == TaskPhase.PLACE:
             if self._placement_start_eef_position is not None:
                 # Descend on the already aligned transport x/y.  A lateral
@@ -728,44 +684,31 @@ class TaskExecutive:
                 support_error = self._target_local_z(observation, can) + self.context.object_collision_lower_support_m
                 normal_correction = -support_error * target_z
                 placement = eef + normal_correction
-                return (
-                    np.array(
-                        (
-                            self._placement_start_eef_position[0] + normal_correction[0],
-                            self._placement_start_eef_position[1] + normal_correction[1],
-                            placement[2],
-                        )
-                    ),
-                    self.profile.gripper_close_action,
+                return np.array(
+                    (
+                        self._placement_start_eef_position[0] + normal_correction[0],
+                        self._placement_start_eef_position[1] + normal_correction[1],
+                        placement[2],
+                    )
                 )
-            return (
-                self._target_base(observation, np.array((0.0, 0.0, self.profile.placement_height_m))),
-                self.profile.gripper_close_action,
-            )
+            return self._target_base(observation, np.array((0.0, 0.0, self.profile.placement_height_m)))
         if self.phase == TaskPhase.RELEASE:
-            return (
-                self._release_eef_position.copy() if self._release_eef_position is not None else eef,
-                self.profile.gripper_open_action,
-            )
+            return self._release_eef_position.copy() if self._release_eef_position is not None else eef
         if self.phase == TaskPhase.RECOVERY_HOLD:
-            hold = self._recovery_start_eef_position if self._recovery_start_eef_position is not None else eef
-            return hold, self.profile.gripper_close_action
+            return self._recovery_start_eef_position if self._recovery_start_eef_position is not None else eef
         if self.phase == TaskPhase.RECOVERY_LOWER_IF_NEEDED:
-            lower = (
+            return (
                 self._recovery_lower_goal
                 if self._recovery_lower_goal is not None
                 else can + target_z * self.profile.grasp_height_m
             )
-            return lower, self.profile.gripper_close_action
-        if self.phase == TaskPhase.WAIT_PUBLIC_SETTLE:
-            return eef, self.profile.gripper_close_action
-        if self.phase == TaskPhase.RECOVERY_OPEN:
-            return eef, self.profile.gripper_open_action
+        if self.phase in {TaskPhase.WAIT_PUBLIC_SETTLE, TaskPhase.RECOVERY_OPEN}:
+            return eef
         if self.phase in {TaskPhase.CLEARANCE_RETREAT, TaskPhase.RETREAT}:
-            return eef + target_z * self.profile.clearance_lift_height_m, self.profile.gripper_open_action
+            return eef + target_z * self.profile.clearance_lift_height_m
         if self.phase == TaskPhase.RE_ALIGN:
-            return can + target_z * self.profile.approach_height_m, self.profile.gripper_open_action
-        return target, self.profile.gripper_open_action
+            return can + target_z * self.profile.approach_height_m
+        return target
 
     def _desired_eef_rotation(self, observation: Mapping[str, Any]) -> np.ndarray:
         if self._eef_reference_rotation is None:
@@ -843,11 +786,8 @@ class TaskExecutive:
                     ),
                 )
                 return
-            if self.phase in {TaskPhase.TRANSPORT, TaskPhase.PLACE} and self._public_container_risk(observation):
-                self.last_recovery_reason = "public_container_risk"
-
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
-        goal, _ = self._phase_goal(observation)
+        goal = self._phase_goal(observation)
         if self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND}:
             error = eef - goal
             close = bool(
@@ -873,14 +813,6 @@ class TaskExecutive:
             # the complete fingertip support points already clear the Can.
             # An unconditional extra lift here caused a down-up-down reversal
             # before every nominal grasp without adding a stronger gate.
-            self._begin_lateral_alignment(observation, time_s)
-        elif self.phase == TaskPhase.CLEARANCE_LIFT and close and elapsed >= self.profile.clearance_lift_s:
-            self._last_swept_clearance_certificate = dict(
-                self._swept_clearance_to_goal(observation, self._phase_goal(observation)[0], can)
-            )
-            if not self._last_swept_clearance_certificate["passed"]:
-                self._recover_or_fail(observation, time_s, "public_tool_clearance")
-                return
             self._begin_lateral_alignment(observation, time_s)
         elif self.phase == TaskPhase.LATERAL_ALIGN_ABOVE_CAN and close:
             self._transition(TaskPhase.ALIGN_SETTLE, time_s)
@@ -982,11 +914,13 @@ class TaskExecutive:
             self._recovery_reverse_goal = None
             self._transition(TaskPhase.APPROACH, time_s)
 
-    def command(self, observation: Mapping[str, Any], time_s: float) -> tuple[np.ndarray, float]:
+    def command(self, observation: Mapping[str, Any], time_s: float) -> np.ndarray:
+        """Return the task-space delta for one step; the gripper belongs to the phase capability."""
+
         if not np.isfinite(float(time_s)) or time_s < 0.0:
             raise ShakeBenchOracleError("time_s must be finite and non-negative")
-        if self.phase in {TaskPhase.COMPLETE, TaskPhase.ABORTED}:
-            return np.zeros(6), self.profile.gripper_open_action
+        if self.phase is TaskPhase.ABORTED:
+            return np.zeros(6)
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         if eef.shape != (3,) or not np.all(np.isfinite(eef)):
             raise ShakeBenchOracleError("robot0_eef_pos_robot_base must be a finite three-vector")
@@ -1001,26 +935,25 @@ class TaskExecutive:
         self._update_public_kinematics(observation, float(time_s))
         self._advance(observation, float(time_s))
         if self.phase is TaskPhase.ABORTED:
-            return np.zeros(6), self.profile.gripper_open_action
+            return np.zeros(6)
         if self.phase == TaskPhase.SETTLE:
-            return np.zeros(6), self.profile.gripper_open_action
-        goal, gripper = self._phase_goal(observation)
-        gripper = self._capability_policy().gripper_action
+            return np.zeros(6)
         delta = np.zeros(6)
-        delta[:3] = goal - eef
+        delta[:3] = self._phase_goal(observation) - eef
         current_rotation = _quat_xyzw_to_matrix(np.asarray(observation["robot0_eef_quat_robot_base"], dtype=float))
         delta[3:] = _rotation_vector_from_matrix(self._desired_eef_rotation(observation).dot(current_rotation.T))
-        return delta, gripper
+        return delta
 
     def diagnostics(self) -> Mapping[str, Any]:
+        capability_policy = self._capability_policy()
         return MappingProxyType(
             {
                 "phase": self.phase.value,
-                "capability": self._capability_policy().capability.value,
+                "capability": capability_policy.capability.value,
                 "capability_policy": {
-                    "max_translation_normalized": self._capability_policy().max_translation_normalized,
-                    "max_orientation_normalized": self._capability_policy().max_orientation_normalized,
-                    "gripper_action": self._capability_policy().gripper_action,
+                    "max_translation_normalized": capability_policy.max_translation_normalized,
+                    "max_orientation_normalized": capability_policy.max_orientation_normalized,
+                    "gripper_action": capability_policy.gripper_action,
                 },
                 "phase_entered_s": self.phase_entered_s,
                 "failure_reason": self.failure_reason,
@@ -1030,14 +963,12 @@ class TaskExecutive:
                 "recovery_transition": self.recovery_transition,
                 "public_linear_speed_m_s": self._public_linear_speed_m_s,
                 "public_angular_speed_rad_s": self._public_angular_speed_rad_s,
-                "public_eef_speed_m_s": self._public_eef_speed_m_s,
                 "public_stable_samples": self._public_stable_samples,
                 "slip_translation_m": self._last_slip_translation_m,
                 "slip_rotation_rad": self._last_slip_rotation_rad,
                 "grasp_confidence": dict(self._grasp_confidence),
                 "prelift_follow_samples": self._prelift_follow_samples,
                 "align_stable_samples": self._align_stable_samples,
-                "anchor_timestamp_s": self._anchor_timestamp_s,
                 "anchor_worktable_can_transform": (
                     self._anchor_worktable_can_transform.tolist()
                     if self._anchor_worktable_can_transform is not None
@@ -1046,7 +977,6 @@ class TaskExecutive:
                 "anchor_worktable_eef_grasp_goal": (
                     self._anchor_worktable_eef_goal.tolist() if self._anchor_worktable_eef_goal is not None else None
                 ),
-                "anchor_clearance_certificate": dict(self._anchor_clearance_certificate),
                 "recovery_start_eef_position": (
                     self._recovery_start_eef_position.tolist()
                     if self._recovery_start_eef_position is not None
@@ -1058,10 +988,6 @@ class TaskExecutive:
                 "recovery_reverse_goal": (
                     self._recovery_reverse_goal.tolist() if self._recovery_reverse_goal is not None else None
                 ),
-                "recovery_events": list(self._recovery_events),
-                "relative_kinematics": (
-                    self._relative_kinematics.to_dict() if self._relative_kinematics is not None else None
-                ),
                 "swept_clearance_certificate": dict(self._last_swept_clearance_certificate),
             }
         )
@@ -1071,8 +997,3 @@ class TaskExecutive:
         """Canonical event sequence for the runner artifact."""
 
         return [dict(event) for event in self._recovery_events]
-
-    def record_evaluator_not_latched(self, observation: Mapping[str, Any], time_s: float) -> None:
-        """Expose the post-verify diagnostic without allowing it to terminate."""
-
-        self._record_event("evaluator_not_latched_after_public_verify", observation, time_s, "continue_rollout")

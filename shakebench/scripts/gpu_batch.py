@@ -123,7 +123,6 @@ def collect_batch(batch, states, *, horizon, profile=None, frame_writer=None):
             "phases": [],
             "termination_cause": None,
             "episode_validity": "valid",
-            "complete_event_recorded": False,
         }
         for w, obs in enumerate(observations)
     ]
@@ -140,9 +139,6 @@ def collect_batch(batch, states, *, horizon, profile=None, frame_writer=None):
                 actions[w] = controllers[w].action(observations[w], time_s=step / 20)
                 if not np.all(np.isfinite(actions[w])):
                     raise ShakeBenchOracleError("non-finite oracle action")
-                if controllers[w].executive.phase.value == "complete" and not records[w]["complete_event_recorded"]:
-                    controllers[w].executive.record_evaluator_not_latched(observations[w], step / 20)
-                    records[w]["complete_event_recorded"] = True
             except ShakeBenchOracleError:
                 records[w]["termination_cause"] = "policy_error"
                 actions[w] = 0

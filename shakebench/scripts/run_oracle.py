@@ -660,9 +660,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--state-id", default=None, help="run one exact frozen dev state")
     parser.add_argument("--state-ids", default=None, help="comma-separated exact frozen dev state IDs")
-    parser.add_argument(
-        "--merge-into", default=None, help="replace selected episodes in an existing compatible raw run"
-    )
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument(
         "--geometry-profile",
