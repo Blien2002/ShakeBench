@@ -1,5 +1,8 @@
 """Wait for a successful training run, then record fresh gamma-zero checkpoint evaluations.
 
+The best static checkpoint is then re-evaluated under shaken Gamma levels; both phases
+reuse the same 20 held-out states so they are directly comparable.
+
 Run with the ShakeBench Python environment; --prepare-only validates assets without a GPU.
 The generated state artifact is private held-out evidence, not an official benchmark split.
 """
@@ -7,6 +10,7 @@ The generated state artifact is private held-out evidence, not an official bench
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import csv
 import fcntl
 import json
@@ -76,7 +80,14 @@ def prepare(args):
         write_json_atomic(state_path, payload)
     contract = {"gamma": 0, "episodes_per_checkpoint": 20, "seed": args.seed,
                 "minimum_step_inclusive": args.min_step, "assets": expected,
-                "dataset_manifest_sha256": camera["manifest_sha256"], "states": str(state_path)}
+                "dataset_manifest_sha256": camera["manifest_sha256"],
+                "states": str(state_path),
+                "best_checkpoint_rule": ("most successes, then fewest execution "
+                                      "errors, then highest step over the static sweep"),
+                "num_worlds": args.num_worlds,
+                "gpu_pairs": [pair.strip() for pair in args.gpu_pairs.split(",") if pair.strip()],
+                "shaken": {"gammas": [float(g) for g in args.shaken_gammas],
+                           "rollouts_per_gamma": 20}}
     contract_path = args.output / "contract.json"
     if contract_path.exists() and json.loads(contract_path.read_text()) != contract:
         raise ValueError("evaluation contract changed since preparation")
@@ -84,8 +95,8 @@ def prepare(args):
     return state_path, expected
 
 
-def evaluate(args, checkpoint, destination, states):
-    destination.mkdir()
+def evaluate(args, checkpoint, destination, states, *, gamma, num_worlds, model_gpu, eval_gpu):
+    destination.mkdir(parents=True)
     # One owned server per checkpoint; never attach to or kill an unrelated service.
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
@@ -96,7 +107,7 @@ def evaluate(args, checkpoint, destination, states):
         server = subprocess.Popen(
             [str(args.policy_server_python), "deployment/model_server/server_policy.py", "--ckpt_path", str(checkpoint),
              "--port", str(port), "--use_bf16", "--seed", "42", "--idle_timeout", "-1"],
-            cwd=args.policy_server_root, env={**environment, "CUDA_VISIBLE_DEVICES": args.model_gpu},
+            cwd=args.policy_server_root, env={**environment, "CUDA_VISIBLE_DEVICES": model_gpu},
             stdout=log, stderr=subprocess.STDOUT,
         )
         try:
@@ -121,10 +132,10 @@ def evaluate(args, checkpoint, destination, states):
                      "--policy-arg", "host=127.0.0.1", "--policy-arg", f"port={port}",
                      "--inference-timeout-s", "60",
                      "--policy-id", checkpoint.name, "--states", str(states), "--dataset", str(args.dataset),
-                     "--gamma", "0", "--num-worlds", "1", "--action-horizon", "8", "--horizon-steps", "600",
+                     "--gamma", str(gamma), "--num-worlds", str(num_worlds),
                      "--physics-profile", "official", "--device", "cuda:0",
                      "--video-dir", str(destination / "videos"), "--output", str(destination / "result.json")],
-                    env={**environment, "CUDA_VISIBLE_DEVICES": args.eval_gpu}, check=True,
+                    env={**environment, "CUDA_VISIBLE_DEVICES": eval_gpu}, check=True,
                     stdout=eval_log, stderr=subprocess.STDOUT,
                 )
         finally:
@@ -136,24 +147,26 @@ def evaluate(args, checkpoint, destination, states):
                 server.wait()
 
 
-def summarize_checkpoint(step, destination, states, assets):
+def summarize_rollouts(destination, states, assets, **extra):
     result = json.loads((destination / "result.json").read_text())
     episodes = result["episodes"]
-    expected_ids = [state["state_id"] for state in json.loads(states.read_text())["states"]]
+    expected_ids = [state["state_id"] for state in json.loads(states.read_text())[
+        "states"]]
     if [episode["state_id"] for episode in episodes] != expected_ids:
-        raise ValueError("checkpoint must contain all 20 fresh rollouts exactly once")
+        raise ValueError("rollout set must contain all 20 fresh states exactly once")
     for episode in episodes:
         if asset_signature(episode["task_context"]) != assets:
             raise ValueError("rollout assets differ from training")
         if not Path(episode["video"]).is_file() or episode["video_frames"] < 1:
             raise ValueError("rollout video missing")
-    errors = sum(episode["termination_cause"] in {"policy_error", "invalid_execution"} for episode in episodes)
+    errors = sum(episode["termination_cause"] in {"policy_error", "invalid_execution"}
+                 for episode in episodes)
     successes = sum(bool(episode["success"]) for episode in episodes)
     return {
-        "step": step,
-        "rollouts": 20,
+        **extra,
+        "rollouts": len(episodes),
         "successes": successes,
-        "mean_success_rate": successes / 20,
+        "mean_success_rate": successes / len(episodes),
         "execution_errors": errors,
         "result": str(destination / "result.json"),
     }
@@ -170,9 +183,13 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--min-step", type=int, default=30000)
     parser.add_argument("--seed", type=int, default=2026091701)
-    parser.add_argument("--model-gpu", default="0")
-    parser.add_argument("--eval-gpu", default="1")
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--shaken-gammas", type=float, nargs="+",
+                        default=[0.35, 0.5, 0.75, 0.95])
+    parser.add_argument("--num-worlds", type=int, default=8,
+                        help="Fresh states simulated together in one MJWarp batch")
+    parser.add_argument("--gpu-pairs", default="0:1,2:3,4:5,6:7",
+                        help="Comma-separated model:eval CUDA device pairs, one worker per pair")
     args = parser.parse_args()
     for key in ("training_dir", "dataset", "policy_server_root", "policy_server_python", "output"):
         setattr(args, key, getattr(args, key).resolve())
@@ -195,19 +212,70 @@ def main():
             run, args.min_step, config["trainer"]["max_train_steps"], config["trainer"]["save_interval"]
         )
         prepare(args)  # Fail closed if assets changed while waiting.
+        pairs = [pair.split(":") for pair in args.gpu_pairs.split(",")]
+        if not pairs or any(len(pair) != 2 or not all(part.strip() for part in pair) for pair in pairs):
+            raise ValueError("--gpu-pairs must be model:eval device pairs, e.g. 0:1,2:3")
         rows = []
-        for step, checkpoint in selected:
-            destination = args.output / f"step_{step}"
-            print(f"Evaluating {checkpoint}", flush=True)
-            evaluate(args, checkpoint, destination, states)
-            rows.append(summarize_checkpoint(step, destination, states, assets))
-            write_json_atomic(args.output / "summary.json", {"checkpoints": rows})
-            with (args.output / "summary.csv").open("w", newline="") as stream:
-                writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
-                writer.writeheader()
-                writer.writerows(rows)
-            print(rows[-1], flush=True)
-        write_json_atomic(args.output / "completed.json", {"checkpoints": len(rows), "rollouts": len(rows) * 20})
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(pairs)) as pool:
+            pending = {}
+            for index, (step, checkpoint) in enumerate(selected):
+                model_gpu, eval_gpu = (part.strip() for part in pairs[index % len(pairs)])
+                destination = args.output / f"step_{step}"
+                print(f"Evaluating {checkpoint.name} on GPU {model_gpu}/{eval_gpu} "
+                      f"({args.num_worlds} worlds per batch)", flush=True)
+                future = pool.submit(evaluate, args, checkpoint, destination, states, gamma=0.0,
+                                     num_worlds=args.num_worlds, model_gpu=model_gpu, eval_gpu=eval_gpu)
+                pending[future] = (step, destination)
+            for future in concurrent.futures.as_completed(pending):
+                step, destination = pending[future]
+                future.result()
+                row = summarize_rollouts(destination, states, assets, step=step)
+                rows.append(row)
+                rows.sort(key=lambda item: item["step"])
+                write_json_atomic(args.output / "summary.json", {"checkpoints": rows})
+                with (args.output / "summary.csv").open("w", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+                    writer.writeheader()
+                    writer.writerows(rows)
+                print(row, flush=True)
+        best = max(rows, key=lambda row: (row["successes"], -row["execution_errors"],
+                                       row["step"]))
+        best_checkpoint = dict(selected)[best["step"]]
+        print("Best static checkpoint: step {} ({}/{})".format(
+            best["step"], best["successes"], best["rollouts"]), flush=True)
+        shaken = []
+        workers = max(1, min(len(pairs), len(args.shaken_gammas)))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+            pending = {}
+            for index, gamma in enumerate(args.shaken_gammas):
+                model_gpu, eval_gpu = (part.strip() for part in pairs[index % len(pairs)])
+                destination = args.output / "shaken" / f"gamma_{gamma:g}"
+                print(f"Evaluating {best_checkpoint.name} under Gamma={gamma:g} on GPU "
+                      f"{model_gpu}/{eval_gpu} ({args.num_worlds} worlds per batch)", flush=True)
+                future = pool.submit(evaluate, args, best_checkpoint, destination, states,
+                                     gamma=float(gamma), num_worlds=args.num_worlds,
+                                     model_gpu=model_gpu, eval_gpu=eval_gpu)
+                pending[future] = (float(gamma), destination)
+            for future in concurrent.futures.as_completed(pending):
+                gamma, destination = pending[future]
+                future.result()
+                row = summarize_rollouts(destination, states, assets, gamma=gamma)
+                shaken.append(row)
+                shaken.sort(key=lambda item: item["gamma"])
+                write_json_atomic(args.output / "shaken_summary.json",
+                                  {"best_step": best["step"], "gammas": shaken})
+                with (args.output / "shaken_summary.csv").open("w", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=list(shaken[0]))
+                    writer.writeheader()
+                    writer.writerows(shaken)
+                print(row, flush=True)
+        write_json_atomic(args.output / "completed.json", {
+            "checkpoints": len(rows), "rollouts": len(rows) * 20,
+            "best_step": best["step"],
+            "best_successes": best["successes"],
+            "shaken_gammas": [float(g) for g in args.shaken_gammas],
+            "shaken_rollouts": len(shaken) * 20,
+        })
 
 
 if __name__ == "__main__":
