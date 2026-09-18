@@ -227,6 +227,21 @@ class ShakeBenchCameraObservation:
             raise ValueError("non-finite policy observation")
         return result
 
+    def sync_device_state(self, device_data, world: int) -> None:
+        """Adopt one MJWarp world's state so host pixels show the same scene.
+
+        Device physics owns qpos/qvel and the mocap-driven shaker deck.  Host rendering is
+        still required because MJWarp's renderer maps textures only onto plane and mesh
+        geoms, so every textured box in this scene would render as a flat colour.
+        """
+
+        data = self.env.sim.data
+        data.qpos[:] = device_data.qpos.numpy()[world]
+        data.qvel[:] = device_data.qvel.numpy()[world]
+        data.mocap_pos[:] = device_data.mocap_pos.numpy()[world]
+        data.mocap_quat[:] = device_data.mocap_quat.numpy()[world]
+        mujoco.mj_forward(self.env.sim.model._model, data._data)
+
     def close(self):
         if self.renderer is not None:
             self.renderer.close()

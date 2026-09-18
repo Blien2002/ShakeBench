@@ -561,6 +561,10 @@ class MJWarpBatch:
     ):
         """Create a device render context for named model cameras; no EGL or OpenGL involved.
 
+        Only plane and mesh geoms get texture coordinates here, so textured boxes render as
+        a flat colour. Dataset and evaluation images therefore use the host MuJoCo camera
+        path; this renderer serves qualitative previews.
+
         Resolution is (width, height). geom_groups mirrors the CPU collector visibility
         setting geomgroup[0] = 0, geomgroup[1] = 1.
         Supersampling reduces texture minification aliasing and silhouette jaggies.

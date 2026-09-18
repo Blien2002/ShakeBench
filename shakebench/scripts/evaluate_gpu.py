@@ -1,4 +1,4 @@
-"""Evaluate a policy on ShakeBench states with MJWarp device physics and rendering.
+"""Evaluate a policy on ShakeBench states with MJWarp device physics and host rendering.
 
 Runs with:
     python -m shakebench.scripts.evaluate_gpu \\
@@ -7,12 +7,11 @@ Runs with:
         --states shakebench/models/assets/shakebench_task_states_official_v2.json \\
         --state-ids ID,ID --dataset out/lerobot_gpu_can_knee_100 --output out/eval/gpu/result.json
 
-Why this runner exists: a policy trained on datasets written by shakebench_collect_lerobot_gpu
-saw MJWarp-rendered pixels, while shakebench_evaluate renders observations with MuJoCo/EGL.
-Those two renderers disagree on brightness and shading, so EGL observations are out of
-distribution for a GPU-collected checkpoint. This runner mirrors the GPU collector's device
-physics, device rendering, and termination logic, batched over worlds, and records the same
-result schema as shakebench_evaluate so downstream tooling keeps working.
+Why this runner exists: it mirrors the GPU collector's device physics, batched over worlds,
+and records the same result schema as shakebench_evaluate so downstream tooling keeps
+working. Camera frames come from the same MuJoCo camera path as the CPU collector and
+evaluator, because MJWarp's renderer maps textures only onto plane and mesh geoms and would
+flatten every textured box in this scene.
 """
 
 from __future__ import annotations
@@ -45,6 +44,7 @@ from shakebench.utils.rollout import (
     ERROR_TAXONOMY,
     PolicyOutputError,
     PolicyTimeoutError,
+    ShakeBenchCameraObservation,
 )
 from shakebench.utils.rollout import _predict as predict_actions
 from shakebench.utils.rollout import (
@@ -145,7 +145,7 @@ def run_batch(policy, states, *, args, policy_id):
         raise ValueError("policies with reset() require --num-worlds 1 to isolate episode state")
     if callable(reset):
         reset()
-    envs, programs = [], []
+    envs, programs, readers = [], [], []
     videos = ExitStack()
     try:
         for state in states:
@@ -160,7 +160,10 @@ def run_batch(policy, states, *, args, policy_id):
         main_name = main_names[0]
         identity = observation_identity(main_name, args.main_camera, args.width, args.height)
         batch = MJWarpBatch(envs, programs, device=args.device)
-        batch.enable_rendering([main_name, WRIST_CAMERA], resolution=(args.width, args.height))
+        readers.extend(
+            ShakeBenchCameraObservation(env, height=args.height, width=args.width, main_camera=name)
+            for env, name in zip(envs, main_names)
+        )
         observations = batch.reset()
         instructions = [task_description(state)["instruction"] for state in states]
         records = [_new_record(state, args, policy_id) for state in states]
@@ -181,9 +184,22 @@ def run_batch(policy, states, *, args, policy_id):
                 writers.append(writer)
                 record.update(video=str(path), video_frames=0, video_fps=20)
 
-        def record_frames(rendered, worlds):
+        def render_worlds(worlds):
+            """Host-render the given worlds from the current device state."""
+
+            images = {}
+            for world in worlds:
+                readers[world].sync_device_state(batch.data, world)
+                images[world] = readers[world].read(observations[world])
+            return images
+
+        def record_frames(images, worlds):
             for w in worlds:
-                writers[w].append_data(np.concatenate([rendered[main_name][w], rendered[WRIST_CAMERA][w]], axis=1))
+                writers[w].append_data(
+                    np.concatenate(
+                        [images[w]["observation.images.main"], images[w]["observation.images.wrist"]], axis=1
+                    )
+                )
                 records[w]["video_frames"] += 1
 
         queues = [[] for _ in states]
@@ -194,18 +210,18 @@ def run_batch(policy, states, *, args, policy_id):
             refill = [w for w in active if not queues[w]]
             if refill or writers:
                 try:
-                    rendered = batch.render_rgb()
+                    images = render_worlds(active)
                 except Exception as exc:
                     for w in active:
                         records[w]["invalid_execution_reason"] = f"{type(exc).__name__}: {exc}"
                         _terminate(records[w], "invalid_execution")
                     break
                 if writers:
-                    record_frames(rendered, active)
+                    record_frames(images, active)
                 for w in refill:
                     observation = {
-                        "observation.images.main": rendered[main_name][w],
-                        "observation.images.wrist": rendered[WRIST_CAMERA][w],
+                        "observation.images.main": images[w]["observation.images.main"],
+                        "observation.images.wrist": images[w]["observation.images.wrist"],
                         "observation.state": state_vector(observations[w]),
                         "task": instructions[w],
                     }
@@ -253,7 +269,7 @@ def run_batch(policy, states, *, args, policy_id):
             if writers:
                 finished = [w for w in active if records[w]["termination_cause"] is not None]
                 if finished:
-                    record_frames(batch.render_rgb(), finished)
+                    record_frames(render_worlds(finished), finished)
         episodes = []
         for world, record in enumerate(records):
             if record["termination_cause"] is None:
@@ -277,6 +293,8 @@ def run_batch(policy, states, *, args, policy_id):
         try:
             videos.close()
         finally:
+            for reader in readers:
+                reader.close()
             for env in envs:
                 env.close()
 

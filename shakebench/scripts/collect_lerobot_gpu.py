@@ -1,10 +1,12 @@
-"""Collect live gamma=0 oracle demonstrations on MJWarp: device physics and device rendering.
+"""Collect live gamma=0 oracle demonstrations on MJWarp physics with host rendering.
 
 Runs with: python -m shakebench.scripts.collect_lerobot_gpu --output out/lerobot_gpu
 
-Same LeRobot v2.1 schema as shakebench_collect_lerobot, but no CPU rollout and no EGL: the
-compiled MJCF is only built on the host to seed the device model. The artifacts stay
-non-scoreable (see docs/mjwarp_collection.md); the CPU collector remains the scoreable path.
+Same LeRobot v2.1 schema and the same MuJoCo camera path as shakebench_collect_lerobot; only
+the rollout runs on the device. Camera frames are rendered on the host because MJWarp's
+renderer maps textures only onto plane and mesh geoms, which would flatten every textured
+box in this scene. The artifacts stay non-scoreable (see docs/mjwarp_collection.md); the CPU
+collector remains the scoreable path.
 """
 
 from __future__ import annotations
@@ -28,7 +30,12 @@ from shakebench.utils.artifacts import write_json_atomic
 from shakebench.utils.calibration import vibration_record
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from shakebench.utils.outcomes import resolve_termination_cause
-from shakebench.utils.rollout import CAMERAS, proprioception_metadata, task_description
+from shakebench.utils.rollout import (
+    CAMERAS,
+    ShakeBenchCameraObservation,
+    proprioception_metadata,
+    task_description,
+)
 from shakebench.utils.websocket_policy import modality_metadata
 
 MAIN_CAMERA_HOST = "frontview"  # compiled model camera that carries the main-view pose
@@ -59,12 +66,12 @@ def resolve_main_camera(model, requested) -> str:
     return requested
 
 
-def _frame(observation, action, rendered, *, main_name, world):
-    """Build one pre-step frame and copy only this world's rendered pixels."""
+def _frame(observation, action, images):
+    """Build one pre-step frame from this world's host-rendered images."""
     return {
         "action": np.asarray(action, dtype=np.float32).copy(),
-        "observation.images.main": rendered[main_name][world].copy(),
-        "observation.images.wrist": rendered[WRIST_CAMERA][world].copy(),
+        "observation.images.main": np.asarray(images["observation.images.main"]).copy(),
+        "observation.images.wrist": np.asarray(images["observation.images.wrist"]).copy(),
         "observation.state": state_vector(observation),
         "observation.table_imu_window": np.asarray(observation["table_imu_window"], dtype=np.float32),
         "observation.table_imu_timestamps_s": np.asarray(observation["table_imu_timestamps_s"], dtype=np.float64),
@@ -83,7 +90,7 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
     if not states:
         raise ValueError("at least one state is required")
     profile = OracleControllerProfile()
-    envs, programs = [], []
+    envs, programs, readers = [], [], []
     try:
         for state in states:
             env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
@@ -94,7 +101,10 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
         main_names = [resolve_main_camera(env.sim.model._model, main_camera) for env in envs]
         main_name = main_names[0]
         batch = MJWarpBatch(envs, programs, device=device)
-        batch.enable_rendering([main_name, WRIST_CAMERA], resolution=(width, height))
+        readers.extend(
+            ShakeBenchCameraObservation(env, height=height, width=width, main_camera=name)
+            for env, name in zip(envs, main_names)
+        )
         observations = batch.reset()
         controllers = [
             ShakeBenchOracleController(
@@ -117,11 +127,11 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
                 if action.shape != (7,) or not np.isfinite(action).all():
                     raise ValueError("oracle produced an invalid action")
                 actions[world] = action
-            rendered = batch.render_rgb()
-            pre_step_frames = {
-                world: _frame(observations[world], actions[world], rendered, main_name=main_name, world=world)
-                for world in active
-            }
+            images = {}
+            for world in active:
+                readers[world].sync_device_state(batch.data, world)
+                images[world] = readers[world].read(observations[world])
+            pre_step_frames = {world: _frame(observations[world], actions[world], images[world]) for world in active}
             # Every world advances together; inactive tails receive a zero action and are not recorded.
             observations, metrics = batch.step(actions)
             for world in active:
@@ -173,6 +183,8 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
             episodes.append(episode)
         return episodes
     finally:
+        for reader in readers:
+            reader.close()
         for env in envs:
             env.close()
 
