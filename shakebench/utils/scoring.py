@@ -20,7 +20,6 @@ from shakebench.utils.outcomes import OutcomeContractError, validate_outcome
 
 SCORECARD_SCHEMA_ID = "shakebench.phase08.scorecard"
 SCORECARD_SCHEMA_VERSION = 2
-RUN_MANIFEST_SCHEMA_ID = "shakebench.phase08.run_manifest"
 EPISODE_RESULT_SCHEMA_ID = "shakebench.phase08.episode_result"
 _TIERS = ("V0", "V1", "V2", "V3")
 _PAIRS = (("V0", "V1"), ("V1", "V2"), ("V2", "V3"), ("V0", "V3"))
@@ -161,37 +160,6 @@ class EpisodeResult:
             "task_context": self.task_context,
             "actuators": list(self.actuators),
         }
-
-
-@dataclasses.dataclass(frozen=True)
-class RunManifest:
-    """Immutable dispatch identity; execution provenance is intentionally absent."""
-
-    state_asset_sha256: str
-    tier: str
-    gamma_commanded: float
-    horizon_steps: int
-    authority_hashes: Mapping[str, str]
-
-    def science_identity(self) -> dict[str, Any]:
-        if (
-            self.tier not in _TIERS
-            or not math.isfinite(self.gamma_commanded)
-            or self.gamma_commanded < 0
-            or self.horizon_steps <= 0
-        ):
-            raise ScorecardError("invalid RunManifest")
-        return {
-            "state_asset_sha256": self.state_asset_sha256,
-            "tier": self.tier,
-            "gamma_commanded": self.gamma_commanded,
-            "horizon_steps": self.horizon_steps,
-            "authority_hashes": dict(self.authority_hashes),
-        }
-
-    @property
-    def job_id(self) -> str:
-        return _canonical(self.science_identity())
 
 
 def wilson_interval(successes: int, total: int, *, z: float = 1.959963984540054) -> dict[str, float | int]:
@@ -495,8 +463,6 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
 __all__ = [
     "EPISODE_RESULT_SCHEMA_ID",
     "EpisodeResult",
-    "RUN_MANIFEST_SCHEMA_ID",
-    "RunManifest",
     "SCORECARD_SCHEMA_ID",
     "ScorecardError",
     "build_scorecard",

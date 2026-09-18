@@ -7,7 +7,6 @@ this module, so evaluation does not depend on one model implementation.
 
 from __future__ import annotations
 
-import hashlib
 import time
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
@@ -119,11 +118,10 @@ def validated_actions(value):
 
 
 def action_evidence(actions: Sequence[np.ndarray]) -> dict[str, Any]:
-    """Digest of the actions actually executed by the environment."""
+    """Count of the actions actually executed by the environment."""
     array = np.asarray(actions, dtype=np.float64).reshape(-1, 7)
     return {
         "executed_action_count": int(len(array)),
-        "executed_actions_sha256": hashlib.sha256(np.ascontiguousarray(array).tobytes()).hexdigest(),
         "units": "normalized [-1,1] robot-base OSC delta plus gripper",
     }
 
