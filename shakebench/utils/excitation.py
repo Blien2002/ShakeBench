@@ -21,14 +21,13 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, replace
 from math import pi
 from typing import Any
 
 import numpy as np
 
 AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
-AXIS_NAMES = AXES
 TRANSLATION_AXES = AXES[:3]
 ROTATION_AXES = AXES[3:]
 AXIS_INDEX = {axis: index for index, axis in enumerate(AXES)}
@@ -154,29 +153,11 @@ class AxisBand:
         return self.relative_accel_rms * self.reference_accel_rms_m_s2
 
     @property
-    def relative_rms(self) -> float:
-        """Short alias for the design-tree ``relative accel RMS`` column."""
-
-        return self.relative_accel_rms
-
-    @property
     def nominal_band_hz(self) -> tuple[float, float]:
         """Return the lower and upper authored band limits in hertz."""
 
         half_width = self.center_hz * self.bandwidth_ratio
         return self.center_hz - half_width, self.center_hz + half_width
-
-    @property
-    def frequency_band_hz(self) -> tuple[float, float]:
-        """Alias for :attr:`nominal_band_hz`."""
-
-        return self.nominal_band_hz
-
-    @property
-    def is_rotation(self) -> bool:
-        """Whether this row describes an angular coordinate."""
-
-        return self.axis in ROTATION_AXES
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the band row using JSON-compatible values."""
@@ -302,17 +283,7 @@ class ExcitationConfig:
             "schema_version",
             "profile_id",
             "authored_spectrum_version",
-            "frequency_scale",
-            "reference_accel_rms_m_s2",
-            "kappa_rot",
-            "reference_lever_m",
-            "jitter_fraction",
-            "ramp_duration_s",
-            "episode_duration_s",
-            "gravity_m_s2",
-            "conservative_max_line_frequency_hz",
-            "workpiece_point_offset_m",
-        }
+        } | {item.name for item in fields(cls)}
         unknown = sorted(set(payload) - allowed)
         if unknown:
             raise ExcitationError("Unknown excitation config field(s): " + ", ".join(repr(item) for item in unknown))
@@ -417,15 +388,6 @@ def build_band_table(config: ExcitationConfig | Mapping[str, Any] | None = None)
 
 
 DEFAULT_EXCITATION_CONFIG = ExcitationConfig()
-BAND_TABLE = build_band_table(DEFAULT_EXCITATION_CONFIG)
-DEFAULT_BAND_TABLE = BAND_TABLE
-AXIS_BANDS = {band.axis: band for band in BAND_TABLE}
-
-
-def band_table_dict(config: ExcitationConfig | Mapping[str, Any] | None = None) -> dict[str, dict[str, Any]]:
-    """Return the authored band table keyed by canonical axis name."""
-
-    return {band.axis: band.to_dict() for band in build_band_table(config)}
 
 
 def axis_schema(config: ExcitationConfig | Mapping[str, Any] | None = None) -> dict[str, Any]:
@@ -450,7 +412,7 @@ def axis_schema(config: ExcitationConfig | Mapping[str, Any] | None = None) -> d
         },
         "frequency_scale": cfg.frequency_scale,
         "workpiece_point_offset_m": list(cfg.workpiece_point_offset_m),
-        "bands": band_table_dict(cfg),
+        "bands": {band.axis: band.to_dict() for band in build_band_table(cfg)},
         "ramp_type": "quintic_smoothstep",
         "ramp_duration_s": cfg.ramp_duration_s,
         "program_frame": "deck",
@@ -471,46 +433,25 @@ def excitation_profile_hash(config: ExcitationConfig | Mapping[str, Any] | None 
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def _normalise_active_axes(active_axes: Iterable[str | int] | str | np.ndarray | None) -> tuple[str, ...]:
-    """Normalize axis names, indices, or a six-entry boolean mask."""
+def _normalise_active_axes(active_axes: Iterable[str] | str | None) -> tuple[str, ...]:
+    """Normalize a single axis name or an iterable of axis names."""
 
     if active_axes is None:
         return AXES
     if isinstance(active_axes, str):
-        if "," in active_axes:
-            values: list[str | int] = [item.strip() for item in active_axes.split(",") if item.strip()]
-        else:
-            values = [active_axes]
-    elif isinstance(active_axes, np.ndarray) and active_axes.dtype == bool:
-        flat = active_axes.reshape(-1)
-        if flat.size != len(AXES):
-            raise ExcitationError(f"active_axes boolean mask must have {len(AXES)} entries")
-        values = [axis for axis, enabled in zip(AXES, flat) if enabled]
+        values: list[Any] = [active_axes]
     else:
         try:
-            values = list(active_axes)  # type: ignore[arg-type]
+            values = list(active_axes)
         except TypeError as exc:
-            raise ExcitationError("active_axes must be axis names, indices, or a boolean mask") from exc
-        if values and all(isinstance(value, (bool, np.bool_)) for value in values):
-            if len(values) != len(AXES):
-                raise ExcitationError(f"active_axes boolean mask must have {len(AXES)} entries")
-            values = [axis for axis, enabled in zip(AXES, values) if enabled]
+            raise ExcitationError("active_axes must be an axis name or an iterable of axis names") from exc
     normalised: list[str] = []
     for value in values:
-        if isinstance(value, (int, np.integer)) and not isinstance(value, (bool, np.bool_)):
-            index = int(value)
-            if index < 0 or index >= len(AXES):
-                raise ExcitationError(f"active axis index {index} is out of range")
-            axis = AXES[index]
-        elif isinstance(value, str):
-            axis = value
-        else:
-            raise ExcitationError(f"invalid active axis {value!r}")
-        if axis not in AXIS_INDEX:
-            raise ExcitationError(f"unknown active axis {axis!r}")
-        if axis in normalised:
-            raise ExcitationError(f"active_axes contains duplicate axis {axis!r}")
-        normalised.append(axis)
+        if not isinstance(value, str) or value not in AXIS_INDEX:
+            raise ExcitationError(f"unknown active axis {value!r}")
+        if value in normalised:
+            raise ExcitationError(f"active_axes contains duplicate axis {value!r}")
+        normalised.append(value)
     return tuple(axis for axis in AXES if axis in normalised)
 
 
@@ -547,19 +488,6 @@ def quintic_ramp(time: Any, duration_s: float) -> tuple[np.ndarray, np.ndarray, 
     return value, first, second
 
 
-def quintic_smoothstep(time: Any, duration_s: float) -> np.ndarray:
-    """Return only the episode-relative quintic ramp value."""
-
-    return quintic_ramp(time, duration_s)[0]
-
-
-def quintic_smoothstep_derivatives(time: Any, duration_s: float) -> tuple[np.ndarray, np.ndarray]:
-    """Return the analytic first and second derivatives of the ramp."""
-
-    _, first, second = quintic_ramp(time, duration_s)
-    return first, second
-
-
 @dataclass(frozen=True)
 class MotionSample:
     """Analytic six-axis position, velocity and acceleration sample.
@@ -584,24 +512,6 @@ class MotionSample:
             value = np.array(value, copy=True)
             value.setflags(write=False)
             object.__setattr__(self, name, value)
-
-    @property
-    def position(self) -> np.ndarray:
-        """Return the six-axis position array."""
-
-        return self.q
-
-    @property
-    def velocity(self) -> np.ndarray:
-        """Return the six-axis velocity array."""
-
-        return self.qdot
-
-    @property
-    def acceleration(self) -> np.ndarray:
-        """Return the six-axis acceleration array."""
-
-        return self.qdd
 
     def __iter__(self):
         """Yield position, velocity, and acceleration for tuple unpacking."""
@@ -721,12 +631,6 @@ class ExcitationProgram:
         return result
 
     @property
-    def frequencies_hz(self) -> np.ndarray:
-        """Alias for :attr:`line_frequency_hz`."""
-
-        return self.line_frequency_hz
-
-    @property
     def max_frequency_hz(self) -> float:
         """Return the largest active line frequency."""
 
@@ -743,24 +647,12 @@ class ExcitationProgram:
         return value
 
     @property
-    def line_displacement_amplitude(self) -> np.ndarray:
-        """Alias for :attr:`line_q_amplitude`."""
-
-        return self.line_q_amplitude
-
-    @property
     def axis_accel_rms(self) -> np.ndarray:
         """Return analytic RMS per axis from the line amplitudes."""
 
         value = np.sqrt(np.sum(self.line_accel_amplitude**2, axis=1) / 2.0)
         value.setflags(write=False)
         return value
-
-    @property
-    def authored_accel_rms(self) -> np.ndarray:
-        """Alias for :attr:`axis_accel_rms`."""
-
-        return self.axis_accel_rms
 
     @property
     def axis_displacement_bound(self) -> np.ndarray:
@@ -880,7 +772,7 @@ def build_excitation_program(
     seed: int = 0,
     t0: float = 0.0,
     level_scale: float = 1.0,
-    active_axes: Iterable[str | int] | str | np.ndarray | None = None,
+    active_axes: Iterable[str] | str | None = None,
     *,
     config: ExcitationConfig | Mapping[str, Any] | None = None,
     _bands: tuple[AxisBand, ...] | None = None,
@@ -1041,12 +933,6 @@ def build_mode_program(
     )
 
 
-def generate_excitation_program(*args: Any, **kwargs: Any) -> ExcitationProgram:
-    """Named alias used by scripts and later phases."""
-
-    return build_excitation_program(*args, **kwargs)
-
-
 def evaluate_excitation(
     seed: int = 0,
     t0: float = 0.0,
@@ -1067,45 +953,13 @@ def evaluate_excitation(
     ).evaluate(time)
 
 
-def generate_excitation(*args: Any, **kwargs: Any) -> MotionSample:
-    """Compatibility alias for :func:`evaluate_excitation`."""
-
-    return evaluate_excitation(*args, **kwargs)
-
-
-def synthesize_excitation(*args: Any, **kwargs: Any) -> MotionSample:
-    """Evaluate a deterministic excitation using the public functional API."""
-
-    return evaluate_excitation(*args, **kwargs)
-
-
-def expected_line_accel_amplitude(band: AxisBand, level_scale: float = 1.0) -> float:
-    """Return the authored amplitude of every line in ``band``."""
-
-    if not isinstance(band, AxisBand):
-        raise ExcitationError("band must be an AxisBand")
-    level = _finite_float("level_scale", level_scale, minimum=0.0)
-    return level * band.accel_rms * np.sqrt(2.0 / band.tones)
-
-
-def expected_line_q_amplitude(band: AxisBand, frequency_hz: float, level_scale: float = 1.0) -> float:
-    """Return ``accel_amp / omega**2`` for one authored line."""
-
-    frequency = _finite_float("frequency_hz", frequency_hz, minimum=0.0, strict=True)
-    return expected_line_accel_amplitude(band, level_scale) / (2.0 * pi * frequency) ** 2
-
-
 __all__ = [
     "AXES",
-    "AXIS_BANDS",
     "AXIS_INDEX",
-    "AXIS_NAMES",
     "AUTHORED_DECISION_ID",
     "AUTHORED_PROFILE_ID",
     "AUTHORED_SPECTRUM_VERSION",
-    "BAND_TABLE",
     "CONSERVATIVE_MAX_LINE_FREQUENCY_HZ",
-    "DEFAULT_BAND_TABLE",
     "DEFAULT_EPISODE_DURATION_S",
     "DEFAULT_EXCITATION_CONFIG",
     "DEFAULT_FREQUENCY_SCALE",
@@ -1129,19 +983,11 @@ __all__ = [
     "ROTATION_AXES",
     "TRANSLATION_AXES",
     "axis_schema",
-    "band_table_dict",
     "build_band_table",
     "build_excitation_program",
     "build_mode_program",
     "derive_rotation_accel_rms",
     "excitation_profile_hash",
     "evaluate_excitation",
-    "expected_line_accel_amplitude",
-    "expected_line_q_amplitude",
-    "generate_excitation",
-    "generate_excitation_program",
     "quintic_ramp",
-    "quintic_smoothstep",
-    "quintic_smoothstep_derivatives",
-    "synthesize_excitation",
 ]
