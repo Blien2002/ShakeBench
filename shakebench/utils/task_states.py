@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from shakebench import models
-from shakebench.utils.artifacts import payload_hash, write_json
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.committed_states import build_committed_state_artifact
 from shakebench.utils.tasks import OBJECT_SUPPORT, task_initial_yaw_rad, task_variants
 
@@ -24,12 +24,6 @@ TASK_STATE_FILENAMES = {split: f"shakebench_task_states_{split}_v2.json" for spl
 
 def build_task_state_artifact(split: str) -> dict:
     base = build_committed_state_artifact(split)
-    from shakebench.utils.oracle import OracleControllerProfile
-    from shakebench.utils.outcomes import outcome_contract_sha256
-
-    bindings = dict(base["authority_hashes"])
-    bindings["controller_profile_sha256"] = OracleControllerProfile().sha256
-    bindings["outcome_contract_sha256"] = outcome_contract_sha256()
     variants = task_variants()
     parents = base["states"]
     contracts = {spec.variant_id: spec.contract() for spec in variants}
@@ -44,7 +38,6 @@ def build_task_state_artifact(split: str) -> dict:
                 "schema_version": 2,
                 "state_id": f"{parent['state_id'].replace('-v1-', '-v2-')}.{spec.variant_id}",
                 "parent_state_id": parent["state_id"],
-                "parent_state_sha256": parent["canonical_payload_sha256"],
                 "split": split,
                 "task": spec.to_dict(),
                 "object_xy_m": list(parent["can_xy_m"]),
@@ -63,12 +56,7 @@ def build_task_state_artifact(split: str) -> dict:
                 "imu_seed": parent["imu_seed"],
                 "t0_s": parent["t0_s"],
                 "Gamma": copy.deepcopy(parent["Gamma"]),
-                "authority_hashes": {
-                    **bindings,
-                    "task_contract_sha256": contracts[spec.variant_id]["task_contract_sha256"],
-                },
             }
-            record["canonical_payload_sha256"] = payload_hash(record, field="canonical_payload_sha256")
             records.append(record)
     artifact = {
         "schema_id": TASK_STATE_SCHEMA,
@@ -77,7 +65,6 @@ def build_task_state_artifact(split: str) -> dict:
         "status": "prepared_for_requalification",
         "scoreable": False,
         "qualification": "new task contacts/assets require nominal, vibration and replay requalification before Phase 09 measurement",
-        "parent_asset_payload_sha256": base["artifact_lock"]["payload_sha256"],
         "task_count": 1,
         "variant_count": len(variants),
         "parent_state_count": len(parents),
@@ -89,10 +76,8 @@ def build_task_state_artifact(split: str) -> dict:
         "state_count": len(records),
         "aggregation": "one pick_place state pool; equal weight per state; pair tiers by full state_id",
         "task_contracts": contracts,
-        "authority_hashes": bindings,
         "states": records,
     }
-    artifact["payload_sha256"] = payload_hash(artifact)
     return artifact
 
 

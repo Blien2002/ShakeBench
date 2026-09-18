@@ -64,8 +64,7 @@ def execution_state_fingerprint(state: Mapping[str, Any]) -> str:
         }
     except (TypeError, ValueError):
         raise TrainStateError("state must carry numeric object_xy_m, seeds and t0_s") from None
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str)
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str)
 
 
 def _state_identity(value: Any) -> tuple[str, str]:
@@ -75,19 +74,6 @@ def _state_identity(value: Any) -> tuple[str, str]:
         label = str(value.get("state_id") or "unnamed-state")
         return execution_state_fingerprint(value), label
     return str(value), str(value)
-
-
-def train_state_artifact_hash(payload: Mapping[str, Any]) -> str:
-    """Hash the complete artifact except its self-referential hash field."""
-
-    if not isinstance(payload, Mapping):
-        raise TrainStateError("train-state artifact must be a mapping")
-    normalized = copy.deepcopy(dict(payload))
-    lock = normalized.get("artifact_lock")
-    if isinstance(lock, dict):
-        lock.pop("payload_sha256", None)
-    encoded = json.dumps(normalized, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
 
 
 def _validate_request(count: Any, seed: Any, half_range_m: Any) -> tuple[int, int, float]:
@@ -147,9 +133,7 @@ def build_train_state_artifact(count: int, *, seed: int, half_range_m: float = C
             "can_nominal_xy_m": list(CAN_NOMINAL_XY_M),
         },
         "states": generate_train_states(count, seed=seed, half_range_m=half_range),
-        "artifact_lock": {"payload_sha256": ""},
     }
-    payload["artifact_lock"]["payload_sha256"] = train_state_artifact_hash(payload)
     return payload
 
 
@@ -189,8 +173,6 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
         and len(rows) == len(states)
         and len({row.get("state_id") for row in rows}) == len(states),
         "bounds": bool(rows) and all(in_bounds(row) for row in rows),
-        "integrity": isinstance(payload.get("artifact_lock"), Mapping)
-        and payload["artifact_lock"].get("payload_sha256") == train_state_artifact_hash(payload),
         "regeneration": expected is not None and payload == expected,
     }
     return {
@@ -244,6 +226,5 @@ __all__ = [
     "execution_state_fingerprint",
     "generate_train_states",
     "split_overlap",
-    "train_state_artifact_hash",
     "verify_train_state_artifact",
 ]

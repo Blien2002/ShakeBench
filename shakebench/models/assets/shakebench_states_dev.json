@@ -1,8 +1,4 @@
 {
-  "artifact_lock": {
-    "payload_sha256": "1f68f671329ea3974d0852cb1ec9967e27d8af4de79c9afd3b82f0e3e121afd9",
-    "update_reason": "Phase 07 dependency repair: materialize only the prerequisite ten dev states"
-  },
   "generator": {
     "generator_id": "shakebench.sha256_uniform.v1",
     "mapping": "u64_be(sha256(generator_id:root_seed:index:channel)[:8]) / 2**64",
@@ -10,8 +6,7 @@
     "selection": "none; frozen before Phase 07 dev evaluation"
   },
   "physics_profile": {
-    "profile_id": "shakebench.official.physics.v2",
-    "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
+    "profile_id": "shakebench.official.physics.v2"
   },
   "schema_id": "shakebench.phase07.dev_states",
   "schema_version": 1,

@@ -1,18 +1,6 @@
 {
-  "artifact_lock": {
-    "payload_sha256": "f3566d59adfb5334308da513e5f95c7f60355518fbddcba92d672b30b52a3cdf"
-  },
-  "authority_hashes": {
-    "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-    "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-    "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-    "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-    "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-  },
   "dev_state_anchor": {
-    "asset": "shakebench_states_dev.json",
-    "file_sha256": "f290e5c23c732f66e695bb988c4b117d2f0aef7d2828f133fe62ca00f291b8bb",
-    "payload_sha256": "1f68f671329ea3974d0852cb1ec9967e27d8af4de79c9afd3b82f0e3e121afd9"
+    "asset": "shakebench_states_dev.json"
   },
   "generator": {
     "generator_id": "shakebench.sha256_uniform.v1",
@@ -29,13 +17,6 @@
       "Gamma": {
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
-      },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
       },
       "can_initial_velocity": [
         0.0,
@@ -59,7 +40,6 @@
         -0.14439211279453154
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "28e9267b402730610707f17d9f01e33ff0fab7bc0fa4b95ae67646368d258c63",
       "excitation_seed": 1175976271,
       "imu_seed": 3651749953,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -87,13 +67,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -116,7 +89,6 @@
         -0.14505702553069588
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3b490d134c807e8de44b37d9dc09b1b36c929f7eddecf2e8832abdc0dfd7a6bf",
       "excitation_seed": 1778136321,
       "imu_seed": 2462665273,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -144,13 +116,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -173,7 +138,6 @@
         -0.12421148944358401
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9e0273a37666a37bc755c2ee51ce1382ea529966e00fc2d397d3106d7e9d77c0",
       "excitation_seed": 1848528735,
       "imu_seed": 1267329793,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -201,13 +165,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -230,7 +187,6 @@
         -0.12780207780038355
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b24e9f5d618292485e776be360716331d16b5e0f9cacad0a059024cd637fd6c2",
       "excitation_seed": 2972006184,
       "imu_seed": 1496405714,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -258,13 +214,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -287,7 +236,6 @@
         -0.1414145759340982
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "001a936f815dc714503dfbdbcc5c5e5424ff632846c25fb6b1311e00b785e7e3",
       "excitation_seed": 2799182347,
       "imu_seed": 1349285626,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -315,13 +263,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -344,7 +285,6 @@
         -0.14365289217198596
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "57a431bb9567bede394f480cde3417644ae3bdaa7d20d2a70d419600e20194d8",
       "excitation_seed": 3045565716,
       "imu_seed": 1421135020,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -372,13 +312,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -401,7 +334,6 @@
         -0.14862984214943215
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "dc81f3f947664434396c51f0eef458e53026c9cabd19a50b391dcbbb7fa182c8",
       "excitation_seed": 3083001667,
       "imu_seed": 1658469973,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -429,13 +361,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -458,7 +383,6 @@
         -0.11762346094329097
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d8d8faab3ee45b09bbebf336252fd9e3d30bee7960a52eb6bf5724a42090be32",
       "excitation_seed": 1071951727,
       "imu_seed": 4109914981,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -486,13 +410,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -515,7 +432,6 @@
         -0.11397158110282864
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "cb61eade3bb0079474df9fa34f86e35947d7445d06de8bc4798a6ce2693e4d13",
       "excitation_seed": 4173836589,
       "imu_seed": 3611299872,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -543,13 +459,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -572,7 +481,6 @@
         -0.11925570488973337
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0b02e4c90afbb0a617fdcf6afa60449e8e96090430f0e1261b30e4946cd7f53a",
       "excitation_seed": 1443519808,
       "imu_seed": 3035887915,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -600,13 +508,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -629,7 +530,6 @@
         -0.1426110081098682
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "6942d0a8f05a722e2a8bc28ea4bd79b6bd4f710003a8229d34fb70403d94bcb0",
       "excitation_seed": 2837419813,
       "imu_seed": 1682977859,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -657,13 +557,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -686,7 +579,6 @@
         -0.13617364193997272
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ffe8f210fa5f8bab7c97702720b4770b5bedbb9a8bfbdf3b0843389afaf24a94",
       "excitation_seed": 2881904516,
       "imu_seed": 2219424597,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -714,13 +606,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -743,7 +628,6 @@
         -0.13803518420823932
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "87d59d73df931daac84d4ad53fddb62ea0282ea13b3bb4669c9c1848b28b9fb5",
       "excitation_seed": 477443595,
       "imu_seed": 3682357234,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -771,13 +655,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -800,7 +677,6 @@
         -0.14962482015933534
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "6ab9dab9c24619e7f9d455b06569948b573d97a112cf8f579c3a19baac172969",
       "excitation_seed": 3915047264,
       "imu_seed": 3299174154,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -828,13 +704,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -857,7 +726,6 @@
         -0.1334031480339019
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ce718afe11acf10e257aa0dd1e6700f7dc6fb241e9f20782c8cb1b40bced8b03",
       "excitation_seed": 840181097,
       "imu_seed": 1981732783,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -885,13 +753,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -914,7 +775,6 @@
         -0.12935175381151276
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9da51d8acb5145d03adf93558c0e85b023d0260528b3cca814831ad1ca028e6d",
       "excitation_seed": 1771406529,
       "imu_seed": 1581418267,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -942,13 +802,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -971,7 +824,6 @@
         -0.13945350619587185
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "73be50357e1b33cd0f622b25518bd1f0f85b10bd42a7e08e76947191ff28551e",
       "excitation_seed": 2954396227,
       "imu_seed": 605487215,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -999,13 +851,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1028,7 +873,6 @@
         -0.1493934406573146
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0b1e3d37ba7aed2aecb9f8d5a9d2ebc4a29d48d6bcc4e538042add8d5b5fb4bd",
       "excitation_seed": 3495282653,
       "imu_seed": 2038182804,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1056,13 +900,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1085,7 +922,6 @@
         -0.12199193335375681
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "4545a9ac15ae153307e0cf8a7a5c3a6ca787cbefb011bcf2d98543389c52a7eb",
       "excitation_seed": 3120051575,
       "imu_seed": 2696588615,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1113,13 +949,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1142,7 +971,6 @@
         -0.11727422166767763
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e6756c4ab56edc0b1e9e1373c609dbe13f0b4e0ddcce53c5d88be09ebf16be72",
       "excitation_seed": 3407463928,
       "imu_seed": 297528452,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1170,13 +998,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1199,7 +1020,6 @@
         -0.14556449906137855
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "90a1a3b39a71f9eadc7a38d3d66fcf25e76f53a5b7a3dc27ded7e217d7345a7e",
       "excitation_seed": 2820645099,
       "imu_seed": 1850846490,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1227,13 +1047,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1256,7 +1069,6 @@
         -0.14576816295039244
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "99f03c94ac950543eba8c1d631826be84b8bdd4f9b76fabb9b8715218b0075ee",
       "excitation_seed": 2617477138,
       "imu_seed": 646019812,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1284,13 +1096,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1313,7 +1118,6 @@
         -0.11901330296589765
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a3287383e4cc793996783c16bf16ca1fee30ac21ba66ac9ecb1a4a851cb36633",
       "excitation_seed": 2825309715,
       "imu_seed": 2927321469,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1341,13 +1145,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1370,7 +1167,6 @@
         -0.12595156165389315
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "82653a8e461b9d333326f1c0bd417194451cadac096fd5e3b318d64898b69239",
       "excitation_seed": 3299061218,
       "imu_seed": 1291636891,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1398,13 +1194,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1427,7 +1216,6 @@
         -0.1162292846739416
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "69ce3cf53e5d31a1b4f300f3cff1e55f984dc5f9f5db578152327a4256c9ced0",
       "excitation_seed": 661369187,
       "imu_seed": 2718050129,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1455,13 +1243,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1484,7 +1265,6 @@
         -0.13067874352498646
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8fef3e849afa2607c486f3306e02ee97fba8996b14fb5d0ea6fc7e5992dd614e",
       "excitation_seed": 1702049764,
       "imu_seed": 2553392439,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1512,13 +1292,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1541,7 +1314,6 @@
         -0.12352492543764336
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "5f90a17b0c49d4607ddb18c729ed69c4ac06892bb2772c8ae14a46dece2bd3a4",
       "excitation_seed": 3617906623,
       "imu_seed": 378930728,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1569,13 +1341,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1598,7 +1363,6 @@
         -0.11897015849583009
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "4ee2b3a7fb189ef8e4cb072d6090b34b81d2bb06d8b2dc93708364bdc5b565e2",
       "excitation_seed": 3074868133,
       "imu_seed": 668851239,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1626,13 +1390,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1655,7 +1412,6 @@
         -0.1108183615156992
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "be9ee45ebbb34c8fec65018c08519be388fe580543c1987940e1ebd7171ab9a4",
       "excitation_seed": 3460512181,
       "imu_seed": 2972906598,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1683,13 +1439,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1712,7 +1461,6 @@
         -0.1283101728092694
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "756255c8996de64da251a5d4bc31b6b1f5dd31509d5955bd699f7e4ce640f893",
       "excitation_seed": 2921995948,
       "imu_seed": 605101635,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1740,13 +1488,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1769,7 +1510,6 @@
         -0.11478756474102102
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b41e8b04afb528cbc87f6d4ef114379d6f80cedd8b3af22c08b64bedce9863b1",
       "excitation_seed": 1270398675,
       "imu_seed": 3776827573,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1797,13 +1537,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1826,7 +1559,6 @@
         -0.12274360779552107
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "2b0d96996388cb04d4b9f139a6126eafc356a513c1ea819dbaa75bd498796bf2",
       "excitation_seed": 2779823280,
       "imu_seed": 3992693610,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1854,13 +1586,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1883,7 +1608,6 @@
         -0.14761798588500719
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ea4d1f9871edd35fc82a7549db57d64811cd6977f71dc3885ff6910884bcc36a",
       "excitation_seed": 3295534772,
       "imu_seed": 3340002702,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1911,13 +1635,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1940,7 +1657,6 @@
         -0.11596205065683052
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e7c55fc54ae0639e2723c5c1508d832f58fc1ba994a929ccc610ff3496e62905",
       "excitation_seed": 258254237,
       "imu_seed": 1426756531,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -1968,13 +1684,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -1997,7 +1706,6 @@
         -0.11806775421039199
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "06b672b2d732d5f38e9394de337ea9450a9bb840b66d7fb946456e603baf9ff2",
       "excitation_seed": 2715948355,
       "imu_seed": 2741306398,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2025,13 +1733,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2054,7 +1755,6 @@
         -0.1287555960829699
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "f8855b7aab882a2a12e75fe22b57bd4d0a0eacf900a9acb247f71643329270cd",
       "excitation_seed": 4187519215,
       "imu_seed": 3494336184,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2082,13 +1782,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2111,7 +1804,6 @@
         -0.14424584810737848
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9b0af67c1a13888043f423a23cf701d4c89311659cf802171c3ce97b414ff732",
       "excitation_seed": 442858675,
       "imu_seed": 338636392,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2139,13 +1831,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2168,7 +1853,6 @@
         -0.12830254122868978
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3eb23fcb3060ae0957cedd0aff2d1c06ffc00cde316ec988946cb9465bede630",
       "excitation_seed": 3231690186,
       "imu_seed": 45999239,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2196,13 +1880,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2225,7 +1902,6 @@
         -0.11540496284145307
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "233996cc661e4d289dd22e93130d35d0ea4fa02eb08d185aa85d5fb31d58ce12",
       "excitation_seed": 2115009567,
       "imu_seed": 1066213005,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2253,13 +1929,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2282,7 +1951,6 @@
         -0.1324554124340847
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "09655ff707f248f790fc7e5ecef5dc843fe6320706034018af05f53e13071ba6",
       "excitation_seed": 3940414610,
       "imu_seed": 4115102076,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2310,13 +1978,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2339,7 +2000,6 @@
         -0.1201061812222405
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e1ff76ed4d119c9d1216e8722a85608d1b34767dca8198b39520f62c631cf3b5",
       "excitation_seed": 2696734411,
       "imu_seed": 1017287571,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2367,13 +2027,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2396,7 +2049,6 @@
         -0.14234152410322054
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "236c07b01d5ab234b4641b83df73248247b02e1c6f4643e8eff44953cfd372b8",
       "excitation_seed": 2401633031,
       "imu_seed": 2942276814,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2424,13 +2076,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2453,7 +2098,6 @@
         -0.11785219074078979
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "dd26afe90b4801800888ba8e589f265d1a6eaf9e89115a402a02a0bc43f878d5",
       "excitation_seed": 2025985402,
       "imu_seed": 130564541,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2481,13 +2125,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2510,7 +2147,6 @@
         -0.11773335965916194
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "81186acbb71778b1958ca7212bd6a705f2dd4cc6304f777826ae9b043d3676e3",
       "excitation_seed": 3628929613,
       "imu_seed": 4181572007,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2538,13 +2174,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2567,7 +2196,6 @@
         -0.12558757643696214
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "82eb59196fd80c049cbfb740b3ecd0e90492561508fbf33455aa83bf008ef1d0",
       "excitation_seed": 375120744,
       "imu_seed": 3765502372,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2595,13 +2223,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2624,7 +2245,6 @@
         -0.126633040521049
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "54d903e1a60a37d30f969183f95dcab73f20123955546c79c4b97b7d789f9277",
       "excitation_seed": 465967280,
       "imu_seed": 935582565,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2652,13 +2272,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2681,7 +2294,6 @@
         -0.1311600211635209
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "0d8b36b53dcee186cd2280b4c2d8f4ca308fe868f7b759c63f397384c1df7a7c",
       "excitation_seed": 1755928308,
       "imu_seed": 3271510620,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2709,13 +2321,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2738,7 +2343,6 @@
         -0.11819025673264166
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "4f24874d898dd5f7bfd20f0d90bdfcd48a71f4535cde07964c6d3f52b20f76bd",
       "excitation_seed": 3292073664,
       "imu_seed": 3222673902,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2766,13 +2370,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2795,7 +2392,6 @@
         -0.14284511569029393
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "7b259b345cf83197a4afa484a7b027a38dcf1f1d89bb0d3cbc2b6e3a2fd3a07b",
       "excitation_seed": 2882021409,
       "imu_seed": 1649395226,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2823,13 +2419,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2852,7 +2441,6 @@
         -0.12001777017463729
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e60bad7ac5a21b241e53763d908e15cf7d33550a0410e635cb8f0aa724d87e2e",
       "excitation_seed": 1871613045,
       "imu_seed": 7056531,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2880,13 +2468,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2909,7 +2490,6 @@
         -0.1370409690622794
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "178865bd7029c5497156052bc490cdf87653ab86dfdd5445128cdcaf03ce545f",
       "excitation_seed": 3204461379,
       "imu_seed": 3270831735,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2937,13 +2517,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -2966,7 +2539,6 @@
         -0.13198990095171048
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b29b3788c38ad838a8e3e9213fe1dc3d20018de7ccc6fd0672fdf9f69453495f",
       "excitation_seed": 46244146,
       "imu_seed": 1754923034,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -2994,13 +2566,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3023,7 +2588,6 @@
         -0.12351746095131128
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "95c6bbc256daf3dbd774db4d9b99955c62f9e1e950f05a27fdbc5161738ccb33",
       "excitation_seed": 1336016608,
       "imu_seed": 2770468839,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3051,13 +2615,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3080,7 +2637,6 @@
         -0.14791891152354902
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "fea85fc56304b6cf95fdd2e66df6f2946c2c6435ed6458f53347b7f37f4318e9",
       "excitation_seed": 139821044,
       "imu_seed": 3495913826,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3108,13 +2664,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3137,7 +2686,6 @@
         -0.12029407216360061
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8807c25c69ed515d56df0c75aae03bd15c60f8a0db1cff7b13f8fae160f1fe37",
       "excitation_seed": 4093741108,
       "imu_seed": 3359695536,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3165,13 +2713,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3194,7 +2735,6 @@
         -0.12999621053780888
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "72a0008fc5b58f1a376b2edf5ed016af00126dd39484d087fb9a61ef2b45a8f8",
       "excitation_seed": 3227542501,
       "imu_seed": 2989486595,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3222,13 +2762,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3251,7 +2784,6 @@
         -0.1456479913349651
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "04590242213b204ac6207654824bddfb366c9926946e5bc993839cf0b4e5d058",
       "excitation_seed": 4128010964,
       "imu_seed": 2775661771,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3279,13 +2811,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3308,7 +2833,6 @@
         -0.1442459120956071
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "28cc3b237f58648d31d81aef0cc0bd0ddc978cc0365bd3027702f5b1d02b3e6e",
       "excitation_seed": 322479372,
       "imu_seed": 2095286717,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3336,13 +2860,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3365,7 +2882,6 @@
         -0.13682101765800844
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "d5b85737bc081d37e44d0c6d40877d0f48d6253d5cff24847a1a31c1fd2acbfb",
       "excitation_seed": 2270417193,
       "imu_seed": 1615752966,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3393,13 +2909,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3422,7 +2931,6 @@
         -0.12132635660626567
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ac870cc7fe6ddc02df3b786eb414407e6dc3be7b1b5dde4f1689aa85e3a2f9a7",
       "excitation_seed": 679187013,
       "imu_seed": 2848489382,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3450,13 +2958,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3479,7 +2980,6 @@
         -0.14876885612071117
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "f8d2fcacaefaf1de2c14571781c993598ab6dc60b5227e1bebd926c9b6baeb20",
       "excitation_seed": 2407220165,
       "imu_seed": 1707052043,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3507,13 +3007,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3536,7 +3029,6 @@
         -0.12815075271528908
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "68749a3d6261c1053d6b800f4def168c248db1723302ed756c4fcf5818bdff74",
       "excitation_seed": 456473324,
       "imu_seed": 223678435,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3564,13 +3056,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3593,7 +3078,6 @@
         -0.14501620729074644
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "2d4da84d5f0653fd9651cf8bf874188579517a1dd98bb58ee977a66b3c8a26e3",
       "excitation_seed": 2938392821,
       "imu_seed": 2698416981,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3621,13 +3105,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3650,7 +3127,6 @@
         -0.11181162525328739
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "89e49ec6c173a20f0fd8007efc353fc744d8095208f68eea57ede5515fa80941",
       "excitation_seed": 1972108297,
       "imu_seed": 383592670,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3678,13 +3154,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3707,7 +3176,6 @@
         -0.1204098552223273
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "61ed30e81f0e6149b4e9742f9939fbd38ba7514ff96e3daa95b4aa05d7ee5dfe",
       "excitation_seed": 2931226193,
       "imu_seed": 2252607695,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3735,13 +3203,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3764,7 +3225,6 @@
         -0.11097012561659535
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b20f853a0bedb2c735e2ebc2f7913861ee892002ebca4bb79f9f2aa67498aaa0",
       "excitation_seed": 1897522196,
       "imu_seed": 3355649125,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3792,13 +3252,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3821,7 +3274,6 @@
         -0.12845299883126318
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3c84afb088496c07eef8438035fd4b921294481fb4484297f4148985b77a5372",
       "excitation_seed": 1811227938,
       "imu_seed": 1488547589,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3849,13 +3301,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3878,7 +3323,6 @@
         -0.126782212100289
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9de1ed4dd7c937d09d950273553703a6d35a64e477c66b64b9db5bcc903c86b9",
       "excitation_seed": 3975771648,
       "imu_seed": 2255589192,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3906,13 +3350,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3935,7 +3372,6 @@
         -0.14151745580157649
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "5039c402b4a26fbcdb03bde2e758c5fd1767a221db064ec8f3842d008eb4ff18",
       "excitation_seed": 974265344,
       "imu_seed": 1373344179,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -3963,13 +3399,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -3992,7 +3421,6 @@
         -0.1301408060250374
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "9d0ea038841c33b9edf8bcc83b75f418236dadfc61ee6c40a6423dc6be249706",
       "excitation_seed": 1768314959,
       "imu_seed": 3817285517,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4020,13 +3448,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4049,7 +3470,6 @@
         -0.12484925240805039
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b83cd396b430137d681128e9acdb817ffeb55c29661574d5de9825998982a2dd",
       "excitation_seed": 1300622580,
       "imu_seed": 1209587504,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4077,13 +3497,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4106,7 +3519,6 @@
         -0.145150397704597
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "96b9163a0ee0f1d4042b541ea714c8aed3ce87ad5255fa554a494c360214fea7",
       "excitation_seed": 1335308408,
       "imu_seed": 2823755734,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4134,13 +3546,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4163,7 +3568,6 @@
         -0.1293467014320022
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "748a1628d5f78e0c7f35b3b463e8939199f098e4f40ac03bd9b39ca6a4beaa49",
       "excitation_seed": 2726582944,
       "imu_seed": 1251800419,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4191,13 +3595,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4220,7 +3617,6 @@
         -0.14357907826125643
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "961845bd98440666efbb9d3657c5c071c6687e66ad787b23d3d7bfc22b692023",
       "excitation_seed": 787239028,
       "imu_seed": 4187336868,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4248,13 +3644,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4277,7 +3666,6 @@
         -0.12323646383451672
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "dd04e130010989b69783447530fd25d3d1f8b8f003f2900b4708495bf49455fb",
       "excitation_seed": 1150508277,
       "imu_seed": 3744270016,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4305,13 +3693,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4334,7 +3715,6 @@
         -0.11305220175560336
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b5b8e0a26420e9306d72d2587c94627da36be7eda476fd8afbb5fc31c3d5a696",
       "excitation_seed": 2081594042,
       "imu_seed": 635191689,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4362,13 +3742,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4391,7 +3764,6 @@
         -0.11226328495362588
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ccd65c438156dc2621879a6de30be25c0cb9d9f0dc37358460553ca51e2e96af",
       "excitation_seed": 3864378610,
       "imu_seed": 3582424535,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4419,13 +3791,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4448,7 +3813,6 @@
         -0.13832487679189204
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "018bf3a7a29f862c2e2e585aa52a6f2e02c48f8aeca03a8a5c51d142528bd1f8",
       "excitation_seed": 1360483380,
       "imu_seed": 889355589,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4476,13 +3840,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4505,7 +3862,6 @@
         -0.11839739367930642
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "90b3fc9f6686dcc695aeac723b8b2398d712961889de49f2008514e764c1ffdd",
       "excitation_seed": 2262563024,
       "imu_seed": 3990091640,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4533,13 +3889,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4562,7 +3911,6 @@
         -0.11650909576835301
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "265424c6f72bb123576f7b4bb35023d00e649e895f97031cad433da6e29fb2b2",
       "excitation_seed": 1805921401,
       "imu_seed": 2851507313,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4590,13 +3938,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4619,7 +3960,6 @@
         -0.11453276635989125
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "214c10460bd44bc56ce1cc723245dd503b75258734c65abd14f735c6fb34611e",
       "excitation_seed": 2430224588,
       "imu_seed": 598616352,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4647,13 +3987,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4676,7 +4009,6 @@
         -0.132070431658444
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8863ded24ba9dce780890acb45c39ac4c68d19559ca33cfc1d17a1697496090b",
       "excitation_seed": 1707062605,
       "imu_seed": 2616753803,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4704,13 +4036,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4733,7 +4058,6 @@
         -0.14900827088810487
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "456eead01590f13f1825be2ebb43b28eedd756e1213f89e9f83a9e9707c79cf0",
       "excitation_seed": 2650820240,
       "imu_seed": 2281173402,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4761,13 +4085,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4790,7 +4107,6 @@
         -0.1395151512375322
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "da23853a673b6536a19641d3338d7599d74157a40b4b915a490ae4c31618eb39",
       "excitation_seed": 2179211041,
       "imu_seed": 629263069,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4818,13 +4134,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4847,7 +4156,6 @@
         -0.11197665649859644
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "e322e696a9488d6a9730e0990231fa68932040684f5d83951f2d5f2634a3af7e",
       "excitation_seed": 941391386,
       "imu_seed": 2164422221,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4875,13 +4183,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4904,7 +4205,6 @@
         -0.14078920891441477
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "1ab6ba1cb723d886a95a9a3b1e3e98ed875999cc9c19551679bad7efec8edef9",
       "excitation_seed": 2559649416,
       "imu_seed": 1189055576,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4932,13 +4232,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -4961,7 +4254,6 @@
         -0.13842175629470094
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "371ae812eba2bd2ef46a337725ff4c78c9dafe6ee29a26c97969063725629c73",
       "excitation_seed": 2601135610,
       "imu_seed": 2854036756,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -4989,13 +4281,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5018,7 +4303,6 @@
         -0.11111061299732637
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "cb2c06ee3ce85351eb2be125e4e6024aa59b4bc90acec972e05c1bb8036f988c",
       "excitation_seed": 1855266289,
       "imu_seed": 1165974408,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5046,13 +4330,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5075,7 +4352,6 @@
         -0.12007282379353387
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "b808329f8aead2357b0a07ba26b10fc5289f3b7cfcb68fb0192f4eb64638ed9f",
       "excitation_seed": 4029810027,
       "imu_seed": 532794646,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5103,13 +4379,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5132,7 +4401,6 @@
         -0.12619511131113778
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "a4a2583e0002057378da6cadf0b75e58eac1ca0e09505ab8e4d74471d7429223",
       "excitation_seed": 2025669312,
       "imu_seed": 3997464422,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5160,13 +4428,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5189,7 +4450,6 @@
         -0.1349363279636719
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "ad4b1754c08247bb5999a4655a2ffbfe638ccffbe2bf4a1305d0c08cd8848f29",
       "excitation_seed": 3441532768,
       "imu_seed": 4100789887,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5217,13 +4477,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5246,7 +4499,6 @@
         -0.12262510352217411
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "71dfe77b016943a522428bb686c44443fba21a04636e245c5efd89631138b1ce",
       "excitation_seed": 1066248514,
       "imu_seed": 2342010142,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5274,13 +4526,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5303,7 +4548,6 @@
         -0.1400814642796669
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c1855339128375c34b3bed927787884d62ba47e357daf15c02edff769a50def6",
       "excitation_seed": 3545130737,
       "imu_seed": 877206825,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5331,13 +4575,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5360,7 +4597,6 @@
         -0.13802778207551233
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "cc1081cc52a1908e5fa00b656956c08d1e32c5a810f3540124fcc16a5f76530c",
       "excitation_seed": 168208258,
       "imu_seed": 507915169,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5388,13 +4624,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5417,7 +4646,6 @@
         -0.13527239357566018
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "7b06894f53c3588eb524bd54c22da619e61e26d942bf2f6d63eb527abd27d1a1",
       "excitation_seed": 659478266,
       "imu_seed": 3585606243,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5445,13 +4673,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5474,7 +4695,6 @@
         -0.13801529098703
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "8ce09e487c2a58568e29efaed1185a5ad958216b1b522142901c6ce64132b29d",
       "excitation_seed": 3357701149,
       "imu_seed": 3384287997,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5502,13 +4722,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5531,7 +4744,6 @@
         -0.12761083350101993
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "046f17a2d17f890e26debc1847a6c6a5e56aceabe0bb45e8b1771e792c81f5f9",
       "excitation_seed": 312165796,
       "imu_seed": 2994442447,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5559,13 +4771,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5588,7 +4793,6 @@
         -0.1357141190860032
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "c810085e00814eb1573c1c6131d1fe7d93d8e58ec0db512ae2f0aceae3d7c575",
       "excitation_seed": 3978497533,
       "imu_seed": 2913440640,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5616,13 +4820,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5645,7 +4842,6 @@
         -0.1253089117173571
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "79022f40b0dad2b50f9483cda9b2da9d6dd202302b81b19a3ea9d79fb819cab3",
       "excitation_seed": 21976586,
       "imu_seed": 182147803,
       "schema_id": "shakebench.phase08.committed_states.record",
@@ -5673,13 +4869,6 @@
         "commanded": null,
         "selection": "unselected; Phase 09 knee calibration only"
       },
-      "authority_hashes": {
-        "controller_profile_sha256": "b0fa0f609830abfc8251a20ceb59c9d52d2acdb6bfe8bc2b8d12e0c65dccee31",
-        "outcome_contract_sha256": "808ba17086d47b95e21435b6f0f5e90cfc794e3c9ace12d87836aab819ed0709",
-        "physics_profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
-        "runtime_contract_sha256": "d81551d21e37f8cc9dabe70451cd1766287870013386f77e8a8840cc49ff842a",
-        "task_contract_sha256": "6ab30de4fe8fa4224029dd8c424a6b05d68d4107d324d6c6f3f0c3b94b10b530"
-      },
       "can_initial_velocity": [
         0.0,
         0.0,
@@ -5702,7 +4891,6 @@
         -0.1363814531549192
       ],
       "can_yaw_rad": 0.0,
-      "canonical_payload_sha256": "3006cbb1ab9c2668bbed2fa8f77ca4b8f1c3cc4d35d75e8a4623b5b143275627",
       "excitation_seed": 1980605566,
       "imu_seed": 3800753411,
       "schema_id": "shakebench.phase08.committed_states.record",

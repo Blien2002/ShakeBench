@@ -26,7 +26,6 @@ def main(argv=None):
     args.output.parent.mkdir(parents=True, exist_ok=True)
     write_json(args.output, payload)
     print(f"{len(payload['states'])} train states -> {args.output}")
-    print(f"payload_sha256={payload['artifact_lock']['payload_sha256']}")
     return 0
 
 

@@ -7,14 +7,12 @@ deliberately not used). All variants retain a common 349 g payload mass.
 
 from __future__ import annotations
 
-import hashlib
 import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-from shakebench.utils.artifacts import payload_hash
 
 OBJECTS = {
     "food_can": {
@@ -67,35 +65,6 @@ OBJECT_SUPPORT = {
 #: Objects whose MJCF lives in the upstream robosuite asset tree.  The shared
 #: root is named here rather than searched as a fallback for the others.
 UPSTREAM_OBJECTS = frozenset({"bread", "light_wood_block"})
-
-
-def object_asset_hashes(object_id):
-    import xml.etree.ElementTree as ET
-
-    from robosuite import models as robosuite_models
-    from shakebench import models
-
-    root = Path(robosuite_models.assets_root if object_id in UPSTREAM_OBJECTS else models.assets_root)
-    if object_id == "light_wood_block":
-        sources = {
-            "objects/generated_objects.py": root.parent / "objects/generated_objects.py",
-            "objects/primitive/box.py": root.parent / "objects/primitive/box.py",
-            "assets/textures/light-wood.png": root / "textures/light-wood.png",
-        }
-        return {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in sources.items()}
-    source = root / OBJECTS[object_id]["asset"]
-    paths = [source] + [
-        (source.parent / node.attrib["file"]).resolve()
-        for node in ET.parse(source).getroot().findall("./asset/*")
-        if "file" in node.attrib
-    ]
-    if object_id in {"food_can", "cookie_box"}:
-        source_dir = {"food_can": "canned_food_18", "cookie_box": "cookie_box_0"}[object_id]
-        paths += [
-            source.parent / "meshes/robocasa_selected/LICENSE.md",
-            source.parent / "meshes/robocasa_selected" / source_dir / "material.mtl",
-        ]
-    return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
 
 
 @dataclass(frozen=True)
@@ -151,7 +120,6 @@ class TaskSpec:
             "schema_id": TASK_SCHEMA_ID,
             **self.to_dict(),
             "object_asset": OBJECTS[self.object_id]["asset"],
-            "object_asset_sha256": object_asset_hashes(self.object_id),
             "object_support_lower_upper_radius_m": list(OBJECT_SUPPORT[self.object_id]),
             "object_friction_class": OBJECTS[self.object_id]["friction_class"],
             "table_object_sliding_mu": self.table_sliding_mu,
@@ -164,11 +132,6 @@ class TaskSpec:
             "mat_visual_rgba": list(MAT_VISUAL_RGBA) if self.surface_id == "mat" else None,
             "mat_texture": MAT_TEXTURE_PATH if self.surface_id == "mat" else None,
             "mat_texture_repeat": [3, 3] if self.surface_id == "mat" else None,
-            "mat_texture_sha256": (
-                hashlib.sha256(Path(models.robosuite_assets_root, MAT_TEXTURE_PATH).read_bytes()).hexdigest()
-                if self.surface_id == "mat"
-                else None
-            ),
             "surface_model": "flush rigid layer; fixed total worktable mass and top height",
             "inertia_model": "mass-normalized compiled geometry",
             "stability_constraint": "upright cosine >= 0.95; displacement after tipping is not classified as sliding",
@@ -178,7 +141,6 @@ class TaskSpec:
         for key in ("source", "source_url", "source_license"):
             if key in OBJECTS[self.object_id]:
                 record[key] = OBJECTS[self.object_id][key]
-        record["task_contract_sha256"] = payload_hash(record, field="task_contract_sha256")
         return record
 
 

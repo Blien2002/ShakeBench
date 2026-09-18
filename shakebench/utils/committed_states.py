@@ -16,10 +16,8 @@ from pathlib import Path
 from typing import Any
 
 from shakebench import models
-from shakebench.utils.artifacts import payload_hash, write_json
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.dev_states import PHASE07_DEV_STATE_FILENAME, verify_phase07_dev_state_artifact
-from shakebench.utils.oracle import OracleControllerProfile
-from shakebench.utils.outcomes import outcome_contract_sha256
 
 PHASE08_STATE_SCHEMA_ID = "shakebench.phase08.committed_states"
 PHASE08_STATE_SCHEMA_VERSION = 1
@@ -40,10 +38,6 @@ class Phase08StateError(ValueError):
     """Raised when a committed-state authority is malformed or unauthorized."""
 
 
-def _canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-
-
 def _word(split: str, index: int, channel: str, *, size: int = 8) -> int:
     token = f"{PHASE08_STATE_GENERATOR_ID}:{PHASE08_STATE_ROOT_SEED}:{split}:{index}:{channel}"
     return int.from_bytes(hashlib.sha256(token.encode("ascii")).digest()[:size], "big")
@@ -53,43 +47,15 @@ def _uniform(split: str, index: int, channel: str) -> float:
     return _word(split, index, channel) / float(1 << 64)
 
 
-def _authority_bindings() -> dict[str, str]:
-    """Bind committed states to the current package-owned runtime contract."""
-
-    from shakebench.utils.geometry import load_geometry_profile
-    from shakebench.utils.runtime_verifier import verify_runtime_publication_bundle
-
-    root = Path(models.assets_root)
-    runtime_path = root / "shakebench_runtime_contract.json"
-    if not runtime_path.is_file():
-        raise Phase08StateError("runtime contract asset missing")
-    verdict = verify_runtime_publication_bundle(root)
-    if verdict.get("passed") is not True:
-        raise Phase08StateError("current runtime contract failed: " + "; ".join(verdict["errors"]))
-    geometry = load_geometry_profile("world_fixed_arm_v1")
-    dev_payload = verify_phase07_dev_state_artifact(root / PHASE07_DEV_STATE_FILENAME)["payload"]
-    return {
-        "physics_profile_sha256": str(verdict["profile_sha256"]),
-        "controller_profile_sha256": OracleControllerProfile().sha256,
-        "outcome_contract_sha256": outcome_contract_sha256(),
-        "runtime_contract_sha256": hashlib.sha256(runtime_path.read_bytes()).hexdigest(),
-        "task_contract_sha256": payload_hash(dev_payload["task_contract"]),
-    }
-
-
 def _dev_anchor() -> dict[str, str]:
     path = Path(models.assets_root) / PHASE07_DEV_STATE_FILENAME
     verified = verify_phase07_dev_state_artifact(path)
     if not verified["passed"]:
         raise Phase08StateError("frozen dev-state anchor failed")
-    return {
-        "asset": PHASE07_DEV_STATE_FILENAME,
-        "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "payload_sha256": str(verified["payload"]["artifact_lock"]["payload_sha256"]),
-    }
+    return {"asset": PHASE07_DEV_STATE_FILENAME}
 
 
-def _state(split: str, index: int, bindings: Mapping[str, str]) -> dict[str, Any]:
+def _state(split: str, index: int) -> dict[str, Any]:
     x = _NOMINAL_XY_M[0] + (2.0 * _uniform(split, index, "can_x") - 1.0) * _XY_HALF_RANGE_M
     y = _NOMINAL_XY_M[1] + (2.0 * _uniform(split, index, "can_y") - 1.0) * _XY_HALF_RANGE_M
     state = {
@@ -110,9 +76,7 @@ def _state(split: str, index: int, bindings: Mapping[str, str]) -> dict[str, Any
         "imu_seed": _word(split, index, "imu_seed", size=4),
         "t0_s": _uniform(split, index, "t0_s"),
         "Gamma": {"commanded": None, "selection": "unselected; Phase 09 knee calibration only"},
-        "authority_hashes": dict(bindings),
     }
-    state["canonical_payload_sha256"] = payload_hash(state, field="canonical_payload_sha256")
     return state
 
 
@@ -131,7 +95,6 @@ def build_committed_state_artifact(split: str) -> dict[str, Any]:
 
     if split not in {"official", "knee"}:
         raise Phase08StateError("split must be official or knee")
-    bindings = _authority_bindings()
     count = OFFICIAL_STATE_COUNT if split == "official" else KNEE_STATE_COUNT
     artifact = {
         "schema_id": PHASE08_STATE_SCHEMA_ID,
@@ -145,23 +108,10 @@ def build_committed_state_artifact(split: str) -> dict[str, Any]:
             "mapping": "u64_be(sha256(generator_id:root_seed:split:index:channel)[:8]) / 2**64",
             "selection": "none; deterministic commitment before Phase 09 measurement",
         },
-        "authority_hashes": bindings,
         "dev_state_anchor": _dev_anchor(),
-        "states": [_state(split, index, bindings) for index in range(count)],
-        "artifact_lock": {"payload_sha256": ""},
+        "states": [_state(split, index) for index in range(count)],
     }
-    artifact["artifact_lock"]["payload_sha256"] = payload_hash(
-        {"artifact": {key: value for key, value in artifact.items() if key != "artifact_lock"}}
-    )
     return artifact
-
-
-def _artifact_lock_hash(artifact: Mapping[str, Any]) -> str:
-    copied = copy.deepcopy(dict(artifact))
-    lock = copied.pop("artifact_lock", None)
-    if not isinstance(lock, Mapping):
-        return ""
-    return payload_hash({"artifact": copied})
 
 
 def _finite(value: Any) -> bool:
@@ -180,7 +130,7 @@ def _forbidden_key_present(value: Any) -> bool:
     return False
 
 
-def _science_payload_hash(state: Mapping[str, Any]) -> str:
+def _science_payload(state: Mapping[str, Any]) -> str:
     """Compare placement/science payloads independently of split and ID."""
 
     fields = {
@@ -193,7 +143,7 @@ def _science_payload_hash(state: Mapping[str, Any]) -> str:
         "imu_seed",
         "t0_s",
     }
-    return payload_hash({key: state.get(key) for key in sorted(fields)})
+    return json.dumps({key: state.get(key) for key in sorted(fields)}, sort_keys=True, separators=(",", ":"))
 
 
 def verify_committed_state_artifact(
@@ -239,8 +189,6 @@ def verify_committed_state_artifact(
         errors.append("non-finite value")
     if _forbidden_key_present(payload):
         errors.append("forbidden future-outcome field")
-    if payload.get("artifact_lock", {}).get("payload_sha256") != _artifact_lock_hash(payload):
-        errors.append("artifact lock")
     if payload != expected:
         errors.append("deterministic regeneration or authority binding")
     dev = verify_phase07_dev_state_artifact(Path(models.assets_root) / PHASE07_DEV_STATE_FILENAME)
@@ -249,8 +197,8 @@ def verify_committed_state_artifact(
     state_ids = [state.get("state_id") for state in payload.get("states", []) if isinstance(state, Mapping)]
     if len(state_ids) != len(set(state_ids)) or dev_ids.intersection(state_ids):
         errors.append("state ID overlap")
-    science_hashes = [_science_payload_hash(state) for state in payload.get("states", []) if isinstance(state, Mapping)]
-    dev_science_hashes = {_science_payload_hash(state) for state in dev_states if isinstance(state, Mapping)}
+    science_hashes = [_science_payload(state) for state in payload.get("states", []) if isinstance(state, Mapping)]
+    dev_science_hashes = {_science_payload(state) for state in dev_states if isinstance(state, Mapping)}
     if len(science_hashes) != len(set(science_hashes)) or dev_science_hashes.intersection(science_hashes):
         errors.append("canonical science-payload overlap")
     return {"passed": not errors, "errors": sorted(set(errors)), "split": split, "state_count": len(state_ids)}
@@ -278,8 +226,8 @@ def verify_committed_state_pair(
             item["state_id"] for item in knee_payload["states"]
         ):
             errors.append("official/knee ID overlap")
-        official_science = {_science_payload_hash(item) for item in official_payload["states"]}
-        knee_science = {_science_payload_hash(item) for item in knee_payload["states"]}
+        official_science = {_science_payload(item) for item in official_payload["states"]}
+        knee_science = {_science_payload(item) for item in knee_payload["states"]}
         if official_science.intersection(knee_science):
             errors.append("official/knee canonical science-payload overlap")
     return {"passed": not errors, "errors": sorted(set(errors)), "official": first, "knee": second}

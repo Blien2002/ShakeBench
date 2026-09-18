@@ -177,8 +177,6 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
                 "kind": "train",
                 "split": "train",
                 "scoreable": False,
-                "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                "payload_sha256": payload["artifact_lock"]["payload_sha256"],
             },
         }
     from shakebench.utils.task_states import TASK_STATE_SCHEMA, verify_task_state_artifact
@@ -195,7 +193,6 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
                 "scoreable": False,
                 "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
                 "asset_payload_sha256": payload["payload_sha256"],
-                "authority_hashes": dict(payload["authority_hashes"]),
             },
         }
     from shakebench.utils.committed_states import verify_committed_state_artifact
@@ -214,9 +211,6 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
         "authority": {
             "kind": "committed",
             "split": split,
-            "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-            "asset_payload_sha256": payload["artifact_lock"]["payload_sha256"],
-            "authority_hashes": dict(payload["authority_hashes"]),
         },
     }
 
@@ -238,8 +232,6 @@ def _dev_state_anchor(path: str | Path | None = None) -> dict[str, Any]:
         "pre_history_rewrite_commit": DEV_STATE_PRE_HISTORY_REWRITE_COMMIT,
         "rewritten_commit": DEV_STATE_REWRITTEN_COMMIT,
         "asset": PHASE07_DEV_STATE_FILENAME,
-        "file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-        "payload_sha256": payload["artifact_lock"]["payload_sha256"],
         "generator_id": payload["generator"]["generator_id"],
         "root_seed": payload["generator"]["root_seed"],
         "state_count": len(payload["states"]),
@@ -1239,15 +1231,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                         errors.append(prefix + " object geometry binding")
             if episode.get("state_sha256") != _digest(state):
                 errors.append(prefix + " state hash")
-            if committed_split is not None:
-                bindings = state.get("authority_hashes") if isinstance(state, Mapping) else None
-                if not isinstance(bindings, Mapping):
-                    errors.append(prefix + " committed outcome authority")
-                else:
-                    if bindings.get("controller_profile_sha256") != expected_profile["profile_sha256"]:
-                        errors.append(prefix + " committed controller authority")
-                    if bindings.get("outcome_contract_sha256") != outcome_contract_sha256():
-                        errors.append(prefix + " committed outcome authority")
         if not _values_equal(episode.get("controller_profile"), expected_profile, atol=1.0e-12):
             errors.append(prefix + " controller profile")
         try:

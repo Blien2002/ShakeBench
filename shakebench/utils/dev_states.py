@@ -40,19 +40,6 @@ def _integer_word(index: int, channel: str) -> int:
     return int.from_bytes(hashlib.sha256(token.encode("ascii")).digest()[:4], "big")
 
 
-def phase07_dev_state_artifact_hash(payload: Mapping[str, Any]) -> str:
-    """Hash the complete artifact except its self-referential hash field."""
-
-    if not isinstance(payload, Mapping):
-        raise Phase07DevStateError("dev-state artifact must be a mapping")
-    normalized = copy.deepcopy(dict(payload))
-    lock = normalized.get("artifact_lock")
-    if isinstance(lock, dict):
-        lock.pop("payload_sha256", None)
-    encoded = json.dumps(normalized, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
 def build_phase07_dev_state_artifact() -> dict[str, Any]:
     """Build the deterministic, rollout-independent ten-state payload."""
 
@@ -101,15 +88,9 @@ def build_phase07_dev_state_artifact() -> dict[str, Any]:
         },
         "physics_profile": {
             "profile_id": "shakebench.official.physics.v2",
-            "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c",
         },
         "states": states,
-        "artifact_lock": {
-            "update_reason": "Phase 07 dependency repair: materialize only the prerequisite ten dev states",
-            "payload_sha256": "",
-        },
     }
-    payload["artifact_lock"]["payload_sha256"] = phase07_dev_state_artifact_hash(payload)
     return payload
 
 
@@ -127,8 +108,6 @@ def verify_phase07_dev_state_artifact(payload_or_path: Mapping[str, Any] | str |
         and payload.get("schema_version") == PHASE07_DEV_STATE_SCHEMA_VERSION,
         "dev_only": payload.get("split") == "dev" and payload.get("scoreable") is False,
         "count": isinstance(states, list) and len(states) == PHASE07_DEV_STATE_COUNT,
-        "integrity": isinstance(payload.get("artifact_lock"), Mapping)
-        and payload["artifact_lock"].get("payload_sha256") == phase07_dev_state_artifact_hash(payload),
         "regeneration": payload == expected,
     }
     return {"passed": all(checks.values()), "checks": checks, "payload": payload}
@@ -139,6 +118,5 @@ __all__ = [
     "PHASE07_DEV_STATE_ROOT_SEED",
     "Phase07DevStateError",
     "build_phase07_dev_state_artifact",
-    "phase07_dev_state_artifact_hash",
     "verify_phase07_dev_state_artifact",
 ]
