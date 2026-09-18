@@ -22,7 +22,7 @@ the compiled MuJoCo scene is checked against.
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -44,12 +44,6 @@ DEFAULT_DAMPING_RATIO = (0.10,) * len(AXES)
 DEFAULT_GRAVITY_M_S2 = 9.81
 DEFAULT_TRAVEL_LIMITS_M = (0.025,) * 3
 DEFAULT_ANGLE_LIMITS_RAD = tuple(float(value) for value in np.deg2rad((5.0,) * 3))
-
-PHASE03_TRANSFER_THRESHOLDS = {
-    "amplitude_relative_error_max": 0.05,
-    "phase_absolute_error_deg_max": 3.0,
-    "fit_normalized_residual_max": 0.02,
-}
 
 
 class IsolatorError(ValueError):
@@ -579,18 +573,24 @@ def compare_harmonic_fit(
     fit: HarmonicFit,
     expected_transfer: complex,
     *,
-    thresholds: Mapping[str, float] = PHASE03_TRANSFER_THRESHOLDS,
+    amplitude_relative_error_max: float = 0.05,
+    phase_absolute_error_deg_max: float = 3.0,
+    fit_normalized_residual_max: float = 0.02,
 ) -> dict[str, Any]:
-    """Compare measured and analytic complex transfer with separate gates."""
+    """Compare measured and analytic complex transfer with separate gates.
+
+    The three keyword thresholds are the registered Phase 03 acceptance gates;
+    they stay explicit here so a caller can tighten them per probe.
+    """
 
     expected = complex(expected_transfer)
     if not np.isfinite(expected.real) or not np.isfinite(expected.imag) or abs(expected) <= 0.0:
         raise IsolatorError("expected_transfer must be finite and non-zero")
     amplitude_error = float(abs(fit.transfer_complex) / abs(expected) - 1.0)
     phase_error = abs(_wrap_phase_difference(np.angle(fit.transfer_complex) - np.angle(expected)))
-    amplitude_passed = bool(abs(amplitude_error) <= float(thresholds["amplitude_relative_error_max"]))
-    phase_passed = bool(np.rad2deg(phase_error) <= float(thresholds["phase_absolute_error_deg_max"]))
-    residual_passed = bool(fit.normalized_fit_residual <= float(thresholds["fit_normalized_residual_max"]))
+    amplitude_passed = bool(abs(amplitude_error) <= amplitude_relative_error_max)
+    phase_passed = bool(np.rad2deg(phase_error) <= phase_absolute_error_deg_max)
+    residual_passed = bool(fit.normalized_fit_residual <= fit_normalized_residual_max)
     return {
         "expected_transfer_complex": _complex_pair(expected),
         "measured_transfer_complex": _complex_pair(fit.transfer_complex),
@@ -819,7 +819,6 @@ __all__ = [
     "DEFAULT_TRAVEL_LIMITS_M",
     "DEFAULT_ANGLE_LIMITS_RAD",
     "DEFAULT_ISOLATOR_CONFIG",
-    "PHASE03_TRANSFER_THRESHOLDS",
     "IsolatorError",
     "IsolatorConfigurationError",
     "IsolatorSafetyError",
