@@ -1,4 +1,4 @@
-"""Wait for a successful StarVLA run, then record fresh gamma-zero checkpoint evaluations.
+"""Wait for a successful training run, then record fresh gamma-zero checkpoint evaluations.
 
 Run with the ShakeBench Python environment; --prepare-only validates assets without a GPU.
 The generated state artifact is private held-out evidence, not an official benchmark split.
@@ -91,12 +91,12 @@ def evaluate(args, checkpoint, destination, states):
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     environment = {**os.environ, "PYTHONUNBUFFERED": "1",
-                   "PYTHONPATH": f"{args.starvla_root}:{Path.cwd()}"}
+                   "PYTHONPATH": f"{args.policy_server_root}:{Path.cwd()}"}
     with (destination / "server.log").open("w") as log:
         server = subprocess.Popen(
-            [str(args.starvla_python), "deployment/model_server/server_policy.py", "--ckpt_path", str(checkpoint),
+            [str(args.policy_server_python), "deployment/model_server/server_policy.py", "--ckpt_path", str(checkpoint),
              "--port", str(port), "--use_bf16", "--seed", "42", "--idle_timeout", "-1"],
-            cwd=args.starvla_root, env={**environment, "CUDA_VISIBLE_DEVICES": args.model_gpu},
+            cwd=args.policy_server_root, env={**environment, "CUDA_VISIBLE_DEVICES": args.model_gpu},
             stdout=log, stderr=subprocess.STDOUT,
         )
         try:
@@ -117,7 +117,7 @@ def evaluate(args, checkpoint, destination, states):
             with (destination / "evaluation.log").open("w") as eval_log:
                 subprocess.run(
                     [sys.executable, "-m", "robosuite.scripts.shakebench_evaluate_gpu",
-                     "--policy", "robosuite.utils.shakebench_starvla:make_policy",
+                     "--policy", "robosuite.utils.shakebench_websocket_policy:make_policy",
                      "--policy-arg", "host=127.0.0.1", "--policy-arg", f"port={port}",
                      "--inference-timeout-s", "60",
                      "--policy-id", checkpoint.name, "--states", str(states), "--dataset", str(args.dataset),
@@ -163,8 +163,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--training-dir", type=Path, required=True, help="Directory containing train.yaml and exit_status")
     parser.add_argument("--dataset", type=Path, required=True)
-    parser.add_argument("--starvla-root", type=Path, required=True)
-    parser.add_argument("--starvla-python", type=Path, required=True)
+    parser.add_argument("--policy-server-root", type=Path, required=True,
+                        help="Checkout providing deployment/model_server/server_policy.py")
+    parser.add_argument("--policy-server-python", type=Path, required=True,
+                        help="Interpreter that can run that policy server")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--min-step", type=int, default=30000)
     parser.add_argument("--seed", type=int, default=2026091701)
@@ -172,7 +174,7 @@ def main():
     parser.add_argument("--eval-gpu", default="1")
     parser.add_argument("--prepare-only", action="store_true")
     args = parser.parse_args()
-    for key in ("training_dir", "dataset", "starvla_root", "starvla_python", "output"):
+    for key in ("training_dir", "dataset", "policy_server_root", "policy_server_python", "output"):
         setattr(args, key, getattr(args, key).resolve())
     args.output.mkdir(parents=True, exist_ok=True)
     with (args.output / "watcher.lock").open("w") as lock:

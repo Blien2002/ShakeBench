@@ -25,7 +25,7 @@ from robosuite.utils.shakebench_rollout import (
     proprioception_metadata,
     task_description,
 )
-from robosuite.utils.shakebench_starvla import modality_metadata
+from robosuite.utils.shakebench_websocket_policy import modality_metadata
 
 
 def dataset_features(height, width):

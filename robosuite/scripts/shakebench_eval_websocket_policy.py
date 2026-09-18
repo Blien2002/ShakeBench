@@ -1,8 +1,8 @@
-"""Run one ShakeBench episode against the official StarVLA WebSocket policy server.
+"""Run one ShakeBench episode against a WebSocket policy server.
 
 Thin wrapper: the shared runner in robosuite.scripts.shakebench_evaluate owns the
-rollout, result contract, and deadlines; this file only supplies the StarVLA
-policy factory and hosts the documented --host/--port arguments.
+rollout, result contract, and deadlines; this file only supplies the policy
+factory and hosts the documented --host/--port arguments.
 """
 
 from __future__ import annotations
@@ -31,9 +31,9 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     forwarded = [
         "--policy",
-        "robosuite.utils.shakebench_starvla:make_policy",
+        "robosuite.utils.shakebench_websocket_policy:make_policy",
         "--policy-id",
-        f"starvla:{args.host}:{args.port}",
+        f"websocket:{args.host}:{args.port}",
         "--policy-arg",
         f"host={args.host}",
         "--policy-arg",

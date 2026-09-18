@@ -37,7 +37,7 @@ DEFAULT_ASSETS = (
     Path("robosuite/models/assets/shakebench_states_official.json"),
     Path("robosuite/models/assets/shakebench_states_knee.json"),
 )
-# StarVLA derives these from whatever episodes it was pointed at; a dataset that ships them can
+# GR00T-style loaders derive these from whatever episodes they were pointed at; shipping them can
 # poison normalization statistics for a different selection (audit 2026-09-14, item 2).
 DERIVED_CACHE_NAMES = ("stats_gr00t.json", "steps_data_index.pkl")
 ACTION_NAMES = ("delta_x", "delta_y", "delta_z", "delta_rx", "delta_ry", "delta_rz", "gripper")

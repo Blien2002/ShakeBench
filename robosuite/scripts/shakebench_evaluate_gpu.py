@@ -2,7 +2,7 @@
 
 Runs with:
     python -m robosuite.scripts.shakebench_evaluate_gpu \\
-        --policy robosuite.utils.shakebench_starvla:make_policy \\
+        --policy robosuite.utils.shakebench_websocket_policy:make_policy \\
         --policy-arg host=127.0.0.1 --policy-arg port=10100 \\
         --states robosuite/models/assets/shakebench_task_states_official_v2.json \\
         --state-ids ID,ID --dataset out/lerobot_gpu_can_knee_100 --output out/eval/gpu/result.json

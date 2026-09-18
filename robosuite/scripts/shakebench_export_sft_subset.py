@@ -23,7 +23,7 @@ SUBSET_PROVENANCE_FILENAME = "shakebench_sft_subset.json"
 SOURCE_MANIFEST_FILENAME = "shakebench_source_collection.json"
 COLLECTION_MANIFEST_FILENAME = "shakebench_collection.json"
 SELECTION_RULE = "termination_cause == success_latched"
-# Format metadata that is copied verbatim.  StarVLA's derived training caches
+# Format metadata that is copied verbatim.  GR00T-style loaders derive training caches
 # (stats_gr00t.json, steps_data_index.pkl) describe the source episodes and must
 # not travel with a subset that holds different ones, so this is an allowlist,
 # not a copy of the meta directory.  info.json, episodes.jsonl,

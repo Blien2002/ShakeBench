@@ -7,14 +7,14 @@ right.  Action evidence and denominators stay with the evaluator; this is a qual
 artifact only.
 
 Two ideas come from the reference recorders: LIBERO's ``libero/libero/utils/video_utils.py``
-marks the terminal state with a dimmed frame, and VLA-Adapter's ``save_rollout_video`` puts the
+marks the terminal state with a dimmed frame, and the reference recorder's ``save_rollout_video`` puts the
 outcome in the filename.  This demo streams frames to the in-repo ffmpeg writer instead of
 buffering a whole episode in memory, so a 1200-step horizon stays small.
 
-Example (headless NVIDIA EGL, VLA-Adapter served in its own environment):
+Example (headless NVIDIA EGL, policy served over WebSocket in its own environment):
 
     MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m robosuite.demos.demo_shakebench_policy_video \\
-        --policy robosuite.utils.shakebench_vla_adapter:make_policy --policy-arg port=10095 \\
+        --policy robosuite.utils.shakebench_websocket_policy:make_policy --policy-arg port=10093 \\
         --state-id shakebench-dev-v0-000 --output out/demo/shakebench_policy.mp4
 """
 
@@ -108,7 +108,7 @@ def write_preview(path, previews):
 
 
 def outcome_path(output, *, state_id, success):
-    """VLA-Adapter's save_rollout_video convention: the outcome belongs in the file name."""
+    """Put the outcome in the file name, as the reference recorders do."""
     return output.with_name(f"{output.stem}--state={state_id}--success={success}{output.suffix}")
 
 

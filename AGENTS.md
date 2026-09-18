@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Core Python code lives in `robosuite/`. ShakeBench environments are under `robosuite/environments/manipulation/`, reusable simulation logic under `robosuite/utils/`, command-line entry points under `robosuite/scripts/`, and MuJoCo XML, JSON, and textures under `robosuite/models/assets/`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional StarVLA integration code lives in `integrations/starvla/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture. The `docs/` and `tests/` trees are local working copies: the published repository serves the upstream robosuite versions of those files, so keep local edits there uncommitted.
+Core Python code lives in `robosuite/`. ShakeBench environments are under `robosuite/environments/manipulation/`, reusable simulation logic under `robosuite/utils/`, command-line entry points under `robosuite/scripts/`, and MuJoCo XML, JSON, and textures under `robosuite/models/assets/`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional third-party trainer integrations live in `integrations/policy_websocket/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture. The `docs/` and `tests/` trees are local working copies: the published repository serves the upstream robosuite versions of those files, so keep local edits there uncommitted.
 
 ## Build, Test, and Development Commands
 

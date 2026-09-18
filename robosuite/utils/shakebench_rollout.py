@@ -1,7 +1,7 @@
 """Model-agnostic ShakeBench rollout boundary: observation, actions, outcomes, evidence.
 
 Any object with "chunk_size" and "predict(observation)" is a policy here.  Model
-adapters (StarVLA message layout, normalization keys, server resize) stay outside
+adapters (wire message layout, normalization keys, server resize) stay outside
 this module, so evaluation does not depend on one model implementation.
 """
 

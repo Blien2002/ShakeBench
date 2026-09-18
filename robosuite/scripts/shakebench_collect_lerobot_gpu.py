@@ -29,7 +29,7 @@ from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_rollout import CAMERAS, proprioception_metadata, task_description
-from robosuite.utils.shakebench_starvla import modality_metadata
+from robosuite.utils.shakebench_websocket_policy import modality_metadata
 
 MAIN_CAMERA_HOST = "frontview"  # compiled model camera that carries the main-view pose
 WRIST_CAMERA = CAMERAS["observation.images.wrist"]
