@@ -8,13 +8,7 @@ dev subset into the unified committed-state protocol without regenerating it.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import os
-import subprocess
-import sys
-import time
-import uuid
 from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
@@ -46,7 +40,6 @@ from shakebench.utils.outcomes import (
     OutcomeContractError,
     legacy_projection,
     outcome_contract,
-    outcome_contract_sha256,
     resolve_termination_cause,
     validate_controller_events,
     validate_outcome,
@@ -72,8 +65,6 @@ CURRENT_TIER_ALIAS = "V0"
 _CONTRACT_KEY_FOR_WIRE = {
     **{wire: canonical for canonical, wire in zip(COMMON_STATE_KEYS, ORACLE_TASK_KEYS)},
 }
-DETERMINISM_SCHEMA_ID = "shakebench.phase07.determinism_manifest"
-DETERMINISM_SCHEMA_VERSION = 5
 DEV_STATE_PRE_HISTORY_REWRITE_COMMIT = "dd6fe2edb6384ccdb5116be44f07592b4864e377"
 DEV_STATE_REWRITTEN_COMMIT = "08626ea5a5e107df503e266be9065b929d47f882"
 DEV_STATE_ANCHOR_REWRITE = {
@@ -98,12 +89,6 @@ def _json_ready(value: Any) -> Any:
     if isinstance(value, np.generic):
         return value.item()
     return value
-
-
-def _digest(value: Any) -> str:
-    return hashlib.sha256(
-        json.dumps(_json_ready(value), sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
-    ).hexdigest()
 
 
 def load_dev_states(path: str | Path) -> list[dict[str, Any]]:
@@ -191,8 +176,6 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
                 "kind": "task_variants",
                 "split": payload["split"],
                 "scoreable": False,
-                "asset_file_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                "asset_payload_sha256": payload["payload_sha256"],
             },
         }
     from shakebench.utils.committed_states import verify_committed_state_artifact
@@ -262,84 +245,6 @@ def _dev_state_anchor_match(value: Any, expected: Mapping[str, Any]) -> tuple[bo
     return False, "invalid"
 
 
-def verify_phase07_r4_manifest(path: str | Path = "docs/phase_07_r4_manifest.json") -> dict[str, Any]:
-    """Verify the compact R4 entry binding without using the mutable R5 profile."""
-
-    manifest_path = Path(path)
-    errors: list[str] = []
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        return {"passed": False, "errors": [f"manifest read: {exc}"], "checks": {}}
-    if not isinstance(manifest, Mapping) or manifest.get("phase") != "07R4":
-        errors.append("manifest phase")
-        manifest = manifest if isinstance(manifest, Mapping) else {}
-    artifact_ref = manifest.get("v0_gamma_000") if isinstance(manifest, Mapping) else None
-    artifact_path = (
-        Path(str(artifact_ref.get("path")))
-        if isinstance(artifact_ref, Mapping) and artifact_ref.get("path")
-        else Path("out/phase07r4/v0_gamma_000_final.json")
-    )
-    if not artifact_path.is_file():
-        errors.append("R4 final artifact missing")
-    else:
-        file_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-        if isinstance(artifact_ref, Mapping) and file_hash != artifact_ref.get("file_sha256"):
-            errors.append("R4 final artifact file hash")
-        try:
-            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            artifact = {}
-            errors.append(f"R4 final artifact read: {exc}")
-        if isinstance(artifact, Mapping):
-            if artifact.get("payload_sha256") != artifact_ref.get("payload_sha256"):
-                errors.append("R4 final artifact payload hash")
-            episodes = artifact.get("episodes")
-            if not isinstance(episodes, list) or len(episodes) != 10:
-                errors.append("R4 dev episode count")
-            else:
-                if sum(bool(episode.get("success")) for episode in episodes if isinstance(episode, Mapping)) != 10:
-                    errors.append("R4 dev success count")
-                state002 = next(
-                    (
-                        episode
-                        for episode in episodes
-                        if isinstance(episode, Mapping) and episode.get("state_id") == "shakebench-dev-v0-002"
-                    ),
-                    None,
-                )
-                if not isinstance(state002, Mapping) or state002.get("termination_category") != "environment_success":
-                    errors.append("R4 state-002 success")
-            for key in ("controller_profile", "dev_state_anchor", "physics_authority"):
-                if key not in artifact:
-                    errors.append(f"R4 artifact binding {key}")
-            if artifact.get("controller_profile", {}).get("profile_id") != manifest.get("controller_profile_id"):
-                errors.append("R4 profile binding")
-            if artifact.get("physics_authority", {}).get("profile_id") != manifest.get("physics_profile_id"):
-                errors.append("R4 physics binding")
-    verifier_paths = {
-        "semantic_file_sha256": "out/phase07r4/semantic_verdict_final.json",
-        "actuator_file_sha256": "out/phase07r4/actuator_controls_final.json",
-        "determinism_file_sha256": "out/phase07r4/determinism_manifest_final.json",
-        "package_file_sha256": "out/phase07r4/package_evidence_final.json",
-    }
-    verifier_bindings = manifest.get("verifiers", {}) if isinstance(manifest, Mapping) else {}
-    for key, relative_path in verifier_paths.items():
-        verifier_path = Path(relative_path)
-        if not verifier_path.is_file():
-            errors.append(f"R4 verifier missing {relative_path}")
-        elif hashlib.sha256(verifier_path.read_bytes()).hexdigest() != verifier_bindings.get(key):
-            errors.append(f"R4 verifier hash {key}")
-    checks = {
-        "state_002_environment_success": "R4 state-002 success" not in errors,
-        "v0_gamma_000_10_of_10": "R4 dev success count" not in errors,
-        "final_artifact_hashes": not any("R4 final artifact" in error for error in errors),
-        "profile_and_physics_binding": not any("binding" in error for error in errors),
-        "verifier_artifacts": not any("R4 verifier" in error for error in errors),
-    }
-    return {"passed": not errors, "errors": sorted(set(errors)), "checks": checks, "manifest_path": str(manifest_path)}
-
-
 def scene_visual_identity(scene_config) -> dict[str, Any]:
     """Single writer/verifier representation of the scene visual authority."""
 
@@ -357,16 +262,12 @@ def geometry_authority_identity(geometry_profile: str) -> dict[str, Any]:
 
     if geometry_profile != "world_fixed_arm_v1":
         raise OracleRunError("geometry_profile must be world_fixed_arm_v1")
-    contract = Path(models.assets_root) / RUNTIME_CONTRACT_FILENAME
-    if not contract.is_file():
+    if not (Path(models.assets_root) / RUNTIME_CONTRACT_FILENAME).is_file():
         raise OracleRunError("runtime contract asset missing")
     return {
         "kind": "world_fixed_arm_v1",
         # The current topology still requires fresh experimental certification.
         "scoreable": False,
-        "runtime_contract_sha256": hashlib.sha256(contract.read_bytes()).hexdigest(),
-        "controller_profile_sha256": OracleControllerProfile().sha256,
-        "outcome_contract_sha256": outcome_contract_sha256(),
     }
 
 
@@ -488,9 +389,7 @@ def _array_contract_ok(value: Any, contract: Mapping[str, Any]) -> bool:
 def _profile_from_payload(value: Any) -> OracleControllerProfile:
     if not isinstance(value, Mapping):
         raise OracleRunError("controller profile must be an object")
-    profile_values = dict(value)
-    profile_values.pop("profile_sha256", None)
-    return OracleControllerProfile(**profile_values)
+    return OracleControllerProfile(**value)
 
 
 def _compare_actuator_metadata(actual: Any, errors: list[str]) -> None:
@@ -533,9 +432,7 @@ def run_episode(
     """
 
     # The verifier binds this episode to the committed record it reloads from the
-    # asset, so hash exactly that mapping; the alias-normalized copy is only for
-    # execution, and adding object_* keys would otherwise change the digest.
-    committed_state = state
+    # asset, so the alias-normalized execution copy never replaces that record.
     state = normalize_state(state)
     state_id = str(state["state_id"])
     seed = int(state.get("excitation_seed", state.get("seed", 0)))
@@ -589,7 +486,6 @@ def run_episode(
         episode_validity = "valid"
         score_outcome: str | None = None
         termination_cause: str | None = None
-        complete_event_recorded = False
         for step in range(horizon_steps):
             policy_observation = observation
             if not _finite_json(policy_observation):
@@ -612,9 +508,6 @@ def run_episode(
                 termination_cause = "policy_error"
                 score_outcome = "unsuccessful"
                 break
-            if controller.executive.phase.value == "complete" and not complete_event_recorded:
-                controller.executive.record_evaluator_not_latched(observation, step / profile.policy_rate_hz)
-                complete_event_recorded = True
             decoded = normalized.copy()
             decoded[:3] *= profile.position_action_range_m
             decoded[3:6] *= profile.orientation_action_range_rad
@@ -647,14 +540,12 @@ def run_episode(
                     "measurement_time_s": float(controller.last_trace["measurement_time_s"]),
                     "latency_s": float(controller.last_trace["latency_s"]),
                     "task_state": {key: policy_observation[key].copy() for key in ORACLE_TASK_KEYS},
-                    "task_state_sha256": _digest({key: policy_observation[key].copy() for key in ORACLE_TASK_KEYS}),
                     "policy_input": {key: _public_copy(policy_observation[key]) for key in sorted(policy_observation)},
                     "provider_payload": {
                         key: _public_copy(policy_observation[key])
                         for key in controller.last_trace["provider_payload_keys"]
                     },
                     "post_task_state": {key: observation[key].copy() for key in ORACLE_TASK_KEYS},
-                    "post_task_state_sha256": _digest({key: observation[key].copy() for key in ORACLE_TASK_KEYS}),
                     "estimate": controller.last_trace["estimate"],
                     "relative_kinematics": controller.last_trace["relative_kinematics"],
                     "task_desired_action": controller.last_trace["task_desired_action"],
@@ -665,9 +556,7 @@ def run_episode(
                     "decoded_action": decoded,
                     "clipped_action": clipped,
                     "applied_actuator_ctrl": applied,
-                    "applied_actuator_ctrl_sha256": _digest(applied),
                     "applied_actuator_force": actuator_force,
-                    "applied_actuator_force_sha256": _digest(actuator_force),
                     "phase": controller.last_trace["phase"],
                     "controller_events": controller.executive.controller_events,
                     "recovery_count": controller.executive.recovery_count,
@@ -687,8 +576,6 @@ def run_episode(
             if termination_cause is not None:
                 score_outcome = "success" if termination_cause == "success_latched" else "unsuccessful"
                 break
-            if controller.executive.phase.value == "complete":
-                continue
         if metrics is None:
             try:
                 metrics = env.get_metrics()
@@ -731,8 +618,6 @@ def run_episode(
             "program": {"seed": seed, "t0_s": t0_s, "level_scale": level_scale},
             "controller_profile": profile.to_dict(),
             "task_context": task_context.to_dict(),
-            "task_context_sha256": task_context.sha256,
-            "controller_context_hash": controller.controller_context_hash,
             "physics_profile": {
                 "profile_id": env.physics_profile.profile_id,
             },
@@ -740,10 +625,8 @@ def run_episode(
             "geometry_profile": env.geometry_profile,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
-            "state_sha256": _digest(committed_state),
             **({"task_contract": env.task_spec.contract()} if variant else {}),
             "outcome_contract": outcome_contract(),
-            "outcome_contract_sha256": outcome_contract_sha256(),
             "episode_validity": episode_validity,
             "score_outcome": score_outcome,
             "termination_cause": termination_cause,
@@ -754,7 +637,6 @@ def run_episode(
             "actuators": actuator_metadata,
             "metrics": metrics,
             "trace": trace,
-            "trace_sha256": _digest(trace),
         }
     finally:
         env.close()
@@ -788,30 +670,7 @@ def main(argv: list[str] | None = None) -> int:
         default="world_fixed_arm_v1",
         help="explicit assembly profile; direct_mount_v1 remains Phase-07 requalification evidence until authorized",
     )
-    parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="resume a partial per-episode checkpoint next to --output",
-    )
-    parser.add_argument("--determinism-manifest", default=None)
-    parser.add_argument("--process-index", type=int, default=None)
-    parser.add_argument("--parent-run-uuid", default=None)
     args = parser.parse_args(argv)
-    if args.determinism_manifest is not None:
-        if args.state_id is None and args.state_ids is None:
-            args.state_id = "shakebench-dev-v0-000"
-        return run_determinism_replay(
-            args.determinism_manifest,
-            state_id=args.state_id,
-            state_ids=(
-                None
-                if args.state_ids is None
-                else tuple(item.strip() for item in args.state_ids.split(",") if item.strip())
-            ),
-            states_path=args.states,
-            horizon_steps=args.horizon_steps,
-            geometry_profile=args.geometry_profile,
-        )["exit_code"]
     if args.gamma is None or args.output is None:
         parser.error("--gamma and --output are required for a normal run")
     state_asset = load_state_asset(args.states)
@@ -847,35 +706,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.horizon_steps <= 0:
         raise OracleRunError("--horizon-steps must be positive")
     target = Path(args.output)
-    partial_target = target.with_name(target.name + ".partial.json")
     episodes: list[dict[str, Any]] = []
-    if args.resume and partial_target.exists():
-        try:
-            partial = json.loads(partial_target.read_text(encoding="utf-8"))
-            partial_verdict = verify_run_artifact(partial_target)
-            if (
-                partial_verdict["passed"]
-                and partial.get("schema_id") == RUN_SCHEMA_ID
-                and partial.get("schema_version") == RUN_SCHEMA_VERSION
-                and partial.get("tier") == CURRENT_TIER_ALIAS
-                and float(partial.get("gamma_commanded")) == float(args.gamma)
-                and _values_equal(partial.get("controller_profile"), profile.to_dict(), atol=0.0)
-                and partial.get("evaluator_post_complete_settle_s") == profile.completion_evaluator_settle_s
-                and partial.get("scene_visual") == scene_identity
-                and partial.get("geometry_authority") == geometry_authority
-                and partial.get("scoreable") == scoreable
-                and partial.get("geometry_profile") == geometry_payload
-                and partial.get("state_authority") == state_asset["authority"]
-                and partial.get("physics_authority") == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID}
-                and isinstance(partial.get("episodes"), list)
-            ):
-                episodes = list(partial["episodes"])
-                completed_ids = {row.get("state_id") for row in episodes if isinstance(row, Mapping)}
-                states = [state for state in states if state["state_id"] not in completed_ids]
-            else:
-                raise OracleRunError("partial checkpoint failed semantic or science-identity verification")
-        except (OSError, TypeError, ValueError, json.JSONDecodeError):
-            raise OracleRunError("partial checkpoint is unreadable or unauthenticated")
     for state in states:
         episodes.append(
             run_episode(
@@ -886,44 +717,6 @@ def main(argv: list[str] | None = None) -> int:
                 geometry_profile=args.geometry_profile,
             )
         )
-        partial_payload = {
-            "schema_id": RUN_SCHEMA_ID,
-            "schema_version": RUN_SCHEMA_VERSION,
-            "tier": CURRENT_TIER_ALIAS,
-            "gamma_commanded": args.gamma,
-            "controller_profile": profile.to_dict(),
-            "evaluator_post_complete_settle_s": profile.completion_evaluator_settle_s,
-            "dev_state_anchor": (
-                _dev_state_anchor(args.states) if state_asset["authority"]["kind"] == "dev" else _dev_state_anchor()
-            ),
-            "state_authority": state_asset["authority"],
-            "physics_authority": {
-                "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
-            },
-            "scene_visual": scene_identity,
-            "geometry_profile": geometry_payload,
-            "geometry_authority": geometry_authority,
-            "scoreable": scoreable,
-            "outcome_contract": outcome_contract(),
-            "outcome_contract_sha256": outcome_contract_sha256(),
-            "episodes": episodes,
-        }
-        partial_payload["run_id"] = _digest(
-            {
-                "tier": CURRENT_TIER_ALIAS,
-                "gamma_commanded": args.gamma,
-                "controller_profile": profile.to_dict(),
-                "scene_visual": scene_identity,
-                "geometry_profile": geometry_payload,
-                "geometry_authority": geometry_authority,
-                "scoreable": scoreable,
-                "outcome_contract_sha256": outcome_contract_sha256(),
-                "state_ids": [episode["state_id"] for episode in episodes],
-                "state_authority": state_asset["authority"],
-            }
-        )
-        partial_payload["payload_sha256"] = _digest(partial_payload)
-        write_json(partial_target, partial_payload)
     payload = {
         "schema_id": RUN_SCHEMA_ID,
         "schema_version": RUN_SCHEMA_VERSION,
@@ -943,62 +736,13 @@ def main(argv: list[str] | None = None) -> int:
         "geometry_authority": geometry_authority,
         "scoreable": scoreable,
         "outcome_contract": outcome_contract(),
-        "outcome_contract_sha256": outcome_contract_sha256(),
         "episodes": episodes,
     }
-    payload["run_id"] = _digest(
-        {
-            "tier": CURRENT_TIER_ALIAS,
-            "gamma_commanded": args.gamma,
-            "controller_profile": profile.to_dict(),
-            "scene_visual": payload["scene_visual"],
-            "geometry_profile": geometry_payload,
-            "geometry_authority": geometry_authority,
-            "scoreable": scoreable,
-            "outcome_contract_sha256": outcome_contract_sha256(),
-            "state_ids": [episode["state_id"] for episode in episodes],
-            "state_authority": payload["state_authority"],
-        }
-    )
-    if args.merge_into is not None:
-        prior = json.loads(Path(args.merge_into).read_text(encoding="utf-8"))
-        if (
-            prior.get("schema_id") != payload["schema_id"]
-            or prior.get("tier") != payload["tier"]
-            or float(prior.get("gamma_commanded")) != float(payload["gamma_commanded"])
-            or prior.get("controller_profile") != payload["controller_profile"]
-            or prior.get("scene_visual") != payload["scene_visual"]
-            or prior.get("geometry_profile") != payload["geometry_profile"]
-            or prior.get("geometry_authority") != payload["geometry_authority"]
-            or prior.get("scoreable") != payload["scoreable"]
-        ):
-            raise OracleRunError("--merge-into raw run is not compatible with this controller/tier/Gamma")
-        replacements = {episode["state_id"]: episode for episode in episodes}
-        prior_episodes = prior.get("episodes")
-        if not isinstance(prior_episodes, list) or not all(
-            item.get("state_id") in replacements or "state_id" in item for item in prior_episodes
-        ):
-            raise OracleRunError("--merge-into has invalid episode records")
-        payload["episodes"] = [replacements.get(item["state_id"], item) for item in prior_episodes]
-    if args.process_index is not None or args.parent_run_uuid is not None:
-        if args.process_index is None or not isinstance(args.parent_run_uuid, str) or not args.parent_run_uuid:
-            raise OracleRunError("determinism child requires process index and parent run UUID")
-        payload["process"] = {
-            "process_index": int(args.process_index),
-            "process_pid": os.getpid(),
-            "process_identity": f"pid:{os.getpid()}",
-            "parent_run_uuid": args.parent_run_uuid,
-            "start_timestamp_s": time.time(),
-        }
-    payload["payload_sha256"] = _digest(payload)
     write_json(target, payload)
-    if partial_target.exists():
-        partial_target.unlink()
     print(
         json.dumps(
             {
                 "output": str(target),
-                "payload_sha256": payload["payload_sha256"],
                 "successes": sum(row["success"] for row in episodes),
             },
             sort_keys=True,
@@ -1030,15 +774,12 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
     try:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        return {"passed": False, "errors": [f"artifact read: {exc}"], "run_id": None}
+        return {"passed": False, "errors": [f"artifact read: {exc}"]}
     if not isinstance(payload, Mapping):
-        return {"passed": False, "errors": ["run payload must be an object"], "run_id": None}
+        return {"passed": False, "errors": ["run payload must be an object"]}
     if payload.get("schema_id") != RUN_SCHEMA_ID or payload.get("schema_version") != RUN_SCHEMA_VERSION:
         errors.append("run schema")
-    if (
-        payload.get("outcome_contract") != outcome_contract()
-        or payload.get("outcome_contract_sha256") != outcome_contract_sha256()
-    ):
+    if payload.get("outcome_contract") != outcome_contract():
         errors.append("outcome contract authority")
     required_top_level = {
         "schema_id",
@@ -1054,10 +795,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         "geometry_authority",
         "scoreable",
         "outcome_contract",
-        "outcome_contract_sha256",
         "episodes",
-        "run_id",
-        "payload_sha256",
     }
     if set(payload) - {"process", "state_authority"} != required_top_level:
         errors.append("run required fields")
@@ -1140,13 +878,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         expected_profile = parsed_profile.to_dict()
     if not _values_equal(payload.get("controller_profile"), expected_profile, atol=1.0e-12):
         errors.append("controller profile")
-    copied = dict(payload)
-    expected_payload_hash = copied.pop("payload_sha256", None)
-    try:
-        if expected_payload_hash != _digest(copied):
-            errors.append("payload digest")
-    except (TypeError, ValueError):
-        errors.append("payload digest")
     episodes = payload.get("episodes")
     if not isinstance(episodes, list) or not episodes:
         errors.append("episodes")
@@ -1171,36 +902,28 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             "program",
             "controller_profile",
             "task_context",
-            "task_context_sha256",
-            "controller_context_hash",
             "physics_profile",
             "scene_visual",
             "geometry_profile",
             "geometry_authority",
             "scoreable",
             "outcome_contract",
-            "outcome_contract_sha256",
             "episode_validity",
             "score_outcome",
             "termination_cause",
             "controller_events",
-            "state_sha256",
             "success",
             "failure_reason",
             "termination_category",
             "actuators",
             "metrics",
             "trace",
-            "trace_sha256",
         }
         if isinstance(state_authority, Mapping) and state_authority.get("kind") == "task_variants":
             required_episode_fields.add("task_contract")
         if set(episode) != required_episode_fields:
             errors.append(prefix + " required fields")
-        if (
-            episode.get("outcome_contract") != outcome_contract()
-            or episode.get("outcome_contract_sha256") != outcome_contract_sha256()
-        ):
+        if episode.get("outcome_contract") != outcome_contract():
             errors.append(prefix + " outcome contract authority")
         tier = episode.get("tier")
         if tier != payload.get("tier"):
@@ -1229,21 +952,13 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 ):
                     if not _values_equal(context.get(key), value, atol=1e-10):
                         errors.append(prefix + " object geometry binding")
-            if episode.get("state_sha256") != _digest(state):
-                errors.append(prefix + " state hash")
         if not _values_equal(episode.get("controller_profile"), expected_profile, atol=1.0e-12):
             errors.append(prefix + " controller profile")
         try:
-            expected_context = WorktableTaskContext.from_mapping(episode.get("task_context"))
-            if (
-                episode.get("controller_context_hash")
-                != hashlib.sha256(
-                    f"{expected_profile['profile_sha256']}:{expected_context.sha256}".encode("ascii")
-                ).hexdigest()
-            ):
-                errors.append(prefix + " controller context hash")
+            task_context = WorktableTaskContext.from_mapping(episode.get("task_context"))
         except (TypeError, ValueError, ShakeBenchOracleError):
-            errors.append(prefix + " controller context hash")
+            errors.append(prefix + " task context")
+            task_context = WorktableTaskContext()
         physics = episode.get("physics_profile")
         if not _values_equal(
             physics,
@@ -1281,18 +996,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         if not isinstance(trace, list) or (not trace and episode.get("episode_validity") != "invalid"):
             errors.append(prefix + " trace")
             trace = []
-        try:
-            if episode.get("trace_sha256") != _digest(trace):
-                errors.append(prefix + " trace digest")
-        except (TypeError, ValueError):
-            errors.append(prefix + " trace digest")
-        try:
-            task_context = WorktableTaskContext.from_mapping(episode.get("task_context"))
-            if episode.get("task_context_sha256", task_context.sha256) != task_context.sha256:
-                errors.append(prefix + " task context hash")
-        except (TypeError, ValueError, ShakeBenchOracleError) as exc:
-            errors.append(prefix + f" task context: {exc}")
-            task_context = WorktableTaskContext()
         controller = ShakeBenchOracleController(parsed_profile, task_context=task_context)
         expected_keys = set(ORACLE_TASK_KEYS) | set(TABLE_IMU_POLICY_KEYS)
         contract = {
@@ -1310,11 +1013,9 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 "measurement_time_s",
                 "latency_s",
                 "task_state",
-                "task_state_sha256",
                 "policy_input",
                 "provider_payload",
                 "post_task_state",
-                "post_task_state_sha256",
                 "estimate",
                 "relative_kinematics",
                 "task_desired_action",
@@ -1325,9 +1026,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 "decoded_action",
                 "clipped_action",
                 "applied_actuator_ctrl",
-                "applied_actuator_ctrl_sha256",
                 "applied_actuator_force",
-                "applied_actuator_force_sha256",
                 "phase",
                 "controller_events",
                 "recovery_count",
@@ -1370,11 +1069,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                 {key: policy_input.get(key) for key in ORACLE_TASK_KEYS}, task_state, atol=0.0
             ):
                 errors.append(row_prefix + " task state mismatch")
-            if row.get("task_state_sha256") != _digest(task_state):
-                errors.append(row_prefix + " task state digest")
             post_task_state = row.get("post_task_state")
-            if row.get("post_task_state_sha256") != _digest(post_task_state):
-                errors.append(row_prefix + " post task state digest")
             try:
                 recomputed_action = controller.action(policy_input, time_s=policy_time)
                 recomputed_trace = controller.last_trace
@@ -1436,8 +1131,6 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
                     valid = False
                 if not valid:
                     errors.append(row_prefix + f" {key} shape/finite")
-                elif row.get(key + "_sha256") != _digest(array):
-                    errors.append(row_prefix + f" {key} digest")
             estimate_payload = row.get("estimate")
             if not isinstance(estimate_payload, Mapping) or not _values_equal(
                 estimate_payload.get("policy_timestamp_s"), row.get("policy_time_s"), atol=1.0e-6
@@ -1490,277 +1183,12 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
             errors.append(prefix + " metrics schema/finite")
     if expected_ids != sorted(expected_ids):
         errors.append("state ordering")
-    run_id_basis = {
-        "tier": payload.get("tier"),
-        "gamma_commanded": payload.get("gamma_commanded"),
-        "controller_profile": expected_profile,
-        "state_ids": expected_ids,
-        "geometry_authority": payload.get("geometry_authority"),
-        "scoreable": payload.get("scoreable"),
-        "outcome_contract_sha256": payload.get("outcome_contract_sha256"),
-    }
-    run_id_basis["scene_visual"] = payload.get("scene_visual")
-    run_id_basis["geometry_profile"] = payload.get("geometry_profile")
-    if state_authority is not None:
-        run_id_basis["state_authority"] = state_authority
-    if payload.get("run_id") != _digest(run_id_basis):
-        errors.append("run id")
     return {
         "passed": not errors,
         "errors": sorted(set(errors)),
-        "run_id": payload.get("run_id"),
         "trace_count": sum(len(row.get("trace", ())) for row in episodes if isinstance(row, Mapping)),
         "dev_state_anchor_mode": anchor_mode,
     }
-
-
-def _manifest_trace_projection(payload: Mapping[str, Any]) -> list[Any]:
-    episodes = payload.get("episodes", [])
-    return [
-        {
-            "state_id": episode.get("state_id"),
-            "tier": episode.get("tier"),
-            "gamma_commanded": episode.get("gamma_commanded"),
-            "success": episode.get("success"),
-            "episode_validity": episode.get("episode_validity"),
-            "score_outcome": episode.get("score_outcome"),
-            "termination_cause": episode.get("termination_cause"),
-            "controller_events": episode.get("controller_events"),
-            "failure_reason": episode.get("failure_reason"),
-            "termination_category": episode.get("termination_category"),
-            "scene_visual": episode.get("scene_visual"),
-            "geometry_profile": episode.get("geometry_profile"),
-            "geometry_authority": episode.get("geometry_authority"),
-            "scoreable": episode.get("scoreable"),
-            "task_context": episode.get("task_context"),
-            "task_context_sha256": episode.get("task_context_sha256"),
-            "actuators": episode.get("actuators"),
-            "metrics": episode.get("metrics"),
-            "trace": episode.get("trace", []),
-        }
-        for episode in episodes
-    ]
-
-
-def _compare_replay_traces(first: Any, other: Any, *, atol: float = 1.0e-6) -> bool:
-    """Compare traces with tolerance only for pre-registered numeric fields."""
-
-    if isinstance(first, Mapping) or isinstance(other, Mapping):
-        if not isinstance(first, Mapping) or not isinstance(other, Mapping) or set(first) != set(other):
-            return False
-        return all(_compare_replay_traces(first[key], other[key], atol=atol) for key in first)
-    if isinstance(first, (list, tuple)) or isinstance(other, (list, tuple)):
-        if not isinstance(first, (list, tuple)) or not isinstance(other, (list, tuple)) or len(first) != len(other):
-            return False
-        return all(_compare_replay_traces(a, b, atol=atol) for a, b in zip(first, other))
-    if isinstance(first, (float, int, np.floating, np.integer)) and isinstance(
-        other, (float, int, np.floating, np.integer)
-    ):
-        return bool(
-            np.isfinite(float(first))
-            and np.isfinite(float(other))
-            and np.isclose(float(first), float(other), rtol=0.0, atol=atol)
-        )
-    return first == other
-
-
-def verify_determinism_manifest(path: str | Path) -> dict[str, Any]:
-    """Independently verify three fresh-process raw runs and their full traces."""
-
-    errors: list[str] = []
-    manifest_path = Path(path)
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        return {"passed": False, "errors": [f"manifest read: {exc}"]}
-    if (
-        manifest.get("schema_id") != DETERMINISM_SCHEMA_ID
-        or manifest.get("schema_version") != DETERMINISM_SCHEMA_VERSION
-    ):
-        errors.append("manifest schema")
-    copied = dict(manifest)
-    expected_manifest_hash = copied.pop("manifest_sha256", None)
-    try:
-        if expected_manifest_hash != _digest(copied):
-            errors.append("manifest hash")
-    except (TypeError, ValueError):
-        errors.append("manifest hash")
-    records = manifest.get("records")
-    if manifest.get("process_count") != 3 or not isinstance(records, list) or len(records) != 3:
-        errors.append("process count")
-        records = records if isinstance(records, list) else []
-    paths: list[str] = []
-    pids: list[int] = []
-    process_indexes: list[int] = []
-    payloads: list[Mapping[str, Any]] = []
-    for index, record in enumerate(records):
-        prefix = f"record[{index}]"
-        if not isinstance(record, Mapping):
-            errors.append(prefix + " object")
-            continue
-        record_path = record.get("path")
-        if not isinstance(record_path, str) or not record_path:
-            errors.append(prefix + " path")
-            continue
-        paths.append(record_path)
-        resolved = Path(record_path)
-        if not resolved.exists():
-            errors.append(prefix + " missing file")
-            continue
-        try:
-            if record.get("file_sha256") != hashlib.sha256(resolved.read_bytes()).hexdigest():
-                errors.append(prefix + " file hash")
-            payload = json.loads(resolved.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            errors.append(prefix + f" file read: {exc}")
-            continue
-        payloads.append(payload)
-        semantic = verify_run_artifact(resolved)
-        if not semantic["passed"]:
-            errors.extend(prefix + " semantic: " + error for error in semantic["errors"])
-        if record.get("payload_sha256") != payload.get("payload_sha256"):
-            errors.append(prefix + " payload hash")
-        if record.get("trace_sha256") != _digest(_manifest_trace_projection(payload)):
-            errors.append(prefix + " trace hash")
-        if record.get("complete") is not True:
-            errors.append(prefix + " incomplete")
-        process = payload.get("process")
-        if not isinstance(process, Mapping):
-            errors.append(prefix + " process metadata")
-            continue
-        pid = process.get("process_pid")
-        if not isinstance(pid, int) or pid <= 0 or process.get("process_identity") != f"pid:{pid}":
-            errors.append(prefix + " process identity")
-        else:
-            pids.append(pid)
-        process_index = process.get("process_index")
-        if not isinstance(process_index, int):
-            errors.append(prefix + " process index")
-        else:
-            process_indexes.append(process_index)
-        if process.get("parent_run_uuid") != manifest.get("parent_run_uuid"):
-            errors.append(prefix + " parent run binding")
-    if len(paths) != len(set(paths)):
-        errors.append("duplicate path")
-    if len(pids) != len(set(pids)):
-        errors.append("duplicate process identity")
-    if sorted(process_indexes) != [0, 1, 2]:
-        errors.append("process indexes")
-    if len(payloads) == 3:
-        first = payloads[0]
-        for index, payload in enumerate(payloads[1:], start=1):
-            for key in (
-                "tier",
-                "gamma_commanded",
-                "controller_profile",
-                "physics_authority",
-                "dev_state_anchor",
-                "scene_visual",
-                "geometry_profile",
-                "geometry_authority",
-                "scoreable",
-                "outcome_contract",
-                "outcome_contract_sha256",
-            ):
-                if not _values_equal(payload.get(key), first.get(key), atol=0.0):
-                    errors.append(f"binding mismatch {key} record[{index}]")
-            if not _compare_replay_traces(_manifest_trace_projection(first), _manifest_trace_projection(payload)):
-                errors.append(f"trace mismatch record[{index}]")
-    return {
-        "passed": not errors,
-        "errors": sorted(set(errors)),
-        "manifest_path": str(manifest_path),
-        "process_count": len(records),
-    }
-
-
-def run_determinism_replay(
-    manifest_path: str | Path,
-    *,
-    state_id: str = "shakebench-dev-v0-000",
-    state_ids: tuple[str, ...] | None = None,
-    states_path: str | Path | None = None,
-    horizon_steps: int = 1200,
-    geometry_profile: str = "canonical",
-) -> dict[str, Any]:
-    """Launch three fresh Python children and write a compact replay manifest."""
-
-    manifest_target = Path(manifest_path)
-    manifest_target.parent.mkdir(parents=True, exist_ok=True)
-    requested_state_ids = state_ids or (state_id,)
-    if not requested_state_ids or len(set(requested_state_ids)) != len(requested_state_ids):
-        raise OracleRunError("determinism replay requires unique state IDs")
-    parent_run_uuid = str(uuid.uuid4())
-    records = []
-    for process_index in range(3):
-        child_path = manifest_target.parent / f"replay_process_{process_index + 1}.json"
-        command = [
-            sys.executable,
-            "-m",
-            "shakebench.scripts.run_oracle",
-            "--tier",
-            "V0",
-            "--gamma",
-            "0.0",
-            "--output",
-            str(child_path),
-            "--state-ids",
-            ",".join(requested_state_ids),
-            "--horizon-steps",
-            str(horizon_steps),
-            "--geometry-profile",
-            geometry_profile,
-            "--process-index",
-            str(process_index),
-            "--parent-run-uuid",
-            parent_run_uuid,
-        ]
-        if states_path is not None:
-            command.extend(("--states", str(states_path)))
-        started = time.time()
-        completed = subprocess.run(command, capture_output=True, text=True, check=False)
-        stdout_lines = completed.stdout.splitlines()
-        stderr_lines = completed.stderr.splitlines()
-        record = {
-            "process_index": process_index,
-            "exit_code": completed.returncode,
-            "command": command,
-            "stdout_summary": stdout_lines[-5:],
-            "stderr_summary": stderr_lines[-5:],
-            "path": str(child_path),
-            "complete": completed.returncode == 0 and child_path.exists(),
-            "start_timestamp_s": started,
-        }
-        if child_path.exists():
-            payload = json.loads(child_path.read_text(encoding="utf-8"))
-            record.update(
-                {
-                    "file_sha256": hashlib.sha256(child_path.read_bytes()).hexdigest(),
-                    "payload_sha256": payload.get("payload_sha256"),
-                    "trace_sha256": _digest(_manifest_trace_projection(payload)),
-                    "process_pid": payload.get("process", {}).get("process_pid"),
-                    "process_identity": payload.get("process", {}).get("process_identity"),
-                }
-            )
-        records.append(record)
-    manifest = {
-        "schema_id": DETERMINISM_SCHEMA_ID,
-        "schema_version": DETERMINISM_SCHEMA_VERSION,
-        "parent_run_uuid": parent_run_uuid,
-        "state_id": requested_state_ids[0],
-        "state_ids": list(requested_state_ids),
-        "tier": "V0",
-        "gamma_commanded": 0.0,
-        "geometry_profile": load_geometry_profile(geometry_profile),
-        "process_count": 3,
-        "records": records,
-    }
-    manifest["manifest_sha256"] = _digest(manifest)
-    manifest_target.write_text(json.dumps(_json_ready(manifest), sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    verdict = verify_determinism_manifest(manifest_target)
-    verdict["manifest_path"] = str(manifest_target)
-    verdict["exit_code"] = 0 if verdict["passed"] else 1
-    return verdict
 
 
 if __name__ == "__main__":

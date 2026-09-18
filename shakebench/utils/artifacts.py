@@ -6,7 +6,6 @@ no digest of the written bytes.
 
 from __future__ import annotations
 
-import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
@@ -25,28 +24,6 @@ def json_ready(value: Any) -> Any:
     if isinstance(value, (np.integer, np.floating, np.bool_)):
         return value.item()
     return value
-
-
-def canonical_json(value: Any) -> str:
-    return json.dumps(json_ready(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
-
-
-def sha256_json(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
-
-
-def sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
-
-
-def file_sha256(path: str | Path) -> str:
-    return sha256_bytes(Path(path).read_bytes())
-
-
-def payload_hash(value: Mapping[str, Any], field: str = "payload_sha256") -> str:
-    content = dict(value)
-    content.pop(field, None)
-    return sha256_json(content)
 
 
 def write_json(path: str | Path, payload: Mapping[str, Any]) -> None:

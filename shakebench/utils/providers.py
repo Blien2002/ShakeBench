@@ -20,7 +20,6 @@ from shakebench.utils.sensors import (
     CanonicalIMUProfile,
     ShakeBenchSensorError,
     _normalise_quaternion_wxyz,
-    canonical_imu_profile_hash,
 )
 
 COMMON_STATE_KEYS = (
@@ -146,19 +145,6 @@ class TableIMUProvider:
             "sensor_quaternion_wxyz_in_worktable": metadata_quaternion.copy(),
             "sensor_profile_id": self.imu.profile.profile_id,
         }
-        import hashlib
-        import json
-
-        identity = {
-            "sensor_parent": mount["sensor_parent"],
-            "sensor_site_name": mount["sensor_site_name"],
-            "position_m": metadata_position.tolist(),
-            "quaternion_wxyz": metadata_quaternion.tolist(),
-            "profile_sha256": canonical_imu_profile_hash(self.imu.profile),
-        }
-        mount["sensor_config_sha256"] = hashlib.sha256(
-            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        ).hexdigest()
         self._compiled_imu_mount = mount
         return {key: value.copy() if isinstance(value, np.ndarray) else value for key, value in mount.items()}
 

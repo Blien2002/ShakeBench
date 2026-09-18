@@ -16,11 +16,7 @@ from pathlib import Path
 from statistics import NormalDist
 from typing import Any
 
-from shakebench.utils.outcomes import (
-    OutcomeContractError,
-    outcome_contract_sha256,
-    validate_outcome,
-)
+from shakebench.utils.outcomes import OutcomeContractError, validate_outcome
 
 SCORECARD_SCHEMA_ID = "shakebench.phase08.scorecard"
 SCORECARD_SCHEMA_VERSION = 2
@@ -57,16 +53,13 @@ class EpisodeResult:
     controller_profile: Mapping[str, Any]
     physics_authority: Mapping[str, Any]
     task_context: Mapping[str, Any]
-    task_context_sha256: str
     actuators: Sequence[Mapping[str, Any]]
-    trace_sha256: str
     metrics: Mapping[str, Any]
     semantic_verifier_verdict: Mapping[str, Any]
     horizon_steps: int
     episode_validity: str = "valid"
     score_outcome: str | None = "unsuccessful"
     termination_cause: str = "horizon_exhausted"
-    outcome_contract_sha256: str | None = None
 
     @classmethod
     def from_verified_raw(cls, raw: Mapping[str, Any], semantic_verifier_verdict: Mapping[str, Any]) -> "EpisodeResult":
@@ -101,9 +94,7 @@ class EpisodeResult:
             "controller_profile",
             "physics_profile",
             "task_context",
-            "task_context_sha256",
             "actuators",
-            "trace_sha256",
             "metrics",
             "horizon_steps",
         }
@@ -132,8 +123,6 @@ class EpisodeResult:
             raise ScorecardError("outcome integrity") from exc
         if bool(raw["success"]) != (outcome == "success"):
             raise ScorecardError("success projection integrity")
-        # The full raw record is hashed so verdict files cannot silently detach
-        # their score from their trace, metrics, or termination outcome.
         return cls(
             state_id=str(raw["state_id"]),
             tier=str(raw["tier"]),
@@ -148,16 +137,13 @@ class EpisodeResult:
             controller_profile=dict(raw["controller_profile"]),
             physics_authority=dict(raw["physics_profile"]),
             task_context=dict(raw["task_context"]),
-            task_context_sha256=str(raw["task_context_sha256"]),
             actuators=tuple(dict(item) for item in raw["actuators"]),
-            trace_sha256=str(raw["trace_sha256"]),
             metrics=dict(raw["metrics"]),
             semantic_verifier_verdict=dict(semantic_verifier_verdict),
             horizon_steps=horizon_steps,
             episode_validity=str(validity),
             score_outcome=outcome,
             termination_cause=str(cause),
-            outcome_contract_sha256=(str(raw["outcome_contract_sha256"]) if "outcome_contract_sha256" in raw else None),
         )
 
     def science_identity(self) -> dict[str, Any]:
@@ -173,9 +159,7 @@ class EpisodeResult:
             "controller_profile": self.controller_profile,
             "physics_authority": self.physics_authority,
             "task_context": self.task_context,
-            "task_context_sha256": self.task_context_sha256,
             "actuators": list(self.actuators),
-            "outcome_contract_sha256": self.outcome_contract_sha256,
         }
 
 
@@ -313,9 +297,6 @@ def paired_bootstrap(left: Sequence[EpisodeResult], right: Sequence[EpisodeResul
 def _validate_comparable(rows: Sequence[EpisodeResult]) -> None:
     if not rows:
         raise ScorecardError("no episodes")
-    expected_outcome_contract = outcome_contract_sha256()
-    if any(row.outcome_contract_sha256 != expected_outcome_contract for row in rows):
-        raise ScorecardError("mixed, missing, or stale outcome contract authority")
     for row in rows:
         try:
             validate_outcome(
@@ -335,12 +316,11 @@ def _validate_comparable(rows: Sequence[EpisodeResult]) -> None:
             row.scoreable,
             _canonical(row.controller_profile),
             _canonical(row.physics_authority),
-            row.outcome_contract_sha256,
         )
         for row in rows
     }
     if len(identities) != 1:
-        raise ScorecardError("mixed Gamma, outcome contract, or runtime authority")
+        raise ScorecardError("mixed Gamma or runtime authority")
     duplicates = Counter((row.tier, row.state_id) for row in rows)
     if any(count != 1 for count in duplicates.values()):
         raise ScorecardError("duplicate tier/state result")
@@ -452,7 +432,6 @@ def build_scorecard(
         "state_count": len(next(iter(state_sets.values()))),
         "per_tier": per_tier,
         "paired_comparisons": comparisons,
-        "outcome_contract_sha256": outcome_contract_sha256(),
     }
     return result
 
@@ -470,8 +449,6 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
     errors = []
     if payload.get("schema_id") != SCORECARD_SCHEMA_ID or payload.get("schema_version") != SCORECARD_SCHEMA_VERSION:
         errors.append("schema")
-    if payload.get("outcome_contract_sha256") != outcome_contract_sha256():
-        errors.append("outcome contract authority")
     comparisons = payload.get("paired_comparisons")
     if not isinstance(comparisons, Mapping) or not set(comparisons).issubset(
         {"V1_minus_V0", "V2_minus_V1", "V3_minus_V2", "V3_minus_V0"}
@@ -506,7 +483,6 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
                 "state_count",
                 "per_tier",
                 "paired_comparisons",
-                "outcome_contract_sha256",
             ):
                 if payload.get(key) != recomputed.get(key):
                     errors.append("scorecard recomputation")

@@ -9,8 +9,6 @@ remain on the recorder side of the boundary.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from types import MappingProxyType
@@ -26,13 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover - the runtime name is served by __getattr_
 
 # The oracle wire contract addresses the canonical field contract by the names
 # the task executive, the GPU collector and the recorder already publish.
-ORACLE_FIELD_ALIASES = MappingProxyType(
-    {
-        "object_pos_robot_base": "object_pos_robot_base",
-        "object_quat_robot_base": "object_quat_robot_base",
-    }
-)
-ORACLE_TASK_KEYS = tuple(ORACLE_FIELD_ALIASES.get(key, key) for key in COMMON_STATE_KEYS)
+ORACLE_TASK_KEYS = tuple(COMMON_STATE_KEYS)
 
 
 def _public_copy(value: Any) -> Any:
@@ -53,7 +45,6 @@ class ShakeBenchOracleError(ValueError):
 class TaskPhase(str, Enum):
     SETTLE = "settle"
     APPROACH = "approach"
-    CLEARANCE_LIFT = "clearance_lift"
     LATERAL_ALIGN_ABOVE_CAN = "lateral_align_above_can"
     ALIGN_SETTLE = "align_settle"
     VERTICAL_DESCEND = "vertical_descend"
@@ -77,7 +68,6 @@ class TaskPhase(str, Enum):
     CLEARANCE_RETREAT = "clearance_retreat"
     RETREAT = "clearance_retreat"
     RE_ALIGN = "re_align"
-    COMPLETE = "complete"
     ABORTED = "aborted"
     # Compatibility alias.  New runner code must use ``abort_reason`` and
     # never infer a task result from a controller phase.
@@ -89,7 +79,6 @@ class MotionCapability(str, Enum):
 
     HOLD = "hold"
     FREE_SPACE = "free_space"
-    CLEARANCE_TRANSLATE = "clearance_translate"
     CONTACT_APPROACH = "contact_approach"
     GRIPPER_CLOSE = "gripper_close"
     OBJECT_HELD = "object_held"
@@ -106,7 +95,6 @@ MOTION_CAPABILITY_BY_PHASE = MappingProxyType(
     {
         TaskPhase.SETTLE: MotionCapability.HOLD,
         TaskPhase.APPROACH: MotionCapability.FREE_SPACE,
-        TaskPhase.CLEARANCE_LIFT: MotionCapability.CLEARANCE_TRANSLATE,
         TaskPhase.LATERAL_ALIGN_ABOVE_CAN: MotionCapability.FREE_SPACE,
         TaskPhase.ALIGN_SETTLE: MotionCapability.HOLD,
         TaskPhase.VERTICAL_DESCEND: MotionCapability.CONTACT_APPROACH,
@@ -125,7 +113,6 @@ MOTION_CAPABILITY_BY_PHASE = MappingProxyType(
         TaskPhase.RECOVERY_OPEN: MotionCapability.TERMINAL,
         TaskPhase.CLEARANCE_RETREAT: MotionCapability.RECOVERY_RETREAT,
         TaskPhase.RE_ALIGN: MotionCapability.FREE_SPACE,
-        TaskPhase.COMPLETE: MotionCapability.TERMINAL,
         TaskPhase.ABORTED: MotionCapability.TERMINAL,
     }
 )
@@ -195,11 +182,6 @@ class WorktableTaskContext:
     def worktable_half_extents_xy_m(self) -> tuple[float, float]:
         return tuple(float(value) for value in np.asarray(self.worktable_size_xy_m, dtype=float) / 2.0)
 
-    @property
-    def sha256(self) -> str:
-        content = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"), allow_nan=False)
-        return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any] | None) -> "WorktableTaskContext":
         if value is None:
@@ -253,7 +235,6 @@ class WorktableTaskContext:
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
         result["worktable_half_extents_xy_m"] = list(self.worktable_half_extents_xy_m)
-        result["context_sha256"] = self.sha256
         return result
 
 
@@ -302,7 +283,6 @@ class RelativeSupportMotionEstimate:
     validity: bool = True
     confidence: float = 1.0
     source: str = "neutral"
-    context_sha256: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.frame != RELATIVE_SUPPORT_FRAME:
@@ -343,10 +323,6 @@ class RelativeSupportMotionEstimate:
             raise ShakeBenchOracleError("relative support units must be a nonempty mapping")
         if not isinstance(self.source, str) or not self.source:
             raise ShakeBenchOracleError("relative support source must be nonempty")
-        if self.context_sha256 is not None and (
-            not isinstance(self.context_sha256, str) or len(self.context_sha256) != 64
-        ):
-            raise ShakeBenchOracleError("relative support context hash must be a SHA-256 hex digest")
         for name, value in (
             ("current_relative_pose_robot_base", pose),
             ("current_relative_twist_robot_base", twist),
@@ -383,7 +359,6 @@ class RelativeSupportMotionEstimate:
             "validity": bool(self.validity),
             "confidence": self.confidence,
             "source": self.source,
-            "context_sha256": self.context_sha256,
         }
         return result
 
@@ -407,7 +382,6 @@ def vibration_estimate_from_public_observation(
     observation: Mapping[str, Any],
     *,
     policy_time_s: Optional[float] = None,
-    task_context: WorktableTaskContext | None = None,
     relative_kinematics: Any = None,
 ) -> VibrationEstimate:
     """Type the current public support motion at one policy timestamp.
@@ -425,7 +399,6 @@ def vibration_estimate_from_public_observation(
     missing = [key for key in ORACLE_TASK_KEYS if key not in observation]
     if missing:
         raise ShakeBenchOracleError("missing observation payload: " + ", ".join(missing))
-    context = task_context or WorktableTaskContext()
     policy_time = float(np.asarray(observation.get("episode_time_s", 0.0) if policy_time_s is None else policy_time_s))
     if not np.isfinite(policy_time) or policy_time < 0.0:
         raise ShakeBenchOracleError("policy_time_s must be finite and non-negative")
@@ -452,7 +425,6 @@ def vibration_estimate_from_public_observation(
         validity=True,
         confidence=confidence,
         source=source,
-        context_sha256=context.sha256,
     )
 
 
@@ -486,7 +458,6 @@ class OracleControllerProfile:
     clearance_lift_s: float = 0.30
     align_settle_s: float = 0.20
     align_required_samples: int = 3
-    align_eef_speed_limit_m_s: float = 0.025
     table_edge_safety_margin_m: float = 0.008
     tool_clearance_m: float = 0.012
     anchor_drift_tolerance_m: float = 0.010
@@ -514,15 +485,12 @@ class OracleControllerProfile:
     # Can diameter (2 * collision radius) plus a 10 mm compiled pad/measurement
     # allowance; bilateral geometry and expected-transform gates remain mandatory.
     grasp_hold_max_opening_rad: float = 0.0602
-    grasp_establishment_min_opening_rad: float = 0.006
     grasp_corridor_margin_m: float = 0.004
     grasp_expected_transform_tolerance_m: float = 0.018
-    grasp_wrench_confidence_min_N: float = 0.5
     # 18 mm is below the 25.0918 mm collision radius while leaving the
     # measured policy/actuator noise margin for a rigid carry.
     grasp_slip_tolerance_m: float = 0.018
     grasp_severe_slip_fraction_of_can_radius: float = 0.75
-    grasp_slip_tolerance_rad: float = 0.35
     grasp_loss_confirm_samples: int = 2
     recovery_table_height_tolerance_m: float = 0.055
     recovery_max_downward_speed_m_s: float = 0.12
@@ -534,7 +502,6 @@ class OracleControllerProfile:
     recovery_settle_s: float = 1.20
     recovery_stable_samples: int = 3
     placement_support_tolerance_m: float = 0.008
-    public_risk_margin_m: float = 0.012
     verify_linear_speed_limit_m_s: float = 0.020
     verify_angular_speed_limit_rad_s: float = 0.20
     verify_stability_samples: int = 2
@@ -582,15 +549,8 @@ class OracleControllerProfile:
         if not 0.0 < self.grasp_severe_slip_fraction_of_can_radius <= 1.0:
             raise ShakeBenchOracleError("severe slip fraction must lie in (0, 1]")
 
-    @property
-    def sha256(self) -> str:
-        content = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"), allow_nan=False)
-        return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
     def to_dict(self) -> dict[str, Any]:
-        result = asdict(self)
-        result["profile_sha256"] = self.sha256
-        return result
+        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -610,18 +570,16 @@ def motion_capability_policy(phase: TaskPhase, profile: OracleControllerProfile)
     translation_limits = {
         MotionCapability.HOLD: 1.0,
         MotionCapability.FREE_SPACE: 1.0,
-        MotionCapability.CLEARANCE_TRANSLATE: 0.30,
         MotionCapability.CONTACT_APPROACH: profile.descend_position_action_limit,
         MotionCapability.GRIPPER_CLOSE: profile.descend_position_action_limit,
         MotionCapability.OBJECT_HELD: profile.transport_position_action_limit,
         MotionCapability.RECOVERY_LOWER: profile.descend_position_action_limit,
         MotionCapability.RECOVERY_RETREAT: profile.transport_position_action_limit,
-        MotionCapability.TERMINAL: 1.0 if phase is TaskPhase.COMPLETE else 0.0,
+        MotionCapability.TERMINAL: 0.0,
     }
     gripper_open_phases = {
         TaskPhase.SETTLE,
         TaskPhase.APPROACH,
-        TaskPhase.CLEARANCE_LIFT,
         TaskPhase.LATERAL_ALIGN_ABOVE_CAN,
         TaskPhase.ALIGN_SETTLE,
         TaskPhase.VERTICAL_DESCEND,
@@ -631,16 +589,13 @@ def motion_capability_policy(phase: TaskPhase, profile: OracleControllerProfile)
         TaskPhase.RECOVERY_OPEN,
         TaskPhase.CLEARANCE_RETREAT,
         TaskPhase.RE_ALIGN,
-        TaskPhase.COMPLETE,
         TaskPhase.FAILED,
     }
     gripper = profile.gripper_open_action if phase in gripper_open_phases else profile.gripper_close_action
     return MotionCapabilityPolicy(
         capability=capability,
         max_translation_normalized=float(translation_limits[capability]),
-        max_orientation_normalized=(
-            1.0 if phase is TaskPhase.COMPLETE else (0.0 if capability is MotionCapability.TERMINAL else 1.0)
-        ),
+        max_orientation_normalized=(0.0 if capability is MotionCapability.TERMINAL else 1.0),
         gripper_action=gripper,
     )
 
@@ -704,18 +659,6 @@ def robot_base_to_worktable_local(
         raise ShakeBenchOracleError("robot-base point must be finite length three")
     transform = _worktable_transform_robot_base(observation, context)
     return transform[:3, :3].T.dot(point - transform[:3, 3])
-
-
-def target_local_to_worktable_local(
-    local_position: np.ndarray, context: WorktableTaskContext | None = None
-) -> np.ndarray:
-    """Convert a target-local point to the rigid worktable frame."""
-
-    context = context or WorktableTaskContext()
-    point = np.asarray(local_position, dtype=float)
-    if point.shape != (3,) or not np.all(np.isfinite(point)):
-        raise ShakeBenchOracleError("target local point must be finite length three")
-    return point + np.asarray(context.target_frame_origin_in_worktable_m, dtype=float)
 
 
 def _pose_transform_from_observation(
@@ -959,22 +902,10 @@ class ShakeBenchOracleController:
         self.last_trace: Optional[dict[str, Any]] = None
 
     @property
-    def profile_sha256(self) -> str:
-        return self.profile.sha256
-
-    @property
-    def task_context_sha256(self) -> str:
-        return self.task_context.sha256
-
-    @property
     def abort_requested(self) -> bool:
         """Return the controller's structured decision to stop acting."""
 
         return self.executive.abort_reason is not None
-
-    @property
-    def controller_context_hash(self) -> str:
-        return hashlib.sha256(f"{self.profile_sha256}:{self.task_context_sha256}".encode("ascii")).hexdigest()
 
     def reset(self) -> None:
         self.executive.reset()
@@ -991,11 +922,10 @@ class ShakeBenchOracleController:
         if self._last_policy_time_s is not None and policy_time <= self._last_policy_time_s + 1.0e-12:
             self.reset()
         # The single-channel gripper command comes from the phase capability.
-        desired_delta, _ = self.executive.command(observation, policy_time)
+        desired_delta = self.executive.command(observation, policy_time)
         estimate = vibration_estimate_from_public_observation(
             observation,
             policy_time_s=policy_time,
-            task_context=self.task_context,
             relative_kinematics=self.executive._relative_kinematics,
         )
         capability_policy = motion_capability_policy(self.executive.phase, self.profile)
@@ -1016,7 +946,6 @@ class ShakeBenchOracleController:
         if not np.all(np.isfinite(normalized)):
             raise ShakeBenchOracleError("controller produced a non-finite action")
         phase_diagnostics = dict(self.executive.diagnostics())
-        phase_diagnostics["task_context_sha256"] = self.task_context_sha256
         phase_diagnostics["table_edge_margin_m"] = self.executive._table_edge_margin_m(observation)
         phase_diagnostics["anchor_error_m"] = (
             None
@@ -1035,8 +964,6 @@ class ShakeBenchOracleController:
                 if self.executive._relative_kinematics is not None
                 else None
             ),
-            "task_context_sha256": self.task_context_sha256,
-            "controller_context_hash": self.controller_context_hash,
             "provider_payload_keys": provider_keys,
             "provider_payload": {key: _public_copy(observation[key]) for key in provider_keys},
             "estimate": estimate.to_dict(),
@@ -1081,7 +1008,6 @@ __all__ = [
     "motion_capability_policy",
     "robot_base_to_worktable_local",
     "target_local_to_robot_base",
-    "target_local_to_worktable_local",
     "vibration_estimate_from_public_observation",
     "validate_motion_capability_map",
     "worktable_local_to_robot_base",

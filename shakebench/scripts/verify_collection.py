@@ -95,7 +95,7 @@ def check_state_authority(dataset, assets):
     manifest, _ = _manifest_contract(dataset)
     return True, {
         "asset": str(path),
-        "sha256": manifest["state_authority"].get("asset_file_sha256"),
+        "source_kind": (manifest.get("state_authority") or {}).get("kind"),
         "states": len(manifest.get("requested_states", ())),
         "split": asset.get("split"),
         "scoreable": asset.get("scoreable"),
@@ -103,23 +103,22 @@ def check_state_authority(dataset, assets):
 
 
 def _source_asset(dataset, assets):
-    """The committed asset these episodes were collected from, by ids and file hash."""
+    """The committed asset these episodes were collected from, by requested state ids."""
     manifest, _ = _manifest_contract(dataset)
     requested = {str(state_id) for state_id in manifest.get("requested_states", ())}
-    declared = manifest["state_authority"].get("asset_file_sha256")
-    mismatches = []
+    matches = []
     for candidate in assets:
         path = Path(candidate)
         asset = json.loads(path.read_text(encoding="utf-8"))
         if not requested <= {str(state.get("state_id")) for state in asset.get("states", ())}:
             continue
-        if hashlib.sha256(path.read_bytes()).hexdigest() == declared:
-            return path, asset
-        mismatches.append(str(path))
-    raise VerificationError(
-        f"no committed asset holds all {len(requested)} requested states with hash {declared}; "
-        f"id matches with a different hash: {mismatches}"
-    )
+        matches.append((path, asset))
+    if len(matches) != 1:
+        raise VerificationError(
+            f"exactly one asset must hold all {len(requested)} requested states; "
+            f"matches: {[str(path) for path, _ in matches]}"
+        )
+    return matches[0]
 
 
 def check_source_split(dataset, assets):

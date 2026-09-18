@@ -93,7 +93,6 @@ def prepare(args):
         "seed": args.seed,
         "minimum_step_inclusive": args.min_step,
         "assets": expected,
-        "dataset_manifest_sha256": camera["manifest_sha256"],
         "states": str(state_path),
         "best_checkpoint_rule": (
             "most successes, then fewest execution " "errors, then highest step over the static sweep"

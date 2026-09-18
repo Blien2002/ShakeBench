@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import hashlib
 import importlib
 import inspect
 import json
@@ -91,8 +90,7 @@ def observation_config_from_collection(path):
 
     source = Path(path)
     manifest_path = source / "meta" / COLLECTION_MANIFEST_NAME if source.is_dir() else source
-    manifest_bytes = manifest_path.read_bytes()
-    manifest = json.loads(manifest_bytes)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("complete") is not True:
         raise ValueError("training dataset manifest must be complete before evaluation")
     info = json.loads((manifest_path.parent / "info.json").read_text(encoding="utf-8"))
@@ -104,7 +102,6 @@ def observation_config_from_collection(path):
         "width": int(shape[1]),
         "train_states": [episode["state"] for episode in manifest["episodes"]],
         "dataset": manifest_path.parent.parent.name,
-        "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "selection_rule": manifest.get("sft_subset", {}).get("selection_rule"),
         "subset_provenance": (
             json.loads(provenance_path.read_text(encoding="utf-8")) if provenance_path.is_file() else None

@@ -19,7 +19,6 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
-from shakebench.utils.artifacts import payload_hash
 from shakebench.utils.calibration import CalibrationError, build_vibration_program, vibration_record
 from shakebench.utils.deck import DeckDriver, DeckDriverConfig, audit_compiled_deck_model
 from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
@@ -65,7 +64,6 @@ from shakebench.utils.scene import (
 )
 from shakebench.utils.sensors import (
     CANONICAL_IMU_PROFILE,
-    CANONICAL_IMU_PROFILE_HASH,
     ShakeBenchSensorError,
 )
 
@@ -1022,8 +1020,6 @@ class VibrationPickPlace(ManipulationEnv):
                 "position_m_in_worktable": list(self.table_imu_position_m),
                 "quaternion_wxyz_in_worktable": list(self.table_imu_quat_wxyz),
                 "profile_id": CANONICAL_IMU_PROFILE.profile_id,
-                "profile_sha256": CANONICAL_IMU_PROFILE_HASH,
-                "sensor_config_sha256": self._imu_mount_audit["sensor_config_sha256"],
             },
             "object": {
                 "mass_kg": float(self.object_mass_kg),
@@ -1046,7 +1042,6 @@ class VibrationPickPlace(ManipulationEnv):
             },
             "target_container": target_spec,
             "task_context": task_context,
-            "task_context_sha256": payload_hash(task_context),
             "support_motion": {
                 "semantic_quantity": "worktable_relative_to_robot_base_motion",
                 "frame": "robot_base",

@@ -7,8 +7,6 @@ enters a success-rate denominator, and which terminal combinations are legal.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import math
 from collections.abc import Mapping
 from typing import Any
@@ -49,14 +47,10 @@ class OutcomeContractError(ValueError):
     """Raised when an outcome record violates the frozen contract."""
 
 
-def _canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-
-
 def outcome_contract() -> dict[str, Any]:
     """Return the immutable outcome authority embedded in every new artifact."""
 
-    payload = {
+    return {
         "schema_id": OUTCOME_CONTRACT_SCHEMA_ID,
         "schema_version": OUTCOME_CONTRACT_SCHEMA_VERSION,
         "episode_validities": sorted(EPISODE_VALIDITIES),
@@ -66,12 +60,6 @@ def outcome_contract() -> dict[str, Any]:
         "task_rule": "registered_finite_illegal_penetration_only",
         "success_authority": "environment_strict_success_latch",
     }
-    payload["contract_sha256"] = hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()
-    return payload
-
-
-def outcome_contract_sha256() -> str:
-    return str(outcome_contract()["contract_sha256"])
 
 
 def validate_outcome(*, episode_validity: Any, score_outcome: Any, termination_cause: Any) -> None:
@@ -191,7 +179,6 @@ __all__ = [
     "TERMINATION_CAUSES",
     "legacy_projection",
     "outcome_contract",
-    "outcome_contract_sha256",
     "resolve_termination_cause",
     "validate_controller_events",
     "validate_outcome",

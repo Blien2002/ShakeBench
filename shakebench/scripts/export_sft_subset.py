@@ -2,15 +2,14 @@
 
 Failed rollouts stay in the source dataset for audit.  The exported copy holds
 only episodes selected by the frozen rule (``success_latched``), renumbered from
-zero so the official LeRobot reader can enumerate it, and records the source
-manifest hash plus the source index of every exported episode, so a trainer can
-prove which demonstrations it consumed.
+zero so the official LeRobot reader can enumerate it, and records a byte-for-byte
+copy of the source manifest plus the source index of every exported episode, so a
+trainer can prove which demonstrations it consumed.
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shutil
 from collections.abc import Mapping, Sequence
@@ -220,13 +219,11 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
     )
     (exported_meta / "info.json").write_text(json.dumps(info, indent=4) + "\n", encoding="utf-8")
 
-    source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
     selection_rule = "all episodes" if include_failures else SELECTION_RULE
     exported_manifest = {
         **{key: value for key, value in manifest.items() if key not in {"episodes", "requested_states", "sft_subset"}},
         "complete": True,
         "source_dataset": dataset.name,
-        "source_manifest_sha256": source_manifest_sha256,
         "requested_states": [episode["state"]["state_id"] for episode in manifest_episodes],
         "episodes": manifest_episodes,
         "sft_subset": {
@@ -242,7 +239,6 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
         "schema_id": "shakebench.sft_subset",
         "schema_version": 2,
         "source_dataset": dataset.name,
-        "source_manifest_sha256": source_manifest_sha256,
         "source_manifest_copy": SOURCE_MANIFEST_FILENAME,
         "selection_rule": selection_rule,
         "source_episode_indices": source_indices,

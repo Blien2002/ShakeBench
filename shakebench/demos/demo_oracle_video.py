@@ -454,8 +454,6 @@ def main(argv: list[str] | None = None) -> int:
             "failure_reason": episode["failure_reason"],
             "termination_category": episode["termination_category"],
             "steps": len(episode["trace"]),
-            "trace_sha256": episode["trace_sha256"],
-            "controller_profile_sha256": episode["controller_profile"]["profile_sha256"],
             "scene_visual": {
                 "scene_id": scene_config.scene_id,
                 "geometry_variant": scene_config.geometry_variant,
