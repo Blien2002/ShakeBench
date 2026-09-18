@@ -78,12 +78,13 @@ def _fmt(values: Iterable[float]) -> str:
 
 
 class ShakeBenchArena(Arena):
-    """Industrial arena with an explicit, isolated canonical worktable.
+    """Industrial arena with an explicit canonical worktable.
 
     The worktable body origin is simultaneously its COM, principal-inertia
-    frame, and isolator elastic centre.  The body is a direct world child in
-    the source XML so :class:`ShakeBenchDeckXMLProcessor` can move it under a
-    generated dynamic deck by the explicit ``isolated_worktable`` role.
+    frame, and (isolated mount) isolator elastic centre.  The body is a direct
+    world child in the source XML so :class:`ShakeBenchDeckXMLProcessor` can
+    move it under a generated dynamic deck by the explicit
+    ``isolated_worktable`` role.
 
     Args:
         table_full_size: Canonical tabletop dimensions.  Non-canonical sizes
@@ -95,6 +96,11 @@ class ShakeBenchArena(Arena):
         table_offset: World position of the tabletop centre's top surface.
         isolator_config: Candidate six-axis natural frequencies, damping
             ratios, reference mass/inertia, and strict limits.
+        worktable_mount: ``isolated`` keeps the six compliant isolator
+            coordinates and applies the derived k/c/springref to them;
+            ``rigid`` removes them so the worktable is welded to the driven
+            deck.  Both mounts keep the tabletop drive, contact geometry,
+            explicit inertial and under-table IMU site.
         visual: Whether the industrial display layer starts visible.  The
             geoms remain in the compiled model either way, so this switch
             cannot alter physics topology or traces.
@@ -114,19 +120,11 @@ class ShakeBenchArena(Arena):
         include_target_container=False,
         xml="arenas/shakebench_arena.xml",
         *,
-        visual_layer=None,
-        visuals_enabled=None,
-        isolation_config=None,
+        worktable_mount="isolated",
         scene_config=None,
     ):
-        if isolation_config is not None:
-            if isolator_config is not None:
-                raise ShakeBenchArenaError("isolator_config and isolation_config specify different inputs")
-            isolator_config = isolation_config
-        if visual_layer is not None:
-            visual = visual_layer
-        if visuals_enabled is not None:
-            visual = visuals_enabled
+        if worktable_mount not in ("isolated", "rigid"):
+            raise ShakeBenchArenaError("worktable_mount must be 'isolated' or 'rigid'")
         if not isinstance(visual, (bool, np.bool_)):
             raise ShakeBenchArenaError("visual must be boolean")
 
@@ -142,6 +140,7 @@ class ShakeBenchArena(Arena):
         self.table_friction = _vector("table_friction", table_friction, 3, nonnegative=True)
         self.table_offset = _vector("table_offset", table_offset, 3)
         self.center_pos = np.asarray(self.table_offset, dtype=float) - np.asarray([0.0, 0.0, self.table_half_size[2]])
+        self.worktable_mount = worktable_mount
         self.isolator_config = self._coerce_isolator_config(isolator_config)
         self.isolator_parameters = derive_isolator_parameters(self.isolator_config)
         self.visual_layer_enabled = bool(visual)
@@ -178,6 +177,12 @@ class ShakeBenchArena(Arena):
             if joint is None:
                 raise ShakeBenchArenaError(f"arena XML is missing isolator joint {joint_name!r}")
             self.isolator_joints[axis] = joint
+        if self.worktable_mount == "rigid":
+            # Removing the six compliant coordinates welds the worktable to
+            # the driven deck.  No other table fact changes.
+            for joint in self.isolator_joints.values():
+                self.table_body.remove(joint)
+            self.isolator_joints = {}
 
         self._refresh_visual_geom_names()
         self.configure_location()
@@ -329,7 +334,7 @@ class ShakeBenchArena(Arena):
         self.set_visual_layer(self.visual_layer_enabled)
 
     def configure_isolator(self, config=None) -> IsolatorParameters:
-        """Apply a candidate's derived ``k/c/springref`` to the six joints."""
+        """Apply the explicit inertial and, when isolated, the derived ``k/c/springref``."""
 
         self.isolator_config = self._coerce_isolator_config(config)
         parameters = derive_isolator_parameters(self.isolator_config)
@@ -342,7 +347,9 @@ class ShakeBenchArena(Arena):
         inertial.set("diaginertia", _fmt(parameters.inertia_kg_m2))
         limits = self.isolator_config.limits
         for index, axis in enumerate(AXES):
-            joint = self.isolator_joints[axis]
+            joint = self.isolator_joints.get(axis)
+            if joint is None:
+                continue
             joint.set("pos", "0 0 0")
             joint.set("axis", _fmt(np.eye(3)[index % 3]))
             joint.set("stiffness", format(parameters.stiffness[index], ".17g"))
@@ -664,7 +671,15 @@ class ShakeBenchArena(Arena):
             raise ShakeBenchArenaError("compiled worktable COM is not at its body origin")
 
         joint_audit = {}
-        for index, axis in enumerate(AXES):
+        if self.worktable_mount == "rigid":
+            owned = [
+                mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
+                for joint_id in range(int(raw_model.njnt))
+                if int(raw_model.jnt_bodyid[joint_id]) == body_id
+            ]
+            if owned:
+                raise ShakeBenchArenaError(f"rigid worktable mount must not own joints: {owned}")
+        for index, axis in enumerate(AXES if self.worktable_mount == "isolated" else ()):
             name = ISOLATOR_JOINT_NAMES[axis]
             joint_id = int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_JOINT, name))
             if joint_id < 0:
@@ -733,6 +748,7 @@ class ShakeBenchArena(Arena):
         result = {
             "body_name": self.worktable_body_name,
             "body_id": body_id,
+            "worktable_mount": self.worktable_mount,
             "mass_kg": float(raw_model.body_mass[body_id]),
             "com_m": np.asarray(raw_model.body_ipos[body_id], dtype=float).tolist(),
             "inertia_kg_m2": np.asarray(raw_model.body_inertia[body_id], dtype=float).tolist(),
@@ -745,13 +761,14 @@ class ShakeBenchArena(Arena):
                 "conaffinity": int(raw_model.geom_conaffinity[collision_id]),
             },
             "physics_signature": {
+                "worktable_mount": self.worktable_mount,
                 "mass_kg": float(raw_model.body_mass[body_id]),
                 "com_m": np.asarray(raw_model.body_ipos[body_id], dtype=float).tolist(),
                 "inertia_kg_m2": np.asarray(raw_model.body_inertia[body_id], dtype=float).tolist(),
-                "joint_names": [ISOLATOR_JOINT_NAMES[axis] for axis in AXES],
-                "stiffness": list(self.isolator_parameters.stiffness),
-                "damping": list(self.isolator_parameters.damping),
-                "springref": list(self.isolator_parameters.springref),
+                "joint_names": [ISOLATOR_JOINT_NAMES[axis] for axis in joint_audit],
+                "stiffness": list(self.isolator_parameters.stiffness) if joint_audit else [],
+                "damping": list(self.isolator_parameters.damping) if joint_audit else [],
+                "springref": list(self.isolator_parameters.springref) if joint_audit else [],
             },
         }
         if int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_BODY, "deck")) >= 0:

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import copy
 import xml.etree.ElementTree as ET
-from pathlib import Path as P
 from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path as P
 
 import mujoco
 import numpy as np
@@ -21,7 +21,12 @@ from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
 from shakebench.utils.calibration import CalibrationError, build_vibration_program, vibration_record
 from shakebench.utils.deck import DeckDriver, DeckDriverConfig, audit_compiled_deck_model
-from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
+from shakebench.utils.geometry import (
+    DEFAULT_GEOMETRY_PROFILE,
+    geometry_scene_path,
+    load_geometry_profile,
+    worktable_mount,
+)
 from shakebench.utils.isolator import AXES as ISOLATOR_AXES
 from shakebench.utils.isolator import static_equilibrium_offset
 from shakebench.utils.metrics import (
@@ -162,7 +167,7 @@ class VibrationPickPlace(ManipulationEnv):
         privileged_recorder=None,
         scene_config=None,
         scene_visual=True,
-        geometry_profile="world_fixed_arm_v1",
+        geometry_profile=DEFAULT_GEOMETRY_PROFILE,
         task=None,
     ):
         from shakebench.utils.tasks import TaskSpec
@@ -198,6 +203,7 @@ class VibrationPickPlace(ManipulationEnv):
         ):
             raise ValueError("target_container_friction must equal the selected physics profile")
         self.geometry_profile = load_geometry_profile(geometry_profile)
+        self.worktable_mount = worktable_mount(geometry_profile)
         geometry = self.geometry_profile
         if base_types not in ("default", geometry["mount_type"]):
             raise ValueError("base_types conflicts with the selected geometry profile")
@@ -537,6 +543,7 @@ class VibrationPickPlace(ManipulationEnv):
             table_friction=self.table_friction,
             table_offset=self.table_offset,
             isolator_config=self.physics_profile.isolator_config(),
+            worktable_mount=self.worktable_mount,
             include_target_container=False,
             visual=self.scene_visual,
             scene_config=self.scene_config,
@@ -796,6 +803,10 @@ class VibrationPickPlace(ManipulationEnv):
         """
 
         self.sim.forward()
+        if self.worktable_mount == "rigid":
+            # A bolted worktable has no compliant coordinates to preload; the
+            # settle below only absorbs the deck weld and object contact.
+            return
         table_id = int(model.body(self.arena.worktable_body_name).id)
         table_position = np.array(data.xpos[table_id], dtype=float, copy=True)
         table_rotation = np.array(data.xmat[table_id], dtype=float).reshape(3, 3)
@@ -986,7 +997,7 @@ class VibrationPickPlace(ManipulationEnv):
             object_collision_lower_support_m=float(self.can_collision_envelope.lower_support_z_m),
             object_collision_upper_support_m=float(self.can_collision_envelope.upper_support_z_m),
             finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
-            support_topology_id="world_fixed_arm_v1",
+            support_topology_id=self.geometry_profile["profile_id"],
             world_to_robot_base_position_m=tuple(robot_base_position),
             world_to_robot_base_quaternion_wxyz=(1.0, 0.0, 0.0, 0.0),
         )
@@ -1011,6 +1022,7 @@ class VibrationPickPlace(ManipulationEnv):
             },
             "worktable": {
                 "dimensions_m": list(self.table_full_size),
+                "mount": self.worktable_mount,
                 "mass_kg": float(self.arena.isolator_parameters.mass_kg),
                 "inertia_kg_m2": list(self.arena.isolator_parameters.inertia_kg_m2),
             },
@@ -1028,7 +1040,7 @@ class VibrationPickPlace(ManipulationEnv):
                     self.can_collision_envelope.to_dict() if hasattr(self, "can_collision_envelope") else None
                 ),
             },
-            "isolator": self.arena.isolator_parameters.to_dict(),
+            "isolator": (self.arena.isolator_parameters.to_dict() if self.worktable_mount == "isolated" else None),
             "friction": {
                 "table_object_sliding_mu": float(self.table_object_sliding_mu),
                 "finger_object_sliding_mu": float(self.finger_object_sliding_mu),
@@ -1046,12 +1058,19 @@ class VibrationPickPlace(ManipulationEnv):
                 "semantic_quantity": "worktable_relative_to_robot_base_motion",
                 "frame": "robot_base",
                 "reference_point": "target_origin",
-                "isolator_fn_hz": self.arena.isolator_parameters.fn_hz,
-                "isolator_zeta": self.arena.isolator_parameters.zeta,
-                "isolator_k": self.arena.isolator_parameters.stiffness,
-                "isolator_c": self.arena.isolator_parameters.damping,
+                "worktable_mount": self.worktable_mount,
+                **(
+                    {
+                        "isolator_fn_hz": self.arena.isolator_parameters.fn_hz,
+                        "isolator_zeta": self.arena.isolator_parameters.zeta,
+                        "isolator_k": self.arena.isolator_parameters.stiffness,
+                        "isolator_c": self.arena.isolator_parameters.damping,
+                    }
+                    if self.worktable_mount == "isolated"
+                    else {}
+                ),
             },
-            "support_topology_id": "world_fixed_arm_v1",
+            "support_topology_id": self.geometry_profile["profile_id"],
             "success_semantics": "phase04_vibration_success_evaluator",
             **({"task": self.task_spec.contract()} if self.task_spec is not None else {}),
         }

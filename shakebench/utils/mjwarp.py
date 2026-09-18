@@ -27,6 +27,7 @@ from shakebench.controllers.osc_warp import (
     set_goals,
 )
 from shakebench.utils.expert import oracle_observation
+from shakebench.utils.geometry import GEOMETRY_PROFILES
 from shakebench.utils.metrics import DEFAULT_SUCCESS_THRESHOLDS
 from shakebench.utils.providers import (
     COMMON_STATE_KEYS,
@@ -295,7 +296,7 @@ class MJWarpBatch:
         self.imu_stride = round(0.005 / self.dt)
         if self.steps != 250 or not np.isclose(self.dt, 0.0002) or self.imu_stride != 25:
             raise ValueError("collector requires the current 5 kHz physics / 20 Hz policy scheduler")
-        if env.geometry_profile["profile_id"] != "world_fixed_arm_v1":
+        if env.geometry_profile["profile_id"] not in GEOMETRY_PROFILES:
             raise ValueError("collector requires the migrated world-fixed scene observation contract")
         signature = self._signature(env)
         if any(self._signature(other) != signature for other in envs):

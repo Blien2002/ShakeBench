@@ -1,4 +1,4 @@
-"""Current world-fixed assembly and its scene configuration."""
+"""Current world-fixed assemblies and their scene configuration."""
 
 import json
 from pathlib import Path
@@ -7,12 +7,33 @@ import numpy as np
 
 from shakebench import models
 
+#: Packaged assemblies: profile id -> (asset filename, schema version, worktable mount).
+#: The schema 2 profile predates the explicit mount field and is always the compliant
+#: six-axis isolation stage, retained as an extension of the rigid core scene.
+GEOMETRY_PROFILES = {
+    "world_fixed_arm_v1": ("shakebench_geometry_world_fixed_arm_v1.json", 2, "isolated"),
+    "world_fixed_rigid_table_v1": ("shakebench_geometry_world_fixed_rigid_table_v1.json", 3, "rigid"),
+}
+DEFAULT_GEOMETRY_PROFILE = "world_fixed_arm_v1"
 
-def load_geometry_profile(profile="world_fixed_arm_v1"):
-    """Load the sole current, hash-bound world-fixed assembly."""
-    if profile != "world_fixed_arm_v1":
-        raise ValueError("geometry_profile must be world_fixed_arm_v1")
-    path = Path(models.assets_root) / "shakebench_geometry_world_fixed_arm_v1.json"
+
+def _profile_spec(profile):
+    try:
+        return GEOMETRY_PROFILES[profile]
+    except (KeyError, TypeError):
+        raise ValueError("geometry_profile must be one of " + ", ".join(GEOMETRY_PROFILES)) from None
+
+
+def worktable_mount(profile=DEFAULT_GEOMETRY_PROFILE):
+    """Return the packaged worktable mount: ``isolated`` or ``rigid``."""
+
+    return _profile_spec(profile)[2]
+
+
+def load_geometry_profile(profile=DEFAULT_GEOMETRY_PROFILE):
+    """Load a packaged world-fixed assembly."""
+    filename, schema_version, mount = _profile_spec(profile)
+    path = Path(models.assets_root) / filename
     try:
         payload = json.loads(path.read_text(), object_pairs_hook=_reject_duplicate_keys)
     except (OSError, json.JSONDecodeError, ValueError) as exc:
@@ -34,10 +55,14 @@ def load_geometry_profile(profile="world_fixed_arm_v1"):
         "mass_inertia_policy",
         "reference",
     }
+    if schema_version >= 3:
+        required.add("worktable_mount")
     if set(payload) != required:
         raise ValueError("world-fixed geometry fields mismatch")
-    if payload["schema_id"] != "shakebench.geometry" or payload["schema_version"] != 2:
+    if payload["schema_id"] != "shakebench.geometry" or payload["schema_version"] != schema_version:
         raise ValueError("invalid geometry profile schema")
+    if payload.get("worktable_mount", mount) != mount:
+        raise ValueError("geometry profile worktable_mount does not match its registered assembly")
     for key in ("robot_base_pos_m", "table_top_pos_m"):
         vector = np.asarray(payload[key], dtype=float)
         if vector.shape != (3,) or not np.all(np.isfinite(vector)):

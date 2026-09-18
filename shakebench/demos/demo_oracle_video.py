@@ -28,7 +28,12 @@ import numpy as np
 from shakebench import models
 from shakebench.environments.vibration_pick_place import WRIST_CAMERA
 from shakebench.scripts.run_oracle import load_dev_states, run_episode
-from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
+from shakebench.utils.geometry import (
+    DEFAULT_GEOMETRY_PROFILE,
+    GEOMETRY_PROFILES,
+    geometry_scene_path,
+    load_geometry_profile,
+)
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController
 from shakebench.utils.scene import load_scene_visual_config
 
@@ -376,7 +381,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--height", type=int, default=int(render_config["default_height"]))
     parser.add_argument("--fps", type=int, default=int(render_config["default_fps"]))
     parser.add_argument("--horizon-steps", type=int, default=1200)
-    parser.add_argument("--geometry-profile", choices=("world_fixed_arm_v1",), default="world_fixed_arm_v1")
+    parser.add_argument("--geometry-profile", choices=tuple(GEOMETRY_PROFILES), default=DEFAULT_GEOMETRY_PROFILE)
     parser.add_argument("--wrist-inset", action="store_true", help="Overlay a synchronized wrist view at bottom right")
     return parser
 

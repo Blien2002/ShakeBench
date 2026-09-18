@@ -26,7 +26,12 @@ from shakebench.utils.dev_states import (
     verify_phase07_dev_state_artifact,
 )
 from shakebench.utils.excitation import build_excitation_program
-from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
+from shakebench.utils.geometry import (
+    DEFAULT_GEOMETRY_PROFILE,
+    GEOMETRY_PROFILES,
+    geometry_scene_path,
+    load_geometry_profile,
+)
 from shakebench.utils.oracle import (
     ORACLE_TASK_KEYS,
     OracleControllerProfile,
@@ -260,12 +265,12 @@ def geometry_authority_identity(geometry_profile: str) -> dict[str, Any]:
 
     from shakebench.utils.runtime_verifier import RUNTIME_CONTRACT_FILENAME
 
-    if geometry_profile != "world_fixed_arm_v1":
-        raise OracleRunError("geometry_profile must be world_fixed_arm_v1")
+    if geometry_profile not in GEOMETRY_PROFILES:
+        raise OracleRunError("geometry_profile must be one of " + ", ".join(GEOMETRY_PROFILES))
     if not (Path(models.assets_root) / RUNTIME_CONTRACT_FILENAME).is_file():
         raise OracleRunError("runtime contract asset missing")
     return {
-        "kind": "world_fixed_arm_v1",
+        "kind": geometry_profile,
         # The current topology still requires fresh experimental certification.
         "scoreable": False,
     }
@@ -420,7 +425,7 @@ def run_episode(
     gamma_commanded: float,
     profile: OracleControllerProfile,
     horizon_steps: int = 1200,
-    geometry_profile: str = "world_fixed_arm_v1",
+    geometry_profile: str = DEFAULT_GEOMETRY_PROFILE,
     hard_reset: bool = True,
     step_observer: Callable[[Any, int, Mapping[str, Any], ShakeBenchOracleController], None] | None = None,
 ) -> dict[str, Any]:
@@ -663,8 +668,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument(
         "--geometry-profile",
-        choices=("world_fixed_arm_v1",),
-        default="world_fixed_arm_v1",
+        choices=tuple(GEOMETRY_PROFILES),
+        default=DEFAULT_GEOMETRY_PROFILE,
         help="explicit assembly profile; direct_mount_v1 remains Phase-07 requalification evidence until authorized",
     )
     args = parser.parse_args(argv)

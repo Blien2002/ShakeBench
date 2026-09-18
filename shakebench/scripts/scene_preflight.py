@@ -13,7 +13,12 @@ import numpy as np
 
 import shakebench
 from shakebench.utils.artifacts import json_ready
-from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
+from shakebench.utils.geometry import (
+    DEFAULT_GEOMETRY_PROFILE,
+    GEOMETRY_PROFILES,
+    geometry_scene_path,
+    load_geometry_profile,
+)
 from shakebench.utils.scene import compiled_physics_signature, load_scene_visual_config
 
 
@@ -24,7 +29,7 @@ def _git_head() -> str | None:
 
 
 def run_preflight(
-    output: str | Path, geometry_profile: str = "world_fixed_arm_v1", preview: str | Path | None = None
+    output: str | Path, geometry_profile: str = DEFAULT_GEOMETRY_PROFILE, preview: str | Path | None = None
 ) -> dict[str, Any]:
     """Compile the native scene and write the machine-readable gate result."""
 
@@ -136,7 +141,7 @@ def run_preflight(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("out/world_fixed_arm/scene_preflight.json"))
-    parser.add_argument("--geometry-profile", choices=("world_fixed_arm_v1",), default="world_fixed_arm_v1")
+    parser.add_argument("--geometry-profile", choices=tuple(GEOMETRY_PROFILES), default=DEFAULT_GEOMETRY_PROFILE)
     parser.add_argument("--preview", type=Path, help="Optional PNG; requires an EGL/MESA renderer")
     args = parser.parse_args(argv)
     report = run_preflight(args.output, geometry_profile=args.geometry_profile, preview=args.preview)
