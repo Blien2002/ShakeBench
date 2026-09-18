@@ -150,34 +150,6 @@ def authored_point_vertical_acceleration(
     )[..., 2]
 
 
-def authored_point_normal_acceleration(
-    motion: MotionSample,
-    point_offset_m: Iterable[float],
-    support_normal: Iterable[float],
-    *,
-    include_centripetal: bool = False,
-) -> np.ndarray:
-    """Return rigid-point acceleration projected onto a support normal."""
-
-    normal = _support_normal(support_normal)
-    acceleration = workpiece_point_acceleration(
-        motion,
-        point_offset_m,
-        include_centripetal=include_centripetal,
-    )
-    return np.einsum("...i,i->...", acceleration, normal)
-
-
-def _axis_statistics(motion: MotionSample) -> tuple[dict[str, float], dict[str, float]]:
-    values = motion.qdd
-    rms = np.sqrt(np.mean(values**2, axis=0))
-    peak = np.max(np.abs(values), axis=0)
-    return (
-        {axis: float(rms[index]) for index, axis in enumerate(AXES)},
-        {axis: float(peak[index]) for index, axis in enumerate(AXES)},
-    )
-
-
 @dataclass(frozen=True)
 class GammaCalibration:
     """Serializable result of an authored-command Gamma calibration.
@@ -221,18 +193,6 @@ class GammaCalibration:
     include_centripetal: bool = False
     gamma_definition: str = "normal_peak_v1"
 
-    @property
-    def peak_factor(self) -> float:
-        """Return the unit-replay peak factor in Gamma units."""
-
-        return self.unit_peak_factor
-
-    @property
-    def Gamma_commanded(self) -> float:  # noqa: N802 - protocol spelling
-        """Return the protocol-spelled authored Gamma scalar."""
-
-        return self.gamma_commanded
-
     def to_dict(self) -> dict[str, Any]:
         """Serialize calibration metrics and the complete unit replay."""
 
@@ -249,16 +209,13 @@ class GammaCalibration:
             "unit_peak_acceleration_m_s2": self.unit_peak_acceleration_m_s2,
             "peak_acceleration_m_s2": self.peak_acceleration_m_s2,
             "unit_peak_factor": self.unit_peak_factor,
-            "peak_factor": self.peak_factor,
             "gamma_commanded": self.gamma_commanded,
-            "Gamma_commanded": self.gamma_commanded,
+            "gamma_definition": self.gamma_definition,
             "per_axis_rms": dict(self.per_axis_rms),
             "per_axis_peak": dict(self.per_axis_peak),
             "unit_replay": dict(self.unit_replay),
             "include_centripetal": self.include_centripetal,
         }
-        if self.gamma_definition != "normal_peak_v1":
-            payload["gamma_definition"] = self.gamma_definition
         return payload
 
 
@@ -309,11 +266,7 @@ def calibrate_gamma(
         config = program.config
         active_axes = program.active_axes
 
-    cfg = authored_program.config if config is None or program is not None else config
-    if not isinstance(cfg, ExcitationConfig):
-        # This branch is only reachable for a mapping passed alongside a
-        # program, which is intentionally not allowed to alter the replay.
-        cfg = authored_program.config
+    cfg = authored_program.config
     times = _time_grid(
         cfg,
         time,
@@ -353,7 +306,9 @@ def calibrate_gamma(
     authored_peak_index = int(np.argmax(np.abs(authored_measure)))
     unit_peak = float(np.max(np.abs(unit_measure)))
     authored_peak = float(np.max(np.abs(authored_measure)))
-    axis_rms, axis_peak = _axis_statistics(authored_motion)
+    qdd = authored_motion.qdd
+    axis_rms = {axis: float(value) for axis, value in zip(AXES, np.sqrt(np.mean(qdd**2, axis=0)))}
+    axis_peak = {axis: float(value) for axis, value in zip(AXES, np.max(np.abs(qdd), axis=0))}
     excitation_config_hash = config_hash(ShakeBenchConfig(options={"excitation": authored_program.config.to_dict()}))
     unit_replay = {
         "schema_id": "shakebench.excitation.unit_replay",
@@ -369,11 +324,10 @@ def calibrate_gamma(
         "config_hash": excitation_config_hash,
         "config": authored_program.config.to_dict(),
         "include_centripetal": bool(include_centripetal),
+        "gamma_definition": gamma_definition,
         "program": unit_program.to_dict(),
         "unit_peak_time_s": float(times[unit_peak_index]),
     }
-    if gamma_definition != "normal_peak_v1":
-        unit_replay["gamma_definition"] = gamma_definition
     return GammaCalibration(
         seed=authored_program.seed,
         t0=authored_program.t0,
@@ -394,26 +348,6 @@ def calibrate_gamma(
         include_centripetal=bool(include_centripetal),
         gamma_definition=gamma_definition,
     )
-
-
-def gamma_commanded(
-    program: ExcitationProgram,
-    time: Any | None = None,
-    **kwargs: Any,
-) -> float:
-    """Return the authored ``Gamma_commanded`` scalar for a program."""
-
-    return calibrate_gamma(program, time=time, **kwargs).gamma_commanded
-
-
-def peak_factor(
-    program: ExcitationProgram,
-    time: Any | None = None,
-    **kwargs: Any,
-) -> float:
-    """Return the unit-level authored peak factor in Gamma units."""
-
-    return calibrate_gamma(program, time=time, **kwargs).unit_peak_factor
 
 
 def level_scale_for_gamma(
@@ -521,23 +455,14 @@ def vibration_record(program: ExcitationProgram) -> dict[str, Any]:
     }
 
 
-calibrate_gamma_command = calibrate_gamma
-compute_gamma = gamma_commanded
-
-
 __all__ = [
     "CalibrationError",
     "GAMMA_DEFINITIONS",
     "GammaCalibration",
-    "authored_point_normal_acceleration",
     "authored_point_vertical_acceleration",
     "build_vibration_program",
     "calibrate_gamma",
-    "calibrate_gamma_command",
-    "compute_gamma",
-    "gamma_commanded",
     "level_scale_for_gamma",
-    "peak_factor",
     "workpiece_point_acceleration",
     "vibration_record",
 ]
