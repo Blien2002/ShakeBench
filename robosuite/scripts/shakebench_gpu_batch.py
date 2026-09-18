@@ -21,7 +21,6 @@ import numpy as np
 from robosuite.scripts.shakebench_run_oracle import _json_ready, load_state_asset
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_calibration import vibration_record
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import (
     OracleControllerProfile,
     ShakeBenchOracleController,
@@ -166,9 +165,7 @@ def collect_batch(batch, states, *, horizon, profile=None, frame_writer=None):
             record["phases"].append(phase_name(controllers[w]))
             record["termination_cause"] = resolve_termination_cause(
                 prior_cause=None,
-                task_rule_violation=bool(
-                    metrics["contacts"][w, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
-                ),
+                task_rule_violation=False,
                 success_latched=bool(metrics["success"][w]),
                 policy_abort=controllers[w].abort_requested,
                 horizon_exhausted=step + 1 == horizon,

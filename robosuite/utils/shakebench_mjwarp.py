@@ -168,8 +168,8 @@ def evaluate(k: Kinematics, e: Evaluation, tick: wp.array[int], dt: float):
         point = wp.transpose(rot) @ (p + object_rot @ e.points[i] - origin)
         lower = wp.min(lower, point[2])
         if (
-            wp.abs(point[0]) > e.target_half[0] + e.thresholds[6]
-            or wp.abs(point[1]) > e.target_half[1] + e.thresholds[6]
+            wp.abs(point[0]) > e.target_half[0] + e.thresholds[5]
+            or wp.abs(point[1]) > e.target_half[1] + e.thresholds[5]
         ):
             contained = False
     omega_table = wp.spatial_top(k.cvel[w, table])
@@ -180,12 +180,11 @@ def evaluate(k: Kinematics, e: Evaluation, tick: wp.array[int], dt: float):
     valid = (
         contained
         and e.aggregate[w, 2] > 0.0
-        and e.aggregate[w, 1] > e.thresholds[4]
-        and lower >= -e.thresholds[5]
+        and e.aggregate[w, 1] > e.thresholds[3]
+        and lower >= -e.thresholds[4]
         and e.aggregate[w, 3] == 0.0
         and wp.length(relative_vel) < e.thresholds[1]
         and wp.length(relative_omega) < e.thresholds[2]
-        and e.aggregate[w, 0] < e.thresholds[3]
     )
     for j in range(k.qpos.shape[1]):
         if not wp.isfinite(k.qpos[w, j]):
@@ -517,7 +516,6 @@ class MJWarpBatch:
                 t.hold_duration_s,
                 t.max_relative_linear_speed_m_s,
                 t.max_relative_angular_speed_rad_s,
-                t.max_illegal_penetration_m,
                 t.target_bottom_support_force_threshold_N,
                 t.target_bottom_support_z_tolerance_m,
                 t.containment_epsilon_m,

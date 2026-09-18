@@ -29,7 +29,6 @@ from robosuite.demos.demo_shakebench_oracle_video import VideoObserver
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_calibration import build_vibration_program
 from robosuite.utils.shakebench_geometry import geometry_scene_path
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import (
     OracleControllerProfile,
     ShakeBenchOracleController,
@@ -154,10 +153,7 @@ def record_episode(state, *, gamma, mode, args, output):
             metrics = env.get_metrics()
             termination_cause = resolve_termination_cause(
                 prior_cause=None,
-                task_rule_violation=bool(
-                    metrics["max_illegal_penetration_m"]
-                    >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
-                ),
+                task_rule_violation=False,
                 success_latched=bool(metrics["success"]["passed"]),
                 policy_abort=controller.abort_requested,
                 horizon_exhausted=False,

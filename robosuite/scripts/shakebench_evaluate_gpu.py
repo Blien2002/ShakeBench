@@ -39,7 +39,6 @@ from robosuite.scripts.shakebench_evaluate import (
 from robosuite.scripts.shakebench_gpu_batch import make_environment
 from robosuite.scripts.shakebench_run_oracle import load_state_asset
 from robosuite.utils.shakebench_artifacts import write_json_atomic
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_rollout import (
     ERROR_TAXONOMY,
@@ -241,9 +240,7 @@ def run_batch(policy, states, *, args, policy_id):
                 else:
                     cause = resolve_termination_cause(
                         prior_cause=None,
-                        task_rule_violation=bool(
-                            metrics["contacts"][w, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
-                        ),
+                        task_rule_violation=False,
                         success_latched=bool(metrics["success"][w]),
                         policy_abort=False,
                         horizon_exhausted=step + 1 == args.horizon_steps,

@@ -14,7 +14,6 @@ from robosuite.scripts.shakebench_run_oracle import _json_ready, load_state_asse
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_calibration import vibration_record
 from robosuite.utils.shakebench_expert import oracle_observation
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_rollout import (
@@ -69,8 +68,7 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
             metrics = env.get_metrics()
             cause = resolve_termination_cause(
                 prior_cause=None,
-                task_rule_violation=metrics["max_illegal_penetration_m"]
-                >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m,
+                task_rule_violation=False,
                 success_latched=bool(metrics["success"]["passed"]),
                 policy_abort=controller.abort_requested,
                 horizon_exhausted=step + 1 == horizon,

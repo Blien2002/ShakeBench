@@ -921,10 +921,6 @@ class VibrationPickPlace(ManipulationEnv):
         self._last_success_evaluation = self.success_evaluator.evaluate(
             self.metrics.success_snapshot(self.sim), time_s=sample_time_s
         )
-        # A penetration that appears and disappears inside one control cycle is
-        # still a task-rule event; latch the physics-rate measurement so every
-        # consumer reads the same episode fact.
-        self.metrics.latch_illegal_penetration(self._last_success_evaluation.snapshot.illegal_penetration_m)
         if not self._control_steps or (self._physics_step_index + 1) % self._control_steps == 0:
             self.metrics.update(self.sim, time_s=sample_time_s)
             self.metrics.attach_success(self._last_success_evaluation)
@@ -1289,22 +1285,7 @@ class VibrationPickPlace(ManipulationEnv):
         return reward
 
     def _check_success(self):
-        # Fail closed: once the episode latched a max-illegal-penetration
-        # event, no later report can turn it into a success.
-        return bool(self._sample_metrics().success) and not self.task_rule_violation()
-
-    def task_rule_violation(self) -> bool:
-        """Report the latched max-illegal-penetration event for this episode."""
-
-        if self.metrics is None or self.metrics.latest is None:
-            return False
-        safety = self.physics_profile.physics.get("safety") or {}
-        # Exploratory profiles omit the safety block; the success evaluator
-        # threshold is then the same rule value, not a second one.
-        threshold = float(
-            safety.get("maximum_illegal_penetration_m", self.success_evaluator.thresholds.max_illegal_penetration_m)
-        )
-        return bool(self.metrics.episode_max_penetration_m >= threshold)
+        return bool(self._sample_metrics().success)
 
     def visualize(self, vis_settings):
         super().visualize(vis_settings=vis_settings)

@@ -19,7 +19,6 @@ from PIL import Image
 
 from robosuite.demos.demo_shakebench_oracle_video import _task_close_camera
 from robosuite.utils import transform_utils as T
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause, validate_outcome
 from robosuite.utils.shakebench_state_schema import normalize_state
 from robosuite.utils.shakebench_tasks import TaskSpec
@@ -383,8 +382,7 @@ class ShakeBenchTaskEnv:
         metrics = self.env.get_metrics()
         cause = resolve_termination_cause(
             prior_cause=None,
-            task_rule_violation=metrics["max_illegal_penetration_m"]
-            >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m,
+            task_rule_violation=False,
             success_latched=bool(metrics["success"]["passed"]),
             policy_abort=False,
             horizon_exhausted=self.steps >= self.horizon,

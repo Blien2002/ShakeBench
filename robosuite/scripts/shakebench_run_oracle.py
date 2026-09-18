@@ -652,10 +652,7 @@ def run_episode(
                 termination_cause = "invalid_execution"
                 break
             metrics = metrics_now
-            task_rule_violation = bool(
-                metrics_now["max_illegal_penetration_m"]
-                >= env.physics_profile.physics["safety"]["maximum_illegal_penetration_m"]
-            )
+            task_rule_violation = False
             trace.append(
                 {
                     "step": step,

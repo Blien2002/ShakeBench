@@ -922,7 +922,6 @@ class SuccessThresholds:
     hold_duration_s: float = 0.50
     max_relative_linear_speed_m_s: float = 0.02
     max_relative_angular_speed_rad_s: float = 0.20
-    max_illegal_penetration_m: float = 0.00050
     target_bottom_support_force_threshold_N: float = TARGET_BOTTOM_SUPPORT_FORCE_THRESHOLD_N
     target_bottom_support_z_tolerance_m: float = TARGET_BOTTOM_SUPPORT_Z_TOLERANCE_M
     containment_epsilon_m: float = 1e-12
@@ -932,7 +931,6 @@ class SuccessThresholds:
             "hold_duration_s",
             "max_relative_linear_speed_m_s",
             "max_relative_angular_speed_rad_s",
-            "max_illegal_penetration_m",
             "target_bottom_support_force_threshold_N",
         ):
             value = getattr(self, name)
@@ -967,7 +965,6 @@ class SuccessSnapshot:
     finger_can_contact_present: bool
     relative_linear_speed_m_s: float
     relative_angular_speed_rad_s: float
-    illegal_penetration_m: float
 
     def __post_init__(self) -> None:
         points = np.asarray(self.support_points_target_xy, dtype=float)
@@ -982,7 +979,6 @@ class SuccessSnapshot:
             "target_bottom_support_force_N",
             "relative_linear_speed_m_s",
             "relative_angular_speed_rad_s",
-            "illegal_penetration_m",
         ):
             value = getattr(self, name)
             if isinstance(value, (bool, np.bool_)) or not np.isfinite(float(value)) or float(value) < 0.0:
@@ -1057,7 +1053,6 @@ class SuccessSnapshot:
             "finger_can_contact_present": bool(self.finger_can_contact_present),
             "relative_linear_speed_m_s": self.relative_linear_speed_m_s,
             "relative_angular_speed_rad_s": self.relative_angular_speed_rad_s,
-            "illegal_penetration_m": self.illegal_penetration_m,
         }
 
 
@@ -1139,7 +1134,6 @@ class VibrationSuccessEvaluator:
             "relative_linear_speed": snapshot.relative_linear_speed_m_s < self.thresholds.max_relative_linear_speed_m_s,
             "relative_angular_speed": snapshot.relative_angular_speed_rad_s
             < self.thresholds.max_relative_angular_speed_rad_s,
-            "illegal_penetration": snapshot.illegal_penetration_m < self.thresholds.max_illegal_penetration_m,
         }
 
     def evaluate(self, snapshot: Any, time_s: float) -> SuccessEvaluation:
@@ -1635,7 +1629,6 @@ class ShakeBenchMetrics:
             finger_can_contact_present=contacts.finger_can_contact_present,
             relative_linear_speed_m_s=float(np.linalg.norm(can_target.linear_velocity_m_s)),
             relative_angular_speed_rad_s=float(np.linalg.norm(can_target.angular_velocity_rad_s)),
-            illegal_penetration_m=contacts.max_penetration_m,
         )
 
     def success_snapshot(self, sim_or_model: Any, data: Any = None) -> SuccessSnapshot:

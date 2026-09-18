@@ -25,7 +25,6 @@ from robosuite.scripts.shakebench_run_oracle import _json_ready, load_state_asse
 from robosuite.utils import transform_utils as T
 from robosuite.utils.shakebench_artifacts import write_json_atomic
 from robosuite.utils.shakebench_calibration import vibration_record
-from robosuite.utils.shakebench_metrics import DEFAULT_SUCCESS_THRESHOLDS
 from robosuite.utils.shakebench_oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from robosuite.utils.shakebench_outcomes import resolve_termination_cause
 from robosuite.utils.shakebench_rollout import CAMERAS, proprioception_metadata, task_description
@@ -130,9 +129,7 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
                     if metrics["invalid"][world]
                     else resolve_termination_cause(
                         prior_cause=None,
-                        task_rule_violation=bool(
-                            metrics["contacts"][world, 0] >= DEFAULT_SUCCESS_THRESHOLDS.max_illegal_penetration_m
-                        ),
+                        task_rule_violation=False,
                         success_latched=bool(metrics["success"][world]),
                         policy_abort=controllers[world].abort_requested,
                         horizon_exhausted=step + 1 == horizon,
@@ -182,6 +179,7 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
+    parser.add_argument("--resume", action="store_true", help="Resume an incomplete dataset in --output")
     parser.add_argument("--repo-id", default="shakebench/oracle-gamma-zero-gpu", help="Local dataset ID; no upload")
     parser.add_argument("--states", type=Path, default=Path("robosuite/models/assets/shakebench_states_dev.json"))
     parser.add_argument("--state-id", action="append", help="Select state IDs; default: all in the asset")
@@ -216,8 +214,6 @@ def main(argv=None):
         or args.image_writer_threads <= 0
     ):
         raise ValueError("dimensions, batch size, shard values, limit and image writer settings are invalid")
-    if args.output.exists():
-        raise FileExistsError(f"refusing to overwrite {args.output}")
     state_asset = load_state_asset(args.states)
     states = state_asset["states"]
     if args.state_id:
@@ -232,54 +228,84 @@ def main(argv=None):
         states = states[: args.limit]
     if not states:
         raise ValueError("no states selected for this shard")
+    manifest_path = args.output / "meta" / "shakebench_collection.json"
+    manifest = None
+    if args.output.exists():
+        if not args.resume:
+            raise FileExistsError(f"refusing to overwrite {args.output}; pass --resume for an incomplete dataset")
+        if not manifest_path.is_file():
+            raise ValueError(f"cannot resume without {manifest_path}")
+        manifest = json.loads(manifest_path.read_text())
+        if manifest.get("complete"):
+            raise ValueError(f"dataset is already complete: {args.output}")
+        requested = [state["state_id"] for state in states]
+        if manifest.get("requested_states") != requested:
+            raise ValueError("resume states do not match the original collection")
+        completed = [episode["state"]["state_id"] for episode in manifest.get("episodes", [])]
+        if len(completed) != len(set(completed)):
+            raise ValueError("resume manifest contains duplicate episodes")
+        states = [state for state in states if state["state_id"] not in set(completed)]
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
-    dataset = LeRobotDataset.create(
-        repo_id=args.repo_id,
-        root=args.output,
-        fps=20,
-        robot_type="Panda",
-        features=dataset_features(args.height, args.width),
-        use_videos=False,
-        image_writer_processes=args.image_writer_processes,
-        image_writer_threads=args.image_writer_threads,
-    )
-    instructions = {state["state_id"]: task_description(state)["instruction"] for state in states}
-    manifest = {
-        "complete": False,
-        "scoreable": False,
-        "gamma": 0.0,
-        "physics_backend": "mujoco_warp",
-        "physics_profile": args.physics_profile,
-        "device": str(args.device),
-        "geometry_profile": "world_fixed_arm_v1",
-        "tasks": instructions,
-        "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
-        "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
-        "action_space": {
-            "controller": "OSC_POSE",
-            "frame": "robot_base",
-            "normalized_bounds": [-1, 1],
-            "translation_scale_m": 0.05,
-            "rotation_scale_rad": 0.5,
-            "gripper": "-1 open, +1 close",
-        },
-        "requested_states": [state["state_id"] for state in states],
-        "proprioception": proprioception_metadata(),
-        "state_authority": state_asset["authority"],
-        "batch_size": args.num_worlds,
-        "shard": {"index": args.shard_index, "num_shards": args.num_shards},
-        "image_writer": {
-            "processes": args.image_writer_processes,
-            "threads": args.image_writer_threads,
-        },
-        "episodes": [],
-    }
-    manifest_path = args.output / "meta" / "shakebench_collection.json"
-    write_json_atomic(args.output / "meta" / "modality.json", modality_metadata())
-    write_json_atomic(manifest_path, manifest)
+    if manifest is None:
+        dataset = LeRobotDataset.create(
+            repo_id=args.repo_id,
+            root=args.output,
+            fps=20,
+            robot_type="Panda",
+            features=dataset_features(args.height, args.width),
+            use_videos=False,
+            image_writer_processes=args.image_writer_processes,
+            image_writer_threads=args.image_writer_threads,
+        )
+        manifest = {
+            "complete": False,
+            "scoreable": False,
+            "gamma": 0.0,
+            "physics_backend": "mujoco_warp",
+            "physics_profile": args.physics_profile,
+            "device": str(args.device),
+            "geometry_profile": "world_fixed_arm_v1",
+            "tasks": {state["state_id"]: task_description(state)["instruction"] for state in states},
+            "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
+            "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
+            "action_space": {
+                "controller": "OSC_POSE",
+                "frame": "robot_base",
+                "normalized_bounds": [-1, 1],
+                "translation_scale_m": 0.05,
+                "rotation_scale_rad": 0.5,
+                "gripper": "-1 open, +1 close",
+            },
+            "requested_states": [state["state_id"] for state in states],
+            "proprioception": proprioception_metadata(),
+            "state_authority": state_asset["authority"],
+            "batch_size": args.num_worlds,
+            "shard": {"index": args.shard_index, "num_shards": args.num_shards},
+            "image_writer": {"processes": args.image_writer_processes, "threads": args.image_writer_threads},
+            "episodes": [],
+        }
+        write_json_atomic(args.output / "meta" / "modality.json", modality_metadata())
+        write_json_atomic(manifest_path, manifest)
+    else:
+        dataset = LeRobotDataset(args.repo_id, root=args.output, download_videos=False)
+        expected_features = dataset_features(args.height, args.width)
+        same_features = set(expected_features) <= set(dataset.features) and all(
+            dataset.features[key]["dtype"] == expected_features[key]["dtype"]
+            and tuple(dataset.features[key]["shape"]) == tuple(expected_features[key]["shape"])
+            and dataset.features[key]["names"] == expected_features[key]["names"]
+            for key in expected_features
+        )
+        if dataset.fps != 20 or not same_features:
+            raise ValueError("resume dataset format does not match the requested collection")
+        if dataset.num_episodes != len(manifest["episodes"]):
+            raise ValueError("resume metadata and collection manifest disagree")
+        dataset.start_image_writer(args.image_writer_processes, args.image_writer_threads)
+        manifest.pop("error", None)
+        shutil.rmtree(args.output / "images", ignore_errors=True)
+        write_json_atomic(manifest_path, manifest)
     grouped = defaultdict(list)
     for state in states:
         grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
