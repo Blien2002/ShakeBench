@@ -1,0 +1,493 @@
+"""Record a reproducible qualitative video of the ShakeBench oracle.
+
+The controller consumes only the current single public observation contract.
+Camera pixels are rendered separately after each policy step and never enter
+the action, trace, success metric, or scientific evidence path.
+
+Example (headless NVIDIA EGL):
+
+    MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m \
+        shakebench.demos.demo_oracle_video \
+        --tier V0 --gamma 0.15 --state-id shakebench-dev-v0-000 \
+        --output out/demo/shakebench_oracle_v0_gamma015.mp4
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+from typing import Any, Mapping
+
+import cv2
+import mujoco
+import numpy as np
+
+from shakebench import models
+from shakebench.environments.vibration_pick_place import WRIST_CAMERA
+from shakebench.scripts.run_oracle import load_dev_states, run_episode
+from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
+from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController
+from shakebench.utils.scene import load_scene_visual_config
+
+DEMO_SCHEMA_ID = "shakebench.oracle_demo_video"
+DEFAULT_STATE_ID = "shakebench-dev-v0-000"
+DEFAULT_OUTPUT = Path("out/demo/shakebench_oracle_v0_gamma015.mp4")
+PRESENTATION_CAMERA = "presentation"
+TASK_CLOSE_CAMERA = "task_close"
+# LIBERO pins the camera behind every benchmark observation in
+# libero/libero/envs/bddl_base_domain.py::BenchmarkEnv._setup_camera: pos
+# [0.5886, 0, 1.4904], quat wxyz [0.6380, 0.3049, 0.3049, 0.6380] for a tabletop
+# centred at (0, 0, 0.8). That "agentview" is camera_names[0] of
+# libero/libero/envs/env_wrapper.py; its sibling "canonical_agentview" is the same
+# pose 0.05 m further back.
+LIBERO_AGENTVIEW_POS_M = (0.5886131746834771, 0.0, 1.4903500240372423)
+LIBERO_AGENTVIEW_QUAT_WXYZ = (0.6380177736282349, 0.3048497438430786, 0.30484986305236816, 0.6380177736282349)
+LIBERO_AGENTVIEW_TABLE_TOP_M = (0.0, 0.0, 0.8)
+LIBERO_AGENTVIEW_TABLE_M = 0.8
+
+
+def _task_close_camera() -> mujoco.MjvCamera:
+    """Return the main task view: LIBERO's agentview pose transplanted onto the ShakeBench deck.
+
+    The camera-to-tabletop offset is scaled by the deck-to-table size ratio, which
+    makes the deck span LIBERO's share of the 45 degree frame (its near corners
+    leave the frame there too); objects are 1/scale closer than in LIBERO.
+    LIBERO's orientation carries no roll, which is what MuJoCo free cameras
+    provide (right axis horizontal to 1e-7).
+    """
+    position, quat, deck_top = task_close_camera_pose()
+    rotated = np.zeros(9)
+    mujoco.mju_quat2Mat(rotated, quat)
+    forward = -rotated.reshape(3, 3)[:, 2]
+    camera = mujoco.MjvCamera()
+    camera.type = mujoco.mjtCamera.mjCAMERA_FREE
+    # Aim the optical axis at the deck plane, as LIBERO's axis lands on its own tabletop.
+    camera.distance = float((position[2] - deck_top[2]) / -forward[2])
+    camera.lookat[:] = position + camera.distance * forward
+    # MuJoCo free-camera convention: forward = (cos el cos az, cos el sin az, sin el).
+    camera.azimuth = float(np.degrees(np.arctan2(forward[1], forward[0])))
+    camera.elevation = float(np.degrees(np.arcsin(forward[2])))
+    return camera
+
+
+def task_close_camera_pose(profile=None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return (position_m, quat_wxyz, deck_top_m) of the main task view in world coordinates.
+
+    Renderers that only accept model cameras (mujoco_warp's ray tracer, for example)
+    use this pose directly, so their images frame the task exactly like the CPU
+    free-camera preset does.
+    """
+    profile = profile or load_geometry_profile()
+    deck_top = np.asarray(profile["table_top_pos_m"], dtype=float)
+    scale = float(profile["retained_table_dimensions_m"][0]) / LIBERO_AGENTVIEW_TABLE_M
+    position = deck_top + scale * (np.array(LIBERO_AGENTVIEW_POS_M) - np.array(LIBERO_AGENTVIEW_TABLE_TOP_M))
+    return position, np.array(LIBERO_AGENTVIEW_QUAT_WXYZ, dtype=float), deck_top
+
+
+class FFmpegVideoWriter:
+    """Stream RGB frames to the system FFmpeg without imageio plugins."""
+
+    def __init__(self, output: Path, *, width: int, height: int, fps: int) -> None:
+        self.width = width
+        self.height = height
+        self.process = subprocess.Popen(
+            [
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-f",
+                "rawvideo",
+                "-pixel_format",
+                "rgb24",
+                "-video_size",
+                f"{width}x{height}",
+                "-framerate",
+                str(fps),
+                "-i",
+                "-",
+                "-an",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "medium",
+                "-crf",
+                "18",
+                "-pix_fmt",
+                "yuv420p",
+                str(output),
+            ],
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+    def append_data(self, frame: np.ndarray) -> None:
+        image = np.asarray(frame, dtype=np.uint8)
+        expected = (self.height, self.width, 3)
+        if image.shape != expected:
+            raise ValueError(f"video frame must have shape {expected}, got {image.shape}")
+        if self.process.stdin is None:
+            raise RuntimeError("FFmpeg stdin is unavailable")
+        self.process.stdin.write(np.ascontiguousarray(image).tobytes())
+
+    def close(self) -> None:
+        if self.process.stdin is not None and not self.process.stdin.closed:
+            self.process.stdin.close()
+        returncode = self.process.wait()
+        detail = self.process.stderr.read().decode("utf-8", errors="replace") if self.process.stderr else ""
+        if returncode != 0:
+            raise RuntimeError(f"FFmpeg exited with {returncode}: {detail.strip()}")
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_head() -> str | None:
+    completed = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=False)
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and len(value) == 40 else None
+
+
+def _git_dirty() -> bool | None:
+    completed = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, check=False)
+    return bool(completed.stdout) if completed.returncode == 0 else None
+
+
+def _phase_label(controller: ShakeBenchOracleController) -> str:
+    trace = controller.last_trace or {}
+    phase = trace.get("phase", {})
+    return str(phase.get("phase", controller.executive.phase.value))
+
+
+def annotate_frame(
+    frame: np.ndarray,
+    *,
+    tier: str,
+    gamma: float,
+    state_id: str,
+    step: int,
+    policy_rate_hz: float,
+    phase: str,
+    success: bool,
+    final: bool = False,
+) -> np.ndarray:
+    """Return a presentation frame with deterministic status overlays."""
+
+    image = np.ascontiguousarray(frame).copy()
+    height, width = image.shape[:2]
+    overlay = image.copy()
+    cv2.rectangle(overlay, (0, 0), (width, 91), (10, 14, 22), thickness=-1)
+    cv2.addWeighted(overlay, 0.76, image, 0.24, 0.0, image)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    lines = (
+        "ShakeBench | VibrationPickPlace | Panda oracle",
+        f"tier={tier}   Gamma={gamma:.2f}   state={state_id}",
+        f"t={step / policy_rate_hz:05.2f}s   step={step:04d}   phase={phase}",
+    )
+    for row, text in enumerate(lines):
+        cv2.putText(image, text, (16, 25 + row * 27), font, 0.57, (245, 248, 252), 1, cv2.LINE_AA)
+    if final:
+        label = "SUCCESS" if success else "NOT COMPLETED"
+        color = (58, 210, 92) if success else (64, 96, 235)
+        scale = max(0.8, min(width, height) / 480.0)
+        size, _ = cv2.getTextSize(label, font, scale, 2)
+        origin = ((width - size[0]) // 2, height - 32)
+        cv2.putText(image, label, origin, font, scale, color, 2, cv2.LINE_AA)
+    return image
+
+
+class VideoObserver:
+    """Render frames after policy steps without affecting policy inputs."""
+
+    def __init__(
+        self,
+        output: Path,
+        *,
+        camera: str,
+        width: int,
+        height: int,
+        fps: int,
+        tier: str,
+        gamma: float,
+        state_id: str,
+        policy_rate_hz: float,
+        scene_config=None,
+        wrist_inset: bool = False,
+        raw: bool = False,
+    ) -> None:
+        self.output = output
+        self.camera = camera
+        self.width = width
+        self.height = height
+        self.fps = fps
+        self.tier = tier
+        self.gamma = gamma
+        self.state_id = state_id
+        self.policy_rate_hz = policy_rate_hz
+        self.wrist_inset = wrist_inset
+        self.raw = raw
+        scene_config = scene_config or load_scene_visual_config()
+        camera_names = {str(camera["name"]) for camera in scene_config.section("cameras").values()}
+        camera_names.update((WRIST_CAMERA, TASK_CLOSE_CAMERA))
+        if camera == PRESENTATION_CAMERA:
+            camera = str(scene_config.section("cameras")["overview"]["name"])
+        if camera not in camera_names:
+            raise ValueError(f"camera must be one of {sorted(camera_names)} or {PRESENTATION_CAMERA!r}")
+        self.camera = camera
+        self.render_camera: str | mujoco.MjvCamera = _task_close_camera() if camera == TASK_CLOSE_CAMERA else camera
+        self.output.parent.mkdir(parents=True, exist_ok=True)
+        self.writer = FFmpegVideoWriter(output, width=width, height=height, fps=fps)
+        self.renderer: mujoco.Renderer | None = None
+        self.scene_option = mujoco.MjvOption()
+        self.scene_option.geomgroup[0] = 0
+        self.scene_option.geomgroup[1] = 1
+        self.last_frame: np.ndarray | None = None
+        self.last_step = 0
+        self.last_phase = "reset"
+
+    def __call__(
+        self,
+        env: Any,
+        step: int,
+        observation: Mapping[str, Any],
+        controller: ShakeBenchOracleController,
+    ) -> None:
+        del observation
+        if self.renderer is None:
+            model = env.sim.model._model
+            model.vis.global_.offwidth = max(model.vis.global_.offwidth, self.width)
+            model.vis.global_.offheight = max(model.vis.global_.offheight, self.height)
+            self.renderer = mujoco.Renderer(
+                model,
+                height=self.height,
+                width=self.width,
+            )
+        self.renderer.update_scene(
+            env.sim.data._data,
+            camera=self.render_camera,
+            scene_option=self.scene_option,
+        )
+        raw = self.renderer.render().copy()
+        if self.wrist_inset:
+            self.renderer.update_scene(
+                env.sim.data._data,
+                camera=WRIST_CAMERA,
+                scene_option=self.scene_option,
+            )
+            inset_width = max(1, self.width // 3)
+            inset_height = max(1, self.height // 3)
+            inset = cv2.resize(self.renderer.render(), (inset_width, inset_height), interpolation=cv2.INTER_AREA)
+            raw[-inset_height:, -inset_width:] = inset
+            cv2.putText(
+                raw,
+                "WRIST",
+                (self.width - inset_width + 4, self.height - inset_height + 16),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
+        metrics = env.get_metrics()
+        self.last_step = step
+        self.last_phase = _phase_label(controller)
+        self.last_frame = (
+            raw
+            if self.raw
+            else annotate_frame(
+                raw,
+                tier=self.tier,
+                gamma=self.gamma,
+                state_id=self.state_id,
+                step=step,
+                policy_rate_hz=self.policy_rate_hz,
+                phase=self.last_phase,
+                success=bool(metrics["success"]["passed"]),
+            )
+        )
+        self.writer.append_data(self.last_frame)
+
+    def close(self, *, success: bool, hold_seconds: float = 1.5) -> None:
+        if self.last_frame is not None and not self.raw:
+            final = self.last_frame.copy()
+            label = "SUCCESS" if success else "NOT COMPLETED"
+            color = (58, 210, 92) if success else (64, 96, 235)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            size, _ = cv2.getTextSize(label, font, 1.0, 2)
+            cv2.putText(
+                final,
+                label,
+                ((final.shape[1] - size[0]) // 2, final.shape[0] - 32),
+                font,
+                1.0,
+                color,
+                2,
+                cv2.LINE_AA,
+            )
+            for _ in range(max(1, round(self.fps * hold_seconds))):
+                self.writer.append_data(final)
+        try:
+            self.writer.close()
+        finally:
+            if self.renderer is not None:
+                self.renderer.close()
+
+
+def _select_state(states: list[dict[str, Any]], state_id: str) -> dict[str, Any]:
+    matches = [state for state in states if state["state_id"] == state_id]
+    if len(matches) != 1:
+        available = ", ".join(state["state_id"] for state in states)
+        raise ValueError(f"unknown state-id {state_id!r}; available: {available}")
+    return matches[0]
+
+
+def build_parser() -> argparse.ArgumentParser:
+    scene_config = load_scene_visual_config()
+    render_config = scene_config.section("render")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--tier",
+        choices=("V0",),
+        default="V0",
+        help="deprecated label for the current single-lane expert; not an observation tier",
+    )
+    parser.add_argument("--gamma", type=float, default=0.15)
+    parser.add_argument("--state-id", default=DEFAULT_STATE_ID)
+    parser.add_argument("--states", type=Path, default=Path(models.assets_root, "shakebench_states_dev.json"))
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--metadata", type=Path, default=None)
+    parser.add_argument(
+        "--camera",
+        default=PRESENTATION_CAMERA,
+        help=(
+            "Scene camera name, robot0_eye_in_hand for wrist, 'presentation' for the scene overview, "
+            "or 'task_close' for a close benchmark-style task view"
+        ),
+    )
+    parser.add_argument("--width", type=int, default=int(render_config["default_width"]))
+    parser.add_argument("--height", type=int, default=int(render_config["default_height"]))
+    parser.add_argument("--fps", type=int, default=int(render_config["default_fps"]))
+    parser.add_argument("--horizon-steps", type=int, default=1200)
+    parser.add_argument("--geometry-profile", choices=("world_fixed_arm_v1",), default="world_fixed_arm_v1")
+    parser.add_argument("--wrist-inset", action="store_true", help="Overlay a synchronized wrist view at bottom right")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if args.gamma < 0.0 or not np.isfinite(args.gamma):
+        raise ValueError("--gamma must be finite and non-negative")
+    if min(args.width, args.height, args.fps, args.horizon_steps) <= 0:
+        raise ValueError("video dimensions, fps, and horizon must be positive")
+    state = _select_state(load_dev_states(args.states), args.state_id)
+    scene_config = load_scene_visual_config(geometry_scene_path(args.geometry_profile))
+    profile = OracleControllerProfile()
+    observer = VideoObserver(
+        args.output,
+        camera=args.camera,
+        width=args.width,
+        height=args.height,
+        fps=args.fps,
+        tier=args.tier,
+        gamma=args.gamma,
+        state_id=args.state_id,
+        policy_rate_hz=profile.policy_rate_hz,
+        scene_config=scene_config,
+        wrist_inset=args.wrist_inset,
+    )
+    try:
+        episode = run_episode(
+            state,
+            gamma_commanded=args.gamma,
+            profile=profile,
+            horizon_steps=args.horizon_steps,
+            step_observer=observer,
+            geometry_profile=args.geometry_profile,
+            # Rendering remains bound to the frozen scene so the visual
+            # diagnostic is interpretable, but this code path never emits a
+            # scoreable raw artifact or Phase 9 measurement authority.
+        )
+    except Exception:
+        observer.close(success=False, hold_seconds=0.0)
+        raise
+    observer.close(success=bool(episode["success"]))
+    metadata_path = args.metadata or args.output.with_suffix(".json")
+    metadata = {
+        "schema_id": DEMO_SCHEMA_ID,
+        "schema_version": 1,
+        "qualitative_only": True,
+        "scoreable_evidence": False,
+        "not_phase09_measurement": True,
+        "geometry_profile": load_geometry_profile(args.geometry_profile),
+        "source": {
+            "base_commit": _git_head(),
+            "worktree_dirty": _git_dirty(),
+            "project_root": str(Path(__file__).resolve().parents[2]),
+            "shakebench_module": str(Path(__file__).resolve().parents[1] / "__init__.py"),
+            "demo_script_sha256": _sha256(Path(__file__)),
+            "oracle_runner_sha256": _sha256(Path(run_episode.__code__.co_filename)),
+        },
+        "video": {
+            "path": str(args.output),
+            "sha256": _sha256(args.output),
+            "bytes": args.output.stat().st_size,
+            "width": args.width,
+            "height": args.height,
+            "fps": args.fps,
+            "camera": observer.camera,
+            "camera_request": args.camera,
+            "wrist_inset_camera": WRIST_CAMERA if args.wrist_inset else None,
+        },
+        "episode": {
+            "state_id": args.state_id,
+            "tier": args.tier,
+            "gamma_commanded": args.gamma,
+            "success": episode["success"],
+            "failure_reason": episode["failure_reason"],
+            "termination_category": episode["termination_category"],
+            "steps": len(episode["trace"]),
+            "trace_sha256": episode["trace_sha256"],
+            "controller_profile_sha256": episode["controller_profile"]["profile_sha256"],
+            "physics_profile_sha256": episode["physics_profile"]["profile_sha256"],
+            "scene_visual": {
+                "scene_id": scene_config.scene_id,
+                "config_sha256": scene_config.config_sha256,
+                "geometry_variant": scene_config.geometry_variant,
+                "physics_effect": scene_config.physics_effect,
+            },
+            "geometry_authority": episode["geometry_authority"],
+            "scoreable": False,
+        },
+    }
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.write_text(
+        json.dumps(metadata, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps({"video": str(args.output), "metadata": str(metadata_path), **metadata["episode"]}, sort_keys=True)
+    )
+    return 0 if episode["success"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+__all__ = [
+    "DEMO_SCHEMA_ID",
+    "FFmpegVideoWriter",
+    "PRESENTATION_CAMERA",
+    "TASK_CLOSE_CAMERA",
+    "VideoObserver",
+    "annotate_frame",
+    "build_parser",
+    "main",
+]

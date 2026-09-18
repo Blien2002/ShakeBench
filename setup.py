@@ -13,7 +13,7 @@ long_description = "".join(lines)
 
 setup(
     name="robosuite",
-    packages=[package for package in find_packages() if package.startswith("robosuite")],
+    packages=[package for package in find_packages() if package.startswith(("robosuite", "shakebench"))],
     install_requires=[
         "numpy>=1.13.3",
         "numba>=0.49.1",
@@ -51,6 +51,15 @@ setup(
             "models/assets/shakebench_scene_visual_v1.json",
             "models/assets/textures/shakebench_*.png",
             "models/assets/textures/shakebench_lab_materials.md",
+        ],
+        "shakebench": [
+            "models/assets/*.json",
+            "models/assets/*.yaml",
+            "models/assets/arenas/*.xml",
+            "models/assets/objects/*.xml",
+            "models/assets/objects/meshes/robocasa_selected/*/*",
+            "models/assets/objects/meshes/robocasa_selected/*.md",
+            "models/assets/textures/*",
         ],
     },
     eager_resources=["*"],

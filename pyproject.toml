@@ -1,7 +1,7 @@
 [tool.black]
 line-length = 120
 target-version = ["py310"]
-extend-exclude = "robosuite/((models/assets)|(controllers/config))"
+extend-exclude = "(robosuite/((models/assets)|(controllers/config)))|(shakebench/models/assets)"
 
 [tool.isort]
 profile = "black"
@@ -12,4 +12,5 @@ py_version = "all"
 extend_skip = [
     "robosuite/models/assets",
     "robosuite/controllers/config",
+    "shakebench/models/assets",
 ]

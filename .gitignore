@@ -113,8 +113,8 @@ MUJOCO_LOG.TXT
 .mujocomanip_temp_model.xml
 
 *.jpg
-!robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.jpg
-!robosuite/models/assets/textures/shakebench_phenolic_bench_dark_1k.png
+!shakebench/models/assets/textures/shakebench_phenolic_bench_dark_1k.jpg
+!shakebench/models/assets/textures/shakebench_phenolic_bench_dark_1k.png
 .idea
 
 .pytest_cache/

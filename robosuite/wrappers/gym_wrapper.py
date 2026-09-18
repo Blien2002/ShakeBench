@@ -73,8 +73,6 @@ class GymWrapper(Wrapper, gym.Env):
             for idx in range(len(self.env.robots)):
                 keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
-        if any(str(key).startswith("privileged_") for key in self.keys):
-            raise ValueError("GymWrapper refuses privileged observation keys")
 
         # Gym specific attributes
         self.env.spec = None

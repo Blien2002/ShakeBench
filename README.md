@@ -1,7 +1,7 @@
 > **ShakeBench 当前场景（2026-09-14）**：`VibrationPickPlace` 是唯一公开任务入口，使用 `world_fixed_arm_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
-> IMU 世界模型计划的 B/C/D 阶段已完成，新场景尚未取得实验认证。Phase 06–08 的选型、发布、handoff、authority 与 evidence 链已删除，当前完整性校验只绑定 physics profile 与 geometry/scene/arena/support 资产（`python -m robosuite.utils.shakebench_runtime_verifier --write` 可重建清单）。桌下 IMU、双相机数据采集和策略接入接口已提供，视频历史/预测器训练仍由独立模块负责。
+> IMU 世界模型计划的 B/C/D 阶段已完成，新场景尚未取得实验认证。Phase 06–08 的选型、发布、handoff、authority 与 evidence 链已删除，当前完整性校验只绑定 physics profile 与 geometry/scene/arena/support 资产（`python -m shakebench.utils.runtime_verifier --write` 可重建清单）。桌下 IMU、双相机数据采集和策略接入接口已提供，视频历史/预测器训练仍由独立模块负责。
 > 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
-> 策略接入见 robosuite/utils/shakebench_websocket_policy.py（WebSocket 策略协议，与具体模型无关），Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
+> ShakeBench 专用代码与资源位于 shakebench/ 包，导入入口为 shakebench.make；robosuite/ 保留通用框架。策略接入见 shakebench/utils/websocket_policy.py（WebSocket 策略协议，与具体模型无关），Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
 
 # robosuite
 

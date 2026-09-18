@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Core Python code lives in `robosuite/`. ShakeBench environments are under `robosuite/environments/manipulation/`, reusable simulation logic under `robosuite/utils/`, command-line entry points under `robosuite/scripts/`, and MuJoCo XML, JSON, and textures under `robosuite/models/assets/`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional third-party trainer integrations live in `integrations/policy_websocket/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture. The `docs/` and `tests/` trees are local working copies: the published repository serves the upstream robosuite versions of those files, so keep local edits there uncommitted.
+Two sibling packages ship from this repository. `robosuite/` is the upstream simulation framework and keeps only generally useful fixes and extension seams. `shakebench/` owns every ShakeBench-specific module and asset: environments under `shakebench/environments/`, runtime utilities under `shakebench/utils/`, controllers under `shakebench/controllers/`, wrappers under `shakebench/wrappers/`, command-line entry points under `shakebench/scripts/`, demos under `shakebench/demos/`, and MuJoCo XML, JSON, and textures under `shakebench/models/assets/`. `shakebench` may import `robosuite`; `robosuite` never imports `shakebench`. Tests mirror these areas in `tests/`, including focused `tests/test_shakebench_*.py` modules. Documentation lives in `docs/`; optional third-party trainer integrations live in `integrations/policy_websocket/`. Treat `out/`, `build/`, caches, videos, and generated datasets as local artifacts unless a change explicitly requires a fixture. The `docs/` and `tests/` trees are local working copies: the published repository serves the upstream robosuite versions of those files, so keep local edits there uncommitted.
 
 ## Build, Test, and Development Commands
 
@@ -11,7 +11,7 @@ Core Python code lives in `robosuite/`. ShakeBench environments are under `robos
 - `python -m pytest` runs the full suite; use `python -m pytest tests/test_shakebench_scene.py` for a focused check.
 - `python -m pytest -m "not renderer"` skips tests requiring EGL, Mesa, or an on-screen renderer.
 - `pre-commit run --all-files` applies Black and isort checks.
-- `python -m robosuite.utils.shakebench_runtime_verifier` validates committed physics and scene assets. Use `--write` only when intentionally updating that contract.
+- `python -m shakebench.utils.runtime_verifier` validates committed physics and scene assets. Use `--write` only when intentionally updating that contract.
 
 ## Coding Style & Naming Conventions
 

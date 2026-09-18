@@ -2,6 +2,9 @@ recursive-include robosuite/controllers/config/ *
 recursive-include robosuite/demos *
 recursive-include robosuite/models/assets/ *
 recursive-include robosuite/scripts *
+recursive-include shakebench/demos *
+recursive-include shakebench/models/assets/ *
+recursive-include shakebench/scripts *
 
 # Phase 06/07 raw traces are release evidence and are verified only through
 # an explicit external evidence archive.  Runtime profiles, compact manifests,
@@ -9,5 +12,8 @@ recursive-include robosuite/scripts *
 recursive-exclude robosuite/models/assets *raw*.json
 recursive-exclude robosuite/models/assets *diagnostic*.json
 recursive-exclude robosuite/models/assets *selected_diagnostics*.json
+recursive-exclude shakebench/models/assets *raw*.json
+recursive-exclude shakebench/models/assets *diagnostic*.json
+recursive-exclude shakebench/models/assets *selected_diagnostics*.json
 global-exclude __pycache__/*
 global-exclude *.py[cod]
