@@ -194,6 +194,7 @@ def main(argv=None):
                 main_camera=args.main_camera,
             )
             manifest["episodes"].append(episode)
+            # ponytail: the growing manifest is rewritten in place; an interrupt mid-write truncates it.
             write_json(manifest_path, manifest)
             print(f"{state['state_id']}: {episode['steps']} steps, {episode['termination_cause']}", flush=True)
         manifest["complete"] = True

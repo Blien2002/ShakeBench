@@ -325,6 +325,7 @@ def main(argv=None):
 
     def record_episode(episode):
         manifest["episodes"].append(episode)
+        # ponytail: the growing manifest is rewritten in place; an interrupt mid-write truncates it.
         write_json(manifest_path, manifest)
         print(
             f"{episode['state']['state_id']}: {episode['steps']} steps, {episode['termination_cause']}",
