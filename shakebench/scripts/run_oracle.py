@@ -25,7 +25,7 @@ import numpy as np
 import shakebench
 from robosuite.controllers import load_composite_controller_config
 from shakebench import models
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import level_scale_for_gamma
 from shakebench.utils.dev_states import (
     PHASE07_DEV_STATE_FILENAME,
@@ -936,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         partial_payload["payload_sha256"] = _digest(partial_payload)
-        write_json_atomic(partial_target, partial_payload)
+        write_json(partial_target, partial_payload)
     payload = {
         "schema_id": RUN_SCHEMA_ID,
         "schema_version": RUN_SCHEMA_VERSION,
@@ -1005,7 +1005,7 @@ def main(argv: list[str] | None = None) -> int:
             "start_timestamp_s": time.time(),
         }
     payload["payload_sha256"] = _digest(payload)
-    write_json_atomic(target, payload)
+    write_json(target, payload)
     if partial_target.exists():
         partial_target.unlink()
     print(

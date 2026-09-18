@@ -27,7 +27,7 @@ import shakebench
 from robosuite.controllers import load_composite_controller_config
 from shakebench import models
 from shakebench.demos.demo_oracle_video import VideoObserver
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.expert import oracle_observation
 from shakebench.utils.geometry import geometry_scene_path
@@ -243,7 +243,7 @@ def main(argv=None):
         output = args.output_dir / f"gamma_{gamma:.2f}.mp4"
         episode = record_episode(state, gamma=gamma, mode=args.mode, args=args, output=output)
         summary["episodes"].append(episode)
-        write_json_atomic(args.output_dir / "summary.json", summary)
+        write_json(args.output_dir / "summary.json", summary)
         print(json.dumps(episode, sort_keys=True), flush=True)
     return 0 if all(episode["success"] for episode in summary["episodes"]) else 1
 

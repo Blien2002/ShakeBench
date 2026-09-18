@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.dev_states import CAN_XY_HALF_RANGE_M
 from shakebench.utils.train_states import build_train_state_artifact, verify_train_state_artifact
 
@@ -24,7 +24,7 @@ def main(argv=None):
     if not verdict["passed"]:
         raise RuntimeError(f"generated train artifact failed verification: {verdict['checks']}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    write_json_atomic(args.output, payload)
+    write_json(args.output, payload)
     print(f"{len(payload['states'])} train states -> {args.output}")
     print(f"payload_sha256={payload['artifact_lock']['payload_sha256']}")
     return 0

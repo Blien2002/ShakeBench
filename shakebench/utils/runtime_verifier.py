@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from shakebench.utils.artifacts import file_sha256, payload_hash, write_json_atomic
+from shakebench.utils.artifacts import file_sha256, payload_hash, write_json
 
 RUNTIME_CONTRACT_FILENAME = "shakebench_runtime_contract.json"
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
@@ -98,11 +98,13 @@ def build_runtime_contract(asset_root: str | Path) -> dict[str, Any]:
     return contract
 
 
-def write_runtime_contract(asset_root: str | Path) -> str:
+def write_runtime_contract(asset_root: str | Path) -> Path:
     """Rewrite the compact contract from the current assets."""
 
     root = Path(asset_root).resolve()
-    return write_json_atomic(root / RUNTIME_CONTRACT_FILENAME, build_runtime_contract(root))
+    path = root / RUNTIME_CONTRACT_FILENAME
+    write_json(path, build_runtime_contract(root))
+    return path
 
 
 def verify_runtime_publication_bundle(asset_root: str | Path, *, include_profile: bool = False) -> dict[str, Any]:
@@ -196,8 +198,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write", action="store_true", help="rewrite the contract from the current assets")
     args = parser.parse_args(argv)
     if args.write:
-        digest = write_runtime_contract(args.asset_root)
-        print(f"wrote {RUNTIME_CONTRACT_FILENAME} {digest}")
+        path = write_runtime_contract(args.asset_root)
+        print(f"wrote {path}")
         return 0
     result = verify_runtime_publication_bundle(args.asset_root, include_profile=True)
     payload = {key: value for key, value in result.items() if key != "profile_payload"}

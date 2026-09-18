@@ -38,7 +38,7 @@ from shakebench.scripts.evaluate import (
 )
 from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.outcomes import resolve_termination_cause
 from shakebench.utils.rollout import (
     ERROR_TAXONOMY,
@@ -406,7 +406,7 @@ def main(argv=None):
         }
 
     def save_results():
-        write_json_atomic(args.output, result_payload())
+        write_json(args.output, result_payload())
 
     grouped = {}
     for state in states:

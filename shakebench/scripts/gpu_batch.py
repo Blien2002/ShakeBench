@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
 from shakebench.utils.oracle import (
     OracleControllerProfile,
@@ -288,7 +288,7 @@ def main(argv=None):
     started = time.perf_counter()
     profile = OracleControllerProfile()
     manifest["controller_profile"] = profile.to_dict()
-    write_json_atomic(args.output / "manifest.json", manifest)
+    write_json(args.output / "manifest.json", manifest)
     for group in grouped.values():
         for begin in range(0, len(group), args.num_worlds):
             selected = group[begin : begin + args.num_worlds]
@@ -405,7 +405,7 @@ def main(argv=None):
                             **{key: meta[key] for key in ("episode_validity", "score_outcome", "termination_cause")},
                         }
                     )
-                write_json_atomic(args.output / "manifest.json", manifest)
+                write_json(args.output / "manifest.json", manifest)
                 print(
                     f"Collected {len(manifest['episodes'])}/{len(states) * len(gammas)} episodes; batch rollout {elapsed:.2f}s",
                     flush=True,
@@ -419,7 +419,7 @@ def main(argv=None):
     manifest["valid_episodes_per_hour"] = (
         sum(e["episode_validity"] == "valid" for e in manifest["episodes"]) * 3600 / manifest["wall_time_s"]
     )
-    write_json_atomic(args.output / "manifest.json", manifest)
+    write_json(args.output / "manifest.json", manifest)
     return 0
 
 

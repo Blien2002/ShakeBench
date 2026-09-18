@@ -12,7 +12,7 @@ from shakebench import models
 from shakebench.scripts.export_sft_subset import sft_subset_summary
 from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
 from shakebench.utils.expert import oracle_observation
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
@@ -181,8 +181,8 @@ def main(argv=None):
         "episodes": [],
     }
     manifest_path = args.output / "meta" / "shakebench_collection.json"
-    write_json_atomic(args.output / "meta" / "modality.json", modality_metadata())
-    write_json_atomic(manifest_path, manifest)
+    write_json(args.output / "meta" / "modality.json", modality_metadata())
+    write_json(manifest_path, manifest)
     try:
         for state in states:
             episode = collect_episode(
@@ -194,7 +194,7 @@ def main(argv=None):
                 main_camera=args.main_camera,
             )
             manifest["episodes"].append(episode)
-            write_json_atomic(manifest_path, manifest)
+            write_json(manifest_path, manifest)
             print(f"{state['state_id']}: {episode['steps']} steps, {episode['termination_cause']}", flush=True)
         manifest["complete"] = True
     except BaseException as exc:
@@ -204,7 +204,7 @@ def main(argv=None):
         # Training consumes the success-only selection; every attempt stays in
         # this manifest so failures remain auditable.
         manifest["sft_subset"] = sft_subset_summary(manifest["episodes"])
-        write_json_atomic(manifest_path, manifest)
+        write_json(manifest_path, manifest)
     return 0
 
 

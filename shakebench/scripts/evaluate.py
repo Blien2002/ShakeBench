@@ -24,7 +24,7 @@ from pathlib import Path
 from shakebench import models
 from shakebench.scripts.export_sft_subset import SUBSET_PROVENANCE_FILENAME
 from shakebench.scripts.run_oracle import load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.rollout import (
     OBSERVATION_SOURCES,
     ShakeBenchTaskEnv,
@@ -247,7 +247,7 @@ def main(argv=None):
 
         payload = result_payload()
         if args.output is not None:
-            write_json_atomic(args.output, payload)
+            write_json(args.output, payload)
         return payload
 
     try:

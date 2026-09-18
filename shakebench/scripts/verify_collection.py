@@ -29,7 +29,7 @@ from PIL import Image
 from shakebench import models
 from shakebench.scripts.export_sft_subset import COLLECTION_MANIFEST_FILENAME, is_successful_episode
 from shakebench.scripts.run_oracle import load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.rollout import STATE_NAMES, task_description
 from shakebench.utils.train_states import split_overlap
 
@@ -374,7 +374,7 @@ def main(argv=None):
     report["passed"] = all(check["passed"] for check in report["checks"].values())
     report["failed_checks"] = sorted(name for name, check in report["checks"].items() if not check["passed"])
     if args.report is not None:
-        write_json_atomic(args.report, report)
+        write_json(args.report, report)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0 if report["passed"] else 1
 

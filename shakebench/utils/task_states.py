@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from shakebench import models
-from shakebench.utils.artifacts import payload_hash, write_json_atomic
+from shakebench.utils.artifacts import payload_hash, write_json
 from shakebench.utils.committed_states import build_committed_state_artifact
 from shakebench.utils.tasks import OBJECT_SUPPORT, task_initial_yaw_rad, task_variants
 
@@ -121,7 +121,7 @@ def freeze_task_state_assets(directory=None):
     for split, filename in TASK_STATE_FILENAMES.items():
         payload = build_task_state_artifact(split)
         path = destination / filename
-        write_json_atomic(path, payload)
+        write_json(path, payload)
         verdict = verify_task_state_artifact(path, expected_split=split)
         if not verdict["passed"]:
             raise ValueError(verdict["errors"])

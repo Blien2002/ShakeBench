@@ -26,7 +26,7 @@ import yaml
 
 from shakebench.scripts.evaluate import observation_config_from_collection
 from shakebench.scripts.gpu_batch import make_environment
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.train_states import assert_split_disjoint, build_train_state_artifact
 
 
@@ -86,7 +86,7 @@ def prepare(args):
         if json.loads(state_path.read_text()) != payload:
             raise ValueError("existing fresh state artifact differs; use a new output directory")
     else:
-        write_json_atomic(state_path, payload)
+        write_json(state_path, payload)
     contract = {
         "gamma": 0,
         "episodes_per_checkpoint": 20,
@@ -105,7 +105,7 @@ def prepare(args):
     contract_path = args.output / "contract.json"
     if contract_path.exists() and json.loads(contract_path.read_text()) != contract:
         raise ValueError("evaluation contract changed since preparation")
-    write_json_atomic(contract_path, contract)
+    write_json(contract_path, contract)
     return state_path, expected
 
 
@@ -301,7 +301,7 @@ def main():
                 row = summarize_rollouts(destination, states, assets, step=step)
                 rows.append(row)
                 rows.sort(key=lambda item: item["step"])
-                write_json_atomic(args.output / "summary.json", {"checkpoints": rows})
+                write_json(args.output / "summary.json", {"checkpoints": rows})
                 with (args.output / "summary.csv").open("w", newline="") as stream:
                     writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
                     writer.writeheader()
@@ -343,13 +343,13 @@ def main():
                 row = summarize_rollouts(destination, states, assets, gamma=gamma)
                 shaken.append(row)
                 shaken.sort(key=lambda item: item["gamma"])
-                write_json_atomic(args.output / "shaken_summary.json", {"best_step": best["step"], "gammas": shaken})
+                write_json(args.output / "shaken_summary.json", {"best_step": best["step"], "gammas": shaken})
                 with (args.output / "shaken_summary.csv").open("w", newline="") as stream:
                     writer = csv.DictWriter(stream, fieldnames=list(shaken[0]))
                     writer.writeheader()
                     writer.writerows(shaken)
                 print(row, flush=True)
-        write_json_atomic(
+        write_json(
             args.output / "completed.json",
             {
                 "checkpoints": len(rows),

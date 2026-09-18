@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from shakebench import models
-from shakebench.utils.artifacts import payload_hash, write_json_atomic
+from shakebench.utils.artifacts import payload_hash, write_json
 from shakebench.utils.dev_states import PHASE07_DEV_STATE_FILENAME, verify_phase07_dev_state_artifact
 from shakebench.utils.oracle import OracleControllerProfile
 from shakebench.utils.outcomes import outcome_contract_sha256
@@ -306,8 +306,8 @@ def freeze_committed_state_assets(directory: str | Path | None = None) -> dict[s
     knee = build_committed_state_artifact("knee")
     official_path = destination / OFFICIAL_STATE_FILENAME
     knee_path = destination / KNEE_STATE_FILENAME
-    write_json_atomic(official_path, official)
-    write_json_atomic(knee_path, knee)
+    write_json(official_path, official)
+    write_json(knee_path, knee)
     verdict = verify_committed_state_pair(official_path, knee_path)
     if not verdict["passed"]:
         raise Phase08StateError("post-write verification failed: " + ", ".join(verdict["errors"]))

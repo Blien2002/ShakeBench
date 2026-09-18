@@ -1,8 +1,7 @@
-"""Canonical, atomic artifact primitives for new Phase 06 selection runs.
+"""JSON artifact primitives for ShakeBench result files.
 
-Archived V1/V2/V3 writers keep their historical canonicalization rules. New
-V4 artifacts use these primitives so hashes, raw-file manifests, and writes
-have one auditable implementation.
+Writes are ordinary open/write/close: no temporary file, no rename step, and
+no digest of the written bytes.
 """
 
 from __future__ import annotations
@@ -50,19 +49,12 @@ def payload_hash(value: Mapping[str, Any], field: str = "payload_sha256") -> str
     return sha256_json(content)
 
 
-def write_json_atomic(path: str | Path, payload: Mapping[str, Any]) -> str:
-    """Write one JSON artifact atomically and return its file SHA-256."""
+def write_json(path: str | Path, payload: Mapping[str, Any]) -> None:
+    """Write one JSON artifact."""
 
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(destination.name + ".tmp")
-    temporary.write_text(
+    destination.write_text(
         json.dumps(json_ready(payload), ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
-    temporary.replace(destination)
-    return file_sha256(destination)
-
-
-def verify_payload_hash(payload: Mapping[str, Any], field: str = "payload_sha256") -> bool:
-    return payload.get(field) == payload_hash(payload, field=field)

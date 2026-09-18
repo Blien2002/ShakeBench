@@ -22,7 +22,7 @@ from shakebench.scripts.evaluate import (
     summarize,
 )
 from shakebench.scripts.run_oracle import load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.async_policy import AsyncPolicy, PacedTask
 from shakebench.utils.rollout import ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
 from shakebench.utils.train_states import assert_split_disjoint, split_overlap
@@ -98,7 +98,7 @@ def main(argv=None):
 
     def save():
         if args.output is not None:
-            write_json_atomic(args.output, payload())
+            write_json(args.output, payload())
 
     policy = None
     try:

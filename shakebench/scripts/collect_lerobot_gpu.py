@@ -26,7 +26,7 @@ from shakebench.scripts.collect_lerobot import dataset_features
 from shakebench.scripts.export_sft_subset import sft_subset_summary
 from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
-from shakebench.utils.artifacts import write_json_atomic
+from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from shakebench.utils.outcomes import resolve_termination_cause
@@ -300,8 +300,8 @@ def main(argv=None):
             "image_writer": {"processes": args.image_writer_processes, "threads": args.image_writer_threads},
             "episodes": [],
         }
-        write_json_atomic(args.output / "meta" / "modality.json", modality_metadata())
-        write_json_atomic(manifest_path, manifest)
+        write_json(args.output / "meta" / "modality.json", modality_metadata())
+        write_json(manifest_path, manifest)
     else:
         dataset = LeRobotDataset(args.repo_id, root=args.output, download_videos=False)
         expected_features = dataset_features(args.height, args.width)
@@ -318,14 +318,14 @@ def main(argv=None):
         dataset.start_image_writer(args.image_writer_processes, args.image_writer_threads)
         manifest.pop("error", None)
         shutil.rmtree(args.output / "images", ignore_errors=True)
-        write_json_atomic(manifest_path, manifest)
+        write_json(manifest_path, manifest)
     grouped = defaultdict(list)
     for state in states:
         grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
 
     def record_episode(episode):
         manifest["episodes"].append(episode)
-        write_json_atomic(manifest_path, manifest)
+        write_json(manifest_path, manifest)
         print(
             f"{episode['state']['state_id']}: {episode['steps']} steps, {episode['termination_cause']}",
             flush=True,
@@ -352,7 +352,7 @@ def main(argv=None):
     finally:
         dataset.stop_image_writer()
         manifest["sft_subset"] = sft_subset_summary(manifest["episodes"])
-        write_json_atomic(manifest_path, manifest)
+        write_json(manifest_path, manifest)
     return 0
 
 
