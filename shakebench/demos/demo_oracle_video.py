@@ -456,10 +456,8 @@ def main(argv: list[str] | None = None) -> int:
             "steps": len(episode["trace"]),
             "trace_sha256": episode["trace_sha256"],
             "controller_profile_sha256": episode["controller_profile"]["profile_sha256"],
-            "physics_profile_sha256": episode["physics_profile"]["profile_sha256"],
             "scene_visual": {
                 "scene_id": scene_config.scene_id,
-                "config_sha256": scene_config.config_sha256,
                 "geometry_variant": scene_config.geometry_variant,
                 "physics_effect": scene_config.physics_effect,
             },

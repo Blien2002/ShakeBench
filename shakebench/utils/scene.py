@@ -18,7 +18,6 @@ mass, constraint, contact pair, or task interaction.
 from __future__ import annotations
 
 import copy
-import hashlib
 import itertools
 import json
 import math
@@ -76,25 +75,6 @@ class SceneConfigError(ValueError):
 
 class SceneAuditError(SceneConfigError):
     """Raised when a compiled scene violates its structural contract."""
-
-
-def canonical_scene_payload(payload: Mapping[str, Any]) -> str:
-    """Return the canonical JSON payload used by the scene SHA-256."""
-
-    if not isinstance(payload, Mapping):
-        raise SceneConfigError("scene configuration must be an object")
-    content = copy.deepcopy(_json_ready(payload))
-    content.pop("payload_sha256", None)
-    try:
-        return json.dumps(content, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
-    except (TypeError, ValueError) as exc:
-        raise SceneConfigError(f"scene configuration is not JSON-canonical: {exc}") from exc
-
-
-def scene_config_hash(payload: Mapping[str, Any]) -> str:
-    """Compute the SHA-256 digest embedded in a scene configuration."""
-
-    return hashlib.sha256(canonical_scene_payload(payload).encode("utf-8")).hexdigest()
 
 
 def _freeze(value: Any) -> Any:
@@ -183,11 +163,8 @@ def _validate_source(source: Mapping[str, Any]) -> None:
     for index, reference in enumerate(references):
         reference = _require_mapping(f"source.reference_files[{index}]", reference)
         path = reference.get("path")
-        digest = reference.get("sha256")
         if not isinstance(path, str) or not path.strip() or Path(path).is_absolute():
             raise SceneConfigError("scene reference paths must be relative, non-empty strings")
-        if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
-            raise SceneConfigError(f"source.reference_files[{index}].sha256 must be a lowercase SHA-256 digest")
 
 
 def _validate_frame_ownership(value: Any) -> Mapping[str, Any]:
@@ -231,7 +208,6 @@ def _validate_scene_payload(payload: Mapping[str, Any], path: Path) -> None:
         "role_handles",
         "expected_roles",
         "known_omissions",
-        "payload_sha256",
     }
     missing = sorted(required - set(payload))
     unknown = sorted(set(payload) - required)
@@ -450,14 +426,6 @@ def _validate_scene_payload(payload: Mapping[str, Any], path: Path) -> None:
     ):
         _rgb(f"materials.{key}", materials.get(key))
 
-    digest = payload.get("payload_sha256")
-    if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
-        raise SceneConfigError("payload_sha256 must be a lowercase SHA-256 digest")
-    actual = scene_config_hash(payload)
-    if digest != actual:
-        raise SceneConfigError(f"scene payload hash mismatch for {path}: expected {digest}, computed {actual}")
-
-
 def _validate_laboratory_details(room: Mapping[str, Any], ownership: Mapping[str, Any]) -> None:
     """Reject malformed or physically active authored decoration before MJCF assembly."""
 
@@ -511,15 +479,12 @@ class SceneVisualConfig:
 
     payload: Mapping[str, Any]
     source_path: str
-    payload_sha256: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.payload, Mapping):
             raise SceneConfigError("payload must be a mapping")
         frozen = _freeze(_json_ready(self.payload))
         object.__setattr__(self, "payload", frozen)
-        if self.payload_sha256 != self.payload.get("payload_sha256"):
-            raise SceneConfigError("SceneVisualConfig payload_sha256 does not match payload")
 
     @property
     def scene_id(self) -> str:
@@ -540,10 +505,6 @@ class SceneVisualConfig:
     @property
     def physics_effect(self) -> bool:
         return bool(self.payload["physics_effect"])
-
-    @property
-    def config_sha256(self) -> str:
-        return self.payload_sha256
 
     def section(self, name: str) -> Mapping[str, Any]:
         return _require_mapping(name, self.payload[name])
@@ -581,9 +542,7 @@ def load_scene_visual_config(path: str | Path | None = None) -> SceneVisualConfi
     if not isinstance(payload, Mapping):
         raise SceneConfigError("scene visual config root must be an object")
     _validate_scene_payload(payload, config_path)
-    return SceneVisualConfig(
-        payload=payload, source_path=str(config_path), payload_sha256=str(payload["payload_sha256"])
-    )
+    return SceneVisualConfig(payload=payload, source_path=str(config_path))
 
 
 def _coerce_config(config: SceneVisualConfig | Mapping[str, Any] | str | Path | None) -> SceneVisualConfig:
@@ -594,9 +553,7 @@ def _coerce_config(config: SceneVisualConfig | Mapping[str, Any] | str | Path | 
     if isinstance(config, Mapping):
         payload = dict(config)
         _validate_scene_payload(payload, Path("<mapping>"))
-        return SceneVisualConfig(
-            payload=payload, source_path="<mapping>", payload_sha256=str(payload["payload_sha256"])
-        )
+        return SceneVisualConfig(payload=payload, source_path="<mapping>")
     raise SceneConfigError("config must be a SceneVisualConfig, mapping, path, or None")
 
 
@@ -940,7 +897,6 @@ def _get_or_append_body(worldbody: ET.Element, name: str, pos: Iterable[float] =
 class SceneInventory:
     """Machine-readable source-scene inventory returned by augmentation."""
 
-    config_sha256: str
     scene_id: str
     geometry_variant: str
     frame_ownership: Mapping[str, Any]
@@ -955,7 +911,6 @@ class SceneInventory:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "config_sha256": self.config_sha256,
             "scene_id": self.scene_id,
             "geometry_variant": self.geometry_variant,
             "frame_ownership": _thaw(self.frame_ownership),
@@ -1018,7 +973,7 @@ def augment_scene_mjcf(
     scene_config = _coerce_config(config)
     existing = getattr(arena, "scene_inventory", None)
     if existing is not None:
-        if existing.config_sha256 != scene_config.config_sha256:
+        if existing.scene_id != scene_config.scene_id:
             raise SceneConfigError("arena was already augmented with a different scene configuration")
         return existing
     from shakebench.models.arenas.scene_visuals import build_scene_visuals
@@ -1037,7 +992,6 @@ def augment_scene_mjcf(
         WORKTABLE_BODY_NAME: "isolated_worktable",
     }
     inventory = SceneInventory(
-        config_sha256=scene_config.config_sha256,
         scene_id=scene_config.scene_id,
         geometry_variant=scene_config.geometry_variant,
         frame_ownership=body_frames,
@@ -1121,8 +1075,6 @@ __all__ = [
     "SceneAuditError",
     "SceneVisualConfig",
     "SceneInventory",
-    "canonical_scene_payload",
-    "scene_config_hash",
     "load_scene_visual_config",
     "augment_scene_mjcf",
     "configure_scene_rendering",

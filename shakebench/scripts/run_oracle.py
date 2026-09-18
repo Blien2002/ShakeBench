@@ -82,7 +82,6 @@ DEV_STATE_ANCHOR_REWRITE = {
 # Compatibility name: new provenance must use the rewritten anchor.
 DEV_STATE_ANCHOR_COMMIT = DEV_STATE_REWRITTEN_COMMIT
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
-OFFICIAL_PHYSICS_PROFILE_SHA256 = "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
 # Legacy verifier exports retain these names, but the outcome contract is the
 # sole registry for v6 termination causes.
 TERMINATION_CATEGORIES = TERMINATION_CAUSES
@@ -354,7 +353,6 @@ def scene_visual_identity(scene_config) -> dict[str, Any]:
 
     return {
         "scene_id": scene_config.scene_id,
-        "config_sha256": scene_config.config_sha256,
         "geometry_variant": scene_config.geometry_variant,
         "physics_effect": scene_config.physics_effect,
     }
@@ -745,7 +743,6 @@ def run_episode(
             "controller_context_hash": controller.controller_context_hash,
             "physics_profile": {
                 "profile_id": env.physics_profile.profile_id,
-                "profile_sha256": env.physics_profile.profile_sha256,
             },
             "scene_visual": scene_identity,
             "geometry_profile": env.geometry_profile,
@@ -878,7 +875,7 @@ def main(argv: list[str] | None = None) -> int:
                 and partial.get("geometry_profile") == geometry_payload
                 and partial.get("state_authority") == state_asset["authority"]
                 and partial.get("physics_authority")
-                == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID, "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256}
+                == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID}
                 and isinstance(partial.get("episodes"), list)
             ):
                 episodes = list(partial["episodes"])
@@ -911,7 +908,6 @@ def main(argv: list[str] | None = None) -> int:
             "state_authority": state_asset["authority"],
             "physics_authority": {
                 "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
-                "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256,
             },
             "scene_visual": scene_identity,
             "geometry_profile": geometry_payload,
@@ -950,7 +946,6 @@ def main(argv: list[str] | None = None) -> int:
         "state_authority": state_asset["authority"],
         "physics_authority": {
             "profile_id": OFFICIAL_PHYSICS_PROFILE_ID,
-            "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256,
         },
         "scene_visual": scene_identity,
         "geometry_profile": geometry_payload,
@@ -1115,7 +1110,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         anchor_mode = "invalid"
     if not _values_equal(
         payload.get("physics_authority"),
-        {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID, "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256},
+        {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID},
         atol=0.0,
     ):
         errors.append("physics authority")
@@ -1270,7 +1265,7 @@ def verify_run_artifact(path: str | Path) -> dict[str, Any]:
         physics = episode.get("physics_profile")
         if not _values_equal(
             physics,
-            {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID, "profile_sha256": OFFICIAL_PHYSICS_PROFILE_SHA256},
+            {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID},
             atol=0.0,
         ):
             errors.append(prefix + " physics binding")

@@ -13266,6 +13266,5 @@
     "chair omitted to keep the service aisle clear",
     "instrument screens show fixed decorative graphics, not live scientific telemetry",
     "Newton/Isaac lighting is approximated with native MuJoCo neutral lights; no external renderer dependency"
-  ],
-  "payload_sha256": "2500810ebf9ba19be45f6ef2221e83559c3c9bcecae727774128ac6475f98fd4"
+  ]
 }

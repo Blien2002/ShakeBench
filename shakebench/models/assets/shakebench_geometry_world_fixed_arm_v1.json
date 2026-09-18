@@ -29,7 +29,6 @@
     0.299
   ],
   "scene_config": "shakebench_scene_world_fixed_arm_v1.json",
-  "scene_sha256": "2500810ebf9ba19be45f6ef2221e83559c3c9bcecae727774128ac6475f98fd4",
   "physics_effect": true,
   "retained_table_dimensions_m": [
     0.65,
@@ -38,7 +37,5 @@
   ],
   "mass_inertia_policy": "Retain worktable mass/inertia, isolator parameters and deck driver. Panda and solid shore foundation belong to world; no compensating ballast.",
   "reference": "Solid foundation occupies x=[-1.225,-0.47], y=[-0.42,0.42], z=[-0.765,0], joining the shore at the same top elevation and extending to the pit bottom. Black trim covers its top perimeter and its full pit-facing walls. Deck x=[-0.275,0.975]; worktable is inset 0.06 m from its shore-facing edge.",
-  "robot_support_mjcf": "arenas/shakebench_robot_support.xml",
-  "robot_support_mjcf_sha256": "32e28e847a966306be9231e6897fba00a9044884ae19c031df5bd404885328a8",
-  "payload_sha256": "642d30290fb323728af0282911654a491eeb05cf3af726b38435dd804a30023c"
+  "robot_support_mjcf": "arenas/shakebench_robot_support.xml"
 }

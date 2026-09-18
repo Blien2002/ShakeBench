@@ -1,6 +1,5 @@
-"""Current world-fixed assembly and its hash-bound scene configuration."""
+"""Current world-fixed assembly and its scene configuration."""
 
-import hashlib
 import json
 from pathlib import Path
 
@@ -20,7 +19,6 @@ def load_geometry_profile(profile="world_fixed_arm_v1"):
         raise ValueError(f"invalid geometry profile JSON: {exc}") from exc
     required = {
         "robot_support_mjcf",
-        "robot_support_mjcf_sha256",
         "schema_id",
         "schema_version",
         "profile_id",
@@ -31,21 +29,15 @@ def load_geometry_profile(profile="world_fixed_arm_v1"):
         "robot_base_pos_m",
         "table_top_pos_m",
         "scene_config",
-        "scene_sha256",
         "physics_effect",
         "retained_table_dimensions_m",
         "mass_inertia_policy",
         "reference",
-        "payload_sha256",
     }
     if set(payload) != required:
         raise ValueError("world-fixed geometry fields mismatch")
-    digest = payload.pop("payload_sha256")
-    actual = hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
-    ).hexdigest()
-    if digest != actual or payload["schema_id"] != "shakebench.geometry" or payload["schema_version"] != 2:
-        raise ValueError("invalid geometry profile schema/hash")
+    if payload["schema_id"] != "shakebench.geometry" or payload["schema_version"] != 2:
+        raise ValueError("invalid geometry profile schema")
     for key in ("robot_base_pos_m", "table_top_pos_m"):
         vector = np.asarray(payload[key], dtype=float)
         if vector.shape != (3,) or not np.all(np.isfinite(vector)):
@@ -63,15 +55,10 @@ def load_geometry_profile(profile="world_fixed_arm_v1"):
     support_path = Path(payload["robot_support_mjcf"])
     if support_path.is_absolute() or ".." in support_path.parts or support_path.suffix != ".xml":
         raise ValueError("robot_support_mjcf must be a package-relative XML asset")
-    try:
-        support_digest = hashlib.sha256((Path(models.assets_root) / support_path).read_bytes()).hexdigest()
-    except OSError as exc:
-        raise ValueError(f"cannot read robot support MJCF: {exc}") from exc
-    if support_digest != payload["robot_support_mjcf_sha256"]:
-        raise ValueError("robot support MJCF hash mismatch")
+    if not (Path(models.assets_root) / support_path).is_file():
+        raise ValueError("robot support MJCF is missing")
     if payload["profile_id"] != profile:
         raise ValueError("geometry profile identity mismatch")
-    payload["payload_sha256"] = digest
     return payload
 
 

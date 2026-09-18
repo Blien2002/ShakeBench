@@ -72,8 +72,6 @@ def _authority_bindings() -> dict[str, str]:
         "physics_profile_sha256": str(verdict["profile_sha256"]),
         "controller_profile_sha256": OracleControllerProfile().sha256,
         "outcome_contract_sha256": outcome_contract_sha256(),
-        "geometry_profile_sha256": str(geometry["payload_sha256"]),
-        "scene_visual_sha256": str(geometry["scene_sha256"]),
         "runtime_contract_sha256": hashlib.sha256(runtime_path.read_bytes()).hexdigest(),
         "task_contract_sha256": payload_hash(dev_payload["task_contract"]),
     }

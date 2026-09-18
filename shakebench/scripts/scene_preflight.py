@@ -74,7 +74,6 @@ def run_preflight(
             "geometry_profile": load_geometry_profile(geometry_profile),
             "scene_visual": {
                 "scene_id": scene_config.scene_id,
-                "config_sha256": scene_config.config_sha256,
                 "geometry_variant": scene_config.geometry_variant,
                 "physics_effect": scene_config.physics_effect,
             },

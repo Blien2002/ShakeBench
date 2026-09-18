@@ -366,7 +366,6 @@ def main(argv=None):
                         "scoreable": False,
                         "backend": "mujoco_warp",
                         "model_sha256": batch.model_sha256,
-                        "physics_profile_sha256": envs[w].physics_profile.profile_sha256,
                         "physics_profile": envs[w].physics_profile.to_dict(),
                         "effective_solver_tolerance": solver_tolerance,
                         "program": programs[w].to_dict(),

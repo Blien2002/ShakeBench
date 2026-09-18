@@ -245,7 +245,6 @@ class SceneAudit:
     """Compiled scene audit with stable names rather than raw MuJoCo IDs."""
 
     passed: bool
-    config_sha256: str
     scene_id: str
     geometry_variant: str
     frame_ownership: Mapping[str, Any]
@@ -271,7 +270,6 @@ class SceneAudit:
     def to_dict(self) -> dict[str, Any]:
         return {
             "passed": self.passed,
-            "config_sha256": self.config_sha256,
             "scene_id": self.scene_id,
             "geometry_variant": self.geometry_variant,
             "frame_ownership": _thaw(self.frame_ownership),
@@ -414,7 +412,6 @@ def audit_compiled_scene(
     physics_signature = compiled_physics_signature(sim)
     return SceneAudit(
         passed=True,
-        config_sha256=scene_config.config_sha256,
         scene_id=scene_config.scene_id,
         geometry_variant=scene_config.geometry_variant,
         frame_ownership=scene_config.section("frame_ownership"),
@@ -734,7 +731,6 @@ class ClearanceReport:
     """Signed-distance report for nominal and registered safe poses."""
 
     passed: bool
-    config_sha256: str
     geometry_variant: str
     nominal: Mapping[str, Any]
     safe_envelope: Mapping[str, Any]
@@ -756,7 +752,6 @@ class ClearanceReport:
         return {
             "passed": self.passed,
             "clearance_passed": self.passed,
-            "config_sha256": self.config_sha256,
             "geometry_variant": self.geometry_variant,
             "nominal": _thaw(self.nominal),
             "safe_envelope": _thaw(self.safe_envelope),
@@ -1008,7 +1003,6 @@ def scene_clearance_report(
     }
     return ClearanceReport(
         passed=passed,
-        config_sha256=scene_config.config_sha256,
         geometry_variant=scene_config.geometry_variant,
         nominal=nominal,
         safe_envelope=safe,

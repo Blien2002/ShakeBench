@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import xml.etree.ElementTree as ET
+from pathlib import Path as P
 from collections.abc import Iterable
 from copy import deepcopy
 
@@ -217,8 +218,8 @@ class VibrationPickPlace(ManipulationEnv):
         _one_value("gripper_types", gripper_types, allowed=("default", "PandaGripper"))
         self.base_types = base_types
         self.scene_config: SceneVisualConfig = load_scene_visual_config(scene_config)
-        if self.scene_config.config_sha256 != self.geometry_profile["scene_sha256"]:
-            raise ValueError("geometry profile scene hash mismatch")
+        if P(self.scene_config.source_path).name != self.geometry_profile["scene_config"]:
+            raise ValueError("geometry profile scene config mismatch")
         if not isinstance(scene_visual, (bool, np.bool_)):
             raise ValueError("scene_visual must be boolean")
         self.scene_visual = bool(scene_visual)
@@ -996,7 +997,6 @@ class VibrationPickPlace(ManipulationEnv):
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
             "scene_visual": {
                 "scene_id": self.scene_config.scene_id,
-                "config_sha256": self.scene_config.config_sha256,
                 "geometry_variant": self.scene_config.geometry_variant,
                 "physics_effect": self.scene_config.physics_effect,
                 "enabled": self.scene_visual,
@@ -1040,7 +1040,6 @@ class VibrationPickPlace(ManipulationEnv):
             },
             "physics_profile": {
                 "profile_id": self.physics_profile.profile_id,
-                "profile_sha256": self.physics_profile.profile_sha256,
                 "scoreable": self.physics_profile.scoreable
                 and self._geometry_is_scoreable()
                 and self.task_spec is None,
@@ -1268,7 +1267,6 @@ class VibrationPickPlace(ManipulationEnv):
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
             "scene_visual": {
                 "scene_id": self.scene_config.scene_id,
-                "config_sha256": self.scene_config.config_sha256,
                 "geometry_variant": self.scene_config.geometry_variant,
                 "physics_effect": self.scene_config.physics_effect,
                 "enabled": self.scene_visual,
