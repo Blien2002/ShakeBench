@@ -426,6 +426,7 @@ def _validate_scene_payload(payload: Mapping[str, Any], path: Path) -> None:
     ):
         _rgb(f"materials.{key}", materials.get(key))
 
+
 def _validate_laboratory_details(room: Mapping[str, Any], ownership: Mapping[str, Any]) -> None:
     """Reject malformed or physically active authored decoration before MJCF assembly."""
 

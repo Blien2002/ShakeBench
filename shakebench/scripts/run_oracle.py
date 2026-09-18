@@ -874,8 +874,7 @@ def main(argv: list[str] | None = None) -> int:
                 and partial.get("scoreable") == scoreable
                 and partial.get("geometry_profile") == geometry_payload
                 and partial.get("state_authority") == state_asset["authority"]
-                and partial.get("physics_authority")
-                == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID}
+                and partial.get("physics_authority") == {"profile_id": OFFICIAL_PHYSICS_PROFILE_ID}
                 and isinstance(partial.get("episodes"), list)
             ):
                 episodes = list(partial["episodes"])
