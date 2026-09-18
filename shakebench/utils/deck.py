@@ -19,9 +19,10 @@ constraint diagnostics.  No one-step lead is used.
 from __future__ import annotations
 
 import math
+import operator
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, fields
 from types import MappingProxyType
 from typing import Any, Iterable, Optional
 
@@ -33,33 +34,6 @@ from shakebench.utils.rotations import inverse_wxyz as _quat_inverse_wxyz
 from shakebench.utils.rotations import multiply_wxyz as _quat_multiply_wxyz
 
 AXES = ("tx", "ty", "tz", "rx", "ry", "rz")
-TRACE_SCHEMA_ID = "shakebench.deck_driver.trace"
-TRACE_SCHEMA_VERSION = 3
-TRACE_FIELD_CONTRACT = MappingProxyType(
-    {
-        "integration_target_time_s": "left-limit target q(t) evaluated for integration, episode-relative seconds",
-        "sample_target_time_s": "right-limit target q(t+dt) evaluated after integration, episode-relative seconds",
-        "integration_application_time_s": "mocap write time for q(t), episode-relative seconds",
-        "sample_application_time_s": "mocap write time for q(t+dt), episode-relative seconds",
-        "sample_time_s": "post-integration state sample data.time, episode-relative seconds",
-        "command_pose": "world deck-origin left-limit integration target pose at integration_target_time_s [x,y,z,qw,qx,qy,qz], m and unit quaternion",
-        "actual_pose": "world deck-origin pose [x,y,z,qw,qx,qy,qz], m and unit quaternion",
-        "command_twist": "world spatial left-limit integration target twist at integration_target_time_s [linear_xyz,angular_xyz], m/s and rad/s",
-        "actual_twist": "world spatial twist at deck origin [linear_xyz,angular_xyz], m/s and rad/s",
-        "command_acceleration": "world spatial left-limit integration target acceleration at integration_target_time_s [linear_xyz,angular_xyz], m/s^2 and rad/s^2",
-        "actual_acceleration": "world spatial acceleration at deck origin [linear_xyz,angular_xyz], m/s^2 and rad/s^2",
-        "sample_target_pose": "world deck-origin right-limit target pose at sample_target_time_s [x,y,z,qw,qx,qy,qz], m and unit quaternion",
-        "sample_target_twist": "world spatial right-limit target twist at sample_target_time_s [linear_xyz,angular_xyz], m/s and rad/s",
-        "sample_target_acceleration": "world spatial right-limit target acceleration at sample_target_time_s [linear_xyz,angular_xyz], m/s^2 and rad/s^2",
-        "deck_tracking_pose_error": "world pose error at sample_time_s: actual minus right-limit command, [translation,rotation-vector], m and rad",
-        "weld_constraint_residual_raw": "MuJoCo efc_pos rows for this weld at sample_time_s, raw constraint-coordinate order",
-        "weld_constraint_force_raw": "MuJoCo efc_force rows for this weld at sample_time_s, raw constraint-coordinate order",
-        "solver_iterations": "maximum post-step solver_niter across islands",
-        "solver_niter": "post-step MuJoCo solver_niter per island",
-        "warning_number_delta": "post-step delta of MuJoCo warning.number since previous sample",
-        "warning_lastinfo": "post-step MuJoCo warning.lastinfo per warning type",
-    }
-)
 
 
 class DeckDriverError(ValueError):
@@ -293,7 +267,7 @@ def _is_identity_pose(pose: tuple[np.ndarray, np.ndarray]) -> bool:
     return np.allclose(pose[0], 0.0, rtol=0.0, atol=1e-14) and np.allclose(pose[1], np.eye(3), rtol=0.0, atol=1e-14)
 
 
-@dataclass(frozen=True, init=False)
+@dataclass(frozen=True)
 class DeckDriverConfig:
     """Configuration for the generated deck driver and equality weld.
 
@@ -305,10 +279,7 @@ class DeckDriverConfig:
 
     ``deck_mass_kg`` and ``deck_inertia_kg_m2`` are explicit provisional
     numerical implementation parameters.  They are intentionally not an
-    official physics profile; Phase 06 owns the freeze decision. The
-    constructor accepts ``weld_solref`` / ``weld_solimp`` only as boundary
-    compatibility names; serialized configuration uses ``eq_solref`` /
-    ``eq_solimp``.
+    official physics profile; Phase 06 owns the freeze decision.
     """
 
     driver_body_name: str = "deck_driver"
@@ -329,54 +300,6 @@ class DeckDriverConfig:
     eq_solimp: tuple[float, float, float, float, float] = (0.9, 0.95, 0.001, 0.5, 2.0)
     physics_timestep_s: Optional[float] = None
     site_size_m: float = 0.01
-
-    def __init__(
-        self,
-        driver_body_name: str = "deck_driver",
-        deck_body_name: str = "deck",
-        deck_freejoint_name: str = "deck_freejoint",
-        weld_name: str = "deck_weld",
-        driver_site_name: str = "deck_driver_site",
-        deck_site_name: str = "deck_site",
-        deck_mass_kg: float = 400.0,
-        deck_inertia_kg_m2: Iterable[float] = (12.12, 14.083333333333334, 26.033333333333332),
-        deck_pos_m: Iterable[float] = (0.0, 0.0, 0.0),
-        deck_quat_wxyz: Iterable[float] = (1.0, 0.0, 0.0, 0.0),
-        eq_solref: Optional[Iterable[float]] = None,
-        eq_solimp: Optional[Iterable[float]] = None,
-        physics_timestep_s: Optional[float] = None,
-        site_size_m: float = 0.01,
-        *,
-        weld_solref: Optional[Iterable[float]] = None,
-        weld_solimp: Optional[Iterable[float]] = None,
-    ) -> None:
-        if weld_solref is not None and eq_solref is not None and tuple(weld_solref) != tuple(eq_solref):
-            raise DeckDriverError("eq_solref and legacy weld_solref specify different values")
-        if weld_solimp is not None and eq_solimp is not None and tuple(weld_solimp) != tuple(eq_solimp):
-            raise DeckDriverError("eq_solimp and legacy weld_solimp specify different values")
-        if eq_solref is None:
-            eq_solref = weld_solref
-        if eq_solimp is None:
-            eq_solimp = weld_solimp
-        object.__setattr__(self, "driver_body_name", driver_body_name)
-        object.__setattr__(self, "deck_body_name", deck_body_name)
-        object.__setattr__(self, "deck_freejoint_name", deck_freejoint_name)
-        object.__setattr__(self, "weld_name", weld_name)
-        object.__setattr__(self, "driver_site_name", driver_site_name)
-        object.__setattr__(self, "deck_site_name", deck_site_name)
-        object.__setattr__(self, "deck_mass_kg", deck_mass_kg)
-        object.__setattr__(self, "deck_inertia_kg_m2", deck_inertia_kg_m2)
-        object.__setattr__(self, "deck_pos_m", deck_pos_m)
-        object.__setattr__(self, "deck_quat_wxyz", deck_quat_wxyz)
-        object.__setattr__(self, "eq_solref", (0.0002, 1.0) if eq_solref is None else eq_solref)
-        object.__setattr__(
-            self,
-            "eq_solimp",
-            (0.9, 0.95, 0.001, 0.5, 2.0) if eq_solimp is None else eq_solimp,
-        )
-        object.__setattr__(self, "physics_timestep_s", physics_timestep_s)
-        object.__setattr__(self, "site_size_m", site_size_m)
-        self.__post_init__()
 
     def __post_init__(self) -> None:
         for name in (
@@ -423,18 +346,6 @@ class DeckDriverConfig:
         if self.physics_timestep_s is not None:
             object.__setattr__(self, "physics_timestep_s", dt)
 
-    @property
-    def weld_solref(self) -> tuple[float, float]:
-        """Compatibility alias for the canonical :attr:`eq_solref` field."""
-
-        return self.eq_solref
-
-    @property
-    def weld_solimp(self) -> tuple[float, float, float, float, float]:
-        """Compatibility alias for the canonical :attr:`eq_solimp` field."""
-
-        return self.eq_solimp
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "driver_body_name": self.driver_body_name,
@@ -454,52 +365,20 @@ class DeckDriverConfig:
         }
 
 
-@dataclass(frozen=True)
-class DeckBodyHandle:
-    """An explicit semantic role-to-body handle supplied by the environment."""
-
-    role: str
-    body_name: str
-
-
-@dataclass(frozen=True)
-class DeckBodyHandles:
-    """Immutable-ish serializable container for role-based body handles."""
-
-    roles: Mapping[str, str] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        normalized = _normalise_body_handles(self.roles)
-        object.__setattr__(self, "roles", MappingProxyType(dict(normalized)))
-
-    def to_dict(self) -> dict[str, str]:
-        return dict(self.roles)
-
-
 def _normalise_body_handles(body_handles: Any) -> dict[str, str]:
     if body_handles is None:
         return {}
-    if isinstance(body_handles, DeckBodyHandles):
-        body_handles = body_handles.roles
-    if isinstance(body_handles, DeckBodyHandle):
-        body_handles = {body_handles.role: body_handles.body_name}
     if not isinstance(body_handles, Mapping):
         raise DeckXMLProcessingError("body_handles must be a role-to-body mapping")
     normalized = {}
-    for role, value in body_handles.items():
+    for role, body_name in body_handles.items():
         if not isinstance(role, str) or not role.strip():
             raise DeckXMLProcessingError("body handle roles must be non-empty strings")
-        if isinstance(value, DeckBodyHandle):
-            value = value.body_name
-        elif isinstance(value, Mapping):
-            value = value.get("body_name", value.get("name"))
-        if not isinstance(value, str) or not value.strip():
+        if not isinstance(body_name, str) or not body_name.strip():
             raise DeckXMLProcessingError(f"body handle for role {role!r} must name a body")
-        if role in normalized:
-            raise DeckXMLProcessingError(f"duplicate body handle role {role!r}")
-        if value in normalized.values():
-            raise DeckXMLProcessingError(f"body {value!r} is assigned to multiple roles")
-        normalized[role] = value
+        if body_name in normalized.values():
+            raise DeckXMLProcessingError(f"body {body_name!r} is assigned to multiple roles")
+        normalized[role] = body_name
     return normalized
 
 
@@ -526,14 +405,6 @@ class DeckXMLAudit:
         object.__setattr__(self, "parent_graph", MappingProxyType(dict(self.parent_graph)))
         object.__setattr__(self, "role_body_names", MappingProxyType(dict(self.role_body_names)))
 
-    @property
-    def body_parent(self) -> Mapping[str, Optional[str]]:
-        return self.parent_graph
-
-    @property
-    def role_handles(self) -> Mapping[str, str]:
-        return self.role_body_names
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "parent_graph": dict(self.parent_graph),
@@ -552,22 +423,6 @@ class DeckXMLAudit:
             "driver_geom_names": list(self.driver_geom_names),
         }
 
-    def __getitem__(self, key: str) -> Any:
-        return self.to_dict()[key]
-
-    @property
-    def weld_solref(self) -> tuple[float, float]:
-        """Compatibility alias for the canonical equality parameter."""
-
-        return self.eq_solref
-
-    @property
-    def weld_solimp(self) -> tuple[float, float, float, float, float]:
-        """Compatibility alias for the canonical equality parameter."""
-
-        return self.eq_solimp
-
-
 def _body_entries(worldbody: ET.Element):
     entries = []
 
@@ -580,6 +435,20 @@ def _body_entries(worldbody: ET.Element):
 
     visit(worldbody, ())
     return entries
+
+
+def _body_index(worldbody: ET.Element, error_type: type[DeckDriverError] = DeckXMLProcessingError):
+    """Index every body by name, rejecting unnamed and duplicated bodies."""
+
+    by_name = {}
+    for body, parent, ancestors in _body_entries(worldbody):
+        name = body.get("name")
+        if name is None:
+            raise error_type("all bodies must be named before role-based reparenting")
+        if name in by_name:
+            raise error_type(f"duplicate body name {name!r}")
+        by_name[name] = (body, parent, ancestors)
+    return by_name
 
 
 def _named_elements(root: ET.Element, tag: str) -> dict[str, ET.Element]:
@@ -611,12 +480,9 @@ class ShakeBenchDeckXMLProcessor:
         config: Optional[DeckDriverConfig] = None,
         body_handles: Any = None,
         required_roles: Iterable[str] = (),
-        role_handles: Any = None,
     ) -> None:
-        if body_handles is not None and role_handles is not None:
-            raise DeckXMLProcessingError("provide only one of body_handles and role_handles")
         self.config = config if config is not None else DeckDriverConfig()
-        self.body_handles = _normalise_body_handles(body_handles if body_handles is not None else role_handles)
+        self.body_handles = _normalise_body_handles(body_handles)
         self.required_roles = (required_roles,) if isinstance(required_roles, str) else tuple(required_roles)
         for role in self.required_roles:
             if not isinstance(role, str) or not role.strip():
@@ -692,14 +558,7 @@ class ShakeBenchDeckXMLProcessor:
         # Generated names are the duplicate-application marker.  Refusing any
         # collision also protects an environment that already has a body named
         # ``deck`` but did not opt into ShakeBench.
-        body_index = {}
-        for body, parent, ancestors in _body_entries(worldbody):
-            name = body.get("name")
-            if name is None:
-                raise DeckXMLProcessingError("all bodies must be named before role-based reparenting")
-            if name in body_index:
-                raise DeckXMLProcessingError(f"duplicate body name {name!r}")
-            body_index[name] = (body, parent, ancestors)
+        body_index = _body_index(worldbody)
         if self.config.driver_body_name in body_index or self.config.deck_body_name in body_index:
             raise DeckXMLProcessingError("dynamic deck processor was applied more than once or names collide")
 
@@ -851,19 +710,6 @@ def make_deck_xml_processor(
     return ShakeBenchDeckXMLProcessor(config=config, body_handles=body_handles, required_roles=required_roles)
 
 
-def _audit_body_index(worldbody: ET.Element):
-    entries = _body_entries(worldbody)
-    by_name = {}
-    for body, parent, ancestors in entries:
-        name = body.get("name")
-        if name is None:
-            raise DeckAuditError("all bodies must have names")
-        if name in by_name:
-            raise DeckAuditError(f"duplicate body name {name!r}")
-        by_name[name] = (body, parent, ancestors)
-    return by_name
-
-
 def audit_deck_xml(
     xml_string: str,
     config: Optional[DeckDriverConfig] = None,
@@ -880,7 +726,7 @@ def audit_deck_xml(
     worldbody = root.find("worldbody")
     if root.tag != "mujoco" or worldbody is None:
         raise DeckAuditError("MJCF must contain a <mujoco><worldbody> root")
-    body_index = _audit_body_index(worldbody)
+    body_index = _body_index(worldbody, DeckAuditError)
     for name in (config.driver_body_name, config.deck_body_name):
         if name not in body_index:
             raise DeckAuditError(f"missing generated body {name!r}")
@@ -1056,21 +902,6 @@ def audit_compiled_deck_model(
     }
 
 
-def process_deck_xml(
-    xml_string: str,
-    config: Optional[DeckDriverConfig] = None,
-    body_handles: Any = None,
-    required_roles: Iterable[str] = (),
-) -> str:
-    """Apply the role-based processor in one call for environment setup code."""
-
-    return ShakeBenchDeckXMLProcessor(
-        config=config,
-        body_handles=body_handles,
-        required_roles=required_roles,
-    )(xml_string)
-
-
 @dataclass(frozen=True)
 class DeckCommand:
     """One six-axis command in ``(translation, rotation-vector)`` coordinates.
@@ -1199,58 +1030,48 @@ class DeckDriverTrace:
 
     def __post_init__(self) -> None:
         sample_count = np.asarray(self.sample_time_s).size
-        vector_fields = (
-            ("command_pose", 7),
-            ("actual_pose", 7),
-            ("command_twist", 6),
-            ("actual_twist", 6),
-            ("command_acceleration", 6),
-            ("actual_acceleration", 6),
-            ("sample_target_pose", 7),
-            ("sample_target_twist", 6),
-            ("sample_target_acceleration", 6),
-            ("deck_tracking_pose_error", 6),
-            ("weld_constraint_residual_raw", 6),
-            ("weld_constraint_force_raw", 6),
-        )
-        for name in (
-            "integration_target_time_s",
-            "sample_target_time_s",
-            "integration_application_time_s",
-            "sample_application_time_s",
-            "sample_time_s",
-        ):
-            value = np.asarray(getattr(self, name), dtype=float)
-            if value.shape != (sample_count,) or not np.all(np.isfinite(value)):
-                raise DeckDriverError(f"trace field {name} must have {sample_count} finite samples")
+        # shape (None,) means "one row dimension free": MuJoCo sizes those
+        # diagnostics per island or per warning type.
+        specs = [
+            (name, (sample_count,), float)
+            for name in (
+                "integration_target_time_s",
+                "sample_target_time_s",
+                "integration_application_time_s",
+                "sample_application_time_s",
+                "sample_time_s",
+            )
+        ] + [
+            (name, (sample_count, width), float)
+            for name, width in (
+                ("command_pose", 7),
+                ("actual_pose", 7),
+                ("command_twist", 6),
+                ("actual_twist", 6),
+                ("command_acceleration", 6),
+                ("actual_acceleration", 6),
+                ("sample_target_pose", 7),
+                ("sample_target_twist", 6),
+                ("sample_target_acceleration", 6),
+                ("deck_tracking_pose_error", 6),
+                ("weld_constraint_residual_raw", 6),
+                ("weld_constraint_force_raw", 6),
+            )
+        ] + [("solver_iterations", (sample_count,), np.int64)] + [
+            (name, (sample_count, None), np.int64)
+            for name in ("solver_niter", "warning_number_delta", "warning_lastinfo")
+        ]
+        for name, shape, dtype in specs:
+            value = np.asarray(getattr(self, name), dtype=dtype)
+            if value.ndim != len(shape) or any(
+                wanted is not None and actual != wanted for actual, wanted in zip(value.shape, shape)
+            ):
+                raise DeckDriverError(f"trace field {name} must have shape {shape}")
+            if dtype is float and not np.all(np.isfinite(value)):
+                raise DeckDriverError(f"trace field {name} must contain finite values")
             value = np.array(value, copy=True)
             value.setflags(write=False)
             object.__setattr__(self, name, value)
-        for name, width in vector_fields:
-            value = np.asarray(getattr(self, name), dtype=float)
-            if value.shape != (sample_count, width) or not np.all(np.isfinite(value)):
-                raise DeckDriverError(f"trace field {name} must have shape ({sample_count}, {width}) and finite values")
-            value = np.array(value, copy=True)
-            value.setflags(write=False)
-            object.__setattr__(self, name, value)
-        for name in ("solver_iterations",):
-            value = np.asarray(getattr(self, name), dtype=np.int64)
-            if value.shape != (sample_count,):
-                raise DeckDriverError(f"trace field {name} must have {sample_count} samples")
-            value = np.array(value, copy=True)
-            value.setflags(write=False)
-            object.__setattr__(self, name, value)
-        for name in ("solver_niter", "warning_number_delta", "warning_lastinfo"):
-            value = np.asarray(getattr(self, name), dtype=np.int64)
-            if value.ndim != 2 or value.shape[0] != sample_count:
-                raise DeckDriverError(f"trace field {name} must be a two-dimensional sample array")
-            value = np.array(value, copy=True)
-            value.setflags(write=False)
-            object.__setattr__(self, name, value)
-
-    @property
-    def axis_order(self) -> tuple[str, ...]:
-        return AXES
 
     @property
     def command_timestamps_s(self) -> np.ndarray:
@@ -1270,23 +1091,11 @@ class DeckDriverTrace:
 
         return self.sample_time_s
 
-    @property
-    def field_contract(self) -> Mapping[str, str]:
-        """Return the machine-readable frame, origin, order, time, and unit contract."""
-
-        return TRACE_FIELD_CONTRACT
-
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_id": TRACE_SCHEMA_ID,
-            "schema_version": TRACE_SCHEMA_VERSION,
             "axis_order": list(AXES),
-            "field_contract": dict(TRACE_FIELD_CONTRACT),
             **{item.name: getattr(self, item.name).tolist() for item in fields(self)},
         }
-
-    def __getitem__(self, key: str) -> Any:
-        return self.to_dict()[key]
 
 
 class DeckDriver:
@@ -1305,15 +1114,10 @@ class DeckDriver:
         if isinstance(refresh_stride, (bool, np.bool_)):
             raise DeckDriverError("refresh_stride must be a positive integer")
         try:
-            numeric_refresh_stride = float(refresh_stride)
-            normalized_refresh_stride = int(numeric_refresh_stride)
-        except (TypeError, ValueError) as exc:
+            normalized_refresh_stride = operator.index(refresh_stride)
+        except TypeError as exc:
             raise DeckDriverError("refresh_stride must be a positive integer") from exc
-        if (
-            not np.isfinite(numeric_refresh_stride)
-            or normalized_refresh_stride < 1
-            or numeric_refresh_stride != normalized_refresh_stride
-        ):
+        if normalized_refresh_stride < 1:
             raise DeckDriverError("refresh_stride must be a positive integer")
         self.refresh_stride = normalized_refresh_stride
         self.processor = ShakeBenchDeckXMLProcessor(
@@ -1425,39 +1229,19 @@ class DeckDriver:
         return np.array(array, copy=True)
 
     def _evaluate_command(self, time_s: float) -> DeckCommand:
-        if self.trajectory is None:
-            return DeckCommand(np.zeros(6), np.zeros(6), np.zeros(6))
         trajectory = self.trajectory
-        if hasattr(trajectory, "evaluate"):
-            result = trajectory.evaluate(time_s)
-        elif callable(trajectory):
-            result = trajectory(time_s)
-        else:
-            result = trajectory
+        if trajectory is None:
+            return DeckCommand(np.zeros(6), np.zeros(6), np.zeros(6))
+        result = trajectory.evaluate(time_s) if hasattr(trajectory, "evaluate") else trajectory(time_s)
         if isinstance(result, DeckCommand):
             return result
-        if isinstance(result, Mapping):
-            pose = result.get("pose", result.get("q", result.get("position")))
-            twist = result.get("twist", result.get("qdot", result.get("velocity")))
-            acceleration = result.get("acceleration", result.get("qdd"))
-            return DeckCommand(
-                self._coerce_six("pose", pose),
-                self._coerce_six("twist", twist),
-                self._coerce_six("acceleration", acceleration),
-            )
-        if hasattr(result, "q"):
-            return DeckCommand(
-                self._coerce_six("pose", result.q),
-                self._coerce_six("twist", getattr(result, "qdot", None)),
-                self._coerce_six("acceleration", getattr(result, "qdd", None)),
-            )
-        if isinstance(result, (tuple, list)) and len(result) == 3:
-            return DeckCommand(
-                self._coerce_six("pose", result[0]),
-                self._coerce_six("twist", result[1]),
-                self._coerce_six("acceleration", result[2]),
-            )
-        return DeckCommand(self._coerce_six("pose", result), np.zeros(6), np.zeros(6))
+        if not hasattr(result, "q"):
+            raise DeckDriverError("trajectory must return a DeckCommand or a motion sample with q/qdot/qdd")
+        return DeckCommand(
+            self._coerce_six("pose", result.q),
+            self._coerce_six("twist", getattr(result, "qdot", None)),
+            self._coerce_six("acceleration", getattr(result, "qdd", None)),
+        )
 
     def _command_world_pose(self, command: DeckCommand) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         return command_to_world_state(command, self.config)
