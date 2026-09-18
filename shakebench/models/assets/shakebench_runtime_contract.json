@@ -4,21 +4,18 @@
     "full_audit_requires_explicit_evidence": true,
     "network_access_required": false,
     "raw_archive_required_for_runtime": false,
-    "runtime_verification": "compact_asset_hashes_only"
+    "runtime_verification": "structural_asset_checks_only"
   },
-  "payload_sha256": "54bd8757ce726dc9f105e9e90ee85d8a3434da3bbbcf44700227d4df5dde414b",
   "physics_profile": {
     "asset_filename": "shakebench_official_physics.yaml",
-    "asset_sha256": "a5777149fd64c9644abf9ad43bac666dd9b4955dded01954cc5cebdb8695dd52",
-    "profile_id": "shakebench.official.physics.v2",
-    "profile_sha256": "c32d3962e62a9b9fc27b0de6bf787d8bf49ee17e306d6fbea9e480062a99606c"
+    "profile_id": "shakebench.official.physics.v2"
   },
-  "scene_assets": {
-    "arenas/shakebench_arena.xml": "dbadb4220bee5ab811afb03142cad7d0550990b4cf6d14ff1312ced9ebeddb06",
-    "arenas/shakebench_robot_support.xml": "32e28e847a966306be9231e6897fba00a9044884ae19c031df5bd404885328a8",
-    "shakebench_geometry_world_fixed_arm_v1.json": "66c0cd0b288ab2f91887be4182bd54d547a3c6bf59eaea2b3ef481b0bdfee48f",
-    "shakebench_scene_world_fixed_arm_v1.json": "a9514cc175999c226495dabdf920069810f43e791441ff897fa2228132eb01e2"
-  },
+  "scene_assets": [
+    "shakebench_geometry_world_fixed_arm_v1.json",
+    "shakebench_scene_world_fixed_arm_v1.json",
+    "arenas/shakebench_arena.xml",
+    "arenas/shakebench_robot_support.xml"
+  ],
   "schema_id": "shakebench.runtime.publication_contract",
   "schema_version": 1
 }

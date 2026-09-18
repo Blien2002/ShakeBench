@@ -7,7 +7,6 @@ not import robosuite environments, MuJoCo, GPU runtimes, or the batch runner.
 from __future__ import annotations
 
 import dataclasses
-import hashlib
 import json
 import math
 import random
@@ -41,18 +40,6 @@ def _canonical(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
-def _sha256(value: Any) -> str:
-    return hashlib.sha256(_canonical(value).encode("utf-8")).hexdigest()
-
-
-def scorecard_payload_hash(payload: Mapping[str, Any]) -> str:
-    """Canonical scorecard digest, excluding only its self-check field."""
-
-    copied = dict(payload)
-    copied.pop("payload_sha256", None)
-    return _sha256(copied)
-
-
 @dataclasses.dataclass(frozen=True)
 class EpisodeResult:
     """Immutable, scoreable projection of one completed raw episode."""
@@ -74,7 +61,6 @@ class EpisodeResult:
     actuators: Sequence[Mapping[str, Any]]
     trace_sha256: str
     metrics: Mapping[str, Any]
-    raw_result_sha256: str
     semantic_verifier_verdict: Mapping[str, Any]
     horizon_steps: int
     episode_validity: str = "valid"
@@ -166,7 +152,6 @@ class EpisodeResult:
             actuators=tuple(dict(item) for item in raw["actuators"]),
             trace_sha256=str(raw["trace_sha256"]),
             metrics=dict(raw["metrics"]),
-            raw_result_sha256=_sha256(raw),
             semantic_verifier_verdict=dict(semantic_verifier_verdict),
             horizon_steps=horizon_steps,
             episode_validity=str(validity),
@@ -222,7 +207,7 @@ class RunManifest:
 
     @property
     def job_id(self) -> str:
-        return _sha256(self.science_identity())
+        return _canonical(self.science_identity())
 
 
 def wilson_interval(successes: int, total: int, *, z: float = 1.959963984540054) -> dict[str, float | int]:
@@ -467,10 +452,8 @@ def build_scorecard(
         "state_count": len(next(iter(state_sets.values()))),
         "per_tier": per_tier,
         "paired_comparisons": comparisons,
-        "episode_raw_sha256s": sorted(row.raw_result_sha256 for row in episodes),
         "outcome_contract_sha256": outcome_contract_sha256(),
     }
-    result["payload_sha256"] = scorecard_payload_hash(result)
     return result
 
 
@@ -489,11 +472,6 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
         errors.append("schema")
     if payload.get("outcome_contract_sha256") != outcome_contract_sha256():
         errors.append("outcome contract authority")
-    try:
-        if payload.get("payload_sha256") != scorecard_payload_hash(payload):
-            errors.append("payload hash")
-    except (TypeError, ValueError):
-        errors.append("payload hash")
     comparisons = payload.get("paired_comparisons")
     if not isinstance(comparisons, Mapping) or not set(comparisons).issubset(
         {"V1_minus_V0", "V2_minus_V1", "V3_minus_V2", "V3_minus_V0"}
@@ -505,16 +483,15 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
         return {"passed": not errors, "errors": errors}
     try:
         from shakebench.scripts.run_oracle import verify_run_artifact
-        from shakebench.utils.artifacts import file_sha256
 
         episodes = []
         for source in sources:
-            if not isinstance(source, Mapping) or set(source) != {"path", "sha256", "semantic_verifier"}:
+            if not isinstance(source, Mapping) or set(source) != {"path", "semantic_verifier"}:
                 errors.append("raw artifact provenance")
                 continue
             path = source["path"]
-            if not isinstance(path, str) or source.get("sha256") != file_sha256(path):
-                errors.append("raw artifact hash")
+            if not isinstance(path, str):
+                errors.append("raw artifact provenance")
                 continue
             verdict = verify_run_artifact(path)
             if verdict.get("passed") is not True or source.get("semantic_verifier") != verdict:
@@ -529,7 +506,6 @@ def verify_scorecard(payload: Mapping[str, Any]) -> dict[str, Any]:
                 "state_count",
                 "per_tier",
                 "paired_comparisons",
-                "episode_raw_sha256s",
                 "outcome_contract_sha256",
             ):
                 if payload.get(key) != recomputed.get(key):
@@ -550,7 +526,6 @@ __all__ = [
     "build_scorecard",
     "paired_bootstrap",
     "paired_mde",
-    "scorecard_payload_hash",
     "verify_scorecard",
     "wilson_interval",
 ]

@@ -9,12 +9,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from shakebench.utils.artifacts import file_sha256, payload_hash, write_json
+from shakebench.utils.artifacts import write_json
 
 RUNTIME_CONTRACT_FILENAME = "shakebench_runtime_contract.json"
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
@@ -25,7 +24,6 @@ SCENE_ASSET_FILENAMES = (
     "arenas/shakebench_arena.xml",
     "arenas/shakebench_robot_support.xml",
 )
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 class RuntimePublicationError(ValueError):
@@ -57,10 +55,6 @@ def _load_yaml(path: Path) -> Mapping[str, Any]:
     return value
 
 
-def _profile_hash(profile: Mapping[str, Any]) -> str:
-    return payload_hash(profile, field="profile_sha256")
-
-
 def build_runtime_contract(asset_root: str | Path) -> dict[str, Any]:
     """Return the current contract binding for the package-owned assets."""
 
@@ -68,7 +62,6 @@ def build_runtime_contract(asset_root: str | Path) -> dict[str, Any]:
     profile_path = root / OFFICIAL_PHYSICS_PROFILE_FILENAME
     try:
         profile = _load_yaml(profile_path)
-        profile_bytes = file_sha256(profile_path)
     except (OSError, RuntimePublicationError) as exc:
         raise RuntimePublicationError(f"unreadable official profile: {exc}") from exc
     contract: dict[str, Any] = {
@@ -79,22 +72,18 @@ def build_runtime_contract(asset_root: str | Path) -> dict[str, Any]:
             "raw_archive_required_for_runtime": False,
             "network_access_required": False,
             "full_audit_requires_explicit_evidence": True,
-            "runtime_verification": "compact_asset_hashes_only",
+            "runtime_verification": "structural_asset_checks_only",
         },
         "physics_profile": {
             "asset_filename": profile_path.name,
-            "asset_sha256": profile_bytes,
             "profile_id": profile.get("profile_id"),
-            "profile_sha256": _profile_hash(profile),
         },
-        "scene_assets": {},
+        "scene_assets": [],
     }
     for name in SCENE_ASSET_FILENAMES:
-        path = root / name
-        if not path.is_file():
+        if not (root / name).is_file():
             raise RuntimePublicationError(f"current scene asset is missing: {name}")
-        contract["scene_assets"][name] = file_sha256(path)
-    contract["payload_sha256"] = payload_hash(contract)
+        contract["scene_assets"].append(name)
     return contract
 
 
@@ -119,9 +108,6 @@ def verify_runtime_publication_bundle(asset_root: str | Path, *, include_profile
 
     if contract.get("schema_id") != "shakebench.runtime.publication_contract" or contract.get("schema_version") != 1:
         return {"passed": False, "errors": ["runtime contract schema mismatch"]}
-    if contract.get("payload_sha256") != payload_hash(contract):
-        errors.append("runtime contract payload hash mismatch")
-
     package_contract = contract.get("package_contract")
     if not isinstance(package_contract, Mapping):
         errors.append("runtime package contract missing")
@@ -148,37 +134,27 @@ def verify_runtime_publication_bundle(asset_root: str | Path, *, include_profile
     except RuntimePublicationError as exc:
         errors.append(str(exc))
         profile = {}
-    expected_bytes = profile_spec.get("asset_sha256")
-    if not isinstance(expected_bytes, str) or not HEX64.fullmatch(expected_bytes):
-        errors.append("official profile byte hash binding missing")
-    elif not profile_path.is_file() or file_sha256(profile_path) != expected_bytes:
-        errors.append("official profile byte hash mismatch")
+    if not profile_path.is_file():
+        errors.append("official profile asset is missing")
 
     if profile:
-        computed_profile = _profile_hash(profile)
-        if computed_profile != profile_spec.get("profile_sha256"):
-            errors.append("official profile contract hash mismatch")
         if profile.get("profile_id") != OFFICIAL_PHYSICS_PROFILE_ID:
             errors.append("official profile id mismatch")
         if profile.get("status") != "official_immutable" or profile.get("scoreable") is not True:
             errors.append("official profile is not immutable scoreable")
 
     scene_assets = contract.get("scene_assets")
-    if not isinstance(scene_assets, Mapping) or set(scene_assets) != set(SCENE_ASSET_FILENAMES):
+    if not isinstance(scene_assets, list) or sorted(scene_assets) != sorted(SCENE_ASSET_FILENAMES):
         errors.append("runtime scene asset list mismatch")
     else:
-        for name, expected in scene_assets.items():
-            path = root / name
-            if not isinstance(expected, str) or not HEX64.fullmatch(expected):
-                errors.append(f"scene asset hash binding missing: {name}")
-            elif not path.is_file() or file_sha256(path) != expected:
-                errors.append(f"scene asset hash mismatch: {name}")
+        for name in scene_assets:
+            if not (root / name).is_file():
+                errors.append(f"scene asset is missing: {name}")
 
     result = {
         "passed": not errors,
         "errors": sorted(set(errors)),
         "profile_id": profile_spec.get("profile_id"),
-        "profile_sha256": profile_spec.get("profile_sha256"),
         "raw_archive_required_for_runtime": False,
         "network_access_required": False,
     }

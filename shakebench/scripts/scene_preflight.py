@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 
 import shakebench
-from shakebench.utils.artifacts import json_ready, payload_hash
+from shakebench.utils.artifacts import json_ready
 from shakebench.utils.geometry import geometry_scene_path, load_geometry_profile
 from shakebench.utils.scene import compiled_physics_signature, load_scene_visual_config
 
@@ -123,7 +123,6 @@ def run_preflight(
             "rgba_differs": visible_rgba_sha256 != hidden_rgba_sha256,
         }
         report["gates"]["visual_physics_invariant"] = report["visual_invariance"]["passed"]
-        report["payload_sha256"] = payload_hash(report)
     finally:
         hidden_env.close()
     target = Path(output)
