@@ -63,6 +63,17 @@ def evaluate(env) -> dict:
     }
 
 
+def hold(env, seconds: float = 1.0) -> None:
+    """Step the environment so the success latch actually samples the hold window.
+
+    Raw ``mj_step`` bypasses the environment's per-control-step metrics, so a
+    settled placement would never accumulate its 0.5 s continuous window.
+    """
+
+    for _ in range(max(1, int(round(seconds * env.control_freq)))):
+        env.step(np.zeros(env.action_dim))
+
+
 def run_cases(spec, cases) -> list[dict]:
     """Run every placement in one environment: building one costs a full audit."""
 
@@ -76,10 +87,12 @@ def run_cases(spec, cases) -> list[dict]:
             if case == "inside":
                 place(env, center, height_m=TARGET_CONTAINER_BOTTOM_THICKNESS_M + 0.002)
                 settle(env, 1.2)
+                hold(env, 1.0)
             elif case == "outside":
                 offset = np.array([0.0, -(TARGET_CONTAINER_OUTER_XY_M[1] / 2.0 + 0.06)])
                 place(env, center + offset, height_m=0.002)
                 settle(env, 0.6)
+                hold(env, 1.0)
             elif case == "straddling":
                 # Rest on the near wall: half the object overhangs the inner floor.
                 wall_y = TARGET_CONTAINER_OUTER_XY_M[1] / 2.0 - 0.004
@@ -89,6 +102,7 @@ def run_cases(spec, cases) -> list[dict]:
                     height_m=TARGET_CONTAINER_BOTTOM_THICKNESS_M + TARGET_CONTAINER_WALL_HEIGHT_M + 0.004,
                 )
                 settle(env, 0.8)
+                hold(env, 1.0)
             else:
                 raise ValueError(case)
             result = evaluate(env)
