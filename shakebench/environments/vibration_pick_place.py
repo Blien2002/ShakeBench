@@ -1091,6 +1091,7 @@ class VibrationPickPlace(ManipulationEnv):
             object_start_pose_lower_support_m=float(self.can_start_pose_envelope[0]),
             object_grasp_pad_height_m=float(grasp["pad_height_m"]),
             object_grasp_opening_m=float(task_grasp_opening_gate_m),
+            object_grasp_preopening_m=float(grasp.get("preopening_m", 0.080)),
             object_grasp_offset_object_m=list(grasp_offset_object),
             finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
             support_topology_id=self.geometry_profile["profile_id"],

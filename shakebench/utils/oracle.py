@@ -9,7 +9,7 @@ remain on the recorder side of the boundary.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from enum import Enum
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Mapping, Optional
@@ -154,6 +154,7 @@ class WorktableTaskContext:
     object_start_pose_lower_support_m: float = -0.040297003330440104
     object_grasp_pad_height_m: float = 0.0319
     object_grasp_opening_m: float = 0.0602
+    object_grasp_preopening_m: float = 0.080
     object_grasp_offset_object_m: tuple[float, float] = (0.0, 0.0)
     finger_pad_tool_support_offsets_m: tuple[float, ...] = (0.0, 0.0, 0.0934)
     support_topology_id: str = "deck_robot_base_plus_isolated_worktable"
@@ -191,6 +192,8 @@ class WorktableTaskContext:
             raise ShakeBenchOracleError("object_grasp_offset_object_m must be finite length two")
         if not 0.0 < float(self.object_grasp_opening_m) < 0.080:
             raise ShakeBenchOracleError("object_grasp_opening_m must fit the compiled Panda jaw")
+        if not self.object_grasp_opening_m < self.object_grasp_preopening_m <= 0.080:
+            raise ShakeBenchOracleError("pregrasp opening must exceed the hold gate and fit the Panda jaw")
         if float(self.object_grasp_pad_height_m) <= 0.0:
             raise ShakeBenchOracleError("object_grasp_pad_height_m must be positive")
 
@@ -254,6 +257,7 @@ class WorktableTaskContext:
             object_grasp_opening_m=float(
                 can.get("grasp_opening_m", value.get("object_grasp_opening_m", default.object_grasp_opening_m))
             ),
+            object_grasp_preopening_m=float(value.get("object_grasp_preopening_m", default.object_grasp_preopening_m)),
             object_grasp_offset_object_m=tuple(
                 float(item)
                 for item in can.get(
@@ -413,13 +417,10 @@ RELEASE_PRESS_DEPTH_M = 0.020
 def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskContext) -> OracleControllerProfile:
     """Specialize one controller profile from the environment's public context.
 
-    The only task-dependent quantities are where the pads close on the object,
-    how far the fingers have to open, the lift clearance, and the release height.
-    Everything else stays the shared approach, lift and verify plan, so
-    a task cannot silently re-tune the state machine.
+    Task geometry sets the pad location, opening, insertion tolerances, lift
+    clearance, and release height. The phase sequence, timings and force limits
+    remain shared.
     """
-
-    from dataclasses import replace
 
     grasp_height = (
         float(context.object_start_pose_lower_support_m)
@@ -443,6 +444,17 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
         profile,
         grasp_height_m=float(grasp_height),
         transport_height_m=float(transport_height),
+        # A narrow insertion must finish before closing; early closure catches the rim.
+        descend_tolerance_m=(
+            min(profile.descend_tolerance_m, 0.004)
+            if context.object_grasp_preopening_m < 0.080
+            else profile.descend_tolerance_m
+        ),
+        descend_vertical_tolerance_m=(
+            min(profile.descend_vertical_tolerance_m, 0.004)
+            if context.object_grasp_preopening_m < 0.080
+            else profile.descend_vertical_tolerance_m
+        ),
         placement_height_m=float(context.object_grasp_pad_height_m + PAD_MIDPOINT_EEF_OFFSET_M - RELEASE_PRESS_DEPTH_M),
         grasp_hold_max_opening_rad=float(context.object_grasp_opening_m),
         can_collision_envelope_radius_m=float(context.object_collision_radius_m),
@@ -1024,6 +1036,24 @@ class ShakeBenchOracleController:
             relative_kinematics=self.executive._relative_kinematics,
         )
         capability_policy = motion_capability_policy(self.executive.phase, self.profile)
+        if self.task_context.object_grasp_preopening_m < 0.080 and self.executive.phase in {
+            TaskPhase.SETTLE,
+            TaskPhase.APPROACH,
+            TaskPhase.LATERAL_ALIGN_ABOVE_CAN,
+            TaskPhase.ALIGN_SETTLE,
+            TaskPhase.DESCEND,
+            TaskPhase.VERTICAL_DESCEND,
+            TaskPhase.RE_ALIGN,
+        }:
+            state = np.asarray(observation["robot0_gripper_state"], dtype=float)
+            if state.shape != (4,) or not np.all(np.isfinite(state)):
+                raise ShakeBenchOracleError("robot0_gripper_state must be a finite four-vector")
+            # Panda integrates sign commands in 8 mm aperture increments; zero
+            # holds its target. Predict one finger time constant to avoid chatter.
+            predicted_opening = np.sum(np.abs(state[:2])) + 0.1 * np.dot(np.sign(state[:2]), state[2:])
+            error = predicted_opening - self.task_context.object_grasp_preopening_m
+            gripper_action = 0.0 if abs(error) < 0.004 else float(np.sign(error))
+            capability_policy = replace(capability_policy, gripper_action=gripper_action)
         normalized = np.empty(7, dtype=np.float32)
         normalized[:3] = np.clip(desired_delta[:3] / self.profile.position_action_range_m, -1.0, 1.0)
         normalized[3:6] = np.clip(desired_delta[3:] / self.profile.orientation_action_range_rad, -1.0, 1.0)
@@ -1041,6 +1071,7 @@ class ShakeBenchOracleController:
         if not np.all(np.isfinite(normalized)):
             raise ShakeBenchOracleError("controller produced a non-finite action")
         phase_diagnostics = dict(self.executive.diagnostics())
+        phase_diagnostics["capability_policy"]["gripper_action"] = capability_policy.gripper_action
         phase_diagnostics["table_edge_margin_m"] = self.executive._table_edge_margin_m(observation)
         phase_diagnostics["anchor_error_m"] = (
             None

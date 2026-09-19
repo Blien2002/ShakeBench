@@ -47,6 +47,7 @@ class TaskExecutive:
     _initial_target_rotation: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _grasp_eef_can_transform: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _grasp_point_object_m: Optional[np.ndarray] = field(default=None, init=False, repr=False)
+    _transport_offset_base_m: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _last_public_eef_position: Optional[np.ndarray] = field(default=None, init=False, repr=False)
     _last_public_time_s: Optional[float] = field(default=None, init=False, repr=False)
     _public_linear_speed_m_s: float = field(default=0.0, init=False, repr=False)
@@ -93,6 +94,7 @@ class TaskExecutive:
         self._initial_target_rotation = None
         self._grasp_eef_can_transform = None
         self._grasp_point_object_m = None
+        self._transport_offset_base_m = None
         self._last_public_eef_position = None
         self._last_public_time_s = None
         self._public_linear_speed_m_s = 0.0
@@ -738,6 +740,11 @@ class TaskExecutive:
             return self._grasp_offset_base(observation, anchor_can) + target_z * self.profile.transport_height_m
         target = self._target_base(observation, np.array((0.0, 0.0, target_top + self.profile.transport_height_m)))
         if self.phase == TaskPhase.TRANSPORT:
+            # An off-centre grip carries the object away from the gripper axis;
+            # centre the object on the crate using the offset frozen when the
+            # carry began, so a swinging object cannot steer its own waypoint.
+            if self._transport_offset_base_m is not None:
+                target = target + self._transport_offset_base_m
             return target
         if self.phase == TaskPhase.PLACE:
             if self._placement_start_eef_position is not None:
@@ -920,6 +927,10 @@ class TaskExecutive:
             elif elapsed >= self.profile.prelift_s:
                 self._recover_or_fail(observation, time_s, "public_grasp_not_established")
         elif self.phase == TaskPhase.LIFT and elapsed >= self.profile.lift_s:
+            if any(self.profile.grasp_offset_object_m):
+                rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
+                carried = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float) - can
+                self._transport_offset_base_m = carried - rotation[:, 2] * float(np.dot(carried, rotation[:, 2]))
             self._transition(TaskPhase.TRANSPORT, time_s)
         elif self.phase == TaskPhase.TRANSPORT and close:
             self._placement_start_eef_position = eef.copy()
@@ -974,6 +985,7 @@ class TaskExecutive:
             self._anchor_worktable_eef_goal = None
             self._grasp_eef_can_transform = None
             self._grasp_point_object_m = None
+            self._transport_offset_base_m = None
             self._grasp_reference_established = False
             self._recovery_reverse_goal = None
             self._transition(TaskPhase.APPROACH, time_s)

@@ -51,7 +51,7 @@ def select_task_state(path: Path, object_id: str, occurrence: int = 0) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--object", required=True, choices=tuple(OBJECTS))
-    parser.add_argument("--grasp-region", choices=("body", "handle"), default="body")
+    parser.add_argument("--grasp-region", choices=("body", "handle", "single_wall"), default="body")
     parser.add_argument("--gamma", type=float, default=0.5)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--states", type=Path, default=DEFAULT_STATES)
@@ -88,6 +88,7 @@ def main() -> int:
     initial_height = None
     max_lift = 0.0
     carry_contacts = set()
+    carry_contact_positions = {}
     last_phase = None
 
     def record_step(env, step, observation, controller):
@@ -112,6 +113,9 @@ def main() -> int:
                         mesh_id = int(env.sim.model.geom_dataid[geom_id])
                         mesh = env.sim.model.mesh_id2name(mesh_id) if mesh_id >= 0 else obj
                         carry_contacts.add((finger, mesh))
+                        rotation = np.asarray(env.sim.data.body_xmat[env.can_body_id]).reshape(3, 3)
+                        local = rotation.T @ (contact.pos - env.sim.data.body_xpos[env.can_body_id])
+                        carry_contact_positions.setdefault(finger, []).append(local.tolist())
         observer(env, step, observation, controller)
 
     try:
@@ -137,6 +141,9 @@ def main() -> int:
         "success": bool(episode["success"]),
         "max_object_lift_m": max_lift,
         "carry_pad_contacts": sorted(carry_contacts),
+        "carry_pad_mean_contact_object_m": {
+            finger: np.mean(points, axis=0).tolist() for finger, points in carry_contact_positions.items()
+        },
         "termination_category": episode["termination_category"],
         "failure_reason": episode["failure_reason"],
         "steps": len(episode["trace"]),

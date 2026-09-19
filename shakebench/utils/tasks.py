@@ -199,6 +199,14 @@ class TaskSpec:
         if region == "handle" and self.object_id == "mug":
             # Pinch the upper crossbar; the outer vertical segment slips under the mug torque.
             return {"hold_width_m": 0.013, "pad_height_m": 0.058, "offset_xy_m": (0.033, 0.0)}
+        if region == "single_wall" and self.object_id == "mug":
+            # Pinch the +x wall of the object: one pad in the cavity, one outside.
+            return {
+                "hold_width_m": 0.006,
+                "pad_height_m": 0.055,
+                "offset_xy_m": (-0.0144, 0.029),
+                "preopening_m": 0.032,
+            }
         raise ValueError(f"unsupported grasp region {region!r} for {self.object_id}")
 
     def contract(self):
