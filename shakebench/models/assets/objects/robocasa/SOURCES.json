@@ -1,0 +1,139 @@
+{
+  "note": "official RoboCasa objaverse instances; only the registry scale is baked in",
+  "objects": {
+    "apple": {
+      "applied_scale": [
+        0.85,
+        0.85,
+        0.85
+      ],
+      "generated_sha256": "7753bea6eb1809303f5149b913d90380149d5cf0ca9bc12a32a2b329f7766ffb",
+      "instance": "apple/apple_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/apple/apple_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "79e3aef49f74ffa4b87f696614466cef57ca7d982930b8914cf2a8d9d6eb5091",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.032113768588425545,
+        0.03207727074735714,
+        0.033469874487796654
+      ]
+    },
+    "bar_soap": {
+      "applied_scale": [
+        0.95,
+        0.95,
+        1.05
+      ],
+      "generated_sha256": "1a018e8c754582f5c42906216716d14992cf5fa081f0b982445d359c86d76782",
+      "instance": "bar_soap/bar_soap_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/bar_soap/bar_soap_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "a86ea257825c272a4495bafdd44ecfb9a23f2eda819108349a50e0e58c1a0911",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.01841002852422313,
+        0.018489606887293404,
+        0.05350078120928855
+      ]
+    },
+    "cereal": {
+      "applied_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "generated_sha256": "96dc5afa3ec17e6456a3a173b3f09141ca565f0b3b9458d24d911269469ea3a8",
+      "instance": "cereal/cereal_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/cereal/cereal_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "7d155b86ae3c1b25eb0576f0e7dee926f5b5a5040644aebbe33998d89c58d713",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.07250000144999996,
+        0.07250000144999996,
+        0.06247813672712636
+      ]
+    },
+    "mug": {
+      "applied_scale": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "generated_sha256": "dcf1d839641e3277c778770b3e9ca551da32ca8e02a4af37f597a7608ded2b06",
+      "instance": "mug/mug_1",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/mug/mug_1/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "9ace21f37f78d07162ed1077d180543b11742afcd3629a5ea2ce66f072536d7b",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.03615559779889548,
+        0.03615560148526571,
+        0.04600000015929159
+      ]
+    },
+    "potato": {
+      "applied_scale": [
+        0.85,
+        0.85,
+        0.85
+      ],
+      "generated_sha256": "a9ff9225c71d4d001f6df8cdbb1bfc8a9c173ca6d706955073fa9f5c4ffc2637",
+      "instance": "potato/potato_1",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/potato/potato_1/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "33fd56383e99384cfbed022a6f55bfa9adf594e494b0abb2ccbafb727bdfa7b0",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.033168548065125064,
+        0.033168548384812556,
+        0.03504203477285263
+      ]
+    },
+    "rolling_pin": {
+      "applied_scale": [
+        1.25,
+        1.25,
+        1.25
+      ],
+      "generated_sha256": "3de997380089284a3b2c0923cbff8482d079ec692b492c3b2393761d4540114f",
+      "instance": "rolling_pin/rolling_pin_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/rolling_pin/rolling_pin_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "f8c0eb0e70f3506b5f15a27913ee50644ed9e38e97e4f57df3eaa1cba6e764c7",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.02095853164792007,
+        0.020958529785276053,
+        0.14375000007512023
+      ]
+    },
+    "spatula": {
+      "applied_scale": [
+        1.1,
+        1.1,
+        1.1
+      ],
+      "generated_sha256": "f27bfcc04aa2609f297b50419600d44df54f51262553148483e4192ccfce5cc3",
+      "instance": "spatula/spatula_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/tmp/pickv2/objaverse/spatula/spatula_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "34076581a85590707ade8821492ad1b5568a1e621cfaec8ff4fe858f4bc0a66e",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.05222712800031176,
+        0.06345148192864503,
+        0.13576509587778363
+      ]
+    }
+  },
+  "schema_id": "shakebench.pick_place_v2.assets"
+}

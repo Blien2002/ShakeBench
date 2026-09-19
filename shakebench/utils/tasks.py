@@ -1,8 +1,17 @@
 """Task selection and public task identity, independent of rollout machinery.
 
-Friction classes are experimental contact coefficients, not measured material
-properties. The surface/object pair is the authority (MuJoCo geom defaults are
-deliberately not used). All variants retain a common 349 g payload mass.
+The task set is eight objects on the bare metal worktable, one object per
+episode.  Every entry records three kinds of number, and they are never
+interchanged:
+
+* **official** - the RoboCasa instance path, registry scale and license;
+* **geometry** - the contact-geometry envelope measured from the compiled
+  asset in the object frame (``tools/pickv2_design.py``);
+* **design** - the task's own mass, friction pair and grasp plan.
+
+Masses are per-object design values (a real mug, a real potato), not the
+MuJoCo density-derived compile values.  Friction pairs are experimental
+contact coefficients for the metal tabletop, not measured material data.
 """
 
 from __future__ import annotations
@@ -10,60 +19,182 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
+ROBOCASA_SOURCE_URL = "https://huggingface.co/datasets/robocasa/robocasa-assets"
+ROBOCASA_LICENSE = "CC-BY-4.0"
+ROBOCASA_ASSET_ROOT = "objects/robocasa"
+
+#: object_id -> task entry.  ``support`` is the measured contact envelope in
+#: the object frame as (lower_z, upper_z, support_radius) in metres.
 OBJECTS = {
-    "food_can": {
-        "asset": "objects/food_can.xml",
-        "source": "RoboCasa Objaverse canned_food_18",
-        "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
-        "source_license": "CC-BY-4.0",
-        "friction_class": "low",
-        "metal_mu": 0.15,
-        "mat_mu": 0.60,
-        "mass_kg": 0.349,
+    "mug": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/mug/mug_1/model.xml",
+        "source": "RoboCasa Objaverse mug_1",
+        "source_instance": "objaverse/mug/mug_1",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (0.80, 0.80, 0.80),
+        "official_asset_scale": (1.0, 1.0, 1.0),
+        "object_class": "receptacle_with_handle",
+        "friction_class": "glazed_ceramic",
+        "table_mu": 0.25,
+        "mass_kg": 0.30,
+        "support": (-0.03615559794718225, 0.03615560148446003, 0.04600000287744883),
+        "start_pose_support": (-0.03615749614935689, 0.03615771107858959, 0.046000650247714145),
+        "start_quat_wxyz": (0.708068, -0.000035, 0.000020, 0.706144),
+        "target_pose": "upright",
+        "instruction": "mug",
+        "grasp": {"hold_width_m": 0.0629, "pad_height_m": 0.030, "offset_xy_m": (0.0, 0.0)},
     },
-    "light_wood_block": {
-        "asset": "robosuite.models.objects.BoxObject:WoodLight:half_size=0.030,0.025,0.010",
-        "friction_class": "low",
-        "metal_mu": 0.15,
-        "mat_mu": 0.60,
-        "mass_kg": 0.10,
+    "apple": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/apple/apple_0/model.xml",
+        "source": "RoboCasa Objaverse apple_0",
+        "source_instance": "objaverse/apple/apple_0",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (0.85, 0.85, 0.85),
+        "official_asset_scale": (0.9, 0.9, 0.9),
+        "object_class": "fruit",
+        "friction_class": "fruit_skin",
+        "table_mu": 0.30,
+        "mass_kg": 0.16,
+        "support": (-0.03211376857691277, 0.03207727074735714, 0.033469874213988324),
+        "start_pose_support": (-0.031194843322826345, 0.03227772018364363, 0.033279964464956874),
+        "start_quat_wxyz": (0.998657, -0.020171, 0.047723, 0.000156),
+        "target_pose": "free",
+        "instruction": "apple",
+        "grasp": {"hold_width_m": 0.0644, "pad_height_m": 0.028, "offset_xy_m": (0.0, 0.0)},
     },
-    "cookie_box": {
-        "asset": "objects/cookie_box.xml",
-        "source": "RoboCasa Objaverse boxed_food_0",
-        "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
-        "source_license": "CC-BY-4.0",
-        "friction_class": "medium",
-        "metal_mu": 0.30,
-        "mat_mu": 0.90,
-        "mass_kg": 0.349,
+    "can": {
+        "asset": "robosuite.models.objects.CanObject",
+        "source": "robosuite CanObject (can.stl)",
+        "source_instance": "robosuite/models/assets/objects/meshes/can.stl",
+        "source_url": "https://github.com/ARISE-Initiative/robosuite",
+        "source_license": "MIT",
+        "asset_scale": (1.0, 1.0, 1.0),
+        "official_asset_scale": (1.0, 1.0, 1.0),
+        "object_class": "receptacle",
+        "friction_class": "tinplate",
+        "table_mu": 0.20,
+        "mass_kg": 0.40,
+        "support": (-0.040297003330440104, 0.03970300217508332, 0.02509177806572465),
+        "start_pose_support": (-0.0402970033304401, 0.03970300217508331, 0.02509177806572464),
+        "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
+        "target_pose": "upright",
+        "instruction": "food can",
+        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0319, "offset_xy_m": (0.0, 0.0)},
     },
-    "bread": {
-        "asset": "objects/bread.xml",
-        "friction_class": "high",
-        "metal_mu": 0.50,
-        "mat_mu": 1.20,
-        "mass_kg": 0.349,
+    "spatula": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/spatula/spatula_0/model.xml",
+        "source": "RoboCasa Objaverse spatula_0",
+        "source_instance": "objaverse/spatula/spatula_0",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (1.10, 1.10, 1.10),
+        "official_asset_scale": (1.10, 1.10, 1.10),
+        "object_class": "utensil",
+        "friction_class": "stainless_steel",
+        "table_mu": 0.22,
+        "mass_kg": 0.15,
+        "support": (-0.0522271335029445, 0.06345147728128951, 0.13576509068018164),
+        "start_pose_support": (-0.020014814407327428, 0.02323029022540675, 0.1402234569509359),
+        "start_quat_wxyz": (0.695366, -0.022732, -0.169361, 0.698044),
+        "target_pose": "free",
+        "instruction": "spatula",
+        # The handle lies at +x of the settled pose and is 13 mm thick, so the
+        # pads close 11 mm above the table to keep the fingers clear of it.
+        "grasp": {"hold_width_m": 0.0250, "pad_height_m": 0.016, "offset_xy_m": (0.085, 0.0)},
+    },
+    "bar_soap": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/bar_soap/bar_soap_0/model.xml",
+        "source": "RoboCasa Objaverse bar_soap_0",
+        "source_instance": "objaverse/bar_soap/bar_soap_0",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (0.95, 0.95, 1.05),
+        "official_asset_scale": (0.95, 0.95, 1.05),
+        "object_class": "bar",
+        "friction_class": "soap",
+        "table_mu": 0.25,
+        "mass_kg": 0.11,
+        "support": (-0.018410028739384878, 0.01848960653417706, 0.05350078315735753),
+        "start_pose_support": (-0.017431807843213257, 0.01925637653077708, 0.05338579126483383),
+        "start_quat_wxyz": (0.707512, -0.001006, -0.013368, 0.706575),
+        "target_pose": "free",
+        "instruction": "bar of soap",
+        "grasp": {"hold_width_m": 0.0614, "pad_height_m": 0.018, "offset_xy_m": (0.0, 0.0)},
+    },
+    "cereal": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/cereal/cereal_0/model.xml",
+        "source": "RoboCasa Objaverse cereal_0",
+        "source_instance": "objaverse/cereal/cereal_0",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (1.0, 1.0, 1.0),
+        "official_asset_scale": (1.0, 1.0, 1.0),
+        "object_class": "box",
+        "friction_class": "cardboard",
+        "table_mu": 0.35,
+        "mass_kg": 0.35,
+        "support": (-0.07249999999999997, 0.07250000289999996, 0.06247813672712636),
+        "start_pose_support": (-0.07249999999999995, 0.07250000289999994, 0.06247813672712634),
+        "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
+        "target_pose": "free",
+        "instruction": "cereal box",
+        "grasp": {"hold_width_m": 0.0377, "pad_height_m": 0.035, "offset_xy_m": (0.0, 0.0)},
+    },
+    "rolling_pin": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/rolling_pin/rolling_pin_0/model.xml",
+        "source": "RoboCasa Objaverse rolling_pin_0",
+        "source_instance": "objaverse/rolling_pin/rolling_pin_0",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (1.25, 1.25, 1.25),
+        "official_asset_scale": (1.25, 1.25, 1.25),
+        "object_class": "cylinder",
+        "friction_class": "wood",
+        "table_mu": 0.35,
+        "mass_kg": 0.30,
+        "support": (-0.020958531647920043, 0.020958529785276025, 0.14375000007512018),
+        "start_pose_support": (-0.020741287986943014, 0.0207412839302145, 0.14374997832712755),
+        "start_quat_wxyz": (0.704125, -0.055970, 0.055456, 0.705691),
+        "target_pose": "free",
+        "instruction": "rolling pin",
+        "grasp": {"hold_width_m": 0.0417, "pad_height_m": 0.019, "offset_xy_m": (0.0, 0.0)},
+    },
+    "potato": {
+        "asset": f"{ROBOCASA_ASSET_ROOT}/potato/potato_1/model.xml",
+        "source": "RoboCasa Objaverse potato_1",
+        "source_instance": "objaverse/potato/potato_1",
+        "source_url": ROBOCASA_SOURCE_URL,
+        "source_license": ROBOCASA_LICENSE,
+        "asset_scale": (0.85, 0.85, 0.85),
+        "official_asset_scale": (1.0, 1.0, 1.0),
+        "object_class": "irregular_tuber",
+        "friction_class": "tuber_skin",
+        "table_mu": 0.40,
+        "mass_kg": 0.20,
+        "support": (-0.033168547637614856, 0.03316854849509696, 0.03504203543825795),
+        "start_pose_support": (-0.02411677028463973, 0.0266922977437258, 0.03848302231675714),
+        "start_quat_wxyz": (0.395127, 0.690549, -0.208453, 0.568828),
+        "target_pose": "free",
+        "instruction": "potato",
+        "grasp": {"hold_width_m": 0.0725, "pad_height_m": 0.014, "offset_xy_m": (0.0, 0.0)},
     },
 }
-SURFACES = ("metal", "mat")
-TASK_SCHEMA_ID = "shakebench.task.v1"
-MAT_VISUAL_RGBA = (0.90, 1.0, 0.95, 1.0)
-MAT_TEXTURE_PATH = "textures/gray-felt.png"
-TASK_VISUAL_REVISION = "felt_mat_wood_bin.v3"
-# Compiled support in object coordinates, measured from the package meshes.
-OBJECT_SUPPORT = {
-    "food_can": (-0.0325, 0.0325, 0.02616295090390226),
-    "light_wood_block": (-0.01, 0.01, 0.03905124837953328),
-    "cookie_box": (-0.0362, 0.0362, 0.06415052610852073),
-    "bread": (-0.023251370186775307, 0.024748632093102355, 0.0312410001023236),
-}
-#: Objects whose MJCF lives in the upstream robosuite asset tree.  The shared
-#: root is named here rather than searched as a fallback for the others.
-UPSTREAM_OBJECTS = frozenset({"bread", "light_wood_block"})
+
+DEFAULT_OBJECT_ID = "mug"
+#: The target container is a single fixed crate shared by all eight objects.
+SURFACES = ("metal",)
+TASK_SCHEMA_ID = "shakebench.task.v3"
+TASK_VISUAL_REVISION = "eight_objects_bare_metal_crate.v1"
+GRASP_OPENING_ALLOWANCE_M = 0.010
+#: Compiled Panda jaw travel (both fingers) in metres.
+PANDA_JAW_LIMIT_M = 0.080
+#: A hold needs this much unused jaw travel beyond the object's widest point.
+GRASP_JAW_MARGIN_MIN_M = 0.005
+UPRIGHT_AXIS_COSINE_MIN = 0.95
 
 
 @dataclass(frozen=True)
@@ -71,16 +202,13 @@ class TaskSpec:
     """Serializable task selector; invalid combinations fail before compilation."""
 
     task_type: str = "pick_place"
-    object_id: str = "food_can"
-    surface_id: str = "metal"
+    object_id: str = DEFAULT_OBJECT_ID
 
     def __post_init__(self):
         if not isinstance(self.task_type, str) or self.task_type != "pick_place":
             raise ValueError(f"unsupported task_type: {self.task_type!r}")
         if not isinstance(self.object_id, str) or self.object_id not in OBJECTS:
             raise ValueError(f"unsupported object_id: {self.object_id!r}")
-        if not isinstance(self.surface_id, str) or self.surface_id not in SURFACES:
-            raise ValueError(f"unsupported surface_id: {self.surface_id!r}")
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any] | TaskSpec | None) -> TaskSpec:
@@ -88,8 +216,12 @@ class TaskSpec:
             return cls()
         if isinstance(value, cls):
             return value
-        if not isinstance(value, Mapping) or set(value) != {"task_type", "object_id", "surface_id"}:
-            raise ValueError("task must contain exactly task_type, object_id and surface_id")
+        if not isinstance(value, Mapping) or set(value) != {"task_type", "object_id"}:
+            raise ValueError(
+                "task must contain exactly task_type and object_id; "
+                "surface_id belongs to the retired two-surface schema "
+                f"({TASK_SCHEMA_ID})"
+            )
         return cls(**dict(value))
 
     def to_dict(self):
@@ -97,91 +229,111 @@ class TaskSpec:
 
     @property
     def variant_id(self):
-        return f"{self.task_type}.{self.surface_id}.{self.object_id}"
+        return f"{self.task_type}.{self.object_id}"
+
+    @property
+    def surface_id(self):
+        """Every variant uses the bare metal worktable."""
+
+        return SURFACES[0]
 
     @property
     def table_sliding_mu(self):
-        return OBJECTS[self.object_id][f"{self.surface_id}_mu"]
+        return float(OBJECTS[self.object_id]["table_mu"])
 
     @property
     def target_sliding_mu(self):
-        # Experimental target coefficients are independent of its visual material.
-        return OBJECTS[self.object_id]["metal_mu"]
+        # Experimental target coefficients are independent of the container's
+        # visual material and match the tabletop pair for this object.
+        return self.table_sliding_mu
 
     @property
     def object_mass_kg(self):
         return float(OBJECTS[self.object_id]["mass_kg"])
 
-    def contract(self):
-        from shakebench import models
+    @property
+    def start_quat_wxyz(self):
+        quat = tuple(float(value) for value in OBJECTS[self.object_id]["start_quat_wxyz"])
+        norm = math.sqrt(sum(value * value for value in quat))
+        if norm <= 0.0:
+            raise ValueError(f"{self.object_id}: start quaternion must be non-zero")
+        return tuple(value / norm for value in quat)
 
-        record = {
+    @property
+    def upright_required(self):
+        return OBJECTS[self.object_id]["target_pose"] == "upright"
+
+    @property
+    def grasp(self):
+        return dict(OBJECTS[self.object_id]["grasp"])
+
+    def contract(self):
+        entry = OBJECTS[self.object_id]
+        return {
             "schema_id": TASK_SCHEMA_ID,
             **self.to_dict(),
-            "object_asset": OBJECTS[self.object_id]["asset"],
-            "object_support_lower_upper_radius_m": list(OBJECT_SUPPORT[self.object_id]),
-            "object_friction_class": OBJECTS[self.object_id]["friction_class"],
+            "object_asset": entry["asset"],
+            "object_source": entry["source"],
+            "object_source_instance": entry["source_instance"],
+            "object_source_url": entry["source_url"],
+            "object_source_license": entry["source_license"],
+            "object_asset_scale": list(entry["asset_scale"]),
+            "object_official_registry_scale": list(entry["official_asset_scale"]),
+            "object_class": entry["object_class"],
+            "object_support_lower_upper_radius_m": [float(value) for value in entry["support"]],
+            "object_friction_class": entry["friction_class"],
             "table_object_sliding_mu": self.table_sliding_mu,
             "target_object_sliding_mu": self.target_sliding_mu,
             "finger_object_sliding_mu": 1.0,
             "object_mass_kg": self.object_mass_kg,
-            "mat_thickness_m": 0.003 if self.surface_id == "mat" else 0.0,
+            "object_start_quat_wxyz": list(self.start_quat_wxyz),
+            "object_target_pose": entry["target_pose"],
+            "object_grasp": {
+                "hold_width_m": float(entry["grasp"]["hold_width_m"]),
+                "pad_height_m": float(entry["grasp"]["pad_height_m"]),
+                "offset_xy_m": [float(value) for value in entry["grasp"]["offset_xy_m"]],
+                "jaw_limit_m": PANDA_JAW_LIMIT_M,
+                "opening_allowance_m": GRASP_OPENING_ALLOWANCE_M,
+            },
             "task_visual_revision": TASK_VISUAL_REVISION,
-            "target_visual_style": "robosuite_wood_bin",
-            "target_visual_source": "robosuite.models.objects.Bin",
-            "mat_visual_rgba": list(MAT_VISUAL_RGBA) if self.surface_id == "mat" else None,
-            "mat_texture": MAT_TEXTURE_PATH if self.surface_id == "mat" else None,
-            "mat_texture_repeat": [3, 3] if self.surface_id == "mat" else None,
+            "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+            "target_container": "single fixed crate shared by all eight objects",
             "surface_model": "flush rigid layer; fixed total worktable mass and top height",
-            "inertia_model": "mass-normalized compiled geometry",
-            "stability_constraint": "upright cosine >= 0.95; displacement after tipping is not classified as sliding",
-            "success_semantics": "phase04_vibration_success_evaluator",
+            "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
+            "mass_values_are": "per-object design masses, not density-derived compile values",
+            "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+            "stability_constraint": "start pose is the measured free-settled rest pose",
+            "success_semantics": "shakebench.task.v3 success evaluator",
             "qualification": "pending_task_variant_requalification",
         }
-        for key in ("source", "source_url", "source_license"):
-            if key in OBJECTS[self.object_id]:
-                record[key] = OBJECTS[self.object_id][key]
-        return record
 
 
-def make_task_object(spec: TaskSpec | None, *, name="can"):
-    """Use existing robosuite meshes and its native textured box primitive."""
-    from robosuite.models.objects import BoxObject, BreadObject, CanObject
-    from robosuite.utils.mjcf_utils import CustomMaterial
-    from shakebench.models.objects import CookieBoxObject, FoodCanObject
+def make_task_object(spec: TaskSpec | None, *, name="task_object"):
+    """Build the selected task object from its recorded asset."""
+
+    from robosuite.models.objects import CanObject, MujocoXMLObject
+    from shakebench.models import xml_path_completion
 
     if spec is None:
         return CanObject(name=name)
-    if spec.object_id == "food_can":
-        return FoodCanObject(name=name)
-    if spec.object_id == "cookie_box":
-        return CookieBoxObject(name=name)
-    if spec.object_id == "light_wood_block":
-        material = CustomMaterial(
-            texture="WoodLight",
-            tex_name=f"{spec.object_id}_texture",
-            mat_name=f"{spec.object_id}_material",
-            tex_attrib={"type": "2d"},
-            mat_attrib={"texrepeat": "1 1", "specular": "0.15", "shininess": "0.1"},
-        )
-        return BoxObject(
-            name=name,
-            size=(0.030, 0.025, 0.010),
-            material=material,
-            joints=[dict(type="free", damping="0.0005")],
-        )
-    if spec.object_id == "bread":
-        return BreadObject(name=name)
-    raise ValueError(f"unsupported task object {spec.object_id!r}")
+    entry = OBJECTS[spec.object_id]
+    asset = entry["asset"]
+    if asset.startswith("robosuite.models.objects."):
+        # robosuite's native Can keeps its own mesh and inertial seam.
+        return CanObject(name=name)
+    return MujocoXMLObject(
+        xml_path_completion(asset),
+        name=name,
+        joints=[dict(type="free", damping="0.0005")],
+        obj_type="all",
+        duplicate_collision_geoms=False,
+    )
 
 
 def task_variants() -> tuple[TaskSpec, ...]:
-    """Return frozen state variants; experimental objects remain opt-in."""
-    return tuple(
-        TaskSpec(object_id=obj, surface_id=surface)
-        for surface in SURFACES
-        for obj in ("food_can", "cookie_box", "bread")
-    )
+    """Return the frozen eight variants of the current task set."""
+
+    return tuple(TaskSpec(object_id=object_id) for object_id in OBJECTS)
 
 
 @runtime_checkable
@@ -206,40 +358,106 @@ class ShakeBenchTask(Protocol):
 
 def make_task_env(task: Mapping[str, Any] | TaskSpec | None = None, **kwargs) -> ShakeBenchTask:
     """Construct the selected task; task-specific assets stay behind this seam."""
+
     from shakebench.environments.vibration_pick_place import VibrationPickPlace
 
     return VibrationPickPlace(task=TaskSpec.from_mapping(task), **kwargs)
 
 
-def task_initial_yaw_rad(spec: TaskSpec) -> float:
-    return math.pi / 2.0 if spec.object_id == "cookie_box" else 0.0
+def task_start_quat_wxyz(spec: TaskSpec) -> tuple[float, float, float, float]:
+    return spec.start_quat_wxyz
 
 
 def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     """Resolve state initialization; reject unsupported poses rather than ignore them."""
+
     import numpy as np
 
     spec = TaskSpec.from_mapping(state["task"])
     xy = np.asarray(state.get("object_xy_m"), dtype=float)
     if xy.shape != (2,) or not np.all(np.isfinite(xy)):
         raise ValueError("object_xy_m must be a finite two-vector")
-    yaw = task_initial_yaw_rad(spec)
-    expected_pose = [
-        *xy,
-        0.03 - OBJECT_SUPPORT[spec.object_id][0],
-        0.0,
-        0.0,
-        math.sin(yaw / 2.0),
-        math.cos(yaw / 2.0),
-    ]
+    expected_quat = np.asarray(state.get("object_start_quat_wxyz", spec.start_quat_wxyz), dtype=float)
     pose = np.asarray(state.get("object_pose_worktable"), dtype=float)
     velocity = np.asarray(state.get("object_initial_velocity"), dtype=float)
     if (
-        pose.shape != (7,)
-        or not np.allclose(pose, expected_pose, atol=1e-12, rtol=0)
+        expected_quat.shape != (4,)
+        or not np.allclose(expected_quat, spec.start_quat_wxyz, atol=1e-6, rtol=0)
+        or pose.shape != (7,)
+        or not np.allclose(pose[:2], xy, atol=1e-12, rtol=0)
+        or not np.allclose(pose[3:], expected_quat, atol=1e-6, rtol=0)
+        or not np.isfinite(pose[2])
         or velocity.shape != (6,)
         or np.any(velocity != 0)
-        or not math.isclose(float(state.get("object_yaw_rad", float("nan"))), yaw, rel_tol=0.0, abs_tol=1e-12)
     ):
-        raise ValueError("task states require their registered upright pose, yaw and zero velocity")
-    return {"task": spec, "object_start_xy": tuple(xy), "object_start_yaw_rad": yaw}
+        raise ValueError("task states require their registered start pose and zero velocity")
+    return {"task": spec, "object_start_xy": tuple(xy), "object_start_quat_wxyz": tuple(expected_quat)}
+
+
+def grasp_opening_gate_m(spec: TaskSpec) -> float:
+    """Return the jaw opening the oracle expects after a bilateral capture."""
+
+    hold_width = float(OBJECTS[spec.object_id]["grasp"]["hold_width_m"])
+    return min(hold_width + GRASP_OPENING_ALLOWANCE_M, PANDA_JAW_LIMIT_M - 0.002)
+
+
+def validate_task_registry() -> None:
+    """Fail closed on a registry that cannot be grasped or is mis-recorded."""
+
+    for object_id, entry in OBJECTS.items():
+        lower, upper, radius = (float(value) for value in entry["support"])
+        if not lower < upper:
+            raise ValueError(f"{object_id}: support bounds must be increasing")
+        if radius <= 0.0:
+            raise ValueError(f"{object_id}: support radius must be positive")
+        if float(entry["mass_kg"]) <= 0.0:
+            raise ValueError(f"{object_id}: design mass must be positive")
+        if not 0.0 < float(entry["table_mu"]) <= 1.5:
+            raise ValueError(f"{object_id}: table friction must be a plausible coefficient")
+        quat = entry["start_quat_wxyz"]
+        if len(quat) != 4 or not math.isclose(sum(value * value for value in quat), 1.0, abs_tol=1e-5):
+            raise ValueError(f"{object_id}: start quaternion must be a unit quaternion")
+        grasp = entry["grasp"]
+        pad_height = float(grasp["pad_height_m"])
+        if pad_height <= 0.0:
+            raise ValueError(f"{object_id}: grasp pad height must be positive")
+        if pad_height > (upper - lower):
+            raise ValueError(f"{object_id}: grasp pad height must lie inside the object")
+        hold_width = float(grasp["hold_width_m"])
+        if hold_width + GRASP_JAW_MARGIN_MIN_M > PANDA_JAW_LIMIT_M:
+            raise ValueError(
+                f"{object_id}: hold width {hold_width:.4f} m leaves less than "
+                f"{GRASP_JAW_MARGIN_MIN_M:.3f} m of Panda jaw margin"
+            )
+        if entry["target_pose"] not in ("upright", "free"):
+            raise ValueError(f"{object_id}: target_pose must be upright or free")
+        if entry["asset"] is None:
+            raise ValueError(f"{object_id}: asset is required")
+
+
+validate_task_registry()
+
+#: Compatibility name for callers that read the object support triple.
+OBJECT_SUPPORT = {object_id: tuple(float(v) for v in entry["support"]) for object_id, entry in OBJECTS.items()}
+
+
+__all__ = [
+    "DEFAULT_OBJECT_ID",
+    "GRASP_OPENING_ALLOWANCE_M",
+    "OBJECTS",
+    "OBJECT_SUPPORT",
+    "PANDA_JAW_LIMIT_M",
+    "SURFACES",
+    "ShakeBenchTask",
+    "TASK_SCHEMA_ID",
+    "TASK_VISUAL_REVISION",
+    "TaskSpec",
+    "UPRIGHT_AXIS_COSINE_MIN",
+    "grasp_opening_gate_m",
+    "make_task_env",
+    "make_task_object",
+    "task_env_kwargs",
+    "task_start_quat_wxyz",
+    "task_variants",
+    "validate_task_registry",
+]

@@ -1,0 +1,27 @@
+<mujoco model="potato_4">
+  <asset>
+    <mesh file="visual/model_normalized_0.obj" name="model_normalized_0_vis" scale="0.067999999999999963 0.067999999999999963 0.067999999999999963" refquat="-7.850462293418875e-17 0.7071067811865475 0.7071067811865476 -7.850462293418876e-17" />
+    <texture type="2d" name="image0" file="visual/image0.png" />
+    <material name="default" texture="image0" specular="0.5" shininess="0.25" />
+    <mesh file="collision/collision_mesh_collision_0.obj" name="potato_collision_mesh_0" scale="0.067999999999999963 0.067999999999999963 0.067999999999999963" refquat="-7.850462293418875e-17 0.7071067811865475 0.7071067811865476 -7.850462293418876e-17" />
+    <mesh file="collision/collision_mesh_collision_1.obj" name="potato_collision_mesh_1" scale="0.067999999999999963 0.067999999999999963 0.067999999999999963" refquat="-7.850462293418875e-17 0.7071067811865475 0.7071067811865476 -7.850462293418876e-17" />
+  </asset>
+  <default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0" />
+    </default>
+    <default class="collision">
+      <geom group="0" rgba="0.5 0 0 0.5" density="1000.0" />
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_0_vis" conaffinity="0" contype="0" group="1" material="default" />
+        <geom class="region" name="reg_bbox" type="box" pos="-1.0199999994631163e-09 0 0" size="0.026884689099999987 0.033999999999999982 0.033168547679999986" />
+        <geom mesh="potato_collision_mesh_0" type="mesh" class="collision" />
+        <geom mesh="potato_collision_mesh_1" type="mesh" class="collision" />
+      </body>
+    <site name="bottom_site" pos="0 0 -0.033168548065125064" size="0.005" rgba="0 0 0 0" /><site name="top_site" pos="0 0 0.033168548384812556" size="0.005" rgba="0 0 0 0" /><site name="horizontal_radius_site" pos="0.035042034772852629 0 0" size="0.005" rgba="0 0 0 0" /></body>
+  </worldbody>
+</mujoco>

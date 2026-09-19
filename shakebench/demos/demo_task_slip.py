@@ -24,7 +24,7 @@ from shakebench.demos.demo_oracle_video import FFmpegVideoWriter
 from shakebench.utils.calibration import calibrate_gamma, level_scale_for_gamma
 from shakebench.utils.excitation import build_excitation_program
 from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
-from shakebench.utils.tasks import OBJECTS, SURFACES, TaskSpec, make_task_env, task_variants
+from shakebench.utils.tasks import OBJECTS, TaskSpec, make_task_env, task_variants
 
 
 def _camera(env) -> mujoco.MjvCamera:
@@ -51,7 +51,7 @@ def _frame(
     renderer.update_scene(env.sim.data._data, camera=camera, scene_option=option)
     image = renderer.render().copy()
     lines = (
-        f"{spec.surface_id.upper()} / {spec.object_id.upper()}     table-object mu={spec.table_sliding_mu:.2f}",
+        f"METAL / {spec.object_id.upper()}     table-object mu={spec.table_sliding_mu:.2f}",
         f"official Gamma={gamma:.3f}     level scale={level_scale:.6f}     t={sample['time_s']:.2f} s",
         f"surface-relative slip={sample['slip_distance_m'] * 1000:.2f} mm     speed={sample['slip_speed_m_s'] * 1000:.2f} mm/s",
     )
@@ -76,7 +76,6 @@ def _sample(env, spec: TaskSpec) -> dict:
     return {
         "variant_id": spec.variant_id,
         "object_id": spec.object_id,
-        "surface_id": spec.surface_id,
         "table_object_sliding_mu": spec.table_sliding_mu,
         "time_s": float(report["time_s"]),
         "slip_distance_m": float(report["table_slip_distance_m"]),
@@ -153,7 +152,6 @@ def record_variant(
     summary = {
         "variant_id": spec.variant_id,
         "object_id": spec.object_id,
-        "surface_id": spec.surface_id,
         "table_object_sliding_mu": spec.table_sliding_mu,
         "video": str(output),
         "gamma_requested": gamma,
@@ -181,7 +179,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--object-id", choices=tuple(OBJECTS), default=None)
-    parser.add_argument("--surface-id", choices=SURFACES, default=None)
     excitation = parser.add_mutually_exclusive_group(required=True)
     excitation.add_argument("--gamma", type=float, help="formal two-second calibrated Gamma command")
     excitation.add_argument("--level-scale", type=float, help="explicit exploratory scale; cannot be called Gamma")
@@ -202,17 +199,13 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("gamma must be non-negative")
     if args.level_scale is not None and args.level_scale < 0:
         raise ValueError("level-scale must be non-negative")
-    if (args.object_id is None) != (args.surface_id is None):
-        raise ValueError("object-id and surface-id must be supplied together")
     level_scale = (
         level_scale_for_gamma(args.gamma, seed=args.seed, t0=0.0) if args.gamma is not None else float(args.level_scale)
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict] = []
     summaries: list[dict] = []
-    specs = (
-        task_variants() if args.object_id is None else (TaskSpec(object_id=args.object_id, surface_id=args.surface_id),)
-    )
+    specs = task_variants() if args.object_id is None else (TaskSpec(object_id=args.object_id),)
     for spec in specs:
         samples, summary = record_variant(
             spec,

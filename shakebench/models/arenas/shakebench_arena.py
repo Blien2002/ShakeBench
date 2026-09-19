@@ -39,11 +39,22 @@ ISOLATOR_JOINT_NAMES = {axis: f"isolator_{axis}" for axis in AXES}
 #: Arena textures owned by the upstream robosuite package, not by ShakeBench.
 SHARED_TEXTURE_FILES = frozenset({"steel-brushed.png"})
 
+#: One crate is shared by all eight task objects.  The inner footprint fits
+#: the longest object (287.5 mm rolling pin, 56 mm of length margin) and the
+#: widest flat object (119.1 mm cereal box).  The 45 mm wall blocks the rolling
+#: escape of every object in its declared target pose - the largest rolling
+#: radius is the mug on its side at 39.5 mm - while staying shallow enough
+#: that a vibration-induced escape stays possible.  Objects taller than the
+#: wall (mug, can, cereal box) rest on the crate floor and protrude: "inside"
+#: means the full inner footprint plus floor support.
 TARGET_CONTAINER_CENTER_XY_M = (-0.10, 0.17)
-TARGET_CONTAINER_OUTER_XY_M = (0.18, 0.16)
+TARGET_CONTAINER_INNER_XY_M = (0.344, 0.150)
 TARGET_CONTAINER_WALL_THICKNESS_M = 0.008
-TARGET_CONTAINER_INNER_XY_M = (0.164, 0.144)
-TARGET_CONTAINER_WALL_HEIGHT_M = 0.035
+TARGET_CONTAINER_OUTER_XY_M = (
+    TARGET_CONTAINER_INNER_XY_M[0] + 2.0 * TARGET_CONTAINER_WALL_THICKNESS_M,
+    TARGET_CONTAINER_INNER_XY_M[1] + 2.0 * TARGET_CONTAINER_WALL_THICKNESS_M,
+)
+TARGET_CONTAINER_WALL_HEIGHT_M = 0.045
 TARGET_CONTAINER_BOTTOM_THICKNESS_M = 0.012
 
 CANONICAL_TARGET_CONTAINER = {
@@ -242,97 +253,6 @@ class ShakeBenchArena(Arena):
         self.table_visual.set("size", _fmt(self.table_half_size))
         self.table_top.set("pos", _fmt((0.0, 0.0, self.table_half_size[2])))
         self.table_imu_site.set("pos", _fmt((0.0, 0.0, -self.table_half_size[2])))
-
-    def add_table_mat(self) -> None:
-        """Install a flush 3 mm rigid rubber layer with an explicit contact geom.
-
-        The total supported mass and tabletop height stay fixed. Only the mat
-        is paired with the manipulated object, avoiding duplicate constraints
-        from the underlying metal. It moves rigidly with the isolated table.
-        """
-        from shakebench.utils.tasks import MAT_TEXTURE_PATH, MAT_VISUAL_RGBA
-
-        if self.table_body.find("./geom[@name='table_mat_collision']") is not None:
-            raise ShakeBenchArenaError("table mat already installed")
-        half = self.table_half_size
-        position = (0.0, 0.0, half[2] - 0.0015)
-        self.object_support_geom = ET.SubElement(
-            self.table_body,
-            "geom",
-            {
-                "name": "table_mat_collision",
-                "type": "box",
-                "group": "0",
-                "size": _fmt((half[0], half[1], 0.0015)),
-                "pos": _fmt(position),
-                "contype": "0",
-                "conaffinity": "0",
-                "mass": "0",
-                "rgba": "0 0 0 0",
-            },
-        )
-        ET.SubElement(
-            self.asset,
-            "texture",
-            {
-                "name": "shakebench_task_mat_felt",
-                "type": "2d",
-                "file": xml_path_completion(MAT_TEXTURE_PATH, root=models.robosuite_assets_root),
-            },
-        )
-        ET.SubElement(
-            self.asset,
-            "material",
-            {
-                "name": "shakebench_task_mat",
-                "rgba": _fmt(MAT_VISUAL_RGBA),
-                "texture": "shakebench_task_mat_felt",
-                "texrepeat": "3 3",
-                "texuniform": "false",
-                "specular": "0.12",
-                "shininess": "0.08",
-                "reflectance": "0",
-            },
-        )
-        ET.SubElement(
-            self.table_body,
-            "geom",
-            {
-                "name": "table_mat_visual",
-                "type": "box",
-                "group": "1",
-                "size": _fmt((half[0], half[1], 0.0015)),
-                "pos": _fmt((0.0, 0.0, position[2] + 0.00015)),
-                "contype": "0",
-                "conaffinity": "0",
-                "mass": "0",
-                "material": "shakebench_task_mat",
-                "rgba": _fmt(MAT_VISUAL_RGBA),
-            },
-        )
-        # A fine bound edge makes the textile layer readable at oblique views.
-        for axis in (0, 1):
-            for sign in (-1, 1):
-                start = [-half[0] + 0.006, -half[1] + 0.006, half[2] + 0.0004]
-                end = [half[0] - 0.006, half[1] - 0.006, half[2] + 0.0004]
-                start[axis] = end[axis] = sign * (half[axis] - 0.006)
-                ET.SubElement(
-                    self.table_body,
-                    "geom",
-                    {
-                        "name": f"table_mat_binding_{axis}_{sign}_visual",
-                        "type": "capsule",
-                        "group": "1",
-                        "fromto": _fmt((*start, *end)),
-                        "size": "0.00065",
-                        "rgba": "0.50 0.59 0.55 1",
-                        "contype": "0",
-                        "conaffinity": "0",
-                        "mass": "0",
-                    },
-                )
-        self._refresh_visual_geom_names()
-        self.set_visual_layer(self.visual_layer_enabled)
 
     def configure_isolator(self, config=None) -> IsolatorParameters:
         """Apply the explicit inertial and, when isolated, the derived ``k/c/springref``."""

@@ -919,7 +919,13 @@ def collect_contact_metrics(
 
 @dataclass(frozen=True)
 class SuccessThresholds:
-    """Frozen v0 success thresholds."""
+    """Frozen task success thresholds.
+
+    ``upright_cosine_min`` is the smallest cosine between the object's local
+    +z axis and the container floor normal that still counts as upright.  The
+    requirement itself is per object (``SuccessSnapshot.upright_required``), so
+    objects whose target pose is free never see this gate.
+    """
 
     hold_duration_s: float = 0.50
     max_relative_linear_speed_m_s: float = 0.02
@@ -927,6 +933,7 @@ class SuccessThresholds:
     target_bottom_support_force_threshold_N: float = TARGET_BOTTOM_SUPPORT_FORCE_THRESHOLD_N
     target_bottom_support_z_tolerance_m: float = TARGET_BOTTOM_SUPPORT_Z_TOLERANCE_M
     containment_epsilon_m: float = 1e-12
+    upright_cosine_min: float = 0.95
 
     def __post_init__(self) -> None:
         for name in (
@@ -950,6 +957,12 @@ class SuccessThresholds:
             or float(self.containment_epsilon_m) < 0.0
         ):
             raise ShakeBenchMetricsError("containment_epsilon_m must be finite and non-negative")
+        if (
+            isinstance(self.upright_cosine_min, (bool, np.bool_))
+            or not np.isfinite(float(self.upright_cosine_min))
+            or not -1.0 <= float(self.upright_cosine_min) <= 1.0
+        ):
+            raise ShakeBenchMetricsError("upright_cosine_min must be a finite cosine")
 
 
 DEFAULT_SUCCESS_THRESHOLDS = SuccessThresholds()
@@ -957,7 +970,12 @@ DEFAULT_SUCCESS_THRESHOLDS = SuccessThresholds()
 
 @dataclass(frozen=True)
 class SuccessSnapshot:
-    """Inputs to the success evaluator at one time sample."""
+    """Inputs to the success evaluator at one time sample.
+
+    ``object_up_cosine`` and ``upright_required`` carry the per-object target
+    pose rule: an object whose declared target pose is ``free`` never has to
+    satisfy an orientation gate, while a declared upright receptacle does.
+    """
 
     support_points_target_xy: np.ndarray
     target_inner_half_extents_m: tuple[float, float]
@@ -967,6 +985,8 @@ class SuccessSnapshot:
     finger_can_contact_present: bool
     relative_linear_speed_m_s: float
     relative_angular_speed_rad_s: float
+    object_up_cosine: float = 1.0
+    upright_required: bool = False
 
     def __post_init__(self) -> None:
         points = np.asarray(self.support_points_target_xy, dtype=float)
@@ -987,6 +1007,12 @@ class SuccessSnapshot:
                 raise ShakeBenchMetricsError(f"{name} must be finite and non-negative")
         if not np.isfinite(float(self.lower_support_z_m)):
             raise ShakeBenchMetricsError("lower_support_z_m must be finite")
+        if not np.isfinite(float(self.object_up_cosine)) or not -1.0 <= float(self.object_up_cosine) <= 1.0:
+            raise ShakeBenchMetricsError("object_up_cosine must be a finite cosine")
+        object.__setattr__(self, "object_up_cosine", float(self.object_up_cosine))
+        if not isinstance(self.upright_required, (bool, np.bool_)):
+            raise ShakeBenchMetricsError("upright_required must be boolean")
+        object.__setattr__(self, "upright_required", bool(self.upright_required))
 
     def is_supported_by_target_bottom(
         self,
@@ -1031,6 +1057,19 @@ class SuccessSnapshot:
         return self.finger_can_contact_present
 
     @property
+    def released(self) -> bool:
+        """True when no finger pad touches the object any more."""
+
+        return not bool(self.finger_can_contact_present)
+
+    def is_upright(self, cosine_min: float = DEFAULT_SUCCESS_THRESHOLDS.upright_cosine_min) -> bool:
+        """Return the per-object target-orientation verdict."""
+
+        if not self.upright_required:
+            return True
+        return bool(self.object_up_cosine >= float(cosine_min))
+
+    @property
     def containment(self) -> bool:
         return self.containment_with_epsilon(DEFAULT_SUCCESS_THRESHOLDS.containment_epsilon_m)
 
@@ -1053,8 +1092,12 @@ class SuccessSnapshot:
             "lower_support_z_m": self.lower_support_z_m,
             "supported_by_target_bottom": bool(self.supported_by_target_bottom),
             "finger_can_contact_present": bool(self.finger_can_contact_present),
+            "released": bool(self.released),
             "relative_linear_speed_m_s": self.relative_linear_speed_m_s,
             "relative_angular_speed_rad_s": self.relative_angular_speed_rad_s,
+            "object_up_cosine": self.object_up_cosine,
+            "upright_required": bool(self.upright_required),
+            "upright": bool(self.is_upright()),
         }
 
 
@@ -1133,6 +1176,7 @@ class VibrationSuccessEvaluator:
             "containment": snapshot.containment_with_epsilon(self.thresholds.containment_epsilon_m),
             "supported_by_target_bottom": bool(snapshot.supported_by_target_bottom),
             "finger_can_contact_absent": not bool(snapshot.finger_can_contact_present),
+            "upright": snapshot.is_upright(self.thresholds.upright_cosine_min),
             "relative_linear_speed": snapshot.relative_linear_speed_m_s < self.thresholds.max_relative_linear_speed_m_s,
             "relative_angular_speed": snapshot.relative_angular_speed_rad_s
             < self.thresholds.max_relative_angular_speed_rad_s,
@@ -1459,6 +1503,7 @@ class ShakeBenchMetrics:
         deck_driver: Any = None,
         dt_s: Optional[float] = None,
         slip_speed_threshold_m_s: float = 1e-3,
+        upright_required: bool = False,
     ):
         self.can_body_name = can_body_name
         self.can_geom_names = tuple(_normalise_names(can_geom_names))
@@ -1484,6 +1529,9 @@ class ShakeBenchMetrics:
         ):
             raise ShakeBenchMetricsError("slip_speed_threshold_m_s must be finite and non-negative")
         self.slip_speed_threshold_m_s = float(slip_speed_threshold_m_s)
+        if not isinstance(upright_required, (bool, np.bool_)):
+            raise ShakeBenchMetricsError("upright_required must be boolean")
+        self.upright_required = bool(upright_required)
         self._compiled_can_body_points: Optional[np.ndarray] = None
         self._compiled_can_model_identity: Optional[int] = None
         self.reset()
@@ -1572,7 +1620,7 @@ class ShakeBenchMetrics:
         }
         return driver_response, table_response
 
-    def _success_primitive(self, model: Any, raw_data: Any) -> tuple[PoseTwist, np.ndarray, ContactReport]:
+    def _success_primitive(self, model: Any, raw_data: Any) -> tuple[PoseTwist, np.ndarray, ContactReport, float]:
         """Shared compiled-geometry/contact extraction for success and reports."""
 
         sim_view = self._as_sim_or_model(model, raw_data)
@@ -1617,10 +1665,18 @@ class ShakeBenchMetrics:
             dt_s=self.dt_s,
             support_frame_rotation=worktable_rotation,
         )
-        return can_target, support_points_target, contacts
+        # The object's local +z expressed against the container floor normal.
+        object_up = np.asarray(raw_data.xmat[body_id], dtype=float).reshape(3, 3)[:, 2]
+        target_up = np.asarray(worktable_rotation, dtype=float)[:, 2]
+        object_up_cosine = float(np.clip(np.dot(object_up, target_up), -1.0, 1.0))
+        return can_target, support_points_target, contacts, object_up_cosine
 
     def _success_snapshot_from_primitive(
-        self, can_target: PoseTwist, support_points_target: np.ndarray, contacts: ContactReport
+        self,
+        can_target: PoseTwist,
+        support_points_target: np.ndarray,
+        contacts: ContactReport,
+        object_up_cosine: float = 1.0,
     ) -> SuccessSnapshot:
         return SuccessSnapshot(
             support_points_target_xy=support_points_target[:, :2],
@@ -1631,6 +1687,8 @@ class ShakeBenchMetrics:
             finger_can_contact_present=contacts.finger_can_contact_present,
             relative_linear_speed_m_s=float(np.linalg.norm(can_target.linear_velocity_m_s)),
             relative_angular_speed_rad_s=float(np.linalg.norm(can_target.angular_velocity_rad_s)),
+            object_up_cosine=object_up_cosine,
+            upright_required=bool(self.upright_required),
         )
 
     def success_snapshot(self, sim_or_model: Any, data: Any = None) -> SuccessSnapshot:
@@ -1670,7 +1728,9 @@ class ShakeBenchMetrics:
             "robot_base": can_pose_twist_in_frame(sim_view, self.can_body_name, self.robot_base_body_name),
             "worktable": can_pose_twist_in_frame(sim_view, self.can_body_name, self.worktable_body_name),
         }
-        can_target_primitive, support_points_target, contacts = self._success_primitive(model, raw_data)
+        can_target_primitive, support_points_target, contacts, object_up_cosine = self._success_primitive(
+            model, raw_data
+        )
         self.latch_illegal_penetration(contacts.max_penetration_m)
         can["target"] = can_target_primitive
         if self._initial_can_worktable_xy is None:
@@ -1703,7 +1763,9 @@ class ShakeBenchMetrics:
             )
         finger_contact_loss_after_grasp = bool(self._had_finger_contact and not contacts.finger_can_contact_present)
         self._last_finger_contact_loss_after_grasp = finger_contact_loss_after_grasp
-        success_snapshot = self._success_snapshot_from_primitive(can_target_primitive, support_points_target, contacts)
+        success_snapshot = self._success_snapshot_from_primitive(
+            can_target_primitive, support_points_target, contacts, object_up_cosine
+        )
         driver_response, table_response = self._response(model, raw_data)
         self.latest = MetricsSnapshot(
             time_s=time_s,

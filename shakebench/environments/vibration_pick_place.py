@@ -43,6 +43,7 @@ from shakebench.utils.metrics import (
     audit_can_compiled_model,
     audit_contact_pairs,
     can_pose_twist_in_frame,
+    collision_support_points_in_frame,
     equivalent_cylinder_inertia,
     extract_can_collision_envelope,
     frame_world_position,
@@ -128,7 +129,7 @@ class VibrationPickPlace(ManipulationEnv):
         table_offset=DEFAULT_TABLE_OFFSET_M,
         target_container_friction=(0.30, DEFAULT_CONTACT_TORSIONAL_MU, DEFAULT_CONTACT_ROLLING_MU),
         object_start_xy=CAN_START_XY_M,
-        object_start_yaw_rad=0.0,
+        object_start_quat_wxyz=None,
         use_camera_obs=False,
         use_object_obs=True,
         reward_scale=1.0,
@@ -232,9 +233,18 @@ class VibrationPickPlace(ManipulationEnv):
         self.table_offset = _finite_vector("table_offset", table_offset, 3)
         self.target_container_friction = _finite_vector("target_container_friction", target_container_friction, 3)
         self.object_start_xy = _finite_vector("object_start_xy", object_start_xy, 2)
-        self.object_start_yaw_rad = float(object_start_yaw_rad)
-        if not np.isfinite(self.object_start_yaw_rad):
-            raise ValueError("object_start_yaw_rad must be finite")
+        requested_quat = (
+            self.task_spec.start_quat_wxyz
+            if object_start_quat_wxyz is None and self.task_spec is not None
+            else object_start_quat_wxyz
+        )
+        if requested_quat is None:
+            requested_quat = (1.0, 0.0, 0.0, 0.0)
+        self.object_start_quat_wxyz = _finite_vector("object_start_quat_wxyz", requested_quat, 4)
+        quat_norm = float(np.linalg.norm(self.object_start_quat_wxyz))
+        if quat_norm <= 0.0:
+            raise ValueError("object_start_quat_wxyz must have non-zero norm")
+        self.object_start_quat_wxyz = tuple(value / quat_norm for value in self.object_start_quat_wxyz)
         if any(value < 0.0 for value in self.table_friction + self.target_container_friction):
             raise ValueError("friction values must be non-negative")
         if (
@@ -408,17 +418,27 @@ class VibrationPickPlace(ManipulationEnv):
         self.can_inertia = None
 
     def _measure_can_collision_envelope(self):
-        """Measure the compiled mesh support bounds before task assembly."""
+        """Measure compiled contact geometry and collision-only inertia.
+
+        Two probes are compiled before task assembly: the object exactly as the
+        task will build it (contact envelope, posed support) and the same body
+        with every non-contact geom removed (mass, centre of mass, inertia).
+        Visual meshes and RoboCasa's region markers must not contribute to the
+        inertial, which is why the second probe exists at all.
+        """
 
         # CanObject keeps its free joint inside the extracted object body, so
         # compile a tiny valid world containing a copied asset/body subtree.
         # This is read-only and avoids treating the stock bottom_site as a
         # collision vertex when placing the object on the tabletop.
-        root = ET.Element("mujoco", {"model": "shakebench_can_probe"})
-        root.append(deepcopy(self.can.asset))
-        worldbody = ET.SubElement(root, "worldbody")
-        worldbody.append(deepcopy(self.can.get_obj()))
-        probe_model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="unicode"))
+        def probe(body):
+            root = ET.Element("mujoco", {"model": "shakebench_object_probe"})
+            root.append(deepcopy(self.can.asset))
+            worldbody = ET.SubElement(root, "worldbody")
+            worldbody.append(body)
+            return mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="unicode"))
+
+        probe_model = probe(deepcopy(self.can.get_obj()))
         envelope = extract_can_collision_envelope(
             probe_model,
             self.can.root_body,
@@ -431,13 +451,31 @@ class VibrationPickPlace(ManipulationEnv):
 
             expected_support = OBJECT_SUPPORT[self.task_spec.object_id]
             actual_support = (envelope.lower_support_z_m, envelope.upper_support_z_m, envelope.support_radius_m)
-            if not np.allclose(actual_support, expected_support, atol=1e-10, rtol=0):
+            # The registry records the asset-tree measurement; the task
+            # compiles the same mesh through robosuite's object path, so the
+            # comparison is geometric (0.1 um) rather than bit-exact.
+            if not np.allclose(actual_support, expected_support, atol=1e-7, rtol=0):
                 raise ShakeBenchMetricsError("task object collision support differs from its state contract")
+        contact_only = deepcopy(self.can.get_obj())
+        contact_names = set(self.can.contact_geoms)
+        for geom in list(contact_only.iter("geom")):
+            if geom.get("name") not in contact_names:
+                parent = next(parent for parent in contact_only.iter() if geom in list(parent))
+                parent.remove(geom)
+        contact_model = probe(contact_only)
+
         self.can_collision_envelope = envelope
         self.can_collision_envelope_bottom_m = envelope.lower_support_z_m
         self.can_collision_envelope_top_m = envelope.upper_support_z_m
         self.can_collision_envelope_radius_m = envelope.support_radius_m
-        self.can_placement_z_offset_m = -envelope.lower_support_z_m
+        self.can_start_pose_envelope = self._posed_envelope(probe_model)
+        self.can_placement_z_offset_m = -self.can_start_pose_envelope[0]
+        if self.task_spec is not None:
+            from shakebench.utils.tasks import OBJECTS
+
+            expected_posed = OBJECTS[self.task_spec.object_id]["start_pose_support"]
+            if not np.allclose(self.can_start_pose_envelope, expected_posed, atol=1e-6, rtol=0):
+                raise ShakeBenchMetricsError("task object start pose support differs from its state contract")
         inertia = equivalent_cylinder_inertia(
             self.object_mass_kg,
             envelope.support_radius_m,
@@ -446,10 +484,10 @@ class VibrationPickPlace(ManipulationEnv):
         self.can_com = CANONICAL_OBJECT_COM_M
         inertial_quat = (1.0, 0.0, 0.0, 0.0)
         if self.task_spec is not None:
-            body_id = mujoco.mj_name2id(probe_model, mujoco.mjtObj.mjOBJ_BODY, self.can.root_body)
-            inertia = probe_model.body_inertia[body_id] * (self.object_mass_kg / probe_model.body_mass[body_id])
-            self.can_com = tuple(probe_model.body_ipos[body_id])
-            inertial_quat = tuple(probe_model.body_iquat[body_id])
+            body_id = mujoco.mj_name2id(contact_model, mujoco.mjtObj.mjOBJ_BODY, self.can.root_body)
+            inertia = contact_model.body_inertia[body_id] * (self.object_mass_kg / contact_model.body_mass[body_id])
+            self.can_com = tuple(contact_model.body_ipos[body_id])
+            inertial_quat = tuple(contact_model.body_iquat[body_id])
         self.can_inertia = tuple(float(value) for value in inertia)
         can_body = self.can.get_obj()
         if can_body.find("./inertial") is not None:
@@ -467,6 +505,26 @@ class VibrationPickPlace(ManipulationEnv):
             ),
         )
         return envelope
+
+    def _posed_envelope(self, probe_model):
+        """Return (lower_z, upper_z, radius) of the contact mesh at the start pose."""
+
+        probe_data = mujoco.MjData(probe_model)
+        mujoco.mj_forward(probe_model, probe_data)
+        cloud = collision_support_points_in_frame(
+            probe_model,
+            self.can.root_body,
+            self.can.contact_geoms,
+            data=probe_data,
+        )
+        rotation = np.zeros(9, dtype=float)
+        mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
+        posed = cloud.dot(rotation.reshape(3, 3).T)
+        return (
+            float(posed[:, 2].min()),
+            float(posed[:, 2].max()),
+            float(np.max(np.linalg.norm(posed[:, :2], axis=1))),
+        )
 
     def _append_contact_pairs(self):
         can_geom_names = tuple(self.can.contact_geoms)
@@ -565,8 +623,6 @@ class VibrationPickPlace(ManipulationEnv):
                     geom.set("rgba", array_to_string(rgba))
         self.arena.worldbody.append(support)
         self.arena.object_support_geom = self.arena.table_collision
-        if self.task_spec is not None and self.task_spec.surface_id == "mat":
-            self.arena.add_table_mat()
         self.arena.add_target_container(friction=self.target_container_friction)
         base_position = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         if self.geometry_profile is not None:
@@ -587,7 +643,8 @@ class VibrationPickPlace(ManipulationEnv):
         from shakebench.utils.tasks import make_task_object
 
         # Stable internal handles preserve the evaluator and legacy replay wire format.
-        self.can = make_task_object(self.task_spec)
+        # The legacy no-task path keeps CanObject's canonical geom names.
+        self.can = make_task_object(self.task_spec, name="can")
         self.task_object = self.can
         self._configure_can()
         self._measure_can_collision_envelope()
@@ -597,7 +654,9 @@ class VibrationPickPlace(ManipulationEnv):
                 mujoco_objects=self.can,
                 x_range=(self.object_start_xy[0], self.object_start_xy[0]),
                 y_range=(self.object_start_xy[1], self.object_start_xy[1]),
-                rotation=self.object_start_yaw_rad,
+                # The full start orientation is applied when the free joint is
+                # written below; the sampler only owns the planar position.
+                rotation=0.0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
@@ -640,6 +699,7 @@ class VibrationPickPlace(ManipulationEnv):
             deck_body_name=self.deck_config.deck_body_name,
             deck_driver=self.deck_driver,
             dt_s=self._phase04_model_timestep,
+            upright_required=bool(self.task_spec is not None and self.task_spec.upright_required),
         )
         self.can_body_name = self.can.root_body
         self.can_geom_name = self.can.contact_geoms[0]
@@ -720,7 +780,10 @@ class VibrationPickPlace(ManipulationEnv):
         if not self.deterministic_reset:
             object_placements = self.placement_initializer.sample(on_top=False)
             for obj_pos, obj_quat, obj in object_placements.values():
-                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate((np.asarray(obj_pos), np.asarray(obj_quat))))
+                self.sim.data.set_joint_qpos(
+                    obj.joints[0],
+                    np.concatenate((np.asarray(obj_pos), np.asarray(self.object_start_quat_wxyz, dtype=float))),
+                )
             self._settle_reset_support()
         self.sim.forward()
         self.deck_driver.reset_trace()
@@ -983,6 +1046,21 @@ class VibrationPickPlace(ManipulationEnv):
         if not hasattr(self, "arena"):
             return {"policy_rate_hz": float(self.control_freq)}
         target_spec = self.arena.target_container_spec
+        # Legacy no-task runs keep the historical single-object Can grasp plan.
+        grasp = {"pad_height_m": 0.0319, "offset_xy_m": (0.0, 0.0)}
+        task_grasp_opening_gate_m = 0.0602
+        grasp_offset_object = (0.0, 0.0)
+        if self.task_spec is not None:
+            from shakebench.utils.tasks import grasp_opening_gate_m
+
+            grasp = self.task_spec.grasp
+            task_grasp_opening_gate_m = float(grasp_opening_gate_m(self.task_spec))
+            rotation = np.zeros(9, dtype=float)
+            mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
+            grasp_offset_object = tuple(
+                float(value)
+                for value in rotation.reshape(3, 3)[:2, :2].T.dot(np.asarray(grasp["offset_xy_m"], dtype=float))
+            )
         robot_base_position = np.asarray(self.geometry_profile["robot_base_pos_m"], dtype=float) - np.asarray(
             self.robots[0].robot_model.bottom_offset, dtype=float
         )
@@ -993,6 +1071,10 @@ class VibrationPickPlace(ManipulationEnv):
             object_collision_radius_m=float(self.can_collision_envelope.support_radius_m),
             object_collision_lower_support_m=float(self.can_collision_envelope.lower_support_z_m),
             object_collision_upper_support_m=float(self.can_collision_envelope.upper_support_z_m),
+            object_start_pose_lower_support_m=float(self.can_start_pose_envelope[0]),
+            object_grasp_pad_height_m=float(grasp["pad_height_m"]),
+            object_grasp_opening_m=float(task_grasp_opening_gate_m),
+            object_grasp_offset_object_m=list(grasp_offset_object),
             finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
             support_topology_id=self.geometry_profile["profile_id"],
             world_to_robot_base_position_m=tuple(robot_base_position),

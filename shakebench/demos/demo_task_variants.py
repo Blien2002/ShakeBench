@@ -1,4 +1,4 @@
-"""Render the six pick/place states with the current industrial scene style.
+"""Render the eight pick/place object variants in the current industrial scene.
 
 MUJOCO_GL=egl python -m shakebench.demos.demo_task_variants
 """
@@ -17,8 +17,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("out/task_variants/pick_place_variants.png"))
     args = parser.parse_args(argv)
+    columns = 4
     width, height, label_height = 640, 480, 36
-    canvas = Image.new("RGB", (width * 3, (height + label_height) * 2), (24, 29, 34))
+    rows = (len(task_variants()) + columns - 1) // columns
+    canvas = Image.new("RGB", (width * columns, (height + label_height) * rows), (24, 29, 34))
     draw = ImageDraw.Draw(canvas)
     for index, spec in enumerate(task_variants()):
         env = make_task_env(spec, hard_reset=False, seed=17)
@@ -33,11 +35,11 @@ def main(argv=None):
             with mujoco.Renderer(env.sim.model._model, height=height, width=width) as renderer:
                 renderer.update_scene(env.sim.data._data, camera=camera, scene_option=option)
                 frame = Image.fromarray(renderer.render())
-            x, y = index % 3 * width, index // 3 * (height + label_height)
+            x, y = index % columns * width, index // columns * (height + label_height)
             canvas.paste(frame, (x, y + label_height))
             draw.text(
                 (x + 14, y + 10),
-                f"{spec.surface_id.upper()} / {spec.object_id.upper()}    sliding mu = {spec.table_sliding_mu:.2f}",
+                f"METAL / {spec.object_id.upper()}    sliding mu = {spec.table_sliding_mu:.2f}",
                 fill=(230, 235, 240),
             )
             print(spec.variant_id, flush=True)

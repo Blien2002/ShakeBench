@@ -149,6 +149,12 @@ class WorktableTaskContext:
     object_collision_radius_m: float = 0.02509177806572465
     object_collision_lower_support_m: float = -0.040297003330440104
     object_collision_upper_support_m: float = 0.03970300217508332
+    #: Task grasp plan, published by the environment.  Defaults reproduce the
+    #: historical single-object Can calibration.
+    object_start_pose_lower_support_m: float = -0.040297003330440104
+    object_grasp_pad_height_m: float = 0.0319
+    object_grasp_opening_m: float = 0.0602
+    object_grasp_offset_object_m: tuple[float, float] = (0.0, 0.0)
     finger_pad_tool_support_offsets_m: tuple[float, ...] = (0.0, 0.0, 0.0934)
     support_topology_id: str = "deck_robot_base_plus_isolated_worktable"
 
@@ -167,6 +173,9 @@ class WorktableTaskContext:
             "object_collision_radius_m",
             "object_collision_lower_support_m",
             "object_collision_upper_support_m",
+            "object_start_pose_lower_support_m",
+            "object_grasp_pad_height_m",
+            "object_grasp_opening_m",
         ):
             if not np.isfinite(float(getattr(self, name))):
                 raise ShakeBenchOracleError(f"{name} must be finite")
@@ -177,6 +186,13 @@ class WorktableTaskContext:
             raise ShakeBenchOracleError("Can collision support bounds are invalid")
         if not isinstance(self.support_topology_id, str) or not self.support_topology_id:
             raise ShakeBenchOracleError("support_topology_id must be nonempty")
+        offset = np.asarray(self.object_grasp_offset_object_m, dtype=float)
+        if offset.shape != (2,) or not np.all(np.isfinite(offset)):
+            raise ShakeBenchOracleError("object_grasp_offset_object_m must be finite length two")
+        if not 0.0 < float(self.object_grasp_opening_m) < 0.080:
+            raise ShakeBenchOracleError("object_grasp_opening_m must fit the compiled Panda jaw")
+        if float(self.object_grasp_pad_height_m) <= 0.0:
+            raise ShakeBenchOracleError("object_grasp_pad_height_m must be positive")
 
     @property
     def worktable_half_extents_xy_m(self) -> tuple[float, float]:
@@ -224,6 +240,25 @@ class WorktableTaskContext:
                 envelope.get(
                     "upper_support_z_m",
                     value.get("object_collision_upper_support_m", default.object_collision_upper_support_m),
+                )
+            ),
+            object_start_pose_lower_support_m=float(
+                can.get(
+                    "start_pose_lower_support_m",
+                    value.get("object_start_pose_lower_support_m", default.object_start_pose_lower_support_m),
+                )
+            ),
+            object_grasp_pad_height_m=float(
+                can.get("grasp_pad_height_m", value.get("object_grasp_pad_height_m", default.object_grasp_pad_height_m))
+            ),
+            object_grasp_opening_m=float(
+                can.get("grasp_opening_m", value.get("object_grasp_opening_m", default.object_grasp_opening_m))
+            ),
+            object_grasp_offset_object_m=tuple(
+                float(item)
+                for item in can.get(
+                    "grasp_offset_object_m",
+                    value.get("object_grasp_offset_object_m", default.object_grasp_offset_object_m),
                 )
             ),
             finger_pad_tool_support_offsets_m=tuple(
@@ -367,6 +402,44 @@ class RelativeSupportMotionEstimate:
 VibrationEstimate = RelativeSupportMotionEstimate
 
 
+#: Compiled Panda pad midpoint in the EEF frame, measured from the gripper
+#: model.  The grasp waypoint is one pad offset above the object's grip point.
+PAD_MIDPOINT_EEF_OFFSET_M = 0.0934
+#: The release waypoint presses this far past the crate floor; contact stops
+#: the object, exactly as the previous single-object calibration did.
+RELEASE_PRESS_DEPTH_M = 0.020
+
+
+def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskContext) -> OracleControllerProfile:
+    """Specialize one controller profile from the environment's public context.
+
+    The only task-dependent quantities are where the pads close on the object,
+    how far the fingers have to open, and how deep the release presses into the
+    crate.  Everything else stays the shared approach, lift and verify plan, so
+    a task cannot silently re-tune the state machine.
+    """
+
+    from dataclasses import replace
+
+    grasp_height = (
+        float(context.object_start_pose_lower_support_m)
+        + float(context.object_grasp_pad_height_m)
+        + PAD_MIDPOINT_EEF_OFFSET_M
+    )
+    offset = (float(context.object_grasp_offset_object_m[0]), float(context.object_grasp_offset_object_m[1]))
+    return replace(
+        profile,
+        grasp_height_m=float(grasp_height),
+        placement_height_m=float(context.object_grasp_pad_height_m + PAD_MIDPOINT_EEF_OFFSET_M - RELEASE_PRESS_DEPTH_M),
+        grasp_hold_max_opening_rad=float(context.object_grasp_opening_m),
+        can_collision_envelope_radius_m=float(context.object_collision_radius_m),
+        grasp_offset_object_m=offset,
+        # A centred grip keeps the profile's own expectation; an off-centre
+        # grip (a handle) is derived from the object's own pose instead.
+        expected_eef_can_translation_m=None if any(offset) else profile.expected_eef_can_translation_m,
+    )
+
+
 def _target_pose_from_public_observation(observation: Mapping[str, Any]) -> np.ndarray:
     position = np.asarray(observation["goal_frame_pos_robot_base"], dtype=float)
     quaternion = np.asarray(observation["goal_frame_quat_robot_base"], dtype=float)
@@ -477,10 +550,14 @@ class OracleControllerProfile:
     # Pad geometry is measured in the public observation.  The nominal
     # gripper-to-Can transform is shared robot / Can geometry, never a state
     # specific waypoint.
-    # Compiled Panda pad midpoint is approximately z=0.0934 m in the EEF
-    # frame; the Can centre sits just below that midpoint when bilaterally
-    # captured.  This geometry-derived transform is independent of state ID.
-    expected_eef_can_translation_m: tuple[float, ...] = (-0.005, 0.0, 0.080)
+    # Compiled Panda pad midpoint is approximately z=0.0934 m below the EEF
+    # origin, so the grasp waypoint sits one pad offset plus the object's own
+    # pad height above the object origin.  ``None`` derives the expected
+    # object-in-EEF translation from the frozen reference orientation instead
+    # of a hard-coded Can calibration.
+    expected_eef_can_translation_m: tuple[float, ...] | None = (-0.005, 0.0, 0.080)
+    #: Grasp point in the object's own frame; non-zero for a handle grip.
+    grasp_offset_object_m: tuple[float, float] = (0.0, 0.0)
     grasp_hold_min_opening_rad: float = 0.006
     # Can diameter (2 * collision radius) plus a 10 mm compiled pad/measurement
     # allowance; bilateral geometry and expected-transform gates remain mandatory.
@@ -520,6 +597,7 @@ class OracleControllerProfile:
                 "recovery_stable_samples",
                 "recovery_velocity_brake_s",
                 "expected_eef_can_translation_m",
+                "grasp_offset_object_m",
             }:
                 continue
             if key in {"gripper_open_action", "gripper_close_action"}:
@@ -537,9 +615,13 @@ class OracleControllerProfile:
             raise ShakeBenchOracleError("grasp aperture upper bound must exceed lower bound")
         if self.gripper_open_action != -1.0 or self.gripper_close_action != 1.0:
             raise ShakeBenchOracleError("Panda gripper contract requires open=-1.0 and close=+1.0")
-        expected_translation = np.asarray(self.expected_eef_can_translation_m, dtype=float)
-        if expected_translation.shape != (3,) or not np.all(np.isfinite(expected_translation)):
-            raise ShakeBenchOracleError("expected_eef_can_translation_m must be finite length three")
+        if self.expected_eef_can_translation_m is not None:
+            expected_translation = np.asarray(self.expected_eef_can_translation_m, dtype=float)
+            if expected_translation.shape != (3,) or not np.all(np.isfinite(expected_translation)):
+                raise ShakeBenchOracleError("expected_eef_can_translation_m must be finite length three")
+        grasp_offset = np.asarray(self.grasp_offset_object_m, dtype=float)
+        if grasp_offset.shape != (2,) or not np.all(np.isfinite(grasp_offset)):
+            raise ShakeBenchOracleError("grasp_offset_object_m must be finite length two")
         if self.prelift_required_samples < 2 or self.grasp_loss_confirm_samples < 2:
             raise ShakeBenchOracleError("prelift and loss confirmation require at least two samples")
         if self.align_required_samples < 2 or self.recovery_stable_samples < 2:
@@ -889,12 +971,12 @@ class ShakeBenchOracleController:
         profile: Optional[OracleControllerProfile] = None,
         task_context: WorktableTaskContext | Mapping[str, Any] | None = None,
     ):
-        self.profile = profile or OracleControllerProfile()
         self.task_context = (
             task_context
             if isinstance(task_context, WorktableTaskContext)
             else WorktableTaskContext.from_mapping(task_context)
         )
+        self.profile = task_grasp_profile(profile or OracleControllerProfile(), self.task_context)
         from shakebench.utils.oracle_executive import TaskExecutive
 
         self.executive = TaskExecutive(self.profile, self.task_context)
