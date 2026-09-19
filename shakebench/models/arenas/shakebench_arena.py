@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from pathlib import Path
@@ -11,7 +10,7 @@ from typing import Any
 import numpy as np
 
 from robosuite.models.arenas.arena import Arena
-from robosuite.utils.mjcf_utils import array_to_string, new_geom, string_to_array
+from robosuite.utils.mjcf_utils import new_geom, string_to_array
 from shakebench import models
 from shakebench.models import xml_path_completion
 from shakebench.utils.isolator import (
@@ -24,6 +23,7 @@ from shakebench.utils.isolator import (
 )
 from shakebench.utils.scene import (
     SceneVisualConfig,
+    _fmt,
     _set_scene_visual_alpha,
     augment_scene_mjcf,
     load_scene_visual_config,
@@ -83,10 +83,6 @@ def _vector(name: str, value: Iterable[float], length: int, *, nonnegative: bool
     if nonnegative and np.any(array < 0.0):
         raise ShakeBenchArenaError(f"{name} must contain non-negative values")
     return tuple(float(item) for item in array)
-
-
-def _fmt(values: Iterable[float]) -> str:
-    return array_to_string(tuple(float(value) for value in values))
 
 
 class ShakeBenchArena(Arena):
@@ -290,24 +286,12 @@ class ShakeBenchArena(Arena):
         return np.asarray(self.bottom_pos, dtype=float) + np.asarray(self.table_offset, dtype=float)
 
     @property
-    def isolated_worktable_role(self) -> str:
-        """Stable role name consumed by the Phase 02 deck processor."""
-
-        return ISOLATED_WORKTABLE_ROLE
-
-    @property
     def deck_body_handles(self) -> dict[str, str]:
         """Return the explicit role-to-body mapping for deck assembly."""
 
         handles = dict(self.scene_inventory.role_handles)
         handles[ISOLATED_WORKTABLE_ROLE] = self.worktable_body_name
         return handles
-
-    @property
-    def role_handles(self) -> dict[str, str]:
-        """Alias for :attr:`deck_body_handles`."""
-
-        return self.deck_body_handles
 
     def make_deck_processor(self, config=None, *, body_handles=None, required_roles=None):
         """Build the Phase 02 processor with this arena's worktable handle.
@@ -631,16 +615,6 @@ class ShakeBenchArena(Arena):
                 "id": collision_id,
                 "contype": int(raw_model.geom_contype[collision_id]),
                 "conaffinity": int(raw_model.geom_conaffinity[collision_id]),
-            },
-            "physics_signature": {
-                "worktable_mount": self.worktable_mount,
-                "mass_kg": float(raw_model.body_mass[body_id]),
-                "com_m": np.asarray(raw_model.body_ipos[body_id], dtype=float).tolist(),
-                "inertia_kg_m2": np.asarray(raw_model.body_inertia[body_id], dtype=float).tolist(),
-                "joint_names": [ISOLATOR_JOINT_NAMES[axis] for axis in joint_audit],
-                "stiffness": list(self.isolator_parameters.stiffness) if joint_audit else [],
-                "damping": list(self.isolator_parameters.damping) if joint_audit else [],
-                "springref": list(self.isolator_parameters.springref) if joint_audit else [],
             },
         }
         if int(mujoco.mj_name2id(raw_model, mujoco.mjtObj.mjOBJ_BODY, "deck")) >= 0:

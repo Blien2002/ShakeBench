@@ -18,7 +18,6 @@ mass, constraint, contact pair, or task interaction.
 from __future__ import annotations
 
 import copy
-import itertools
 import json
 import math
 import xml.etree.ElementTree as ET
@@ -30,7 +29,6 @@ from typing import Any
 
 import mujoco
 import numpy as np
-from scipy.spatial import ConvexHull
 
 from robosuite.utils import transform_utils as T
 from robosuite.utils.mjcf_utils import array_to_string, new_body, new_element, new_geom
@@ -54,19 +52,12 @@ def _texture_path(texture: str) -> Path:
     return Path(root) / texture
 
 
-SCENE_GEOM_PREFIX = "shakebench_"
 SCENE_BODY_PREFIX = "shakebench_"
 TABLE_VISUAL_GEOM_NAME = "table_visual"
 DECK_VISUAL_BODY_NAME = "shakebench_platen_visual"
-FOUNDATION_BODY_NAME = "shakebench_shaker_foundation"
-PIT_BODY_NAME = "shakebench_pit"
-GUARDRAIL_BODY_NAME = "shakebench_guardrails"
-CONTROL_CABINET_BODY_NAME = "shakebench_control_cabinet"
-EMERGENCY_STOP_BODY_NAME = "shakebench_emergency_stop"
 WORKTABLE_BODY_NAME = "worktable"
 DECK_BODY_NAME = "deck"
 DECK_FREEJOINT_NAME = "deck_freejoint"
-ROBOT_BASE_BODY_NAME = "robot0_base"
 
 
 class SceneConfigError(ValueError):
@@ -186,7 +177,7 @@ def _validate_frame_ownership(value: Any) -> Mapping[str, Any]:
     return ownership
 
 
-def _validate_scene_payload(payload: Mapping[str, Any], path: Path) -> None:
+def _validate_scene_payload(payload: Mapping[str, Any]) -> None:
     required = {
         "schema_id",
         "schema_version",
@@ -513,9 +504,6 @@ class SceneVisualConfig:
     def to_dict(self) -> dict[str, Any]:
         return _thaw(self.payload)
 
-    def __getitem__(self, key: str) -> Any:
-        return self.payload[key]
-
 
 def load_scene_visual_config(path: str | Path | None = None) -> SceneVisualConfig:
     """Load and authenticate the package-owned scene visual configuration.
@@ -542,7 +530,7 @@ def load_scene_visual_config(path: str | Path | None = None) -> SceneVisualConfi
         raise SceneConfigError(f"cannot read scene visual config {config_path}: {exc}") from exc
     if not isinstance(payload, Mapping):
         raise SceneConfigError("scene visual config root must be an object")
-    _validate_scene_payload(payload, config_path)
+    _validate_scene_payload(payload)
     return SceneVisualConfig(payload=payload, source_path=str(config_path))
 
 
@@ -553,7 +541,7 @@ def _coerce_config(config: SceneVisualConfig | Mapping[str, Any] | str | Path | 
         return load_scene_visual_config(config)
     if isinstance(config, Mapping):
         payload = dict(config)
-        _validate_scene_payload(payload, Path("<mapping>"))
+        _validate_scene_payload(payload)
         return SceneVisualConfig(payload=payload, source_path="<mapping>")
     raise SceneConfigError("config must be a SceneVisualConfig, mapping, path, or None")
 
@@ -564,10 +552,6 @@ def _fmt(values: Iterable[float]) -> str:
 
 def _geom_name_set(root: ET.Element) -> set[str]:
     return {str(name) for element in root.iter("geom") if (name := element.get("name")) is not None}
-
-
-def _body_name_set(root: ET.Element) -> set[str]:
-    return {str(name) for element in root.iter("body") if (name := element.get("name")) is not None}
 
 
 def _visual_geom(
@@ -698,32 +682,6 @@ def _table_support_geometry(arena: Any, config: SceneVisualConfig) -> dict[str, 
     }
 
 
-def _append_cylinder_between(
-    parent: ET.Element,
-    name: str,
-    start: np.ndarray,
-    end: np.ndarray,
-    radius: float,
-    *,
-    material: str,
-) -> None:
-    vector = end - start
-    length = float(np.linalg.norm(vector))
-    if length <= 1.0e-12:
-        raise SceneConfigError(f"visual cylinder {name!r} has zero length")
-    centre = 0.5 * (start + end)
-    parent.append(
-        _visual_geom(
-            name,
-            "cylinder",
-            (radius, length / 2.0),
-            centre,
-            material=material,
-            quat=_quat_from_z_axis(vector),
-        )
-    )
-
-
 def _add_camera(worldbody: ET.Element, camera: Mapping[str, Any]) -> None:
     worldbody.append(
         new_element(
@@ -735,13 +693,6 @@ def _add_camera(worldbody: ET.Element, camera: Mapping[str, Any]) -> None:
             fovy=float(camera["fovy_deg"]),
         )
     )
-
-
-def _append_unique_body(worldbody: ET.Element, body: ET.Element) -> None:
-    names = _body_name_set(worldbody)
-    if body.get("name") in names:
-        raise SceneConfigError(f"scene augmentation would duplicate body {body.get('name')!r}")
-    worldbody.append(body)
 
 
 def _append_unique_geom(parent: ET.Element, geom: ET.Element, names: set[str]) -> None:
@@ -835,54 +786,6 @@ def _configure_materials(arena: Any, config: SceneVisualConfig) -> None:
     _configure_laboratory_lights(arena, config)
 
 
-def _append_authored_visuals(arena: Any, parent: ET.Element, records: Sequence, geom_names: set[str]) -> list[str]:
-    """Compile config-owned, non-contact equipment and room details."""
-
-    names = []
-    for record in records:
-        geom = _visual_geom(
-            record["name"],
-            record["type"],
-            record["size"],
-            record["pos"],
-            material=record.get("material"),
-            rgba=record.get("rgba"),
-            quat=record.get("quat"),
-        )
-        if "bevel_m" in record:
-            # A true chamfered shell: 24 vertices, flat face normals, no mesh
-            # download or hidden collision proxy. All geometry is still massless.
-            half = np.asarray(record["size"], dtype=float)
-            inset = half - float(record["bevel_m"])
-            vertices = []
-            for signs in itertools.product((-1, 1), repeat=3):
-                for axis in range(3):
-                    vertex = inset.copy()
-                    vertex[axis] = half[axis]
-                    vertices.append(vertex * signs)
-            vertices = np.asarray(vertices)
-            faces = ConvexHull(vertices).simplices.copy()
-            for face in faces:
-                a, b, c = vertices[face]
-                if np.dot(np.cross(b - a, c - a), a) < 0:
-                    face[1], face[2] = face[2], face[1]
-            mesh_name = record["name"] + "_chamfer_mesh"
-            ET.SubElement(
-                arena.asset,
-                "mesh",
-                name=mesh_name,
-                vertex=_fmt(vertices.ravel()),
-                face=" ".join(str(int(index)) for index in faces.ravel()),
-                smoothnormal="false",
-            )
-            geom.set("type", "mesh")
-            geom.set("mesh", mesh_name)
-            geom.attrib.pop("size", None)
-        _append_unique_geom(parent, geom, geom_names)
-        names.append(record["name"])
-    return names
-
-
 def _get_or_append_body(worldbody: ET.Element, name: str, pos: Iterable[float] = (0.0, 0.0, 0.0)) -> ET.Element:
     """Return an explicit source body or add a new named visual body."""
 
@@ -920,9 +823,6 @@ class SceneInventory:
             "visual_body_names": list(self.visual_body_names),
             "derived_support_plane": _thaw(self.derived_support_plane),
         }
-
-    def __getitem__(self, key: str) -> Any:
-        return self.to_dict()[key]
 
 
 def _set_scene_visual_alpha(arena: Any, enabled: bool) -> None:
@@ -982,11 +882,9 @@ def augment_scene_mjcf(
     frame_bodies, visual_geoms, visual_bodies = build_scene_visuals(arena, scene_config)
     table_support = _table_support_geometry(arena, scene_config)
     support = {
-        "method": "source arena table support plus compiled mount audit",
         "configured_platen_nominal_top_z_m": float(scene_config.section("platen")["nominal_top_z_m"]),
         "worktable_visual_support_bottom_z_m": float(scene_config.section("table_support")["support_plane_z_m"]),
         "table_world_z_m": table_support["table_world_z"],
-        "assembly_error_before_robot_mount_m": 0.0,
     }
     body_frames = {
         **{body: frame for body, frame in frame_bodies.items()},
@@ -1059,12 +957,6 @@ def scene_clearance_report(
     from shakebench.models.arenas.scene_audit import scene_clearance_report as audit
 
     return audit(sim_or_model, config, envelope=envelope)
-
-
-def _distance_record(*args: Any, **kwargs: Any) -> dict[str, Any]:
-    from shakebench.models.arenas.scene_audit import _distance_record as record
-
-    return record(*args, **kwargs)
 
 
 __all__ = [

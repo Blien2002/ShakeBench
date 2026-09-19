@@ -45,21 +45,20 @@ def _load_world_visuals(arena: Any, config: SceneVisualConfig) -> None:
     for include in tuple(arena.root.findall("./include[@file='shakebench_world_visuals.xml']")):
         arena.root.remove(include)
     # Each profile needs its complete world, not canonical bodies plus additions.
-    filenames = [DIRECT_WORLD_VISUALS_FILENAME if config.geometry_variant == "C" else WORLD_VISUALS_FILENAME]
-    for filename in filenames:
-        source = Path(models.assets_root) / filename
-        try:
-            root = ET.parse(source).getroot()
-        except (OSError, ET.ParseError) as exc:
-            raise SceneConfigError(f"cannot load fixed world visuals: {exc}") from exc
-        source_asset = root.find("asset")
-        for element in () if source_asset is None else source_asset:
-            if arena.asset.find(f"./{element.tag}[@name='{element.get('name')}']") is None:
-                arena.asset.append(deepcopy(element))
-        source_worldbody = root.find("worldbody")
-        for body in () if source_worldbody is None else source_worldbody:
-            if arena.worldbody.find(f"./body[@name='{body.get('name')}']") is None:
-                arena.worldbody.append(deepcopy(body))
+    filename = DIRECT_WORLD_VISUALS_FILENAME if config.geometry_variant == "C" else WORLD_VISUALS_FILENAME
+    source = Path(models.assets_root) / filename
+    try:
+        root = ET.parse(source).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise SceneConfigError(f"cannot load fixed world visuals: {exc}") from exc
+    source_asset = root.find("asset")
+    for element in () if source_asset is None else source_asset:
+        if arena.asset.find(f"./{element.tag}[@name='{element.get('name')}']") is None:
+            arena.asset.append(deepcopy(element))
+    source_worldbody = root.find("worldbody")
+    for body in () if source_worldbody is None else source_worldbody:
+        if arena.worldbody.find(f"./body[@name='{body.get('name')}']") is None:
+            arena.worldbody.append(deepcopy(body))
     arena._shakebench_world_visuals_loaded = True
 
 

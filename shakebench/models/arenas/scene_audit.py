@@ -21,7 +21,6 @@ import numpy as np
 from shakebench.utils.scene import (
     DECK_BODY_NAME,
     DECK_FREEJOINT_NAME,
-    DECK_VISUAL_BODY_NAME,
     SCENE_BODY_PREFIX,
     WORKTABLE_BODY_NAME,
     SceneAuditError,
@@ -80,8 +79,6 @@ def _frame_for_body(raw_model: Any, body_id: int) -> str:
         return "dynamic_deck"
     if any(name.startswith("shakebench_") for name in ancestry):
         return "world"
-    if mujoco.mj_id2name(raw_model, mujoco.mjtObj.mjOBJ_BODY, body_id) == "can_main":
-        return "world_free_body"
     return "world"
 
 
@@ -282,9 +279,6 @@ class SceneAudit:
             "errors": list(self.errors),
         }
 
-    def __getitem__(self, key: str) -> Any:
-        return self.to_dict()[key]
-
 
 def audit_compiled_scene(
     sim: Any, config: SceneVisualConfig | Mapping[str, Any] | str | Path | None = None
@@ -368,7 +362,7 @@ def audit_compiled_scene(
             "mass_kg": float(raw_model.body_mass[body_id]),
             "subtree_mass_kg": float(raw_model.body_subtreemass[body_id]),
             "inertia_kg_m2": _canonical_array(raw_model.body_inertia[body_id]),
-            "joint_names": [name for name in joint_names if name is not None],
+            "joint_names": [],
         }
 
     contact_pairs_with_scene_visuals = []
@@ -503,31 +497,20 @@ def _floor_cylinder_support_distance(model: Any, data: Any, geom1: int, geom2: i
 
 
 def _pair_whitelist(name1: str, name2: str, signed_distance_m: float | None = None) -> str | None:
-    names = {name1, name2}
-    if any(name.startswith("shakebench_pit_") for name in names) and any(
-        name.startswith("shakebench_floor_slab_") for name in names
+    """Return the design-intent reason for a pair whose overlap is expected."""
+
+    for prefix1, prefix2, reason in (
+        ("shakebench_pit_", "shakebench_floor_slab_", "pit_visual_boundary"),
+        ("shakebench_pit_", "shakebench_guardrail_", "pit_safety_boundary"),
+        ("shakebench_table_upper_", "shakebench_table_lower_mount_", "two_stage_isolator_mount_interface"),
+        ("shakebench_stewart_rod", "shakebench_platen_", "stewart_rod_to_platen_joint_interface"),
+        ("shakebench_stewart_outer", "shakebench_stewart_rod", "two_segment_stewart_overlap"),
+        ("shakebench_shaker_foundation_", "shakebench_pit_", "shaker_foundation_inside_pit"),
     ):
-        return "pit_visual_boundary"
-    if any(name.startswith("shakebench_pit_") for name in names) and any(
-        name.startswith("shakebench_guardrail_") for name in names
-    ):
-        return "pit_safety_boundary"
-    if any(name.startswith("shakebench_table_upper_") for name in names) and any(
-        name.startswith("shakebench_table_lower_mount_") for name in names
-    ):
-        return "two_stage_isolator_mount_interface"
-    if any(name.startswith("shakebench_stewart_rod") for name in names) and any(
-        name.startswith("shakebench_platen_") for name in names
-    ):
-        return "stewart_rod_to_platen_joint_interface"
-    if any(name.startswith("shakebench_stewart_outer") for name in names) and any(
-        name.startswith("shakebench_stewart_rod") for name in names
-    ):
-        return "two_segment_stewart_overlap"
-    if any(name.startswith("shakebench_shaker_foundation_") for name in names) and any(
-        name.startswith("shakebench_pit_") for name in names
-    ):
-        return "shaker_foundation_inside_pit"
+        if (name1.startswith(prefix1) and name2.startswith(prefix2)) or (
+            name2.startswith(prefix1) and name1.startswith(prefix2)
+        ):
+            return reason
     return None
 
 
@@ -709,13 +692,6 @@ def _support_report(raw_model: Any, raw_data: Any, config: SceneVisualConfig) ->
         "method": "compiled table support extrema and world-fixed robot installation datum",
         "platen_nominal_top_z_m": platen_top,
         "configured_platen_nominal_top_z_m": configured_top,
-        "derived_platen_nominal_top_z_m": table_bottom,
-        "derivation_rule": "compiled worktable lower-mount plate only",
-        "derivation_inputs_z_m": {"worktable_foot_lowest_support_z_m": table_bottom},
-        "derived_vs_compiled_platen_top_error_m": (
-            None if table_bottom is None or platen_top is None else platen_top - table_bottom
-        ),
-        "worktable_foot_lowest_support_z_m": table_bottom,
         "robot_mount_lowest_support_z_m": mount_bottom,
         "world_robot_support_top_z_m": support_top,
         "mount_plate_assembly_error_m": plate_assembly_error,
@@ -742,12 +718,6 @@ class ClearanceReport:
     unexpected_penetration_pairs: tuple[Mapping[str, Any], ...]
     warnings: tuple[str, ...] = ()
 
-    @property
-    def clearance_passed(self) -> bool:
-        """Compatibility alias for the scene-clearance gate result."""
-
-        return self.passed
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "passed": self.passed,
@@ -763,9 +733,6 @@ class ClearanceReport:
             "unexpected_penetration_pairs": [_thaw(item) for item in self.unexpected_penetration_pairs],
             "warnings": list(self.warnings),
         }
-
-    def __getitem__(self, key: str) -> Any:
-        return self.to_dict()[key]
 
 
 def _distance_record(
@@ -844,9 +811,7 @@ def _active_contacts(raw_model: Any, raw_data: Any) -> tuple[dict[str, Any], ...
     return tuple(records)
 
 
-def _stewart_report(
-    raw_model: Any, raw_data: Any, config: SceneVisualConfig, poses: Sequence[np.ndarray]
-) -> dict[str, Any]:
+def _stewart_report(config: SceneVisualConfig, poses: Sequence[np.ndarray]) -> dict[str, Any]:
     stewart = config.section("stewart")
     platen = config.section("platen")
     nominal_center_z = float(platen["nominal_top_z_m"]) - float(platen["size_m"][2]) / 2
@@ -974,7 +939,7 @@ def scene_clearance_report(
         )
         if value is not None and abs(float(value)) > float(scene_config.section("clearance")["assembly_tolerance_m"])
     ]
-    stewart_report = _stewart_report(raw_model, raw_data, scene_config, poses)
+    stewart_report = _stewart_report(scene_config, poses)
     active_contacts = _active_contacts(raw_model, raw_data)
     warnings = []
     if support["robot_mount_lowest_support_z_m"] is None:
