@@ -170,10 +170,17 @@ class VibrationPickPlace(ManipulationEnv):
         scene_visual=True,
         geometry_profile=DEFAULT_GEOMETRY_PROFILE,
         task=None,
+        grasp_region="body",
     ):
         from shakebench.utils.tasks import TaskSpec
 
         self.task_spec = None if task is None else TaskSpec.from_mapping(task)
+        if self.task_spec is None:
+            if grasp_region != "body":
+                raise ValueError("a grasp region other than body requires an explicit task")
+        else:
+            self.task_spec.grasp_plan(grasp_region)
+        self.grasp_region = grasp_region
         self.object_mass_kg = CANONICAL_OBJECT_MASS_KG if self.task_spec is None else self.task_spec.object_mass_kg
         requested_robots = list(robots) if isinstance(robots, (list, tuple)) else [robots]
         if requested_robots != ["Panda"]:
@@ -1063,8 +1070,8 @@ class VibrationPickPlace(ManipulationEnv):
         if self.task_spec is not None:
             from shakebench.utils.tasks import grasp_opening_gate_m
 
-            grasp = self.task_spec.grasp
-            task_grasp_opening_gate_m = float(grasp_opening_gate_m(self.task_spec))
+            grasp = self.task_spec.grasp_plan(self.grasp_region)
+            task_grasp_opening_gate_m = float(grasp_opening_gate_m(self.task_spec, self.grasp_region))
             rotation = np.zeros(9, dtype=float)
             mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
             grasp_offset_object = tuple(
@@ -1091,6 +1098,7 @@ class VibrationPickPlace(ManipulationEnv):
             world_to_robot_base_quaternion_wxyz=(1.0, 0.0, 0.0, 0.0),
         )
         context = {
+            "grasp_region": self.grasp_region,
             "policy_rate_hz": float(self.control_freq),
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),
             "scene_visual": {

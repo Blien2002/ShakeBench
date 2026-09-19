@@ -46,7 +46,8 @@ OBJECTS = {
         "com_height_m": 0.028128,
         "start_quat_wxyz": (0.708068, -0.000035, 0.000020, 0.706144),
         "instruction": "mug",
-        "grasp": {"hold_width_m": 0.0629, "pad_height_m": 0.030, "offset_xy_m": (0.0, 0.0)},
+        # The mesh origin is the full mug bbox centre; the cup body is 14.4 mm left of it.
+        "grasp": {"hold_width_m": 0.0629, "pad_height_m": 0.035, "offset_xy_m": (-0.0144, 0.0)},
     },
     "apple": {
         "asset": f"{ROBOCASA_ASSET_ROOT}/apple/apple_0/model.xml",
@@ -189,7 +190,16 @@ class TaskSpec:
 
     @property
     def grasp(self):
-        return dict(OBJECTS[self.object_id]["grasp"])
+        return self.grasp_plan()
+
+    def grasp_plan(self, region="body"):
+        """Select a physical grip without changing the object or initial state."""
+        if region == "body":
+            return dict(OBJECTS[self.object_id]["grasp"])
+        if region == "handle" and self.object_id == "mug":
+            # Pinch the upper crossbar; the outer vertical segment slips under the mug torque.
+            return {"hold_width_m": 0.013, "pad_height_m": 0.058, "offset_xy_m": (0.033, 0.0)}
+        raise ValueError(f"unsupported grasp region {region!r} for {self.object_id}")
 
     def contract(self):
         entry = OBJECTS[self.object_id]
@@ -326,10 +336,10 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     return {"task": spec, "object_start_xy": tuple(xy), "object_start_quat_wxyz": tuple(expected_quat)}
 
 
-def grasp_opening_gate_m(spec: TaskSpec) -> float:
+def grasp_opening_gate_m(spec: TaskSpec, region="body") -> float:
     """Return the jaw opening the oracle expects after a bilateral capture."""
 
-    hold_width = float(OBJECTS[spec.object_id]["grasp"]["hold_width_m"])
+    hold_width = float(spec.grasp_plan(region)["hold_width_m"])
     return min(hold_width + GRASP_OPENING_ALLOWANCE_M, PANDA_JAW_LIMIT_M - 0.002)
 
 

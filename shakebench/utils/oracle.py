@@ -414,8 +414,8 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
     """Specialize one controller profile from the environment's public context.
 
     The only task-dependent quantities are where the pads close on the object,
-    how far the fingers have to open, and how deep the release presses into the
-    crate.  Everything else stays the shared approach, lift and verify plan, so
+    how far the fingers have to open, the lift clearance, and the release height.
+    Everything else stays the shared approach, lift and verify plan, so
     a task cannot silently re-tune the state machine.
     """
 
@@ -427,9 +427,22 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
         + PAD_MIDPOINT_EEF_OFFSET_M
     )
     offset = (float(context.object_grasp_offset_object_m[0]), float(context.object_grasp_offset_object_m[1]))
+    transport_height = profile.transport_height_m
+    if any(offset):
+        # A handle-held object can pivot below the pads. Bound its full swept
+        # envelope so it clears the crate rim throughout lateral transport.
+        grasp_radius = np.linalg.norm((*offset, grasp_height - PAD_MIDPOINT_EEF_OFFSET_M))
+        object_radius = np.hypot(
+            context.object_collision_radius_m,
+            max(abs(context.object_collision_lower_support_m), abs(context.object_collision_upper_support_m)),
+        )
+        transport_height = max(
+            transport_height, PAD_MIDPOINT_EEF_OFFSET_M + grasp_radius + object_radius + profile.tool_clearance_m
+        )
     return replace(
         profile,
         grasp_height_m=float(grasp_height),
+        transport_height_m=float(transport_height),
         placement_height_m=float(context.object_grasp_pad_height_m + PAD_MIDPOINT_EEF_OFFSET_M - RELEASE_PRESS_DEPTH_M),
         grasp_hold_max_opening_rad=float(context.object_grasp_opening_m),
         can_collision_envelope_radius_m=float(context.object_collision_radius_m),

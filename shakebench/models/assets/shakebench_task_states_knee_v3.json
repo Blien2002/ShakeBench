@@ -23810,11 +23810,11 @@
         "hold_width_m": 0.0629,
         "jaw_limit_m": 0.08,
         "offset_xy_m": [
-          0.0,
+          -0.0144,
           0.0
         ],
         "opening_allowance_m": 0.01,
-        "pad_height_m": 0.03,
+        "pad_height_m": 0.035,
         "pads_above_com": true
       },
       "object_id": "mug",

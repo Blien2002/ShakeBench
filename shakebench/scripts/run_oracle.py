@@ -427,6 +427,7 @@ def run_episode(
     horizon_steps: int = 1200,
     geometry_profile: str = DEFAULT_GEOMETRY_PROFILE,
     hard_reset: bool = True,
+    grasp_region: str = "body",
     step_observer: Callable[[Any, int, Mapping[str, Any], ShakeBenchOracleController], None] | None = None,
 ) -> dict[str, Any]:
     """Run a public-observation-only episode and retain action/actuator evidence.
@@ -465,6 +466,7 @@ def run_episode(
         imu_mode="canonical_noisy_v1",
         excitation_program=program,
         **task_kwargs,
+        grasp_region=grasp_region,
         imu_seed=imu_seed,
         horizon=horizon_steps,
         ignore_done=True,
