@@ -4,7 +4,7 @@ Runs with:
     python -m shakebench.scripts.evaluate_gpu \\
         --policy shakebench.utils.websocket_policy:make_policy \\
         --policy-arg host=127.0.0.1 --policy-arg port=10100 \\
-        --states shakebench/models/assets/shakebench_task_states_official_v2.json \\
+        --states shakebench/models/assets/shakebench_task_states_official_v3.json \\
         --state-ids ID,ID --dataset out/lerobot_gpu_can_knee_100 --output out/eval/gpu/result.json
 
 Why this runner exists: it mirrors the GPU collector's device physics, batched over worlds,
