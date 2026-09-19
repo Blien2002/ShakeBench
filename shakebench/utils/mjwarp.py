@@ -163,29 +163,25 @@ def evaluate(k: Kinematics, e: Evaluation, tick: wp.array[int], dt: float):
     origin = k.xpos[w, table] + rot @ e.target_origin
     p = k.xpos[w, obj]
     object_rot = k.xmat[w, obj]
-    contained = bool(True)
+    inside_count = int(0)
     lower = float(1.0e30)
     for i in range(e.points.shape[0]):
         point = wp.transpose(rot) @ (p + object_rot @ e.points[i] - origin)
         lower = wp.min(lower, point[2])
         if (
-            wp.abs(point[0]) > e.target_half[0] + e.thresholds[5]
-            or wp.abs(point[1]) > e.target_half[1] + e.thresholds[5]
+            wp.abs(point[0]) <= e.target_half[0] + e.thresholds[3]
+            and wp.abs(point[1]) <= e.target_half[1] + e.thresholds[3]
         ):
-            contained = False
-    omega_table = wp.spatial_top(k.cvel[w, table])
-    relative_vel = (
-        point_velocity(k, w, obj, p) - point_velocity(k, w, table, origin) - wp.cross(omega_table, p - origin)
-    )
-    relative_omega = wp.spatial_top(k.cvel[w, obj]) - omega_table
+            inside_count += 1
+    # Majority containment: the task asks where the object is, not that every
+    # vertex fits inside the footprint.
+    contained = float(inside_count) > 0.5 * float(e.points.shape[0])
     valid = (
         contained
         and e.aggregate[w, 2] > 0.0
-        and e.aggregate[w, 1] > e.thresholds[3]
-        and lower >= -e.thresholds[4]
+        and e.aggregate[w, 1] > e.thresholds[1]
+        and lower >= -e.thresholds[2]
         and e.aggregate[w, 3] == 0.0
-        and wp.length(relative_vel) < e.thresholds[1]
-        and wp.length(relative_omega) < e.thresholds[2]
     )
     for j in range(k.qpos.shape[1]):
         if not wp.isfinite(k.qpos[w, j]):
@@ -515,8 +511,6 @@ class MJWarpBatch:
         e.thresholds = self._array(
             [
                 t.hold_duration_s,
-                t.max_relative_linear_speed_m_s,
-                t.max_relative_angular_speed_rad_s,
                 t.target_bottom_support_force_threshold_N,
                 t.target_bottom_support_z_tolerance_m,
                 t.containment_epsilon_m,

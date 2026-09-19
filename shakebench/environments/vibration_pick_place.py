@@ -488,6 +488,17 @@ class VibrationPickPlace(ManipulationEnv):
             inertia = contact_model.body_inertia[body_id] * (self.object_mass_kg / contact_model.body_mass[body_id])
             self.can_com = tuple(contact_model.body_ipos[body_id])
             inertial_quat = tuple(contact_model.body_iquat[body_id])
+            # The grasp plan must never close the pads below the object's
+            # centre of mass: the payload would spin in the jaws instead of
+            # riding them.  The registry value is checked, not trusted.
+            rotation = np.zeros(9, dtype=float)
+            mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
+            posed_com_height = float(rotation.reshape(3, 3).dot(np.asarray(self.can_com, dtype=float))[2]) - float(
+                self.can_start_pose_envelope[0]
+            )
+            expected_com_height = float(OBJECTS[self.task_spec.object_id]["com_height_m"])
+            if abs(posed_com_height - expected_com_height) > 1e-4:
+                raise ShakeBenchMetricsError("task object centre of mass differs from its state contract")
         self.can_inertia = tuple(float(value) for value in inertia)
         can_body = self.can.get_obj()
         if can_body.find("./inertial") is not None:
@@ -699,7 +710,6 @@ class VibrationPickPlace(ManipulationEnv):
             deck_body_name=self.deck_config.deck_body_name,
             deck_driver=self.deck_driver,
             dt_s=self._phase04_model_timestep,
-            upright_required=bool(self.task_spec is not None and self.task_spec.upright_required),
         )
         self.can_body_name = self.can.root_body
         self.can_geom_name = self.can.contact_geoms[0]

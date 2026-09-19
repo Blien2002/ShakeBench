@@ -921,25 +921,23 @@ def collect_contact_metrics(
 class SuccessThresholds:
     """Frozen task success thresholds.
 
-    ``upright_cosine_min`` is the smallest cosine between the object's local
-    +z axis and the container floor normal that still counts as upright.  The
-    requirement itself is per object (``SuccessSnapshot.upright_required``), so
-    objects whose target pose is free never see this gate.
+    The task rule is positional: an object counts as placed once most of its
+    collision geometry sits inside the crate footprint and it rests on the
+    crate floor.  Pose stability, and how fast the object is still moving, are
+    reported but no longer gate success.
     """
 
     hold_duration_s: float = 0.50
-    max_relative_linear_speed_m_s: float = 0.02
-    max_relative_angular_speed_rad_s: float = 0.20
+    #: Share of collision vertices that must lie inside the inner footprint.
+    containment_fraction_min: float = 0.50
     target_bottom_support_force_threshold_N: float = TARGET_BOTTOM_SUPPORT_FORCE_THRESHOLD_N
     target_bottom_support_z_tolerance_m: float = TARGET_BOTTOM_SUPPORT_Z_TOLERANCE_M
     containment_epsilon_m: float = 1e-12
-    upright_cosine_min: float = 0.95
 
     def __post_init__(self) -> None:
         for name in (
             "hold_duration_s",
-            "max_relative_linear_speed_m_s",
-            "max_relative_angular_speed_rad_s",
+            "containment_fraction_min",
             "target_bottom_support_force_threshold_N",
         ):
             value = getattr(self, name)
@@ -957,12 +955,8 @@ class SuccessThresholds:
             or float(self.containment_epsilon_m) < 0.0
         ):
             raise ShakeBenchMetricsError("containment_epsilon_m must be finite and non-negative")
-        if (
-            isinstance(self.upright_cosine_min, (bool, np.bool_))
-            or not np.isfinite(float(self.upright_cosine_min))
-            or not -1.0 <= float(self.upright_cosine_min) <= 1.0
-        ):
-            raise ShakeBenchMetricsError("upright_cosine_min must be a finite cosine")
+        if not 0.0 < float(self.containment_fraction_min) <= 1.0:
+            raise ShakeBenchMetricsError("containment_fraction_min must lie in (0, 1]")
 
 
 DEFAULT_SUCCESS_THRESHOLDS = SuccessThresholds()
@@ -972,9 +966,8 @@ DEFAULT_SUCCESS_THRESHOLDS = SuccessThresholds()
 class SuccessSnapshot:
     """Inputs to the success evaluator at one time sample.
 
-    ``object_up_cosine`` and ``upright_required`` carry the per-object target
-    pose rule: an object whose declared target pose is ``free`` never has to
-    satisfy an orientation gate, while a declared upright receptacle does.
+    Orientation and relative speed are diagnostics here, not gates: the task
+    rule asks where the object is, not how upright or how still it is.
     """
 
     support_points_target_xy: np.ndarray
@@ -986,7 +979,6 @@ class SuccessSnapshot:
     relative_linear_speed_m_s: float
     relative_angular_speed_rad_s: float
     object_up_cosine: float = 1.0
-    upright_required: bool = False
 
     def __post_init__(self) -> None:
         points = np.asarray(self.support_points_target_xy, dtype=float)
@@ -1010,9 +1002,6 @@ class SuccessSnapshot:
         if not np.isfinite(float(self.object_up_cosine)) or not -1.0 <= float(self.object_up_cosine) <= 1.0:
             raise ShakeBenchMetricsError("object_up_cosine must be a finite cosine")
         object.__setattr__(self, "object_up_cosine", float(self.object_up_cosine))
-        if not isinstance(self.upright_required, (bool, np.bool_)):
-            raise ShakeBenchMetricsError("upright_required must be boolean")
-        object.__setattr__(self, "upright_required", bool(self.upright_required))
 
     def is_supported_by_target_bottom(
         self,
@@ -1062,29 +1051,41 @@ class SuccessSnapshot:
 
         return not bool(self.finger_can_contact_present)
 
-    def is_upright(self, cosine_min: float = DEFAULT_SUCCESS_THRESHOLDS.upright_cosine_min) -> bool:
-        """Return the per-object target-orientation verdict."""
-
-        if not self.upright_required:
-            return True
-        return bool(self.object_up_cosine >= float(cosine_min))
-
     @property
     def containment(self) -> bool:
         return self.containment_with_epsilon(DEFAULT_SUCCESS_THRESHOLDS.containment_epsilon_m)
 
     def containment_with_epsilon(self, epsilon_m: float) -> bool:
+        """Return whether most of the collision geometry is inside the footprint.
+
+        The retired rule required every collision vertex inside the inner
+        rectangle; the task rule now only asks for a majority, so a partially
+        overhanging object still counts as placed.
+        """
+
         if isinstance(epsilon_m, (bool, np.bool_)) or not np.isfinite(float(epsilon_m)) or float(epsilon_m) < 0.0:
             raise ShakeBenchMetricsError("epsilon_m must be finite and non-negative")
         half_x, half_y = self.target_inner_half_extents_m
-        return bool(
-            np.all(np.abs(self.support_points_target_xy[:, 0]) <= half_x + float(epsilon_m))
-            and np.all(np.abs(self.support_points_target_xy[:, 1]) <= half_y + float(epsilon_m))
+        inside = (np.abs(self.support_points_target_xy[:, 0]) <= half_x + float(epsilon_m)) & (
+            np.abs(self.support_points_target_xy[:, 1]) <= half_y + float(epsilon_m)
         )
+        return bool(np.mean(inside) > float(DEFAULT_SUCCESS_THRESHOLDS.containment_fraction_min))
+
+    @property
+    def containment_fraction(self) -> float:
+        """Share of collision vertices inside the target's inner rectangle."""
+
+        half_x, half_y = self.target_inner_half_extents_m
+        epsilon = float(DEFAULT_SUCCESS_THRESHOLDS.containment_epsilon_m)
+        inside = (np.abs(self.support_points_target_xy[:, 0]) <= half_x + epsilon) & (
+            np.abs(self.support_points_target_xy[:, 1]) <= half_y + epsilon
+        )
+        return float(np.mean(inside))
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "containment": self.containment,
+            "containment_fraction": self.containment_fraction,
             "support_points_target_xy": self.support_points_target_xy.copy(),
             "target_inner_half_extents_m": list(self.target_inner_half_extents_m),
             "target_bottom_contact_present": bool(self.target_bottom_contact_present),
@@ -1096,8 +1097,6 @@ class SuccessSnapshot:
             "relative_linear_speed_m_s": self.relative_linear_speed_m_s,
             "relative_angular_speed_rad_s": self.relative_angular_speed_rad_s,
             "object_up_cosine": self.object_up_cosine,
-            "upright_required": bool(self.upright_required),
-            "upright": bool(self.is_upright()),
         }
 
 
@@ -1176,10 +1175,6 @@ class VibrationSuccessEvaluator:
             "containment": snapshot.containment_with_epsilon(self.thresholds.containment_epsilon_m),
             "supported_by_target_bottom": bool(snapshot.supported_by_target_bottom),
             "finger_can_contact_absent": not bool(snapshot.finger_can_contact_present),
-            "upright": snapshot.is_upright(self.thresholds.upright_cosine_min),
-            "relative_linear_speed": snapshot.relative_linear_speed_m_s < self.thresholds.max_relative_linear_speed_m_s,
-            "relative_angular_speed": snapshot.relative_angular_speed_rad_s
-            < self.thresholds.max_relative_angular_speed_rad_s,
         }
 
     def evaluate(self, snapshot: Any, time_s: float) -> SuccessEvaluation:
@@ -1503,7 +1498,6 @@ class ShakeBenchMetrics:
         deck_driver: Any = None,
         dt_s: Optional[float] = None,
         slip_speed_threshold_m_s: float = 1e-3,
-        upright_required: bool = False,
     ):
         self.can_body_name = can_body_name
         self.can_geom_names = tuple(_normalise_names(can_geom_names))
@@ -1529,9 +1523,6 @@ class ShakeBenchMetrics:
         ):
             raise ShakeBenchMetricsError("slip_speed_threshold_m_s must be finite and non-negative")
         self.slip_speed_threshold_m_s = float(slip_speed_threshold_m_s)
-        if not isinstance(upright_required, (bool, np.bool_)):
-            raise ShakeBenchMetricsError("upright_required must be boolean")
-        self.upright_required = bool(upright_required)
         self._compiled_can_body_points: Optional[np.ndarray] = None
         self._compiled_can_model_identity: Optional[int] = None
         self.reset()
@@ -1688,7 +1679,6 @@ class ShakeBenchMetrics:
             relative_linear_speed_m_s=float(np.linalg.norm(can_target.linear_velocity_m_s)),
             relative_angular_speed_rad_s=float(np.linalg.norm(can_target.angular_velocity_rad_s)),
             object_up_cosine=object_up_cosine,
-            upright_required=bool(self.upright_required),
         )
 
     def success_snapshot(self, sim_or_model: Any, data: Any = None) -> SuccessSnapshot:

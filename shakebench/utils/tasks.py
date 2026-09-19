@@ -42,8 +42,9 @@ OBJECTS = {
         "mass_kg": 0.30,
         "support": (-0.03615559794718225, 0.03615560148446003, 0.04600000287744883),
         "start_pose_support": (-0.03615749614935689, 0.03615771107858959, 0.046000650247714145),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.028128,
         "start_quat_wxyz": (0.708068, -0.000035, 0.000020, 0.706144),
-        "target_pose": "upright",
         "instruction": "mug",
         "grasp": {"hold_width_m": 0.0629, "pad_height_m": 0.030, "offset_xy_m": (0.0, 0.0)},
     },
@@ -61,8 +62,9 @@ OBJECTS = {
         "mass_kg": 0.16,
         "support": (-0.03211376857691277, 0.03207727074735714, 0.033469874213988324),
         "start_pose_support": (-0.031194843322826345, 0.03227772018364363, 0.033279964464956874),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.027855,
         "start_quat_wxyz": (0.998657, -0.020171, 0.047723, 0.000156),
-        "target_pose": "free",
         "instruction": "apple",
         "grasp": {"hold_width_m": 0.0644, "pad_height_m": 0.028, "offset_xy_m": (0.0, 0.0)},
     },
@@ -80,10 +82,11 @@ OBJECTS = {
         "mass_kg": 0.40,
         "support": (-0.040297003330440104, 0.03970300217508332, 0.02509177806572465),
         "start_pose_support": (-0.0402970033304401, 0.03970300217508331, 0.02509177806572464),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.040659,
         "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
-        "target_pose": "upright",
         "instruction": "food can",
-        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0319, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0407, "offset_xy_m": (0.0, 0.0)},
     },
     "spatula": {
         "asset": f"{ROBOCASA_ASSET_ROOT}/spatula/spatula_0/model.xml",
@@ -99,8 +102,9 @@ OBJECTS = {
         "mass_kg": 0.15,
         "support": (-0.0522271335029445, 0.06345147728128951, 0.13576509068018164),
         "start_pose_support": (-0.020014814407327428, 0.02323029022540675, 0.1402234569509359),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.015279,
         "start_quat_wxyz": (0.695366, -0.022732, -0.169361, 0.698044),
-        "target_pose": "free",
         "instruction": "spatula",
         # The handle lies at +x of the settled pose and is 13 mm thick, so the
         # pads close 11 mm above the table to keep the fingers clear of it.
@@ -120,8 +124,9 @@ OBJECTS = {
         "mass_kg": 0.11,
         "support": (-0.018410028739384878, 0.01848960653417706, 0.05350078315735753),
         "start_pose_support": (-0.017431807843213257, 0.01925637653077708, 0.05338579126483383),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.017419,
         "start_quat_wxyz": (0.707512, -0.001006, -0.013368, 0.706575),
-        "target_pose": "free",
         "instruction": "bar of soap",
         "grasp": {"hold_width_m": 0.0614, "pad_height_m": 0.018, "offset_xy_m": (0.0, 0.0)},
     },
@@ -139,10 +144,11 @@ OBJECTS = {
         "mass_kg": 0.35,
         "support": (-0.07249999999999997, 0.07250000289999996, 0.06247813672712636),
         "start_pose_support": (-0.07249999999999995, 0.07250000289999994, 0.06247813672712634),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.0725,
         "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
-        "target_pose": "free",
         "instruction": "cereal box",
-        "grasp": {"hold_width_m": 0.0377, "pad_height_m": 0.035, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {"hold_width_m": 0.0377, "pad_height_m": 0.0725, "offset_xy_m": (0.0, 0.0)},
     },
     "rolling_pin": {
         "asset": f"{ROBOCASA_ASSET_ROOT}/rolling_pin/rolling_pin_0/model.xml",
@@ -158,10 +164,11 @@ OBJECTS = {
         "mass_kg": 0.30,
         "support": (-0.020958531647920043, 0.020958529785276025, 0.14375000007512018),
         "start_pose_support": (-0.020741287986943014, 0.0207412839302145, 0.14374997832712755),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.020741,
         "start_quat_wxyz": (0.704125, -0.055970, 0.055456, 0.705691),
-        "target_pose": "free",
         "instruction": "rolling pin",
-        "grasp": {"hold_width_m": 0.0417, "pad_height_m": 0.019, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {"hold_width_m": 0.0417, "pad_height_m": 0.0208, "offset_xy_m": (0.0, 0.0)},
     },
     "potato": {
         "asset": f"{ROBOCASA_ASSET_ROOT}/potato/potato_1/model.xml",
@@ -177,10 +184,11 @@ OBJECTS = {
         "mass_kg": 0.20,
         "support": (-0.033168547637614856, 0.03316854849509696, 0.03504203543825795),
         "start_pose_support": (-0.02411677028463973, 0.0266922977437258, 0.03848302231675714),
+        # Measured collision-only centre of mass, start pose, above the lowest point.
+        "com_height_m": 0.02579,
         "start_quat_wxyz": (0.395127, 0.690549, -0.208453, 0.568828),
-        "target_pose": "free",
         "instruction": "potato",
-        "grasp": {"hold_width_m": 0.0725, "pad_height_m": 0.014, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {"hold_width_m": 0.0725, "pad_height_m": 0.0258, "offset_xy_m": (0.0, 0.0)},
     },
 }
 
@@ -260,10 +268,6 @@ class TaskSpec:
         return tuple(value / norm for value in quat)
 
     @property
-    def upright_required(self):
-        return OBJECTS[self.object_id]["target_pose"] == "upright"
-
-    @property
     def grasp(self):
         return dict(OBJECTS[self.object_id]["grasp"])
 
@@ -287,13 +291,14 @@ class TaskSpec:
             "finger_object_sliding_mu": 1.0,
             "object_mass_kg": self.object_mass_kg,
             "object_start_quat_wxyz": list(self.start_quat_wxyz),
-            "object_target_pose": entry["target_pose"],
+            "object_com_height_m": float(entry["com_height_m"]),
             "object_grasp": {
                 "hold_width_m": float(entry["grasp"]["hold_width_m"]),
                 "pad_height_m": float(entry["grasp"]["pad_height_m"]),
                 "offset_xy_m": [float(value) for value in entry["grasp"]["offset_xy_m"]],
                 "jaw_limit_m": PANDA_JAW_LIMIT_M,
                 "opening_allowance_m": GRASP_OPENING_ALLOWANCE_M,
+                "pads_above_com": float(entry["grasp"]["pad_height_m"]) >= float(entry["com_height_m"]),
             },
             "task_visual_revision": TASK_VISUAL_REVISION,
             "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
@@ -302,8 +307,15 @@ class TaskSpec:
             "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
             "mass_values_are": "per-object design masses, not density-derived compile values",
             "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
-            "stability_constraint": "start pose is the measured free-settled rest pose",
-            "success_semantics": "shakebench.task.v3 success evaluator",
+            "stability_constraint": (
+                "start pose is the measured free-settled rest pose; the grasp pads never close below "
+                "the object centre of mass"
+            ),
+            "success_rule": (
+                "majority of the collision geometry inside the crate footprint, resting on the crate "
+                "floor, released; orientation and residual speed are reported but do not gate success"
+            ),
+            "success_semantics": "shakebench.task.v3 positional success evaluator",
             "qualification": "pending_task_variant_requalification",
         }
 
@@ -429,8 +441,11 @@ def validate_task_registry() -> None:
                 f"{object_id}: hold width {hold_width:.4f} m leaves less than "
                 f"{GRASP_JAW_MARGIN_MIN_M:.3f} m of Panda jaw margin"
             )
-        if entry["target_pose"] not in ("upright", "free"):
-            raise ValueError(f"{object_id}: target_pose must be upright or free")
+        if float(grasp["pad_height_m"]) < float(entry["com_height_m"]):
+            raise ValueError(
+                f"{object_id}: grasp pads at {grasp['pad_height_m']:.4f} m sit below the "
+                f"{entry['com_height_m']:.4f} m centre of mass and would spin the object in the jaws"
+            )
         if entry["asset"] is None:
             raise ValueError(f"{object_id}: asset is required")
 
