@@ -39,22 +39,20 @@ ISOLATOR_JOINT_NAMES = {axis: f"isolator_{axis}" for axis in AXES}
 #: Arena textures owned by the upstream robosuite package, not by ShakeBench.
 SHARED_TEXTURE_FILES = frozenset({"steel-brushed.png"})
 
-#: One crate is shared by all eight task objects.  The inner footprint fits
-#: the longest object (287.5 mm rolling pin, 56 mm of length margin) and the
-#: widest flat object (119.1 mm cereal box).  The 45 mm wall blocks the rolling
-#: escape of every object in its declared target pose - the largest rolling
-#: radius is the mug on its side at 39.5 mm - while staying shallow enough
-#: that a vibration-induced escape stays possible.  Objects taller than the
-#: wall (mug, can, cereal box) rest on the crate floor and protrude: "inside"
-#: means the full inner footprint plus floor support.
+#: One bin is shared by every task variant.  These are the retired bin's
+#: dimensions, restored once the variant set dropped to mug/apple/can: the
+#: widest in-plane footprint is the mug at 92.0 x 62.9 mm, so the 164 x 144 mm
+#: inner rectangle keeps at least 72 mm on the tighter axis.  The 35 mm wall
+#: still blocks the rolling escape of a mug or an apple lying on its side
+#: (rolling radius ~32 mm) while staying shallow enough that a
+#: vibration-induced escape stays possible.  Objects taller than the wall
+#: (mug 72 mm, can 80 mm) rest on the bin floor and protrude: "inside" means
+#: the inner footprint plus floor support.
 TARGET_CONTAINER_CENTER_XY_M = (-0.10, 0.17)
-TARGET_CONTAINER_INNER_XY_M = (0.344, 0.150)
+TARGET_CONTAINER_INNER_XY_M = (0.164, 0.144)
 TARGET_CONTAINER_WALL_THICKNESS_M = 0.008
-TARGET_CONTAINER_OUTER_XY_M = (
-    TARGET_CONTAINER_INNER_XY_M[0] + 2.0 * TARGET_CONTAINER_WALL_THICKNESS_M,
-    TARGET_CONTAINER_INNER_XY_M[1] + 2.0 * TARGET_CONTAINER_WALL_THICKNESS_M,
-)
-TARGET_CONTAINER_WALL_HEIGHT_M = 0.045
+TARGET_CONTAINER_OUTER_XY_M = (0.18, 0.16)
+TARGET_CONTAINER_WALL_HEIGHT_M = 0.035
 TARGET_CONTAINER_BOTTOM_THICKNESS_M = 0.012
 
 CANONICAL_TARGET_CONTAINER = {

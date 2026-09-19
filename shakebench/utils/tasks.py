@@ -1,7 +1,7 @@
 """Task selection and public task identity, independent of rollout machinery.
 
-The task set is eight objects on the bare metal worktable, one object per
-episode.  Every entry records three kinds of number, and they are never
+The task set is a small set of objects on the bare metal worktable, one
+object per episode.  Every entry records three kinds of number, and they are never
 interchanged:
 
 * **official** - the RoboCasa instance path, registry scale and license;
@@ -88,115 +88,13 @@ OBJECTS = {
         "instruction": "food can",
         "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0407, "offset_xy_m": (0.0, 0.0)},
     },
-    "spatula": {
-        "asset": f"{ROBOCASA_ASSET_ROOT}/spatula/spatula_0/model.xml",
-        "source": "RoboCasa Objaverse spatula_0",
-        "source_instance": "objaverse/spatula/spatula_0",
-        "source_url": ROBOCASA_SOURCE_URL,
-        "source_license": ROBOCASA_LICENSE,
-        "asset_scale": (1.10, 1.10, 1.10),
-        "official_asset_scale": (1.10, 1.10, 1.10),
-        "object_class": "utensil",
-        "friction_class": "stainless_steel",
-        "table_mu": 0.22,
-        "mass_kg": 0.15,
-        "support": (-0.0522271335029445, 0.06345147728128951, 0.13576509068018164),
-        "start_pose_support": (-0.020014814407327428, 0.02323029022540675, 0.1402234569509359),
-        # Measured collision-only centre of mass, start pose, above the lowest point.
-        "com_height_m": 0.015279,
-        "start_quat_wxyz": (0.695366, -0.022732, -0.169361, 0.698044),
-        "instruction": "spatula",
-        # The handle lies at +x of the settled pose and is 13 mm thick, so the
-        # pads close 11 mm above the table to keep the fingers clear of it.
-        "grasp": {"hold_width_m": 0.0250, "pad_height_m": 0.016, "offset_xy_m": (0.085, 0.0)},
-    },
-    "bar_soap": {
-        "asset": f"{ROBOCASA_ASSET_ROOT}/bar_soap/bar_soap_0/model.xml",
-        "source": "RoboCasa Objaverse bar_soap_0",
-        "source_instance": "objaverse/bar_soap/bar_soap_0",
-        "source_url": ROBOCASA_SOURCE_URL,
-        "source_license": ROBOCASA_LICENSE,
-        "asset_scale": (0.95, 0.95, 1.05),
-        "official_asset_scale": (0.95, 0.95, 1.05),
-        "object_class": "bar",
-        "friction_class": "soap",
-        "table_mu": 0.25,
-        "mass_kg": 0.11,
-        "support": (-0.018410028739384878, 0.01848960653417706, 0.05350078315735753),
-        "start_pose_support": (-0.017431807843213257, 0.01925637653077708, 0.05338579126483383),
-        # Measured collision-only centre of mass, start pose, above the lowest point.
-        "com_height_m": 0.017419,
-        "start_quat_wxyz": (0.707512, -0.001006, -0.013368, 0.706575),
-        "instruction": "bar of soap",
-        "grasp": {"hold_width_m": 0.0614, "pad_height_m": 0.018, "offset_xy_m": (0.0, 0.0)},
-    },
-    "cereal": {
-        "asset": f"{ROBOCASA_ASSET_ROOT}/cereal/cereal_0/model.xml",
-        "source": "RoboCasa Objaverse cereal_0",
-        "source_instance": "objaverse/cereal/cereal_0",
-        "source_url": ROBOCASA_SOURCE_URL,
-        "source_license": ROBOCASA_LICENSE,
-        "asset_scale": (1.0, 1.0, 1.0),
-        "official_asset_scale": (1.0, 1.0, 1.0),
-        "object_class": "box",
-        "friction_class": "cardboard",
-        "table_mu": 0.35,
-        "mass_kg": 0.35,
-        "support": (-0.07249999999999997, 0.07250000289999996, 0.06247813672712636),
-        "start_pose_support": (-0.07249999999999995, 0.07250000289999994, 0.06247813672712634),
-        # Measured collision-only centre of mass, start pose, above the lowest point.
-        "com_height_m": 0.0725,
-        "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
-        "instruction": "cereal box",
-        "grasp": {"hold_width_m": 0.0377, "pad_height_m": 0.0725, "offset_xy_m": (0.0, 0.0)},
-    },
-    "rolling_pin": {
-        "asset": f"{ROBOCASA_ASSET_ROOT}/rolling_pin/rolling_pin_0/model.xml",
-        "source": "RoboCasa Objaverse rolling_pin_0",
-        "source_instance": "objaverse/rolling_pin/rolling_pin_0",
-        "source_url": ROBOCASA_SOURCE_URL,
-        "source_license": ROBOCASA_LICENSE,
-        "asset_scale": (1.25, 1.25, 1.25),
-        "official_asset_scale": (1.25, 1.25, 1.25),
-        "object_class": "cylinder",
-        "friction_class": "wood",
-        "table_mu": 0.35,
-        "mass_kg": 0.30,
-        "support": (-0.020958531647920043, 0.020958529785276025, 0.14375000007512018),
-        "start_pose_support": (-0.020741287986943014, 0.0207412839302145, 0.14374997832712755),
-        # Measured collision-only centre of mass, start pose, above the lowest point.
-        "com_height_m": 0.020741,
-        "start_quat_wxyz": (0.704125, -0.055970, 0.055456, 0.705691),
-        "instruction": "rolling pin",
-        "grasp": {"hold_width_m": 0.0417, "pad_height_m": 0.0208, "offset_xy_m": (0.0, 0.0)},
-    },
-    "potato": {
-        "asset": f"{ROBOCASA_ASSET_ROOT}/potato/potato_1/model.xml",
-        "source": "RoboCasa Objaverse potato_1",
-        "source_instance": "objaverse/potato/potato_1",
-        "source_url": ROBOCASA_SOURCE_URL,
-        "source_license": ROBOCASA_LICENSE,
-        "asset_scale": (0.85, 0.85, 0.85),
-        "official_asset_scale": (1.0, 1.0, 1.0),
-        "object_class": "irregular_tuber",
-        "friction_class": "tuber_skin",
-        "table_mu": 0.40,
-        "mass_kg": 0.20,
-        "support": (-0.033168547637614856, 0.03316854849509696, 0.03504203543825795),
-        "start_pose_support": (-0.02411677028463973, 0.0266922977437258, 0.03848302231675714),
-        # Measured collision-only centre of mass, start pose, above the lowest point.
-        "com_height_m": 0.02579,
-        "start_quat_wxyz": (0.395127, 0.690549, -0.208453, 0.568828),
-        "instruction": "potato",
-        "grasp": {"hold_width_m": 0.0725, "pad_height_m": 0.0258, "offset_xy_m": (0.0, 0.0)},
-    },
 }
 
 DEFAULT_OBJECT_ID = "mug"
-#: The target container is a single fixed crate shared by all eight objects.
+#: The target container is a single fixed crate shared by every variant.
 SURFACES = ("metal",)
 TASK_SCHEMA_ID = "shakebench.task.v3"
-TASK_VISUAL_REVISION = "eight_objects_bare_metal_crate.v1"
+TASK_VISUAL_REVISION = "three_objects_bare_metal_crate.v1"
 GRASP_OPENING_ALLOWANCE_M = 0.010
 #: Compiled Panda jaw travel (both fingers) in metres.
 PANDA_JAW_LIMIT_M = 0.080
@@ -302,7 +200,7 @@ class TaskSpec:
             },
             "task_visual_revision": TASK_VISUAL_REVISION,
             "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
-            "target_container": "single fixed crate shared by all eight objects",
+            "target_container": "single fixed crate shared by every variant",
             "surface_model": "flush rigid layer; fixed total worktable mass and top height",
             "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
             "mass_values_are": "per-object design masses, not density-derived compile values",
@@ -343,7 +241,7 @@ def make_task_object(spec: TaskSpec | None, *, name="task_object"):
 
 
 def task_variants() -> tuple[TaskSpec, ...]:
-    """Return the frozen eight variants of the current task set."""
+    """Return the frozen variants of the current task set."""
 
     return tuple(TaskSpec(object_id=object_id) for object_id in OBJECTS)
 

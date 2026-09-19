@@ -1,4 +1,4 @@
-"""Render the eight pick/place object variants in the current industrial scene.
+"""Render the pick/place object variants in the current industrial scene.
 
 MUJOCO_GL=egl python -m shakebench.demos.demo_task_variants
 """
@@ -17,7 +17,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("out/task_variants/pick_place_variants.png"))
     args = parser.parse_args(argv)
-    columns = 4
+    columns = 3
     width, height, label_height = 640, 480, 36
     rows = (len(task_variants()) + columns - 1) // columns
     canvas = Image.new("RGB", (width * columns, (height + label_height) * rows), (24, 29, 34))
