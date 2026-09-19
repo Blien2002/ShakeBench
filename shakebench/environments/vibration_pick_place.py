@@ -241,7 +241,7 @@ class VibrationPickPlace(ManipulationEnv):
         self.target_container_friction = _finite_vector("target_container_friction", target_container_friction, 3)
         self.object_start_xy = _finite_vector("object_start_xy", object_start_xy, 2)
         requested_quat = (
-            self.task_spec.start_quat_wxyz
+            self.task_spec.grasp_plan(self.grasp_region).get("start_quat_wxyz", self.task_spec.start_quat_wxyz)
             if object_start_quat_wxyz is None and self.task_spec is not None
             else object_start_quat_wxyz
         )
@@ -480,7 +480,9 @@ class VibrationPickPlace(ManipulationEnv):
         if self.task_spec is not None:
             from shakebench.utils.tasks import OBJECTS
 
-            expected_posed = OBJECTS[self.task_spec.object_id]["start_pose_support"]
+            expected_posed = self.task_spec.grasp_plan(self.grasp_region).get(
+                "start_pose_support", OBJECTS[self.task_spec.object_id]["start_pose_support"]
+            )
             if not np.allclose(self.can_start_pose_envelope, expected_posed, atol=1e-6, rtol=0):
                 raise ShakeBenchMetricsError("task object start pose support differs from its state contract")
         inertia = equivalent_cylinder_inertia(
@@ -503,7 +505,11 @@ class VibrationPickPlace(ManipulationEnv):
             posed_com_height = float(rotation.reshape(3, 3).dot(np.asarray(self.can_com, dtype=float))[2]) - float(
                 self.can_start_pose_envelope[0]
             )
-            expected_com_height = float(OBJECTS[self.task_spec.object_id]["com_height_m"])
+            expected_com_height = float(
+                self.task_spec.grasp_plan(self.grasp_region).get(
+                    "com_height_m", OBJECTS[self.task_spec.object_id]["com_height_m"]
+                )
+            )
             if abs(posed_com_height - expected_com_height) > 1e-4:
                 raise ShakeBenchMetricsError("task object centre of mass differs from its state contract")
         self.can_inertia = tuple(float(value) for value in inertia)
@@ -1076,7 +1082,11 @@ class VibrationPickPlace(ManipulationEnv):
             mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
             grasp_offset_object = tuple(
                 float(value)
-                for value in rotation.reshape(3, 3)[:2, :2].T.dot(np.asarray(grasp["offset_xy_m"], dtype=float))
+                for value in (
+                    np.asarray(grasp["point_object_m"], dtype=float)
+                    if "point_object_m" in grasp
+                    else rotation.reshape(3, 3)[:2, :2].T.dot(np.asarray(grasp["offset_xy_m"], dtype=float))
+                )
             )
         robot_base_position = np.asarray(self.geometry_profile["robot_base_pos_m"], dtype=float) - np.asarray(
             self.robots[0].robot_model.bottom_offset, dtype=float
@@ -1092,7 +1102,9 @@ class VibrationPickPlace(ManipulationEnv):
             object_grasp_pad_height_m=float(grasp["pad_height_m"]),
             object_grasp_opening_m=float(task_grasp_opening_gate_m),
             object_grasp_preopening_m=float(grasp.get("preopening_m", 0.080)),
+            object_grasp_pitch_rad=float(grasp.get("pitch_rad", 0.0)),
             object_grasp_offset_object_m=list(grasp_offset_object),
+            object_grasp_insertion_offset_m=list(grasp.get("insertion_offset_object_m", (0.0, 0.0, 0.0))),
             finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
             support_topology_id=self.geometry_profile["profile_id"],
             world_to_robot_base_position_m=tuple(robot_base_position),
@@ -1170,7 +1182,7 @@ class VibrationPickPlace(ManipulationEnv):
             },
             "support_topology_id": self.geometry_profile["profile_id"],
             "success_semantics": "phase04_vibration_success_evaluator",
-            **({"task": self.task_spec.contract()} if self.task_spec is not None else {}),
+            **({"task": self.task_spec.contract(self.grasp_region)} if self.task_spec is not None else {}),
         }
         if hasattr(self, "sim"):
             self._policy_task_context_cache = copy.deepcopy(context)
@@ -1373,7 +1385,7 @@ class VibrationPickPlace(ManipulationEnv):
                 "collision_geometry": target_geometry,
             },
             "contacts": contact_audit,
-            **({"task": self.task_spec.contract()} if self.task_spec is not None else {}),
+            **({"task": self.task_spec.contract(self.grasp_region)} if self.task_spec is not None else {}),
             "physics_profile": self.physics_profile.audit(),
             "robot_mount": robot_mount_audit,
             **({"geometry_profile": self.geometry_profile} if self.geometry_profile else {}),

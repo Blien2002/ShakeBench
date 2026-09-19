@@ -193,7 +193,36 @@ class TaskSpec:
         return self.grasp_plan()
 
     def grasp_plan(self, region="body"):
-        """Select a physical grip without changing the object or initial state."""
+        """Select a grip; side_* modes declare a sideways initial pose as well."""
+        if region == "side_handle" and self.object_id == "mug":
+            # Collision-mesh rest pose: the cup lies on its side with the handle up.
+            return {
+                "hold_width_m": 0.010,
+                "pad_height_m": 0.07936649368,
+                "offset_xy_m": (-0.005, 0.02054313279),
+                "point_object_m": (0.0, -0.041, 0.005),
+                "preopening_m": 0.026,
+                "pitch_rad": 0.0,
+                "insertion_offset_object_m": (0.0, 0.0, 0.0),
+                "start_quat_wxyz": (0.35318140201, -0.61258719399, -0.35318113371, 0.61258706633),
+                "start_pose_support": (-0.04388438843, 0.04083958647, 0.05251948046),
+                "com_height_m": 0.03446942146,
+            }
+        if region == "side_single_wall" and self.object_id == "mug":
+            # The mug lies on its side with the mouth reachable; the pads straddle
+            # the +x wall (one inside the cavity, one outside) after a sideways insert.
+            return {
+                "hold_width_m": 0.014,
+                "pad_height_m": 0.04450628261,
+                "offset_xy_m": (-0.01791543853, -0.01410397523),
+                "point_object_m": (0.024, -0.003, 0.018),
+                "preopening_m": 0.032,
+                "pitch_rad": -math.radians(75),
+                "insertion_offset_object_m": (0.0, 0.0, 0.050),
+                "start_quat_wxyz": (0.68636894226, 0.17440077662, -0.68494945765, -0.17124991119),
+                "start_pose_support": (-0.02478028593, 0.03842944253, 0.05657461336),
+                "com_height_m": 0.02966551020,
+            }
         if region == "body":
             return dict(OBJECTS[self.object_id]["grasp"])
         if region == "handle" and self.object_id == "mug":
@@ -209,8 +238,9 @@ class TaskSpec:
             }
         raise ValueError(f"unsupported grasp region {region!r} for {self.object_id}")
 
-    def contract(self):
+    def contract(self, region="body"):
         entry = OBJECTS[self.object_id]
+        grasp = self.grasp_plan(region)
         return {
             "schema_id": TASK_SCHEMA_ID,
             **self.to_dict(),
@@ -228,15 +258,17 @@ class TaskSpec:
             "target_object_sliding_mu": self.target_sliding_mu,
             "finger_object_sliding_mu": 1.0,
             "object_mass_kg": self.object_mass_kg,
-            "object_start_quat_wxyz": list(self.start_quat_wxyz),
-            "object_com_height_m": float(entry["com_height_m"]),
+            "object_start_quat_wxyz": list(grasp.get("start_quat_wxyz", self.start_quat_wxyz)),
+            "object_com_height_m": float(grasp.get("com_height_m", entry["com_height_m"])),
             "object_grasp": {
-                "hold_width_m": float(entry["grasp"]["hold_width_m"]),
-                "pad_height_m": float(entry["grasp"]["pad_height_m"]),
-                "offset_xy_m": [float(value) for value in entry["grasp"]["offset_xy_m"]],
+                "hold_width_m": float(grasp["hold_width_m"]),
+                "pad_height_m": float(grasp["pad_height_m"]),
+                "offset_xy_m": [float(value) for value in grasp["offset_xy_m"]],
+                **({"point_object_m": list(grasp["point_object_m"])} if "point_object_m" in grasp else {}),
                 "jaw_limit_m": PANDA_JAW_LIMIT_M,
                 "opening_allowance_m": GRASP_OPENING_ALLOWANCE_M,
-                "pads_above_com": float(entry["grasp"]["pad_height_m"]) >= float(entry["com_height_m"]),
+                "pads_above_com": float(grasp["pad_height_m"])
+                >= float(grasp.get("com_height_m", entry["com_height_m"])),
             },
             "task_visual_revision": TASK_VISUAL_REVISION,
             "table_surface": "bare brushed-steel worktable; the felt mat task was retired",

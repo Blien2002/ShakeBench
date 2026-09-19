@@ -453,6 +453,8 @@ def run_episode(
 
     variant = "task" in state
     task_kwargs = task_env_kwargs(state) if variant else {"object_start_xy": tuple(state["object_xy_m"])}
+    if variant and "start_quat_wxyz" in task_kwargs["task"].grasp_plan(grasp_region):
+        task_kwargs["object_start_quat_wxyz"] = task_kwargs["task"].grasp_plan(grasp_region)["start_quat_wxyz"]
     env = shakebench.make(
         "VibrationPickPlace",
         robots="Panda",
@@ -619,6 +621,8 @@ def run_episode(
             "schema_id": EPISODE_SCHEMA_ID,
             "schema_version": EPISODE_SCHEMA_VERSION,
             "state_id": state_id,
+            "grasp_region": grasp_region,
+            "object_start_quat_wxyz": list(env.object_start_quat_wxyz),
             "tier": CURRENT_TIER_ALIAS,
             "gamma_commanded": gamma_commanded,
             "horizon_steps": horizon_steps,
@@ -632,7 +636,7 @@ def run_episode(
             "geometry_profile": env.geometry_profile,
             "geometry_authority": geometry_authority,
             "scoreable": scoreable,
-            **({"task_contract": env.task_spec.contract()} if variant else {}),
+            **({"task_contract": env.task_spec.contract(grasp_region)} if variant else {}),
             "outcome_contract": outcome_contract(),
             "episode_validity": episode_validity,
             "score_outcome": score_outcome,

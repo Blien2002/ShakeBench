@@ -50,6 +50,7 @@ class TaskPhase(str, Enum):
     VERTICAL_DESCEND = "vertical_descend"
     DESCEND = "descend"
     GRASP = "grasp"
+    GRASP_INSERT = "grasp_insert"
     GRASP_CLOSE = "grasp_close"
     PRELIFT_VERIFY = "prelift_verify"
     LIFT = "lift"
@@ -99,6 +100,7 @@ MOTION_CAPABILITY_BY_PHASE = MappingProxyType(
         TaskPhase.ALIGN_SETTLE: MotionCapability.HOLD,
         TaskPhase.VERTICAL_DESCEND: MotionCapability.CONTACT_APPROACH,
         TaskPhase.DESCEND: MotionCapability.CONTACT_APPROACH,
+        TaskPhase.GRASP_INSERT: MotionCapability.CONTACT_APPROACH,
         TaskPhase.GRASP: MotionCapability.GRIPPER_CLOSE,
         TaskPhase.GRASP_CLOSE: MotionCapability.GRIPPER_CLOSE,
         TaskPhase.PRELIFT_VERIFY: MotionCapability.GRIPPER_CLOSE,
@@ -155,7 +157,11 @@ class WorktableTaskContext:
     object_grasp_pad_height_m: float = 0.0319
     object_grasp_opening_m: float = 0.0602
     object_grasp_preopening_m: float = 0.080
-    object_grasp_offset_object_m: tuple[float, float] = (0.0, 0.0)
+    # World-y wrist tilt; 0 keeps the historical top-down orientation.
+    object_grasp_pitch_rad: float = 0.0
+    object_grasp_offset_object_m: tuple[float, ...] = (0.0, 0.0)
+    # Standoff from the contact point, in the object frame.
+    object_grasp_insertion_offset_m: tuple[float, float, float] = (0.0, 0.0, 0.0)
     finger_pad_tool_support_offsets_m: tuple[float, ...] = (0.0, 0.0, 0.0934)
     support_topology_id: str = "deck_robot_base_plus_isolated_worktable"
 
@@ -187,9 +193,16 @@ class WorktableTaskContext:
             raise ShakeBenchOracleError("Can collision support bounds are invalid")
         if not isinstance(self.support_topology_id, str) or not self.support_topology_id:
             raise ShakeBenchOracleError("support_topology_id must be nonempty")
+        if not np.isfinite(self.object_grasp_pitch_rad) or abs(self.object_grasp_pitch_rad) > np.pi / 2:
+            raise ShakeBenchOracleError("grasp pitch must be finite and within a quarter turn")
+        insertion = np.asarray(self.object_grasp_insertion_offset_m, dtype=float)
+        if insertion.shape != (3,) or not np.all(np.isfinite(insertion)):
+            raise ShakeBenchOracleError("object_grasp_insertion_offset_m must be finite length three")
         offset = np.asarray(self.object_grasp_offset_object_m, dtype=float)
-        if offset.shape != (2,) or not np.all(np.isfinite(offset)):
-            raise ShakeBenchOracleError("object_grasp_offset_object_m must be finite length two")
+        if offset.shape not in {(2,), (3,)} or not np.all(np.isfinite(offset)):
+            raise ShakeBenchOracleError("object_grasp_offset_object_m must be finite length two or three")
+        if self.object_grasp_pitch_rad and offset.shape != (3,):
+            raise ShakeBenchOracleError("a tilted grasp requires a full three-dimensional material point")
         if not 0.0 < float(self.object_grasp_opening_m) < 0.080:
             raise ShakeBenchOracleError("object_grasp_opening_m must fit the compiled Panda jaw")
         if not self.object_grasp_opening_m < self.object_grasp_preopening_m <= 0.080:
@@ -264,6 +277,10 @@ class WorktableTaskContext:
                     "grasp_offset_object_m",
                     value.get("object_grasp_offset_object_m", default.object_grasp_offset_object_m),
                 )
+            ),
+            object_grasp_pitch_rad=float(value.get("object_grasp_pitch_rad", default.object_grasp_pitch_rad)),
+            object_grasp_insertion_offset_m=tuple(
+                value.get("object_grasp_insertion_offset_m", default.object_grasp_insertion_offset_m)
             ),
             finger_pad_tool_support_offsets_m=tuple(
                 value.get("finger_pad_tool_support_offsets_m", default.finger_pad_tool_support_offsets_m)
@@ -427,7 +444,10 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
         + float(context.object_grasp_pad_height_m)
         + PAD_MIDPOINT_EEF_OFFSET_M
     )
-    offset = (float(context.object_grasp_offset_object_m[0]), float(context.object_grasp_offset_object_m[1]))
+    offset = tuple(float(value) for value in context.object_grasp_offset_object_m)
+    if len(offset) == 3:
+        # A full material point rotates its height with the object, including reset settling.
+        grasp_height = PAD_MIDPOINT_EEF_OFFSET_M
     transport_height = profile.transport_height_m
     if any(offset):
         # A handle-held object can pivot below the pads. Bound its full swept
@@ -459,6 +479,7 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
         grasp_hold_max_opening_rad=float(context.object_grasp_opening_m),
         can_collision_envelope_radius_m=float(context.object_collision_radius_m),
         grasp_offset_object_m=offset,
+        grasp_insertion_offset_m=tuple(context.object_grasp_insertion_offset_m),
         # A centred grip keeps the profile's own expectation; an off-centre
         # grip (a handle) is derived from the object's own pose instead.
         expected_eef_can_translation_m=None if any(offset) else profile.expected_eef_can_translation_m,
@@ -582,7 +603,8 @@ class OracleControllerProfile:
     # of a hard-coded Can calibration.
     expected_eef_can_translation_m: tuple[float, ...] | None = (-0.005, 0.0, 0.080)
     #: Grasp point in the object's own frame; non-zero for a handle grip.
-    grasp_offset_object_m: tuple[float, float] = (0.0, 0.0)
+    grasp_offset_object_m: tuple[float, ...] = (0.0, 0.0)
+    grasp_insertion_offset_m: tuple[float, float, float] = (0.0, 0.0, 0.0)
     grasp_hold_min_opening_rad: float = 0.006
     # Can diameter (2 * collision radius) plus a 10 mm compiled pad/measurement
     # allowance; bilateral geometry and expected-transform gates remain mandatory.
@@ -623,6 +645,7 @@ class OracleControllerProfile:
                 "recovery_velocity_brake_s",
                 "expected_eef_can_translation_m",
                 "grasp_offset_object_m",
+                "grasp_insertion_offset_m",
             }:
                 continue
             if key in {"gripper_open_action", "gripper_close_action"}:
@@ -644,9 +667,12 @@ class OracleControllerProfile:
             expected_translation = np.asarray(self.expected_eef_can_translation_m, dtype=float)
             if expected_translation.shape != (3,) or not np.all(np.isfinite(expected_translation)):
                 raise ShakeBenchOracleError("expected_eef_can_translation_m must be finite length three")
+        insertion = np.asarray(self.grasp_insertion_offset_m, dtype=float)
+        if insertion.shape != (3,) or not np.all(np.isfinite(insertion)):
+            raise ShakeBenchOracleError("grasp_insertion_offset_m must be finite length three")
         grasp_offset = np.asarray(self.grasp_offset_object_m, dtype=float)
-        if grasp_offset.shape != (2,) or not np.all(np.isfinite(grasp_offset)):
-            raise ShakeBenchOracleError("grasp_offset_object_m must be finite length two")
+        if grasp_offset.shape not in {(2,), (3,)} or not np.all(np.isfinite(grasp_offset)):
+            raise ShakeBenchOracleError("grasp_offset_object_m must be finite length two or three")
         if self.prelift_required_samples < 2 or self.grasp_loss_confirm_samples < 2:
             raise ShakeBenchOracleError("prelift and loss confirmation require at least two samples")
         if self.align_required_samples < 2 or self.recovery_stable_samples < 2:
@@ -691,6 +717,7 @@ def motion_capability_policy(phase: TaskPhase, profile: OracleControllerProfile)
         TaskPhase.ALIGN_SETTLE,
         TaskPhase.VERTICAL_DESCEND,
         TaskPhase.DESCEND,
+        TaskPhase.GRASP_INSERT,
         TaskPhase.RELEASE,
         TaskPhase.VERIFY,
         TaskPhase.RECOVERY_OPEN,
@@ -1043,6 +1070,7 @@ class ShakeBenchOracleController:
             TaskPhase.ALIGN_SETTLE,
             TaskPhase.DESCEND,
             TaskPhase.VERTICAL_DESCEND,
+            TaskPhase.GRASP_INSERT,
             TaskPhase.RE_ALIGN,
         }:
             state = np.asarray(observation["robot0_gripper_state"], dtype=float)

@@ -137,7 +137,9 @@ class TaskExecutive:
         table_base = _worktable_transform_robot_base(observation, self.context)
         return np.linalg.inv(table_base).dot(can_base)
 
-    def _grasp_offset_base(self, observation: Mapping[str, Any], anchor_can: np.ndarray) -> np.ndarray:
+    def _grasp_offset_base(
+        self, observation: Mapping[str, Any], anchor_can: np.ndarray, *, horizontal=False, insertion=False
+    ) -> np.ndarray:
         """Return the base-frame grasp point for the object's current pose.
 
         A handle grip is offset from the object origin, so the offset rides the
@@ -145,10 +147,22 @@ class TaskExecutive:
         """
 
         offset = np.asarray(self.profile.grasp_offset_object_m, dtype=float)
-        if not np.any(offset):
+        if not np.any(offset) and (not insertion or not any(self.profile.grasp_insertion_offset_m)):
             return np.asarray(anchor_can, dtype=float)
         object_rotation = _quat_xyzw_to_matrix(np.asarray(observation["object_quat_robot_base"], dtype=float))
-        return np.asarray(anchor_can, dtype=float) + object_rotation[:, :2].dot(offset)
+        rotated = object_rotation[:, : len(offset)].dot(offset)
+        if insertion:
+            rotated = rotated + object_rotation.dot(np.asarray(self.profile.grasp_insertion_offset_m))
+        if horizontal and len(offset) == 3:
+            normal = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))[:, 2]
+            rotated = rotated - normal * np.dot(rotated, normal)
+        return np.asarray(anchor_can, dtype=float) + rotated
+
+    def _grasp_tool_offset_base(self, observation: Mapping[str, Any]) -> np.ndarray:
+        normal = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))[:, 2]
+        if not self.context.object_grasp_pitch_rad:
+            return normal * self.profile.grasp_height_m
+        return -self._desired_eef_rotation(observation)[:, 2] * self.profile.grasp_height_m
 
     def _capture_grasp_anchor(self, observation: Mapping[str, Any], time_s: float) -> None:
         """Freeze Can and grasp waypoints in the rigid worktable frame."""
@@ -162,8 +176,8 @@ class TaskExecutive:
         eef_worktable = np.linalg.inv(table_base).dot(eef_base)
         offset = np.asarray(self.profile.grasp_offset_object_m, dtype=float)
         can_rotation = self._anchor_worktable_can_transform[:3, :3]
-        grasp_point = can_position + can_rotation[:, :2].dot(offset)
-        eef_worktable[:3, 3] = grasp_point + np.array((0.0, 0.0, self.profile.grasp_height_m), dtype=float)
+        grasp_point = can_position + can_rotation[:, : len(offset)].dot(offset)
+        eef_worktable[:3, 3] = grasp_point + table_base[:3, :3].T.dot(self._grasp_tool_offset_base(observation))
         self._anchor_worktable_eef_goal = eef_worktable
 
     def _begin_lateral_alignment(self, observation: Mapping[str, Any], time_s: float) -> None:
@@ -315,9 +329,8 @@ class TaskExecutive:
         if self.profile.expected_eef_can_translation_m is not None:
             return np.asarray(self.profile.expected_eef_can_translation_m, dtype=float)
         object_rotation = _quat_xyzw_to_matrix(np.asarray(observation["object_quat_robot_base"], dtype=float))
-        target_rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
         offset = np.asarray(self.profile.grasp_offset_object_m, dtype=float)
-        world_offset = object_rotation[:, :2].dot(offset) + target_rotation[:, 2] * self.profile.grasp_height_m
+        world_offset = object_rotation[:, : len(offset)].dot(offset) + self._grasp_tool_offset_base(observation)
         reference = self._eef_reference_rotation
         if reference is None:
             reference = np.eye(3)
@@ -716,19 +729,31 @@ class TaskExecutive:
             return can + np.array((0.0, 0.0, self.profile.approach_height_m))
         target_rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
         target_z = target_rotation[:, 2]
+        tool_offset = self._grasp_tool_offset_base(observation)
+        tool_offset_xy = tool_offset - target_z * np.dot(tool_offset, target_z)
         if self.phase in {TaskPhase.LATERAL_ALIGN_ABOVE_CAN, TaskPhase.ALIGN_SETTLE}:
             anchor = self._anchored_can_base(observation)
-            return self._grasp_offset_base(observation, anchor) + target_z * self.profile.approach_height_m
+            return (
+                self._grasp_offset_base(observation, anchor, horizontal=True, insertion=True)
+                + tool_offset_xy
+                + target_z * self.profile.approach_height_m
+            )
         if self.phase in {
             TaskPhase.DESCEND,
             TaskPhase.VERTICAL_DESCEND,
             TaskPhase.GRASP,
             TaskPhase.GRASP_CLOSE,
+            TaskPhase.GRASP_INSERT,
         }:
             anchor_can = (
                 self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
             )
-            return self._grasp_offset_base(observation, anchor_can) + target_z * self.profile.grasp_height_m
+            return (
+                self._grasp_offset_base(
+                    observation, anchor_can, insertion=self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND}
+                )
+                + tool_offset
+            )
         if self.phase == TaskPhase.PRELIFT_VERIFY:
             if self._prelift_start_eef_position is None:
                 raise ShakeBenchOracleError("PRELIFT_VERIFY requires a saved EEF reference")
@@ -737,7 +762,11 @@ class TaskExecutive:
             anchor_can = (
                 self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
             )
-            return self._grasp_offset_base(observation, anchor_can) + target_z * self.profile.transport_height_m
+            return (
+                self._grasp_offset_base(observation, anchor_can, horizontal=True)
+                + tool_offset_xy
+                + target_z * self.profile.transport_height_m
+            )
         target = self._target_base(observation, np.array((0.0, 0.0, target_top + self.profile.transport_height_m)))
         if self.phase == TaskPhase.TRANSPORT:
             # An off-centre grip carries the object away from the gripper axis;
@@ -770,14 +799,18 @@ class TaskExecutive:
             return (
                 self._recovery_lower_goal
                 if self._recovery_lower_goal is not None
-                else self._grasp_offset_base(observation, can) + target_z * self.profile.grasp_height_m
+                else self._grasp_offset_base(observation, can) + tool_offset
             )
         if self.phase in {TaskPhase.WAIT_PUBLIC_SETTLE, TaskPhase.RECOVERY_OPEN}:
             return eef
         if self.phase in {TaskPhase.CLEARANCE_RETREAT, TaskPhase.RETREAT}:
             return eef + target_z * self.profile.clearance_lift_height_m
         if self.phase == TaskPhase.RE_ALIGN:
-            return self._grasp_offset_base(observation, can) + target_z * self.profile.approach_height_m
+            return (
+                self._grasp_offset_base(observation, can, horizontal=True)
+                + tool_offset_xy
+                + target_z * self.profile.approach_height_m
+            )
         return target
 
     def _desired_eef_rotation(self, observation: Mapping[str, Any]) -> np.ndarray:
@@ -808,6 +841,7 @@ class TaskExecutive:
                 TaskPhase.VERTICAL_DESCEND,
                 TaskPhase.GRASP,
                 TaskPhase.GRASP_CLOSE,
+                TaskPhase.GRASP_INSERT,
                 TaskPhase.PRELIFT_VERIFY,
             }
             and self._anchor_error_m(observation) > self.profile.anchor_drift_tolerance_m
@@ -858,7 +892,7 @@ class TaskExecutive:
                 return
         eef = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float)
         goal = self._phase_goal(observation)
-        if self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND}:
+        if self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND, TaskPhase.GRASP_INSERT}:
             error = eef - goal
             close = bool(
                 np.linalg.norm(error[:2]) <= self.profile.descend_tolerance_m
@@ -901,6 +935,10 @@ class TaskExecutive:
         elif self.phase in {TaskPhase.DESCEND, TaskPhase.VERTICAL_DESCEND} and close:
             if self._anchor_worktable_can_transform is None:
                 self._capture_grasp_anchor(observation, time_s)
+            self._transition(
+                TaskPhase.GRASP_INSERT if any(self.profile.grasp_insertion_offset_m) else TaskPhase.GRASP_CLOSE, time_s
+            )
+        elif self.phase == TaskPhase.GRASP_INSERT and close:
             self._transition(TaskPhase.GRASP_CLOSE, time_s)
         elif self.phase in {TaskPhase.GRASP, TaskPhase.GRASP_CLOSE} and elapsed >= self.profile.grasp_s:
             if self._public_grasp_held(observation):
@@ -1004,7 +1042,12 @@ class TaskExecutive:
             quat = np.asarray(observation["robot0_eef_quat_robot_base"], dtype=float)
             if quat.shape != (4,) or not np.all(np.isfinite(quat)):
                 raise ShakeBenchOracleError("robot0_eef_quat_robot_base must be a finite quaternion")
-            self._eef_reference_rotation = _quat_xyzw_to_matrix(quat)
+            reference = _quat_xyzw_to_matrix(quat)
+            pitch = self.context.object_grasp_pitch_rad
+            if pitch:
+                cosine, sine = np.cos(pitch), np.sin(pitch)
+                reference = np.array(((cosine, 0.0, sine), (0.0, 1.0, 0.0), (-sine, 0.0, cosine))).dot(reference)
+            self._eef_reference_rotation = reference
             self._initial_target_rotation = _quat_xyzw_to_matrix(
                 np.asarray(observation["goal_frame_quat_robot_base"], dtype=float)
             )
