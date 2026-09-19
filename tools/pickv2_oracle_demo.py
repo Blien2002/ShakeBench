@@ -52,7 +52,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--object", required=True, choices=tuple(OBJECTS))
     parser.add_argument(
-        "--grasp-region", choices=("body", "handle", "single_wall", "side_handle", "side_single_wall"), default="body"
+        "--grasp-region", choices=("body", "handle", "single_wall", "side_single_wall"), default="body"
     )
     parser.add_argument("--gamma", type=float, default=0.5)
     parser.add_argument("--output", type=Path, required=True)

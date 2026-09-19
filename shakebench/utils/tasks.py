@@ -194,20 +194,6 @@ class TaskSpec:
 
     def grasp_plan(self, region="body"):
         """Select a grip; side_* modes declare a sideways initial pose as well."""
-        if region == "side_handle" and self.object_id == "mug":
-            # Collision-mesh rest pose: the cup lies on its side with the handle up.
-            return {
-                "hold_width_m": 0.010,
-                "pad_height_m": 0.07936649368,
-                "offset_xy_m": (-0.005, 0.02054313279),
-                "point_object_m": (0.0, -0.041, 0.005),
-                "preopening_m": 0.026,
-                "pitch_rad": 0.0,
-                "insertion_offset_object_m": (0.0, 0.0, 0.0),
-                "start_quat_wxyz": (0.35318140201, -0.61258719399, -0.35318113371, 0.61258706633),
-                "start_pose_support": (-0.04388438843, 0.04083958647, 0.05251948046),
-                "com_height_m": 0.03446942146,
-            }
         if region == "side_single_wall" and self.object_id == "mug":
             # The mug lies on its side with the mouth reachable; the pads straddle
             # the +x wall (one inside the cavity, one outside) after a sideways insert.
