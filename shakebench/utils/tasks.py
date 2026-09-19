@@ -68,7 +68,8 @@ OBJECTS = {
         "instruction": "apple",
         "grasp": {"hold_width_m": 0.0644, "pad_height_m": 0.028, "offset_xy_m": (0.0, 0.0)},
     },
-    "can": {
+    # The same can in two declared start poses: standing, and lying on its side.
+    "can1": {
         "asset": "robosuite.models.objects.CanObject",
         "source": "robosuite CanObject (can.stl)",
         "source_instance": "robosuite/models/assets/objects/meshes/can.stl",
@@ -87,6 +88,27 @@ OBJECTS = {
         "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
         "instruction": "food can",
         "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0407, "offset_xy_m": (0.0, 0.0)},
+    },
+    "can2": {
+        "asset": "robosuite.models.objects.CanObject",
+        "source": "robosuite CanObject (can.stl)",
+        "source_instance": "robosuite/models/assets/objects/meshes/can.stl",
+        "source_url": "https://github.com/ARISE-Initiative/robosuite",
+        "source_license": "MIT",
+        "asset_scale": (1.0, 1.0, 1.0),
+        "official_asset_scale": (1.0, 1.0, 1.0),
+        "object_class": "receptacle",
+        "friction_class": "tinplate",
+        "table_mu": 0.20,
+        "mass_kg": 0.40,
+        "support": (-0.040297003330440104, 0.03970300217508332, 0.02509177806572465),
+        # Lying on its side: the axis is horizontal, so the pads close above the
+        # axis height where the centre of mass sits.
+        "start_pose_support": (-0.024984, 0.025016001, 0.04628817),
+        "com_height_m": 0.025043,
+        "start_quat_wxyz": (0.707107, 0.0, -0.707107, 0.0),
+        "instruction": "food can lying on its side",
+        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0251, "offset_xy_m": (0.0, 0.0)},
     },
 }
 
