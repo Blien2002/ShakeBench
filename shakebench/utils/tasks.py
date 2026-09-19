@@ -194,17 +194,14 @@ class TaskSpec:
 
     def grasp_plan(self, region="body"):
         """Select a grip; side_* modes declare a sideways initial pose as well."""
-        if region == "side_single_wall" and self.object_id == "mug":
-            # The mug lies on its side with the mouth reachable; the pads straddle
-            # the +x wall (one inside the cavity, one outside) after a sideways insert.
+        if region == "side_double_wall" and self.object_id == "mug":
+            # Close from above on opposite outside walls of the lying cup body.
             return {
-                "hold_width_m": 0.014,
-                "pad_height_m": 0.04450628261,
-                "offset_xy_m": (-0.01791543853, -0.01410397523),
-                "point_object_m": (0.024, -0.003, 0.018),
-                "preopening_m": 0.032,
-                "pitch_rad": -math.radians(75),
-                "insertion_offset_object_m": (0.0, 0.0, 0.050),
+                "hold_width_m": 0.0629,
+                "pad_height_m": 0.03160590926866156,
+                "offset_xy_m": (-5.515479227544686e-05, 0.012679429269108937),
+                "point_object_m": (0.0, 0.0144, 0.0),
+                "preopening_m": 0.080,
                 "start_quat_wxyz": (0.68636894226, 0.17440077662, -0.68494945765, -0.17124991119),
                 "start_pose_support": (-0.02478028593, 0.03842944253, 0.05657461336),
                 "com_height_m": 0.02966551020,

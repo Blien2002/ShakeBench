@@ -51,7 +51,7 @@ def select_task_state(path: Path, object_id: str, occurrence: int = 0) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--object", required=True, choices=tuple(OBJECTS))
-    parser.add_argument("--grasp-region", choices=("body", "handle", "single_wall", "side_single_wall"), default="body")
+    parser.add_argument("--grasp-region", choices=("body", "handle", "single_wall", "side_double_wall"), default="body")
     parser.add_argument("--gamma", type=float, default=0.5)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--states", type=Path, default=DEFAULT_STATES)
