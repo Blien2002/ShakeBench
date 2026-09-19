@@ -21,6 +21,7 @@ import numpy as np
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
+from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.oracle import (
     OracleControllerProfile,
     ShakeBenchOracleController,
@@ -52,7 +53,7 @@ def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_prof
         use_camera_obs=False,
         use_object_obs=False,
         physics_profile=physics_profile,
-        geometry_profile="world_fixed_arm_v1",
+        geometry_profile=DEFAULT_GEOMETRY_PROFILE,
         imu_mode="canonical_noisy_v1",
         vibration={"mode": mode, "gamma": gamma, "seed": seed, "t0_s": t0},
         **kwargs,
@@ -267,7 +268,7 @@ def main(argv=None):
         "mujoco_warp_version": mjw.__version__,
         "warp_version": wp.__version__,
         "expert_contract": "privileged_current_state_v1",
-        "geometry_profile": "world_fixed_arm_v1",
+        "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         "gammas": gammas,
         "mode": args.mode,
         "state_authority": asset["authority"],

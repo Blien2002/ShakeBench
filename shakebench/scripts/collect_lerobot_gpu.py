@@ -28,6 +28,7 @@ from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
+from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from shakebench.utils.outcomes import resolve_termination_cause
 from shakebench.utils.rollout import (
@@ -280,7 +281,7 @@ def main(argv=None):
             "physics_backend": "mujoco_warp",
             "physics_profile": args.physics_profile,
             "device": str(args.device),
-            "geometry_profile": "world_fixed_arm_v1",
+            "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
             "tasks": {state["state_id"]: task_description(state)["instruction"] for state in states},
             "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
             "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",

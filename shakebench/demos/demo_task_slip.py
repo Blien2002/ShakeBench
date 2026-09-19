@@ -23,6 +23,7 @@ import numpy as np
 from shakebench.demos.demo_oracle_video import FFmpegVideoWriter
 from shakebench.utils.calibration import calibrate_gamma, level_scale_for_gamma
 from shakebench.utils.excitation import build_excitation_program
+from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.tasks import OBJECTS, SURFACES, TaskSpec, make_task_env, task_variants
 
 
@@ -242,7 +243,7 @@ def main(argv: list[str] | None = None) -> int:
             "level_scale": level_scale,
             "duration_s": args.duration_s,
             "physics_profile": "official",
-            "geometry_profile": "world_fixed_arm_v1",
+            "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         },
         "video_playback": {"fps": args.fps, "slowdown": args.playback_slowdown},
         "summary": summaries,

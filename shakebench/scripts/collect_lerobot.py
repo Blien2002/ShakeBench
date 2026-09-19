@@ -15,6 +15,7 @@ from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
 from shakebench.utils.expert import oracle_observation
+from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.oracle import OracleControllerProfile, ShakeBenchOracleController, WorktableTaskContext
 from shakebench.utils.outcomes import resolve_termination_cause
 from shakebench.utils.rollout import (
@@ -163,7 +164,7 @@ def main(argv=None):
         "gamma": 0.0,
         "physics_backend": "mujoco_cpu",
         "physics_profile": "official",
-        "geometry_profile": "world_fixed_arm_v1",
+        "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         "tasks": instructions,
         "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
         "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",

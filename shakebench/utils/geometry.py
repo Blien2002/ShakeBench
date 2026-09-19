@@ -14,7 +14,8 @@ GEOMETRY_PROFILES = {
     "world_fixed_arm_v1": ("shakebench_geometry_world_fixed_arm_v1.json", 2, "isolated"),
     "world_fixed_rigid_table_v1": ("shakebench_geometry_world_fixed_rigid_table_v1.json", 3, "rigid"),
 }
-DEFAULT_GEOMETRY_PROFILE = "world_fixed_arm_v1"
+#: Next-version core scene: the worktable is bolted to the driven platen.
+DEFAULT_GEOMETRY_PROFILE = "world_fixed_rigid_table_v1"
 
 
 def _profile_spec(profile):
