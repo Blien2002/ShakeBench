@@ -22044,9 +22044,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 1.2,
       "target_object_sliding_mu": 0.5,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     },
     "pick_place.mat.cookie_box": {
       "finger_object_sliding_mu": 1.0,
@@ -22083,9 +22084,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.9,
       "target_object_sliding_mu": 0.3,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     },
     "pick_place.mat.food_can": {
       "finger_object_sliding_mu": 1.0,
@@ -22122,9 +22124,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.6,
       "target_object_sliding_mu": 0.15,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     },
     "pick_place.metal.bread": {
       "finger_object_sliding_mu": 1.0,
@@ -22150,9 +22153,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.5,
       "target_object_sliding_mu": 0.5,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     },
     "pick_place.metal.cookie_box": {
       "finger_object_sliding_mu": 1.0,
@@ -22181,9 +22185,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.3,
       "target_object_sliding_mu": 0.3,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     },
     "pick_place.metal.food_can": {
       "finger_object_sliding_mu": 1.0,
@@ -22212,9 +22217,10 @@
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.15,
       "target_object_sliding_mu": 0.15,
-      "target_visual_style": "light_metal_wire_basket",
+      "target_visual_source": "robosuite.models.objects.Bin",
+      "target_visual_style": "robosuite_wood_bin",
       "task_type": "pick_place",
-      "task_visual_revision": "felt_mat_wire_basket.v2"
+      "task_visual_revision": "felt_mat_wood_bin.v3"
     }
   },
   "task_count": 1,

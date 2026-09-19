@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -442,7 +443,7 @@ class ShakeBenchArena(Arena):
         *,
         friction=(0.30, 0.005, 0.0001),
         add_visual=True,
-        visual_style="tray",
+        visual_style="bin",
     ) -> dict[str, str]:
         """Add the optional bottom and four walls to the isolated assembly.
 
@@ -451,8 +452,8 @@ class ShakeBenchArena(Arena):
         is an assembly seam for Phase 04, not a task success evaluator.
         """
 
-        if visual_style not in {"tray", "basket"}:
-            raise ShakeBenchArenaError("target visual_style must be tray or basket")
+        if visual_style not in {"tray", "bin"}:
+            raise ShakeBenchArenaError("target visual_style must be tray or bin")
         if self._target_container_added:
             raise ShakeBenchArenaError("target container has already been added")
         center = _vector("center_xy_m", center_xy_m, 2)
@@ -515,8 +516,8 @@ class ShakeBenchArena(Arena):
         for element in elements.values():
             self.table_body.append(element)
         self.target_container_geom_names = {key: element.get("name") for key, element in elements.items()}
-        if add_visual and visual_style == "basket":
-            self._add_basket_visuals(center)
+        if add_visual and visual_style == "bin":
+            self._add_bin_visuals(elements)
         elif add_visual:
             for key, element in elements.items():
                 visual_name = f"{element.get('name')}_visual"
@@ -537,87 +538,38 @@ class ShakeBenchArena(Arena):
         self.set_visual_layer(self.visual_layer_enabled)
         return dict(self.target_container_geom_names)
 
-    def _add_basket_visuals(self, center) -> None:
-        """Rounded rim and wire sides inside the existing shallow-box envelope.
+    def _add_bin_visuals(self, elements) -> None:
+        """Fit robosuite's wooden Bin panels to the five collision surfaces.
 
-        The five original solid geoms remain the collision approximation. All
-        basket details are massless visuals and do not alter target tolerances.
+        Import only its visuals and material; its free body is not needed.
+        Matching each panel avoids overlapping corners and preserves physics.
         """
-        cx, cy = center
-        hx, hy = (value / 2 for value in TARGET_CONTAINER_OUTER_XY_M)
-        floor = float(self.table_half_size[2]) + TARGET_CONTAINER_BOTTOM_THICKNESS_M
-        top = floor + TARGET_CONTAINER_WALL_HEIGHT_M
-        rgba = "0.82 0.84 0.80 1"
-        ET.SubElement(
-            self.asset,
-            "material",
-            {
-                "name": "shakebench_basket_coated_metal",
-                "rgba": rgba,
-                "specular": "0.3",
-                "shininess": "0.22",
-                "reflectance": "0.05",
-            },
-        )
+        from robosuite.models.objects import Bin
 
-        def add(name, attributes):
-            name = f"target_basket_{name}_visual"
-            ET.SubElement(
-                self.table_body,
-                "geom",
-                {
-                    "name": name,
-                    "group": "1",
-                    "contype": "0",
-                    "conaffinity": "0",
-                    "mass": "0",
-                    "material": "shakebench_basket_coated_metal",
-                    "rgba": rgba,
-                    **attributes,
-                },
-            )
+        container = Bin(
+            name="target_bin",
+            bin_size=(*TARGET_CONTAINER_OUTER_XY_M, TARGET_CONTAINER_WALL_HEIGHT_M),
+            wall_thickness=TARGET_CONTAINER_WALL_THICKNESS_M,
+            transparent_walls=False,
+        )
+        self.merge_assets(container)
+        parts = {
+            "base": "bottom",
+            "wall0": "wall_yneg",
+            "wall1": "wall_xneg",
+            "wall2": "wall_ypos",
+            "wall3": "wall_xpos",
+        }
+        for part, role in parts.items():
+            name = f"target_bin_{part}_visual"
+            visual = deepcopy(container.get_obj().find(f"./geom[@name='target_bin_{part}_vis']"))
+            visual.set("name", name)
+            visual.set("mass", "0")
+            visual.set("quat", "1 0 0 0")
+            for attribute in ("size", "pos"):
+                visual.set(attribute, elements[role].get(attribute))
+            self.table_body.append(visual)
             self.target_container_geom_names[name] = name
-
-        def wire(name, start, end, radius):
-            add(name, {"type": "capsule", "fromto": _fmt((*start, *end)), "size": str(radius)})
-
-        add(
-            "base", {"type": "box", "size": _fmt((hx - 0.002, hy - 0.002, 0.006)), "pos": _fmt((cx, cy, floor - 0.006))}
-        )
-        # Two rounded horizontal bands and evenly spaced vertical wires.
-        for axis, (half, along) in enumerate(((hx, hy), (hy, hx))):
-            for sign in (-1, 1):
-                fixed = (cx, cy)[axis] + sign * (half - 0.004)
-                for band, z, radius in (("rim", top - 0.004, 0.004), ("lower", floor + 0.002, 0.002)):
-                    start = [cx - hx + 0.004, cy - hy + 0.004, z]
-                    end = [cx + hx - 0.004, cy + hy - 0.004, z]
-                    start[axis] = end[axis] = fixed
-                    wire(f"{axis}_{sign}_{band}", start, end, radius)
-                for index, offset in enumerate(np.linspace(-along + 0.01, along - 0.01, 12)):
-                    point = [cx, cy, floor + 0.002]
-                    point[axis] = fixed
-                    point[1 - axis] += offset
-                    wire(f"{axis}_{sign}_upright_{index}", point, [*point[:2], top - 0.004], 0.0014)
-        # Quiet grip sleeves distinguish the basket from a plain target frame.
-        for sign in (-1, 1):
-            add(
-                f"grip_{sign}",
-                {
-                    "type": "capsule",
-                    "size": "0.0044",
-                    "rgba": "0.35 0.43 0.40 1",
-                    "fromto": _fmt(
-                        (
-                            cx - 0.026,
-                            cy + sign * (hy - 0.004),
-                            top - 0.004,
-                            cx + 0.026,
-                            cy + sign * (hy - 0.004),
-                            top - 0.004,
-                        )
-                    ),
-                },
-            )
 
     @property
     def target_container_added(self) -> bool:

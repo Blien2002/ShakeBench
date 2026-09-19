@@ -22,7 +22,7 @@ from shakebench.utils.outcomes import resolve_termination_cause, validate_outcom
 from shakebench.utils.state_schema import normalize_state
 from shakebench.utils.tasks import TaskSpec
 
-TASK = "Pick up the can from the table and place it in the target tray."
+TASK = "Pick up the can from the table and place it in the target storage box."
 CAMERAS = {"observation.images.main": "task_close", "observation.images.wrist": "robot0_eye_in_hand"}
 ACTION_NAMES = ["delta_x", "delta_y", "delta_z", "delta_rx", "delta_ry", "delta_rz", "gripper"]
 STATE_NAMES = ["eef_x", "eef_y", "eef_z", "eef_rx", "eef_ry", "eef_rz", "left_finger_qpos", "right_finger_qpos"]
@@ -85,7 +85,7 @@ def task_description(state: Mapping[str, Any]) -> dict[str, str]:
     surface = "mat" if spec.surface_id == "mat" else "table"
     return {
         "task_id": spec.variant_id,
-        "instruction": f"Pick up the {names[spec.object_id]} from the {surface} and place it in the target basket.",
+        "instruction": f"Pick up the {names[spec.object_id]} from the {surface} and place it in the target storage box.",
     }
 
 

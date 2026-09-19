@@ -13,7 +13,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-
 OBJECTS = {
     "food_can": {
         "asset": "objects/food_can.xml",
@@ -54,7 +53,7 @@ SURFACES = ("metal", "mat")
 TASK_SCHEMA_ID = "shakebench.task.v1"
 MAT_VISUAL_RGBA = (0.90, 1.0, 0.95, 1.0)
 MAT_TEXTURE_PATH = "textures/gray-felt.png"
-TASK_VISUAL_REVISION = "felt_mat_wire_basket.v2"
+TASK_VISUAL_REVISION = "felt_mat_wood_bin.v3"
 # Compiled support in object coordinates, measured from the package meshes.
 OBJECT_SUPPORT = {
     "food_can": (-0.0325, 0.0325, 0.02616295090390226),
@@ -106,7 +105,7 @@ class TaskSpec:
 
     @property
     def target_sliding_mu(self):
-        # The target remains bare metal when a mat covers the source tabletop.
+        # Experimental target coefficients are independent of its visual material.
         return OBJECTS[self.object_id]["metal_mu"]
 
     @property
@@ -128,7 +127,8 @@ class TaskSpec:
             "object_mass_kg": self.object_mass_kg,
             "mat_thickness_m": 0.003 if self.surface_id == "mat" else 0.0,
             "task_visual_revision": TASK_VISUAL_REVISION,
-            "target_visual_style": "light_metal_wire_basket",
+            "target_visual_style": "robosuite_wood_bin",
+            "target_visual_source": "robosuite.models.objects.Bin",
             "mat_visual_rgba": list(MAT_VISUAL_RGBA) if self.surface_id == "mat" else None,
             "mat_texture": MAT_TEXTURE_PATH if self.surface_id == "mat" else None,
             "mat_texture_repeat": [3, 3] if self.surface_id == "mat" else None,

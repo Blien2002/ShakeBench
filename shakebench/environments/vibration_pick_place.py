@@ -567,10 +567,7 @@ class VibrationPickPlace(ManipulationEnv):
         self.arena.object_support_geom = self.arena.table_collision
         if self.task_spec is not None and self.task_spec.surface_id == "mat":
             self.arena.add_table_mat()
-        self.arena.add_target_container(
-            friction=self.target_container_friction,
-            visual_style="basket" if self.task_spec is not None else "tray",
-        )
+        self.arena.add_target_container(friction=self.target_container_friction)
         base_position = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         if self.geometry_profile is not None:
             base_position = self.geometry_profile["robot_base_pos_m"]
