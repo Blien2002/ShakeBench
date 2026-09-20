@@ -67,7 +67,13 @@ OBJECTS = {
         "com_height_m": 0.027855,
         "start_quat_wxyz": (0.998657, -0.020171, 0.047723, 0.000156),
         "instruction": "apple",
-        "grasp": {"hold_width_m": 0.0644, "pad_height_m": 0.028, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {
+            "hold_width_m": 0.0644,
+            "pad_height_m": 0.028,
+            "offset_xy_m": (0.0, 0.0),
+            "yaw_free": True,
+            "vertical_tolerance_m": 0.002,
+        },
     },
     # The same can in two declared start poses: standing, and lying on its side.
     "can1": {
@@ -88,7 +94,13 @@ OBJECTS = {
         "com_height_m": 0.040659,
         "start_quat_wxyz": (0.707107, 0.0, 0.0, 0.707107),
         "instruction": "food can",
-        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0407, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {
+            "hold_width_m": 0.0502,
+            "pad_height_m": 0.0407,
+            "offset_xy_m": (0.0, 0.0),
+            "yaw_free": True,
+            "vertical_tolerance_m": 0.002,
+        },
     },
     "can2": {
         "asset": "robosuite.models.objects.CanObject",
@@ -103,13 +115,18 @@ OBJECTS = {
         "table_mu": 0.20,
         "mass_kg": 0.40,
         "support": (-0.040297003330440104, 0.03970300217508332, 0.02509177806572465),
-        # Lying on its side: the axis is horizontal, so the pads close above the
-        # axis height where the centre of mass sits.
+        # Lying on its side: close about 5 mm below the axis to cradle the can.
         "start_pose_support": (-0.024984, 0.025016001, 0.04628817),
         "com_height_m": 0.025043,
         "start_quat_wxyz": (0.707107, 0.0, -0.707107, 0.0),
         "instruction": "food can lying on its side",
-        "grasp": {"hold_width_m": 0.0502, "pad_height_m": 0.0251, "offset_xy_m": (0.0, 0.0)},
+        "grasp": {
+            "hold_width_m": 0.0502,
+            "pad_height_m": 0.020,
+            "offset_xy_m": (0.0, 0.0),
+            # Finish descending below the axis before the fingers start closing.
+            "vertical_tolerance_m": 0.002,
+        },
     },
 }
 
@@ -194,6 +211,14 @@ class TaskSpec:
 
     def grasp_plan(self, region="body"):
         """Select a grip; side_* modes declare a sideways initial pose as well."""
+        if region == "single_wall" and self.object_id == "mug":
+            # Historical train-state compatibility; new state generation excludes it.
+            return {
+                "hold_width_m": 0.006,
+                "pad_height_m": 0.055,
+                "offset_xy_m": (-0.0144, 0.029),
+                "preopening_m": 0.032,
+            }
         if region == "side_double_wall" and self.object_id == "mug":
             # Close from above on opposite outside walls of the lying cup body.
             return {
@@ -211,14 +236,6 @@ class TaskSpec:
         if region == "handle" and self.object_id == "mug":
             # Pinch the upper crossbar; the outer vertical segment slips under the mug torque.
             return {"hold_width_m": 0.013, "pad_height_m": 0.058, "offset_xy_m": (0.033, 0.0)}
-        if region == "single_wall" and self.object_id == "mug":
-            # Pinch the +x wall of the object: one pad in the cavity, one outside.
-            return {
-                "hold_width_m": 0.006,
-                "pad_height_m": 0.055,
-                "offset_xy_m": (-0.0144, 0.029),
-                "preopening_m": 0.032,
-            }
         raise ValueError(f"unsupported grasp region {region!r} for {self.object_id}")
 
     def contract(self, region="body"):
@@ -247,6 +264,7 @@ class TaskSpec:
                 "hold_width_m": float(grasp["hold_width_m"]),
                 "pad_height_m": float(grasp["pad_height_m"]),
                 "offset_xy_m": [float(value) for value in grasp["offset_xy_m"]],
+                "yaw_free": bool(grasp.get("yaw_free", False)),
                 **({"point_object_m": list(grasp["point_object_m"])} if "point_object_m" in grasp else {}),
                 "jaw_limit_m": PANDA_JAW_LIMIT_M,
                 "opening_allowance_m": GRASP_OPENING_ALLOWANCE_M,
@@ -261,8 +279,8 @@ class TaskSpec:
             "mass_values_are": "per-object design masses, not density-derived compile values",
             "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
             "stability_constraint": (
-                "start pose is the measured free-settled rest pose; the grasp pads never close below "
-                "the object centre of mass"
+                "start pose is the measured free-settled rest pose; upright grasps close at or above "
+                "the centre of mass, while the lying can is cradled below its axis"
             ),
             "success_rule": (
                 "majority of the collision geometry inside the crate footprint, resting on the crate "
@@ -333,6 +351,116 @@ def task_start_quat_wxyz(spec: TaskSpec) -> tuple[float, float, float, float]:
     return spec.start_quat_wxyz
 
 
+def yaw_quat_wxyz(yaw_rad: float) -> tuple[float, float, float, float]:
+    """Return the quaternion of a rotation about the world vertical axis."""
+
+    value = float(yaw_rad)
+    if not math.isfinite(value):
+        raise ValueError("yaw_rad must be finite")
+    half = 0.5 * value
+    return (math.cos(half), 0.0, 0.0, math.sin(half))
+
+
+def compose_yaw_wxyz(quat_wxyz, yaw_rad: float) -> tuple[float, float, float, float]:
+    """Apply a world-frame yaw to a registered rest pose.
+
+    Only the vertical component of the pose changes, so the registered support
+    height and every grasp geometry expressed in the object frame still hold.
+    """
+
+    base = tuple(float(value) for value in quat_wxyz)
+    if len(base) != 4:
+        raise ValueError("quat_wxyz must have four components")
+    yaw_w, yaw_x, yaw_y, yaw_z = yaw_quat_wxyz(yaw_rad)
+    base_w, base_x, base_y, base_z = base
+    return (
+        yaw_w * base_w - yaw_x * base_x - yaw_y * base_y - yaw_z * base_z,
+        yaw_w * base_x + yaw_x * base_w + yaw_y * base_z - yaw_z * base_y,
+        yaw_w * base_y - yaw_x * base_z + yaw_y * base_w + yaw_z * base_x,
+        yaw_w * base_z + yaw_x * base_y - yaw_y * base_x + yaw_z * base_w,
+    )
+
+
+def relative_yaw_rad_wxyz(registered_wxyz, posed_wxyz) -> float:
+    """Return the world-frame yaw of ``posed_wxyz`` relative to ``registered_wxyz``.
+
+    Fails closed when the two poses differ by anything other than a yaw, so a
+    caller never executes a pose whose grasp geometry was not qualified.
+    """
+
+    import numpy as np
+
+    def rotation(quat_wxyz) -> np.ndarray:
+        values = np.asarray(quat_wxyz, dtype=float)
+        if values.shape != (4,):
+            raise ValueError("quaternion must have four components")
+        norm = float(np.linalg.norm(values))
+        if not np.isfinite(norm) or norm <= 0.0:
+            raise ValueError("quaternion must be finite and non-zero")
+        w, x, y, z = values / norm
+        return np.array(
+            [
+                [1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - z * w), 2.0 * (x * z + y * w)],
+                [2.0 * (x * y + z * w), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - x * w)],
+                [2.0 * (x * z - y * w), 2.0 * (y * z + x * w), 1.0 - 2.0 * (x * x + y * y)],
+            ]
+        )
+
+    relative = rotation(posed_wxyz).dot(rotation(registered_wxyz).T)
+    tilt = max(abs(float(relative[2, 2]) - 1.0), abs(float(relative[0, 2])), abs(float(relative[1, 2])))
+    if tilt > 1.0e-6:
+        raise ValueError("object start pose must differ from the registered pose by a yaw rotation only")
+    return float(math.atan2(float(relative[1, 0]), float(relative[0, 0])))
+
+
+def registered_rest_pose(spec: TaskSpec, region: str = "body") -> tuple[tuple[float, ...], float]:
+    """Return one grasp region's measured table rest pose and origin height.
+
+    A region may declare its own pose, as the mug's side regions do; every other
+    region reuses the registry pose of the task variant.
+    """
+
+    entry = OBJECTS[spec.object_id]
+    plan = spec.grasp_plan(region)
+    quat = tuple(float(value) for value in plan.get("start_quat_wxyz", entry["start_quat_wxyz"]))
+    norm = math.sqrt(sum(value * value for value in quat))
+    if norm <= 0.0:
+        raise ValueError(f"{spec.object_id}/{region}: start quaternion must be non-zero")
+    lower_support = float(plan.get("start_pose_support", entry["start_pose_support"])[0])
+    return tuple(value / norm for value in quat), lower_support
+
+
+def object_frame_grasp_offset(plan: Mapping[str, Any], registered_quat_wxyz) -> tuple[float, ...]:
+    """Return one grasp plan's grip offset in the object frame.
+
+    ``point_object_m`` is already an object-frame material point.  A
+    two-dimensional ``offset_xy_m`` is declared in the worktable frame at the
+    registered rest pose, so the registered pose converts it into the object
+    frame.  The executive rotates the returned offset by the object's current
+    pose, so converting with the posed quaternion instead would cancel that
+    rotation and pin the grip to one world-frame direction as soon as a state
+    samples a yaw.
+    """
+
+    import numpy as np
+
+    if "point_object_m" in plan:
+        return tuple(float(value) for value in plan["point_object_m"])
+    values = np.asarray(registered_quat_wxyz, dtype=float)
+    if values.shape != (4,) or not np.all(np.isfinite(values)):
+        raise ValueError("registered start quaternion must be four finite components")
+    norm = float(np.linalg.norm(values))
+    if norm <= 0.0:
+        raise ValueError("registered start quaternion must be non-zero")
+    w, x, y, z = values / norm
+    # Columns of the horizontal rotation block; the offset is read in the
+    # object frame, so R^T maps the worktable-frame offset into it.
+    r00, r01 = 1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - z * w)
+    r10, r11 = 2.0 * (x * y + z * w), 1.0 - 2.0 * (x * x + z * z)
+    dx, dy = (float(value) for value in plan["offset_xy_m"])
+    return (r00 * dx + r10 * dy, r01 * dx + r11 * dy)
+
+
 def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     """Resolve state initialization; reject unsupported poses rather than ignore them."""
 
@@ -342,12 +470,25 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     xy = np.asarray(state.get("object_xy_m"), dtype=float)
     if xy.shape != (2,) or not np.all(np.isfinite(xy)):
         raise ValueError("object_xy_m must be a finite two-vector")
-    expected_quat = np.asarray(state.get("object_start_quat_wxyz", spec.start_quat_wxyz), dtype=float)
+    try:
+        yaw = float(state.get("object_yaw_rad", state.get("can_yaw_rad", 0.0)))
+    except (TypeError, ValueError):
+        raise ValueError("object_yaw_rad must be a finite scalar") from None
+    if not math.isfinite(yaw):
+        raise ValueError("object_yaw_rad must be a finite scalar")
+    region = state.get("grasp_region", "body")
+    if not isinstance(region, str) or not region:
+        raise ValueError("grasp_region must be a non-empty string")
+    # The registered rest pose of the declared region plus one world-frame yaw
+    # is the only start pose a state may claim; everything else was never
+    # qualified for this grasp.
+    registered_quat = compose_yaw_wxyz(registered_rest_pose(spec, region)[0], yaw)
+    expected_quat = np.asarray(state.get("object_start_quat_wxyz", registered_quat), dtype=float)
     pose = np.asarray(state.get("object_pose_worktable"), dtype=float)
     velocity = np.asarray(state.get("object_initial_velocity"), dtype=float)
     if (
         expected_quat.shape != (4,)
-        or not np.allclose(expected_quat, spec.start_quat_wxyz, atol=1e-6, rtol=0)
+        or not np.allclose(expected_quat, registered_quat, atol=1e-6, rtol=0)
         or pose.shape != (7,)
         or not np.allclose(pose[:2], xy, atol=1e-12, rtol=0)
         or not np.allclose(pose[3:], expected_quat, atol=1e-6, rtol=0)
@@ -355,8 +496,11 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
         or velocity.shape != (6,)
         or np.any(velocity != 0)
     ):
-        raise ValueError("task states require their registered start pose and zero velocity")
-    return {"task": spec, "object_start_xy": tuple(xy), "object_start_quat_wxyz": tuple(expected_quat)}
+        raise ValueError("task states require their registered start pose, any declared yaw and zero velocity")
+    kwargs = {"task": spec, "object_start_xy": tuple(xy), "object_start_quat_wxyz": tuple(expected_quat)}
+    if "grasp_region" in state:
+        kwargs["grasp_region"] = region
+    return kwargs
 
 
 def grasp_opening_gate_m(spec: TaskSpec, region="body") -> float:
@@ -394,7 +538,7 @@ def validate_task_registry() -> None:
                 f"{object_id}: hold width {hold_width:.4f} m leaves less than "
                 f"{GRASP_JAW_MARGIN_MIN_M:.3f} m of Panda jaw margin"
             )
-        if float(grasp["pad_height_m"]) < float(entry["com_height_m"]):
+        if object_id != "can2" and pad_height < float(entry["com_height_m"]):
             raise ValueError(
                 f"{object_id}: grasp pads at {grasp['pad_height_m']:.4f} m sit below the "
                 f"{entry['com_height_m']:.4f} m centre of mass and would spin the object in the jaws"
@@ -424,6 +568,7 @@ __all__ = [
     "grasp_opening_gate_m",
     "make_task_env",
     "make_task_object",
+    "object_frame_grasp_offset",
     "task_env_kwargs",
     "task_start_quat_wxyz",
     "task_variants",

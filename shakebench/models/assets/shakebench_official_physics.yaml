@@ -1,15 +1,9 @@
 schema_id: shakebench.official.physics
 schema_version: 1
-profile_id: shakebench.official.physics.v2
+profile_id: shakebench.official.physics
 status: official_immutable
 scoreable: true
-selection_basis: phase06f_task_native_physics_only
-protocol_file: shakebench_phase_06f_protocol.yaml
-protocol_sha256: 54e756ca004ab43380e7bf571c5bb92cef249aab0761268bfca225ad471f75e0
-selection_artifact_sha256: c2d1363c3750bfd32154080b0f9d25903358fbbe3b1b11bf83f45e534ed295b8
-dependent_manifest_sha256: ed2342fa70ab36f0015fe032b5cca5ce64e39f509f9378a4d598644153adf94d
-evidence_manifest_sha256: 935b01a32f717a868877b51b62715a5613b7e2732d1e0c69271a388e035b9ba6
-registration_commit: de2e60df56bce83dd2867d36e6c2d78b63bb52fd
+selection_basis: finger_contact_torsion_revision
 physics:
   excitation:
     profile_id: shakebench.authored_v0_candidate
@@ -129,6 +123,7 @@ physics:
   contact:
     candidate_id: c3_nominal
     condim: 3
+    finger_condim: 4
     sliding_mu:
       table_object: 0.3
       finger_object: 1.0

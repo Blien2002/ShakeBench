@@ -33,8 +33,8 @@ from shakebench.utils.isolator import AXES, IsolatorConfig, derive_isolator_para
 PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
 PHYSICS_PROFILE_SCHEMA_VERSION = 1
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics.v1"
-OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
+PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics"
+OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics"
 
 
 class PhysicsProfileError(ValueError):
@@ -324,7 +324,7 @@ class PhysicsProfile:
             site_size_m=float(self.deck["site_size_m"]),
         )
 
-    def pair_attributes(self, sliding_mu: float) -> dict[str, str]:
+    def pair_attributes(self, sliding_mu: float, *, finger_contact: bool = False) -> dict[str, str]:
         """Return explicit MuJoCo pair attributes for one contact interface."""
 
         sliding = _number("sliding_mu", sliding_mu, nonnegative=True)
@@ -337,9 +337,9 @@ class PhysicsProfile:
                 self.contact_rolling_mu,
             )
         else:
-            # Historical V1--V8 profiles retain their byte-for-byte compiled
-            # encoding. Phase 06F's v2 profile opts into the explicit 5-D
-            # isotropic pair representation above.
+            # Legacy profile encodings retain their byte-for-byte compiled
+            # form. The current official profile uses explicit 5-D isotropic
+            # pair friction.
             friction = (
                 sliding,
                 self.contact_torsional_mu,
@@ -349,7 +349,9 @@ class PhysicsProfile:
             )
         return {
             "friction": " ".join(format(value, ".17g") for value in friction),
-            "condim": str(self.contact_condim),
+            "condim": str(
+                self.contact.get("finger_condim", self.contact_condim) if finger_contact else self.contact_condim
+            ),
             "margin": format(self.contact_margin_m, ".17g"),
             "gap": format(self.contact_gap_m, ".17g"),
             "solref": " ".join(format(value, ".17g") for value in self.contact_solref),
@@ -429,6 +431,8 @@ class PhysicsProfile:
             raise PhysicsProfileError("contact solref time constant is less than 2 * dt")
         if self.contact_condim not in {1, 3, 4, 6}:
             raise PhysicsProfileError("contact condim is not a MuJoCo condim")
+        if self.contact.get("finger_condim", self.contact_condim) not in {1, 3, 4, 6}:
+            raise PhysicsProfileError("finger contact condim is not a MuJoCo condim")
         _vector("deck_eq_solref", self.deck_eq_solref, 2, positive=True)
         _vector("deck_eq_solimp", self.deck_eq_solimp, 5, nonnegative=True)
         _vector("contact_solref", self.contact_solref, 2, positive=True)

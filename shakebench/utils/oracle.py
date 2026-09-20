@@ -157,11 +157,18 @@ class WorktableTaskContext:
     object_grasp_pad_height_m: float = 0.0319
     object_grasp_opening_m: float = 0.0602
     object_grasp_preopening_m: float = 0.080
+    # Circular XY grasps keep the current wrist yaw instead of following object yaw.
+    object_grasp_yaw_free: bool = False
+    object_grasp_vertical_tolerance_m: float = 0.020
     # World-y wrist tilt; 0 keeps the historical top-down orientation.
     object_grasp_pitch_rad: float = 0.0
     object_grasp_offset_object_m: tuple[float, ...] = (0.0, 0.0)
     # Standoff from the contact point, in the object frame.
     object_grasp_insertion_offset_m: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    #: World-frame yaw this episode's state applied to the registered start
+    #: pose.  The oracle rotates its qualified grasp orientation with it so a
+    #: randomized facing direction keeps the qualified pad geometry.
+    object_pose_yaw_offset_rad: float = 0.0
     finger_pad_tool_support_offsets_m: tuple[float, ...] = (0.0, 0.0, 0.0934)
     support_topology_id: str = "deck_robot_base_plus_isolated_worktable"
 
@@ -183,6 +190,8 @@ class WorktableTaskContext:
             "object_start_pose_lower_support_m",
             "object_grasp_pad_height_m",
             "object_grasp_opening_m",
+            "object_grasp_vertical_tolerance_m",
+            "object_pose_yaw_offset_rad",
         ):
             if not np.isfinite(float(getattr(self, name))):
                 raise ShakeBenchOracleError(f"{name} must be finite")
@@ -193,6 +202,8 @@ class WorktableTaskContext:
             raise ShakeBenchOracleError("Can collision support bounds are invalid")
         if not isinstance(self.support_topology_id, str) or not self.support_topology_id:
             raise ShakeBenchOracleError("support_topology_id must be nonempty")
+        if not isinstance(self.object_grasp_yaw_free, bool):
+            raise ShakeBenchOracleError("object_grasp_yaw_free must be a boolean")
         if not np.isfinite(self.object_grasp_pitch_rad) or abs(self.object_grasp_pitch_rad) > np.pi / 2:
             raise ShakeBenchOracleError("grasp pitch must be finite and within a quarter turn")
         insertion = np.asarray(self.object_grasp_insertion_offset_m, dtype=float)
@@ -209,6 +220,8 @@ class WorktableTaskContext:
             raise ShakeBenchOracleError("pregrasp opening must exceed the hold gate and fit the Panda jaw")
         if float(self.object_grasp_pad_height_m) <= 0.0:
             raise ShakeBenchOracleError("object_grasp_pad_height_m must be positive")
+        if self.object_grasp_vertical_tolerance_m <= 0.0:
+            raise ShakeBenchOracleError("object_grasp_vertical_tolerance_m must be positive")
 
     @property
     def worktable_half_extents_xy_m(self) -> tuple[float, float]:
@@ -271,6 +284,10 @@ class WorktableTaskContext:
                 can.get("grasp_opening_m", value.get("object_grasp_opening_m", default.object_grasp_opening_m))
             ),
             object_grasp_preopening_m=float(value.get("object_grasp_preopening_m", default.object_grasp_preopening_m)),
+            object_grasp_yaw_free=value.get("object_grasp_yaw_free", default.object_grasp_yaw_free),
+            object_grasp_vertical_tolerance_m=float(
+                value.get("object_grasp_vertical_tolerance_m", default.object_grasp_vertical_tolerance_m)
+            ),
             object_grasp_offset_object_m=tuple(
                 float(item)
                 for item in can.get(
@@ -281,6 +298,9 @@ class WorktableTaskContext:
             object_grasp_pitch_rad=float(value.get("object_grasp_pitch_rad", default.object_grasp_pitch_rad)),
             object_grasp_insertion_offset_m=tuple(
                 value.get("object_grasp_insertion_offset_m", default.object_grasp_insertion_offset_m)
+            ),
+            object_pose_yaw_offset_rad=float(
+                value.get("object_pose_yaw_offset_rad", default.object_pose_yaw_offset_rad)
             ),
             finger_pad_tool_support_offsets_m=tuple(
                 value.get("finger_pad_tool_support_offsets_m", default.finger_pad_tool_support_offsets_m)
@@ -448,18 +468,21 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
     if len(offset) == 3:
         # A full material point rotates its height with the object, including reset settling.
         grasp_height = PAD_MIDPOINT_EEF_OFFSET_M
-    transport_height = profile.transport_height_m
-    if any(offset):
-        # A handle-held object can pivot below the pads. Bound its full swept
-        # envelope so it clears the crate rim throughout lateral transport.
-        grasp_radius = np.linalg.norm((*offset, grasp_height - PAD_MIDPOINT_EEF_OFFSET_M))
-        object_radius = np.hypot(
-            context.object_collision_radius_m,
-            max(abs(context.object_collision_lower_support_m), abs(context.object_collision_upper_support_m)),
-        )
-        transport_height = max(
-            transport_height, PAD_MIDPOINT_EEF_OFFSET_M + grasp_radius + object_radius + profile.tool_clearance_m
-        )
+    # Bound the entire payload even if it pivots in a centred grasp. Include
+    # waypoint tolerance so an early arrival cannot consume the clearance margin.
+    grasp_radius = np.linalg.norm((*offset, grasp_height - PAD_MIDPOINT_EEF_OFFSET_M))
+    object_radius = np.hypot(
+        context.object_collision_radius_m,
+        max(abs(context.object_collision_lower_support_m), abs(context.object_collision_upper_support_m)),
+    )
+    transport_height = max(
+        profile.transport_height_m,
+        PAD_MIDPOINT_EEF_OFFSET_M
+        + grasp_radius
+        + object_radius
+        + profile.transport_clearance_m
+        + profile.position_tolerance_m,
+    )
     return replace(
         profile,
         grasp_height_m=float(grasp_height),
@@ -470,10 +493,10 @@ def task_grasp_profile(profile: OracleControllerProfile, context: WorktableTaskC
             if context.object_grasp_preopening_m < 0.080
             else profile.descend_tolerance_m
         ),
-        descend_vertical_tolerance_m=(
-            min(profile.descend_vertical_tolerance_m, 0.004)
-            if context.object_grasp_preopening_m < 0.080
-            else profile.descend_vertical_tolerance_m
+        descend_vertical_tolerance_m=min(
+            profile.descend_vertical_tolerance_m,
+            context.object_grasp_vertical_tolerance_m,
+            0.004 if context.object_grasp_preopening_m < 0.080 else profile.descend_vertical_tolerance_m,
         ),
         placement_height_m=float(context.object_grasp_pad_height_m + PAD_MIDPOINT_EEF_OFFSET_M - RELEASE_PRESS_DEPTH_M),
         grasp_hold_max_opening_rad=float(context.object_grasp_opening_m),
@@ -551,7 +574,7 @@ def vibration_estimate_from_public_observation(
 class OracleControllerProfile:
     """One profile applied unchanged to the current observation contract."""
 
-    profile_id: str = "shakebench.reference_oracle.v3"
+    profile_id: str = "shakebench.reference_oracle"
     policy_rate_hz: float = 20.0
     position_action_range_m: float = 0.05
     orientation_action_range_rad: float = 0.5
@@ -561,6 +584,7 @@ class OracleControllerProfile:
     approach_height_m: float = 0.16
     grasp_height_m: float = 0.085
     transport_height_m: float = 0.16
+    transport_clearance_m: float = 0.030
     placement_height_m: float = 0.105
     position_tolerance_m: float = 0.018
     approach_tolerance_m: float = 0.015

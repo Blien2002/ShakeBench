@@ -1028,21 +1028,23 @@ class VibrationPickPlace(ManipulationEnv):
         grasp = {"pad_height_m": 0.0319, "offset_xy_m": (0.0, 0.0)}
         task_grasp_opening_gate_m = 0.0602
         grasp_offset_object = (0.0, 0.0)
+        object_pose_yaw_offset_rad = 0.0
         if self.task_spec is not None:
-            from shakebench.utils.tasks import grasp_opening_gate_m
+            from shakebench.utils.tasks import (
+                grasp_opening_gate_m,
+                object_frame_grasp_offset,
+                relative_yaw_rad_wxyz,
+            )
 
             grasp = self.task_spec.grasp_plan(self.grasp_region)
             task_grasp_opening_gate_m = float(grasp_opening_gate_m(self.task_spec, self.grasp_region))
-            rotation = np.zeros(9, dtype=float)
-            mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz, dtype=float))
-            grasp_offset_object = tuple(
-                float(value)
-                for value in (
-                    np.asarray(grasp["point_object_m"], dtype=float)
-                    if "point_object_m" in grasp
-                    else rotation.reshape(3, 3)[:2, :2].T.dot(np.asarray(grasp["offset_xy_m"], dtype=float))
-                )
+            # A state may only add one world-frame yaw to the registered rest
+            # pose; anything else was never qualified for this grasp plan.
+            registered_quat = grasp.get("start_quat_wxyz", self.task_spec.start_quat_wxyz)
+            object_pose_yaw_offset_rad = float(
+                relative_yaw_rad_wxyz(registered_quat, self.object_start_quat_wxyz)
             )
+            grasp_offset_object = object_frame_grasp_offset(grasp, registered_quat)
         robot_base_position = np.asarray(self.geometry_profile["robot_base_pos_m"], dtype=float) - np.asarray(
             self.robots[0].robot_model.bottom_offset, dtype=float
         )
@@ -1057,9 +1059,12 @@ class VibrationPickPlace(ManipulationEnv):
             object_grasp_pad_height_m=float(grasp["pad_height_m"]),
             object_grasp_opening_m=float(task_grasp_opening_gate_m),
             object_grasp_preopening_m=float(grasp.get("preopening_m", 0.080)),
+            object_grasp_yaw_free=bool(grasp.get("yaw_free", self.task_spec is None)),
+            object_grasp_vertical_tolerance_m=float(grasp.get("vertical_tolerance_m", 0.020)),
             object_grasp_pitch_rad=float(grasp.get("pitch_rad", 0.0)),
             object_grasp_offset_object_m=list(grasp_offset_object),
             object_grasp_insertion_offset_m=list(grasp.get("insertion_offset_object_m", (0.0, 0.0, 0.0))),
+            object_pose_yaw_offset_rad=float(object_pose_yaw_offset_rad),
             finger_pad_tool_support_offsets_m=(0.0, 0.0, 0.0934),
             support_topology_id=self.geometry_profile["profile_id"],
             world_to_robot_base_position_m=tuple(robot_base_position),

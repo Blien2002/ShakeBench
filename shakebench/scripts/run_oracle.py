@@ -77,7 +77,7 @@ DEV_STATE_ANCHOR_REWRITE = {
 }
 # Compatibility name: new provenance must use the rewritten anchor.
 DEV_STATE_ANCHOR_COMMIT = DEV_STATE_REWRITTEN_COMMIT
-OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
+OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics"
 # Legacy verifier exports retain these names, but the outcome contract is the
 # sole registry for v6 termination causes.
 TERMINATION_CATEGORIES = TERMINATION_CAUSES
@@ -453,7 +453,11 @@ def run_episode(
 
     variant = "task" in state
     task_kwargs = task_env_kwargs(state) if variant else {"object_start_xy": tuple(state["object_xy_m"])}
-    if variant and "start_quat_wxyz" in task_kwargs["task"].grasp_plan(grasp_region):
+    if "grasp_region" in task_kwargs:
+        # A state that declares its own region owns that region's rest pose, so
+        # the caller's default never rewrites a sampled lying pose.
+        grasp_region = str(task_kwargs.pop("grasp_region"))
+    elif variant and "start_quat_wxyz" in task_kwargs["task"].grasp_plan(grasp_region):
         task_kwargs["object_start_quat_wxyz"] = task_kwargs["task"].grasp_plan(grasp_region)["start_quat_wxyz"]
     env = shakebench.make(
         "VibrationPickPlace",

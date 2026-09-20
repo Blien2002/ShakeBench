@@ -1135,7 +1135,12 @@ def audit_contact_pairs(
                     raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong torsional friction")
                 if not np.allclose(friction[2:], expected_rolling_mu, rtol=0.0, atol=tolerance):
                     raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong rolling friction")
-            if not hasattr(model, "pair_dim") or int(model.pair_dim[pair_id]) != expected_condim:
+            pair_condim = (
+                contact_profile.get("finger_condim", expected_condim)
+                if interface == CONTACT_INTERFACE_FINGER_OBJECT
+                else expected_condim
+            )
+            if not hasattr(model, "pair_dim") or int(model.pair_dim[pair_id]) != pair_condim:
                 raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong condim")
             if not np.isclose(model.pair_margin[pair_id], expected_margin_m, rtol=0.0, atol=tolerance):
                 raise ShakeBenchMetricsError(f"contact pair {geom1!r}, {geom2!r} has the wrong margin")
@@ -1183,6 +1188,7 @@ def audit_contact_pairs(
             {
                 "scope": "explicit_pair",
                 "condim": expected_condim,
+                "finger_condim": contact_profile.get("finger_condim", expected_condim),
                 "torsional_mu": expected_torsional_mu,
                 "rolling_mu": expected_rolling_mu,
                 "margin_m": expected_margin_m,

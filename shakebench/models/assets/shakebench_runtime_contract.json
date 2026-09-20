@@ -1,5 +1,5 @@
 {
-  "contract_id": "shakebench.runtime.publication.v2",
+  "contract_id": "shakebench.runtime.publication",
   "package_contract": {
     "full_audit_requires_explicit_evidence": true,
     "network_access_required": false,
@@ -8,7 +8,7 @@
   },
   "physics_profile": {
     "asset_filename": "shakebench_official_physics.yaml",
-    "profile_id": "shakebench.official.physics.v2"
+    "profile_id": "shakebench.official.physics"
   },
   "scene_assets": [
     "shakebench_geometry_world_fixed_arm_v1.json",

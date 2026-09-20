@@ -758,16 +758,15 @@ class TaskExecutive:
             if self._prelift_start_eef_position is None:
                 raise ShakeBenchOracleError("PRELIFT_VERIFY requires a saved EEF reference")
             return self._prelift_start_eef_position + target_z * self.profile.prelift_height_m
+        target = self._target_base(observation, np.array((0.0, 0.0, target_top + self.profile.transport_height_m)))
         if self.phase == TaskPhase.LIFT:
             anchor_can = (
                 self._anchored_can_base(observation) if self._anchor_worktable_can_transform is not None else can
             )
-            return (
-                self._grasp_offset_base(observation, anchor_can, horizontal=True)
-                + tool_offset_xy
-                + target_z * self.profile.transport_height_m
-            )
-        target = self._target_base(observation, np.array((0.0, 0.0, target_top + self.profile.transport_height_m)))
+            lift = self._grasp_offset_base(observation, anchor_can, horizontal=True) + tool_offset_xy
+            # Finish the vertical lift at the crate-relative carry height before
+            # starting lateral transport, rather than climbing across the rim.
+            return lift + target_z * float(np.dot(target - lift, target_z))
         if self.phase == TaskPhase.TRANSPORT:
             # An off-centre grip carries the object away from the gripper axis;
             # centre the object on the crate using the offset frozen when the
@@ -964,7 +963,13 @@ class TaskExecutive:
                 self._transition(TaskPhase.LIFT, time_s)
             elif elapsed >= self.profile.prelift_s:
                 self._recover_or_fail(observation, time_s, "public_grasp_not_established")
-        elif self.phase == TaskPhase.LIFT and elapsed >= self.profile.lift_s:
+        elif (
+            self.phase == TaskPhase.LIFT
+            and elapsed >= self.profile.lift_s
+            and close
+            and self._target_local_z(observation, can) + self._object_lower_support(observation)
+            >= float(observation["goal_z_bounds_target"][1]) + self.profile.transport_clearance_m
+        ):
             if any(self.profile.grasp_offset_object_m):
                 rotation = _quat_xyzw_to_matrix(np.asarray(observation["goal_frame_quat_robot_base"], dtype=float))
                 carried = np.asarray(observation["robot0_eef_pos_robot_base"], dtype=float) - can
@@ -1043,10 +1048,24 @@ class TaskExecutive:
             if quat.shape != (4,) or not np.all(np.isfinite(quat)):
                 raise ShakeBenchOracleError("robot0_eef_quat_robot_base must be a finite quaternion")
             reference = _quat_xyzw_to_matrix(quat)
+            current_reference = reference
             pitch = self.context.object_grasp_pitch_rad
             if pitch:
                 cosine, sine = np.cos(pitch), np.sin(pitch)
                 reference = np.array(((cosine, 0.0, sine), (0.0, 1.0, 0.0), (-sine, 0.0, cosine))).dot(reference)
+            unrotated_reference = reference
+            state_yaw = float(self.context.object_pose_yaw_offset_rad)
+            if state_yaw:
+                # The object was placed at this yaw relative to its registered
+                # rest pose, so the qualified grasp orientation rotates with it.
+                cosine, sine = np.cos(state_yaw), np.sin(state_yaw)
+                reference = np.array(((cosine, -sine, 0.0), (sine, cosine, 0.0), (0.0, 0.0, 1.0))).dot(reference)
+            if self.context.object_grasp_yaw_free:
+                reference = unrotated_reference
+            elif np.dot(reference[:2, 1], current_reference[:2, 1]) < 0.0:
+                # Parallel jaws define an undirected line in XY. Swap the two
+                # fingers, preserving the approach axis, to take the acute turn.
+                reference = reference.dot(np.diag((-1.0, -1.0, 1.0)))
             self._eef_reference_rotation = reference
             self._initial_target_rotation = _quat_xyzw_to_matrix(
                 np.asarray(observation["goal_frame_quat_robot_base"], dtype=float)

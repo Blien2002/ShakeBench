@@ -17,7 +17,7 @@ from shakebench.utils.artifacts import write_json
 
 RUNTIME_CONTRACT_FILENAME = "shakebench_runtime_contract.json"
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
-OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics.v2"
+OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics"
 SCENE_ASSET_FILENAMES = (
     "shakebench_geometry_world_fixed_arm_v1.json",
     "shakebench_geometry_world_fixed_rigid_table_v1.json",
@@ -68,7 +68,7 @@ def build_runtime_contract(asset_root: str | Path) -> dict[str, Any]:
     contract: dict[str, Any] = {
         "schema_id": "shakebench.runtime.publication_contract",
         "schema_version": 1,
-        "contract_id": "shakebench.runtime.publication.v2",
+        "contract_id": "shakebench.runtime.publication",
         "package_contract": {
             "raw_archive_required_for_runtime": False,
             "network_access_required": False,
