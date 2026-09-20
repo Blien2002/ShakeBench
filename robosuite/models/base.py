@@ -302,14 +302,18 @@ class MujocoModel(object):
             sim (MjSim): Current active mujoco simulation instance
             visible (bool): If True, will visualize model sites. Else, will hide the sites.
         """
-        # Loop through all visualization geoms and set their alpha values appropriately
+        # Negative alpha hides the site surface but can still cast a shadow.
+        # Keep the display opacity separately so hidden sites use exactly zero.
+        if not hasattr(self, "_hidden_site_alpha"):
+            self._hidden_site_alpha = {}
         for vis_g in self.sites:
             vis_g_id = sim.model.site_name2id(vis_g)
-            if (visible and sim.model.site_rgba[vis_g_id][3] < 0) or (
-                not visible and sim.model.site_rgba[vis_g_id][3] > 0
-            ):
-                # We toggle the alpha value
-                sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
+            alpha = sim.model.site_rgba[vis_g_id][3]
+            if visible:
+                sim.model.site_rgba[vis_g_id][3] = self._hidden_site_alpha.pop(vis_g, abs(alpha))
+            elif alpha != 0:
+                self._hidden_site_alpha[vis_g] = abs(alpha)
+                sim.model.site_rgba[vis_g_id][3] = 0
 
     def exclude_from_prefixing(self, inp):
         """
