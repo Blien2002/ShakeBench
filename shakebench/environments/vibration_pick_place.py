@@ -42,11 +42,11 @@ from shakebench.utils.metrics import (
     VibrationSuccessEvaluator,
     audit_can_compiled_model,
     audit_contact_pairs,
-    can_pose_twist_in_frame,
     collision_support_points_in_frame,
     equivalent_cylinder_inertia,
     extract_can_collision_envelope,
     frame_world_position,
+    pose_twist_in_frame,
 )
 from shakebench.utils.physics import PhysicsProfileError, resolve_physics_profile
 from shakebench.utils.privilege import (
@@ -722,7 +722,6 @@ class VibrationPickPlace(ManipulationEnv):
             gripper_body_name=self.gripper_body_name,
             deck_body_name=self.deck_config.deck_body_name,
             deck_driver=self.deck_driver,
-            dt_s=self._phase04_model_timestep,
         )
         self.can_body_name = self.can.root_body
         self.can_geom_name = self.can.contact_geoms[0]
@@ -763,7 +762,7 @@ class VibrationPickPlace(ManipulationEnv):
 
         @sensor(modality=modality)
         def object_pos_robot_base(obs_cache):
-            return can_pose_twist_in_frame(
+            return pose_twist_in_frame(
                 self.sim,
                 self.can.root_body,
                 self.robot_base_body_name,
@@ -772,7 +771,7 @@ class VibrationPickPlace(ManipulationEnv):
         @sensor(modality=modality)
         def object_quat_robot_base(obs_cache):
             return T.convert_quat(
-                can_pose_twist_in_frame(
+                pose_twist_in_frame(
                     self.sim,
                     self.can.root_body,
                     self.robot_base_body_name,
@@ -782,7 +781,7 @@ class VibrationPickPlace(ManipulationEnv):
 
         @sensor(modality=modality)
         def object_to_target_pos(obs_cache):
-            return can_pose_twist_in_frame(
+            return pose_twist_in_frame(
                 self.sim,
                 self.can.root_body,
                 self.arena.worktable_body_name,
@@ -1408,7 +1407,7 @@ class VibrationPickPlace(ManipulationEnv):
         return reward
 
     def _check_success(self):
-        return bool(self._sample_metrics().success)
+        return self._sample_metrics().success.passed
 
     def visualize(self, vis_settings):
         super().visualize(vis_settings=vis_settings)

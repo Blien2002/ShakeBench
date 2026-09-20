@@ -14,7 +14,7 @@ import json
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
-from types import MappingProxyType
+from types import MappingProxyType, SimpleNamespace
 from typing import Any, Optional
 
 import mujoco
@@ -32,11 +32,12 @@ CONTACT_INTERFACE_TARGET_OBJECT = "target_object"
 CONTACT_INTERFACE_FINGER_OBJECT = "finger_object"
 CONTACT_INTERFACE_OTHER = "other"
 
-# Short aliases make the role vocabulary convenient for callers without
-# creating a second set of semantics.
-TABLE_OBJECT_INTERFACE = CONTACT_INTERFACE_TABLE_OBJECT
-TARGET_OBJECT_INTERFACE = CONTACT_INTERFACE_TARGET_OBJECT
-FINGER_OBJECT_INTERFACE = CONTACT_INTERFACE_FINGER_OBJECT
+CONTACT_INTERFACES = (
+    CONTACT_INTERFACE_TABLE_OBJECT,
+    CONTACT_INTERFACE_TARGET_OBJECT,
+    CONTACT_INTERFACE_FINGER_OBJECT,
+    CONTACT_INTERFACE_OTHER,
+)
 
 CANONICAL_OBJECT_MASS_KG = 0.349
 CANONICAL_OBJECT_COM_M = (0.0, 0.0, 0.0)
@@ -124,12 +125,6 @@ CANONICAL_OBJECT_COLLISION_ENVELOPE = CanCollisionEnvelope(
     upper_support_z_m=0.03970300217508332,
     source_model_hash=CANONICAL_OBJECT_COLLISION_ENVELOPE_SOURCE_MODEL_HASH,
 )
-
-# These aliases are retained only as deprecated read-only names for callers
-# from the first Phase 04 implementation.  They point to the compiled
-# envelope authority above; they are not placement-site constants.
-CAN_COLLISION_ENVELOPE_RADIUS_M = CANONICAL_OBJECT_COLLISION_ENVELOPE.support_radius_m
-CAN_COLLISION_ENVELOPE_HEIGHT_M = CANONICAL_OBJECT_COLLISION_ENVELOPE.height_m
 
 
 def equivalent_cylinder_inertia(
@@ -284,18 +279,6 @@ class PoseTwist:
     def twist(self) -> np.ndarray:
         return np.concatenate((self.linear_velocity_m_s, self.angular_velocity_rad_s))
 
-    @property
-    def quaternion(self) -> np.ndarray:
-        return self.quaternion_wxyz
-
-    @property
-    def linear_speed_m_s(self) -> float:
-        return float(np.linalg.norm(self.linear_velocity_m_s))
-
-    @property
-    def angular_speed_rad_s(self) -> float:
-        return float(np.linalg.norm(self.angular_velocity_rad_s))
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "pose": self.pose.copy(),
@@ -389,18 +372,16 @@ def _frame_world_pose_twist(
     data: Any,
     frame_body_name: Optional[str],
     frame_local_origin_m: Any = (0.0, 0.0, 0.0),
-    frame_local_quat_wxyz: Any = (1.0, 0.0, 0.0, 0.0),
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     local_origin = _finite_vector("frame_local_origin_m", frame_local_origin_m, 3)
-    local_rotation = _quat_wxyz_to_mat(frame_local_quat_wxyz)
     if frame_body_name is None:
-        return np.zeros(3), local_rotation, np.zeros(3), np.zeros(3)
+        return np.zeros(3), np.eye(3), np.zeros(3), np.zeros(3)
     body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, frame_body_name)
     body_position, body_rotation, body_linear, body_angular = _body_world_pose_twist(model, data, body_id)
     world_offset = body_rotation.dot(local_origin)
     origin_position = body_position + world_offset
     origin_linear = body_linear + np.cross(body_angular, world_offset)
-    return origin_position, body_rotation.dot(local_rotation), origin_linear, body_angular
+    return origin_position, body_rotation, origin_linear, body_angular
 
 
 def pose_twist_in_frame(
@@ -410,7 +391,6 @@ def pose_twist_in_frame(
     *,
     data: Any = None,
     frame_local_origin_m: Any = (0.0, 0.0, 0.0),
-    frame_local_quat_wxyz: Any = (1.0, 0.0, 0.0, 0.0),
 ) -> PoseTwist:
     """Return a compiled body's pose/twist in a world or body frame."""
 
@@ -422,7 +402,6 @@ def pose_twist_in_frame(
         raw_data,
         frame_body_name,
         frame_local_origin_m,
-        frame_local_quat_wxyz,
     )
     return relative_pose_twist(
         child_position,
@@ -432,39 +411,6 @@ def pose_twist_in_frame(
         frame_rotation,
         np.concatenate((frame_linear, frame_angular)),
     )
-
-
-def can_pose_twist_in_frame(
-    sim_or_model: Any,
-    can_body_name: str,
-    frame_body_name: Optional[str] = None,
-    *,
-    data: Any = None,
-    frame_local_origin_m: Any = (0.0, 0.0, 0.0),
-    frame_local_quat_wxyz: Any = (1.0, 0.0, 0.0, 0.0),
-) -> PoseTwist:
-    """Task-named wrapper around :func:`pose_twist_in_frame`."""
-
-    return pose_twist_in_frame(
-        sim_or_model,
-        can_body_name,
-        frame_body_name,
-        data=data,
-        frame_local_origin_m=frame_local_origin_m,
-        frame_local_quat_wxyz=frame_local_quat_wxyz,
-    )
-
-
-def can_pose_in_frame(*args: Any, **kwargs: Any) -> np.ndarray:
-    """Return Can pose ``[xyz, qwxyz]`` in a selected frame."""
-
-    return can_pose_twist_in_frame(*args, **kwargs).pose
-
-
-def can_twist_in_frame(*args: Any, **kwargs: Any) -> np.ndarray:
-    """Return Can moving-frame twist ``[linear, angular]``."""
-
-    return can_pose_twist_in_frame(*args, **kwargs).twist
 
 
 def frame_world_position(
@@ -483,46 +429,16 @@ def frame_world_position(
 
 def _mesh_vertices_in_body_frame(model: Any, geom_id: int) -> np.ndarray:
     geom_type = int(model.geom_type[int(geom_id)])
-    if geom_type == int(mujoco.mjtGeom.mjGEOM_MESH):
-        mesh_id = int(model.geom_dataid[int(geom_id)])
-        start = int(model.mesh_vertadr[mesh_id])
-        count = int(model.mesh_vertnum[mesh_id])
-        vertices = np.asarray(model.mesh_vert[start : start + count], dtype=float).reshape(-1, 3)
-        geom_quat = _normalise_quat_wxyz(model.geom_quat[int(geom_id)], "compiled geom quaternion")
-        geom_rotation = _quat_wxyz_to_mat(geom_quat)
-        geom_position = np.asarray(model.geom_pos[int(geom_id)], dtype=float)
-        return geom_position + vertices.dot(geom_rotation.T)
-
-    # This fallback is useful for probe fixtures.  The production Can uses a
-    # mesh, but a primitive collision geom still gets exact corner support
-    # points rather than a center/AABB approximation.
-    size = np.asarray(model.geom_size[int(geom_id)], dtype=float).reshape(-1)
-    if geom_type == int(mujoco.mjtGeom.mjGEOM_BOX):
-        local = np.asarray(
-            [[sx * size[0], sy * size[1], sz * size[2]] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)],
-            dtype=float,
-        )
-    elif geom_type == int(mujoco.mjtGeom.mjGEOM_SPHERE):
-        radius = float(size[0])
-        local = np.asarray(
-            [[sx * radius, sy * radius, sz * radius] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)],
-            dtype=float,
-        )
-    else:
-        radius = float(size[0])
-        half_height = float(size[1]) if size.size > 1 else radius
-        local = np.asarray(
-            [
-                [radius * np.cos(angle), radius * np.sin(angle), z]
-                for angle in np.linspace(0, 2 * np.pi, 16, endpoint=False)
-                for z in (-half_height, half_height)
-            ],
-            dtype=float,
-        )
+    if geom_type != int(mujoco.mjtGeom.mjGEOM_MESH):
+        raise ShakeBenchMetricsError("collision support points require a mesh geom")
+    mesh_id = int(model.geom_dataid[int(geom_id)])
+    start = int(model.mesh_vertadr[mesh_id])
+    count = int(model.mesh_vertnum[mesh_id])
+    vertices = np.asarray(model.mesh_vert[start : start + count], dtype=float).reshape(-1, 3)
     geom_quat = _normalise_quat_wxyz(model.geom_quat[int(geom_id)], "compiled geom quaternion")
     geom_rotation = _quat_wxyz_to_mat(geom_quat)
     geom_position = np.asarray(model.geom_pos[int(geom_id)], dtype=float)
-    return geom_position + local.dot(geom_rotation.T)
+    return geom_position + vertices.dot(geom_rotation.T)
 
 
 def _collision_source_hash(model: Any, geom_names: tuple[str, ...]) -> str:
@@ -610,13 +526,12 @@ def collision_support_points_in_frame(
     *,
     data: Any = None,
     frame_local_origin_m: Any = (0.0, 0.0, 0.0),
-    frame_local_quat_wxyz: Any = (1.0, 0.0, 0.0, 0.0),
 ) -> np.ndarray:
     """Return collision-geometry support vertices expressed in a frame.
 
-    The points are the compiled collision mesh vertices (or exact primitive
-    corners for probe fixtures), transformed into the requested frame.  The
-    caller can project them to XY for rectangular target containment.
+    The points are the compiled collision mesh vertices transformed into the
+    requested frame.  The caller can project them to XY for rectangular
+    target containment.
     """
 
     model, raw_data = _raw_model_data(sim_or_model, data)
@@ -638,7 +553,6 @@ def collision_support_points_in_frame(
         raw_data,
         frame_body_name,
         frame_local_origin_m,
-        frame_local_quat_wxyz,
     )
     return (world_points - frame_position).dot(frame_rotation)
 
@@ -655,9 +569,6 @@ class ContactRecord:
     penetration_m: float
     force_contact_frame_N: np.ndarray
     force_on_can_world_N: np.ndarray
-    wrench_on_can_world_N_Nm: np.ndarray
-    impulse_on_can_world_Ns: np.ndarray
-    wrench_impulse_on_can_world_Ns_Nms: np.ndarray
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "point_world_m", _finite_vector("point_world_m", self.point_world_m, 3))
@@ -668,34 +579,9 @@ class ContactRecord:
             "force_contact_frame_N",
             _finite_vector("force_contact_frame_N", self.force_contact_frame_N, 6),
         )
-        for field_name in (
-            "force_on_can_world_N",
-            "wrench_on_can_world_N_Nm",
-            "impulse_on_can_world_Ns",
-            "wrench_impulse_on_can_world_Ns_Nms",
-        ):
-            expected_length = 6 if "wrench" in field_name else 3
-            object.__setattr__(self, field_name, _finite_vector(field_name, getattr(self, field_name), expected_length))
-
-    @property
-    def normal_force_N(self) -> float:
-        return float(abs(self.force_contact_frame_N[0]))
-
-    @property
-    def force_world_N(self) -> np.ndarray:
-        return self.force_on_can_world_N
-
-    @property
-    def wrench_world_N_Nm(self) -> np.ndarray:
-        return self.wrench_on_can_world_N_Nm
-
-    @property
-    def impulse_world_Ns(self) -> np.ndarray:
-        return self.impulse_on_can_world_Ns
-
-    @property
-    def penetration_depth_m(self) -> float:
-        return self.penetration_m
+        object.__setattr__(
+            self, "force_on_can_world_N", _finite_vector("force_on_can_world_N", self.force_on_can_world_N, 3)
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -705,12 +591,8 @@ class ContactRecord:
             "point_world_m": self.point_world_m.copy(),
             "distance_m": self.distance_m,
             "penetration_m": self.penetration_m,
-            "normal_force_N": self.normal_force_N,
             "force_contact_frame_N": self.force_contact_frame_N.copy(),
             "force_on_can_world_N": self.force_on_can_world_N.copy(),
-            "wrench_on_can_world_N_Nm": self.wrench_on_can_world_N_Nm.copy(),
-            "impulse_on_can_world_Ns": self.impulse_on_can_world_Ns.copy(),
-            "wrench_impulse_on_can_world_Ns_Nms": self.wrench_impulse_on_can_world_Ns_Nms.copy(),
         }
 
 
@@ -727,21 +609,19 @@ class ContactReport:
     finger_can_contact_present: bool
     target_bottom_support_force_N: float
     total_force_by_interface_N: Mapping[str, np.ndarray]
-    total_wrench_by_interface_N_Nm: Mapping[str, np.ndarray]
-    total_impulse_by_interface_Ns: Mapping[str, np.ndarray]
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "contacts", tuple(self.contacts))
         object.__setattr__(self, "by_interface", MappingProxyType(dict(self.by_interface)))
         object.__setattr__(self, "max_penetration_m", float(self.max_penetration_m))
         object.__setattr__(self, "target_bottom_support_force_N", float(self.target_bottom_support_force_N))
-        for field_name in (
+        object.__setattr__(
+            self,
             "total_force_by_interface_N",
-            "total_wrench_by_interface_N_Nm",
-            "total_impulse_by_interface_Ns",
-        ):
-            value = {key: np.array(item, dtype=float, copy=True) for key, item in getattr(self, field_name).items()}
-            object.__setattr__(self, field_name, MappingProxyType(value))
+            MappingProxyType(
+                {key: np.array(item, dtype=float, copy=True) for key, item in self.total_force_by_interface_N.items()}
+            ),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -754,12 +634,6 @@ class ContactReport:
             "finger_can_contact_present": self.finger_can_contact_present,
             "target_bottom_support_force_N": self.target_bottom_support_force_N,
             "total_force_by_interface_N": {key: value.copy() for key, value in self.total_force_by_interface_N.items()},
-            "total_wrench_by_interface_N_Nm": {
-                key: value.copy() for key, value in self.total_wrench_by_interface_N_Nm.items()
-            },
-            "total_impulse_by_interface_Ns": {
-                key: value.copy() for key, value in self.total_impulse_by_interface_Ns.items()
-            },
         }
 
 
@@ -783,37 +657,23 @@ def collect_contact_metrics(
     sim_or_model: Any,
     *,
     can_geom_names: Iterable[str] = (),
-    can_body_name: Optional[str] = None,
     table_geom_names: Iterable[str] = (),
     target_bottom_geom_names: Iterable[str] = (),
     target_wall_geom_names: Iterable[str] = (),
     finger_pad_geom_names: Iterable[str] = (),
     data: Any = None,
-    dt_s: Optional[float] = None,
     support_frame_rotation: Any = None,
 ) -> ContactReport:
-    """Collect Can contacts and per-interface force/wrench/impulse metrics."""
+    """Collect Can contacts and per-interface force metrics."""
 
     model, raw_data = _raw_model_data(sim_or_model, data)
     can_names = set(_normalise_names(can_geom_names))
-    if not can_names and can_body_name is not None:
-        can_body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, can_body_name)
-        can_names = {
-            _mujoco_name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
-            for geom_id in range(int(model.ngeom))
-            if int(model.geom_bodyid[geom_id]) == can_body_id and int(model.geom_group[geom_id]) == 0
-        }
     table_names = set(_normalise_names(table_geom_names))
     bottom_names = set(_normalise_names(target_bottom_geom_names))
     wall_names = set(_normalise_names(target_wall_geom_names))
     finger_names = set(_normalise_names(finger_pad_geom_names))
     if not can_names:
         raise ShakeBenchMetricsError("can_geom_names must not be empty")
-    if dt_s is None:
-        dt_s = float(model.opt.timestep)
-    if isinstance(dt_s, (bool, np.bool_)) or not np.isfinite(float(dt_s)) or float(dt_s) <= 0.0:
-        raise ShakeBenchMetricsError("dt_s must be finite and positive")
-    dt_s = float(dt_s)
     if support_frame_rotation is None:
         support_rotation = np.eye(3, dtype=float)
     else:
@@ -824,8 +684,6 @@ def collect_contact_metrics(
     records = []
     by_interface = defaultdict(list)
     total_force = defaultdict(lambda: np.zeros(3, dtype=float))
-    total_wrench = defaultdict(lambda: np.zeros(6, dtype=float))
-    total_impulse = defaultdict(lambda: np.zeros(3, dtype=float))
 
     for contact_index in range(int(raw_data.ncon)):
         contact = raw_data.contact[contact_index]
@@ -841,17 +699,12 @@ def collect_contact_metrics(
         mujoco.mj_contactForce(model, raw_data, contact_index, contact_force)
         contact_frame = np.asarray(contact.frame, dtype=float).reshape(3, 3)
         force_world = contact_frame.T.dot(contact_force[:3])
-        torque_world_at_contact = contact_frame.T.dot(contact_force[3:])
         # MuJoCo reports the contact-frame force applied to geom2.  Orient it
         # onto the Can so a static tabletop support has an upward positive Z
         # force regardless of the runtime geom ordering.
         if can_is_geom1:
             force_world *= -1.0
-            torque_world_at_contact *= -1.0
         point_world = np.asarray(contact.pos, dtype=float).copy()
-        wrench_world = np.concatenate((force_world, np.cross(point_world, force_world) + torque_world_at_contact))
-        impulse_world = force_world * dt_s
-        wrench_impulse = wrench_world * dt_s
         distance = float(contact.dist)
         record = ContactRecord(
             interface=interface,
@@ -862,30 +715,16 @@ def collect_contact_metrics(
             penetration_m=max(0.0, -distance),
             force_contact_frame_N=contact_force,
             force_on_can_world_N=force_world,
-            wrench_on_can_world_N_Nm=wrench_world,
-            impulse_on_can_world_Ns=impulse_world,
-            wrench_impulse_on_can_world_Ns_Nms=wrench_impulse,
         )
-        # Force and impulse fields are linear three-vectors; wrench fields are
-        # six-vectors.  Aggregate fields below use the same distinction.
         records.append(record)
         by_interface[interface].append(record)
         total_force[interface] += force_world
-        total_wrench[interface] += wrench_world
-        total_impulse[interface] += impulse_world
 
-    # The record stores six-vectors for a uniform spatial API.  The public
-    # aggregate names explicitly distinguish linear force/impulse from wrench.
-    for interface in (
-        CONTACT_INTERFACE_TABLE_OBJECT,
-        CONTACT_INTERFACE_TARGET_OBJECT,
-        CONTACT_INTERFACE_FINGER_OBJECT,
-        CONTACT_INTERFACE_OTHER,
-    ):
+    # Every interface gets an entry so consumers can index the report without
+    # a presence check.
+    for interface in CONTACT_INTERFACES:
         by_interface.setdefault(interface, [])
         total_force.setdefault(interface, np.zeros(3, dtype=float))
-        total_wrench.setdefault(interface, np.zeros(6, dtype=float))
-        total_impulse.setdefault(interface, np.zeros(3, dtype=float))
     target_bottom_contacts = [
         record
         for record in by_interface[CONTACT_INTERFACE_TARGET_OBJECT]
@@ -912,8 +751,6 @@ def collect_contact_metrics(
         finger_can_contact_present=bool(by_interface.get(CONTACT_INTERFACE_FINGER_OBJECT)),
         target_bottom_support_force_N=target_bottom_support_force,
         total_force_by_interface_N={key: value for key, value in total_force.items()},
-        total_wrench_by_interface_N_Nm={key: value for key, value in total_wrench.items()},
-        total_impulse_by_interface_Ns={key: value for key, value in total_impulse.items()},
     )
 
 
@@ -1003,47 +840,16 @@ class SuccessSnapshot:
             raise ShakeBenchMetricsError("object_up_cosine must be a finite cosine")
         object.__setattr__(self, "object_up_cosine", float(self.object_up_cosine))
 
-    def is_supported_by_target_bottom(
-        self,
-        *,
-        force_threshold_N: Optional[float] = None,
-        z_tolerance_m: Optional[float] = None,
-    ) -> bool:
-        """Require bottom contact, strict positive support force, and valid height."""
-
-        if force_threshold_N is None:
-            force_threshold_N = TARGET_BOTTOM_SUPPORT_FORCE_THRESHOLD_N
-        if z_tolerance_m is None:
-            z_tolerance_m = TARGET_BOTTOM_SUPPORT_Z_TOLERANCE_M
-        if (
-            isinstance(force_threshold_N, (bool, np.bool_))
-            or not np.isfinite(float(force_threshold_N))
-            or float(force_threshold_N) <= 0.0
-        ):
-            raise ShakeBenchMetricsError("force_threshold_N must be finite and strictly positive")
-        if (
-            isinstance(z_tolerance_m, (bool, np.bool_))
-            or not np.isfinite(float(z_tolerance_m))
-            or float(z_tolerance_m) < 0.0
-        ):
-            raise ShakeBenchMetricsError("z_tolerance_m must be finite and non-negative")
-        return bool(
-            self.target_bottom_contact_present
-            and self.target_bottom_support_force_N > float(force_threshold_N)
-            and self.lower_support_z_m >= -float(z_tolerance_m)
-        )
-
     @property
     def supported_by_target_bottom(self) -> bool:
-        """Default-threshold support result (derived, never an independent input)."""
+        """Require bottom contact, strict positive support force, and valid height."""
 
-        return self.is_supported_by_target_bottom()
-
-    @property
-    def finger_can_contact(self) -> bool:
-        """Deprecated input alias; report schemas use ``finger_can_contact_present``."""
-
-        return self.finger_can_contact_present
+        thresholds = DEFAULT_SUCCESS_THRESHOLDS
+        return bool(
+            self.target_bottom_contact_present
+            and self.target_bottom_support_force_N > thresholds.target_bottom_support_force_threshold_N
+            and self.lower_support_z_m >= -thresholds.target_bottom_support_z_tolerance_m
+        )
 
     @property
     def released(self) -> bool:
@@ -1115,17 +921,6 @@ class SuccessEvaluation:
         object.__setattr__(self, "latched", bool(self.latched))
         object.__setattr__(self, "subconditions", MappingProxyType(dict(self.subconditions)))
 
-    @property
-    def success(self) -> bool:
-        return self.passed
-
-    @property
-    def conditions(self) -> Mapping[str, bool]:
-        return self.subconditions
-
-    def __bool__(self) -> bool:
-        return self.passed
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "passed": self.passed,
@@ -1134,17 +929,6 @@ class SuccessEvaluation:
             "subconditions": dict(self.subconditions),
             "snapshot": self.snapshot.to_dict(),
         }
-
-
-def _coerce_success_snapshot(snapshot: Any) -> SuccessSnapshot:
-    if isinstance(snapshot, SuccessSnapshot):
-        return snapshot
-    if not isinstance(snapshot, Mapping):
-        raise ShakeBenchMetricsError("success input must be a SuccessSnapshot or mapping")
-    values = dict(snapshot)
-    # Mapping support is intentionally explicit so recorder/probe code can
-    # pass JSON-shaped state without bypassing validation.
-    return SuccessSnapshot(**values)
 
 
 class VibrationSuccessEvaluator:
@@ -1177,10 +961,11 @@ class VibrationSuccessEvaluator:
             "finger_can_contact_absent": not bool(snapshot.finger_can_contact_present),
         }
 
-    def evaluate(self, snapshot: Any, time_s: float) -> SuccessEvaluation:
+    def evaluate(self, snapshot: SuccessSnapshot, time_s: float) -> SuccessEvaluation:
         """Evaluate and update the latch at an episode-relative timestamp."""
 
-        snapshot = _coerce_success_snapshot(snapshot)
+        if not isinstance(snapshot, SuccessSnapshot):
+            raise ShakeBenchMetricsError("success input must be a SuccessSnapshot")
         if isinstance(time_s, (bool, np.bool_)) or not np.isfinite(float(time_s)) or float(time_s) < 0.0:
             raise ShakeBenchMetricsError("time_s must be finite and non-negative")
         time_s = float(time_s)
@@ -1208,29 +993,6 @@ class VibrationSuccessEvaluator:
         )
         self._last_evaluation = result
         return result
-
-    def check(self, snapshot: Any, time_s: float) -> bool:
-        """Boolean convenience wrapper around :meth:`evaluate`."""
-
-        return self.evaluate(snapshot, time_s).passed
-
-    def update(self, snapshot: Any, time_s: float) -> SuccessEvaluation:
-        """Stateful-update alias used by recorder/evaluator integrations."""
-
-        return self.evaluate(snapshot, time_s)
-
-    __call__ = check
-
-
-def evaluate_success(
-    snapshot: Any,
-    time_s: float,
-    evaluator: Optional[VibrationSuccessEvaluator] = None,
-) -> SuccessEvaluation:
-    """Evaluate a snapshot with an optional caller-owned continuous latch."""
-
-    active_evaluator = evaluator if evaluator is not None else VibrationSuccessEvaluator()
-    return active_evaluator.evaluate(snapshot, time_s)
 
 
 def audit_can_compiled_model(
@@ -1432,11 +1194,6 @@ def audit_contact_pairs(
             if contact_profile is not None
             else None
         ),
-        "provisional_fields": {
-            "condim": "validated only when an explicit Phase 06 contact profile is supplied",
-            "margin_gap": "validated only when an explicit Phase 06 contact profile is supplied",
-            "solref_solimp": "validated only when an explicit Phase 06 contact profile is supplied",
-        },
     }
 
 
@@ -1496,7 +1253,6 @@ class ShakeBenchMetrics:
         gripper_body_name: str,
         deck_body_name: str = "deck",
         deck_driver: Any = None,
-        dt_s: Optional[float] = None,
         slip_speed_threshold_m_s: float = 1e-3,
     ):
         self.can_body_name = can_body_name
@@ -1515,7 +1271,6 @@ class ShakeBenchMetrics:
         self.gripper_body_name = gripper_body_name
         self.deck_body_name = deck_body_name
         self.deck_driver = deck_driver
-        self.dt_s = dt_s
         if (
             isinstance(slip_speed_threshold_m_s, (bool, np.bool_))
             or not np.isfinite(float(slip_speed_threshold_m_s))
@@ -1535,12 +1290,6 @@ class ShakeBenchMetrics:
         self._last_finger_contact_loss_after_grasp = False
         self._episode_max_penetration_m = 0.0
         self.latest: Optional[MetricsSnapshot] = None
-
-    @property
-    def episode_max_penetration_m(self) -> float:
-        """Maximum penetration measured since the last reset."""
-
-        return self._episode_max_penetration_m
 
     def latch_illegal_penetration(self, penetration_m: Any) -> float:
         """Fold one measurement into the episode maximum.
@@ -1617,7 +1366,7 @@ class ShakeBenchMetrics:
         sim_view = self._as_sim_or_model(model, raw_data)
         worktable_body_id = _mujoco_id(model, mujoco.mjtObj.mjOBJ_BODY, self.worktable_body_name)
         worktable_rotation = np.asarray(raw_data.xmat[worktable_body_id], dtype=float).reshape(3, 3)
-        can_target = can_pose_twist_in_frame(
+        can_target = pose_twist_in_frame(
             sim_view,
             self.can_body_name,
             self.worktable_body_name,
@@ -1653,7 +1402,6 @@ class ShakeBenchMetrics:
             target_bottom_geom_names=self.target_bottom_geom_names,
             target_wall_geom_names=self.target_wall_geom_names,
             finger_pad_geom_names=self.finger_pad_geom_names,
-            dt_s=self.dt_s,
             support_frame_rotation=worktable_rotation,
         )
         # The object's local +z expressed against the container floor normal.
@@ -1695,13 +1443,7 @@ class ShakeBenchMetrics:
 
     @staticmethod
     def _as_sim_or_model(model: Any, data: Any) -> Any:
-        class _SimView:
-            pass
-
-        view = _SimView()
-        view.model = model
-        view.data = data
-        return view
+        return SimpleNamespace(model=model, data=data)
 
     def update(self, sim_or_model: Any, data: Any = None, *, time_s: Optional[float] = None) -> MetricsSnapshot:
         model, raw_data = _raw_model_data(sim_or_model, data)
@@ -1715,8 +1457,8 @@ class ShakeBenchMetrics:
 
         sim_view = self._as_sim_or_model(model, raw_data)
         can = {
-            "robot_base": can_pose_twist_in_frame(sim_view, self.can_body_name, self.robot_base_body_name),
-            "worktable": can_pose_twist_in_frame(sim_view, self.can_body_name, self.worktable_body_name),
+            "robot_base": pose_twist_in_frame(sim_view, self.can_body_name, self.robot_base_body_name),
+            "worktable": pose_twist_in_frame(sim_view, self.can_body_name, self.worktable_body_name),
         }
         can_target_primitive, support_points_target, contacts, object_up_cosine = self._success_primitive(
             model, raw_data
@@ -1734,7 +1476,7 @@ class ShakeBenchMetrics:
         ):
             self._first_slip_time_s = time_s
 
-        hand_pose = can_pose_twist_in_frame(sim_view, self.can_body_name, self.gripper_body_name)
+        hand_pose = pose_twist_in_frame(sim_view, self.can_body_name, self.gripper_body_name)
         if contacts.finger_can_contact_present:
             if self._initial_can_gripper_pose is None:
                 self._initial_can_gripper_pose = hand_pose
@@ -1789,25 +1531,3 @@ class ShakeBenchMetrics:
             self.latest.contacts.max_penetration_m, self._episode_max_penetration_m
         )
         return report
-
-
-PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_ID = "shakebench.phase04.environment"
-PHASE04_ENVIRONMENT_ARTIFACT_SCHEMA_VERSION = 2
-
-
-# Compatibility-friendly names for callers that prefer evaluator/collector
-# language over the concrete class names.
-CanPoseTwist = PoseTwist
-compute_can_pose_twist = can_pose_twist_in_frame
-compute_support_points = collision_support_points_in_frame
-CanSuccessEvaluator = VibrationSuccessEvaluator
-SuccessEvaluator = VibrationSuccessEvaluator
-SuccessLatch = VibrationSuccessEvaluator
-MetricsCollector = ShakeBenchMetrics
-ContactMetrics = ShakeBenchMetrics
-ShakeBenchContactMetrics = ContactReport
-audit_contact_roles = audit_contact_pairs
-
-MU_TABLE_OBJECT = 0.30
-MU_FINGER_OBJECT = 1.00
-SUCCESS_HOLD_TIME_S = DEFAULT_SUCCESS_THRESHOLDS.hold_duration_s
