@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable
 from copy import deepcopy
@@ -183,8 +182,6 @@ class VibrationPickPlace(ManipulationEnv):
         self.grasp_region = grasp_region
         self.object_mass_kg = CANONICAL_OBJECT_MASS_KG if self.task_spec is None else self.task_spec.object_mass_kg
         requested_robots = list(robots) if isinstance(robots, (list, tuple)) else [robots]
-        if requested_robots != ["Panda"]:
-            raise ValueError("VibrationPickPlace currently supports exactly one Panda robot")
         if env_configuration != "default":
             raise ValueError("VibrationPickPlace only supports env_configuration='default'")
         try:
@@ -305,7 +302,6 @@ class VibrationPickPlace(ManipulationEnv):
         self._compiled_contract = None
         self.metrics = None
         self.success_evaluator = VibrationSuccessEvaluator(DEFAULT_SUCCESS_THRESHOLDS)
-        self._last_success_evaluation = None
 
         if deck_config is not None and not isinstance(deck_config, DeckDriverConfig):
             raise ValueError("deck_config must be a DeckDriverConfig")
@@ -422,7 +418,6 @@ class VibrationPickPlace(ManipulationEnv):
             geom.set("contype", str(CAN_CONTACT_BIT))
             geom.set("conaffinity", "0")
             geom.attrib.pop("density", None)
-        self.can_inertia = None
 
     def _measure_can_collision_envelope(self):
         """Measure compiled contact geometry and collision-only inertia.
@@ -566,7 +561,7 @@ class VibrationPickPlace(ManipulationEnv):
         )
         finger_pad_names = tuple(self.finger_pad_geom_names)
         table_pair_attributes = self.physics_profile.pair_attributes(self.table_object_sliding_mu)
-        finger_pair_attributes = self.physics_profile.pair_attributes(self.finger_object_sliding_mu)
+        finger_pair_attributes = self.physics_profile.pair_attributes(self.finger_object_sliding_mu, finger_contact=True)
         target_pair_attributes = self.physics_profile.pair_attributes(self.target_object_sliding_mu)
         partner_names = table_geom_names + target_collision_names + finger_pad_names
         for geom_name in partner_names:
@@ -612,8 +607,6 @@ class VibrationPickPlace(ManipulationEnv):
     def _load_model(self):
         self._policy_task_context_cache = None
         super()._load_model()
-        if len(self.robots) != 1 or self.robot_names != ["Panda"]:
-            raise ValueError("VibrationPickPlace requires exactly one Panda")
         if self.geometry_profile is not None:
             initial_qpos = np.asarray(self.geometry_profile["initial_joint_qpos_rad"], dtype=float)
             if initial_qpos.shape != (7,) or not np.all(np.isfinite(initial_qpos)):
@@ -724,7 +717,6 @@ class VibrationPickPlace(ManipulationEnv):
             deck_driver=self.deck_driver,
         )
         self.can_body_name = self.can.root_body
-        self.can_geom_name = self.can.contact_geoms[0]
         self.worktable_body_name = self.arena.worktable_body_name
         self.deck_body_name = self.deck_config.deck_body_name
         self.target_container_geom_names = dict(self.arena.target_container_geom_names)
@@ -745,7 +737,6 @@ class VibrationPickPlace(ManipulationEnv):
         )
         compiled_envelope.assert_matches(self.can_collision_envelope)
         self.can_collision_envelope = compiled_envelope
-        self._imu_mount_audit = self.table_imu_provider.audit_compiled_mount(self.sim)
 
     def _setup_observables(self):
         observables = super()._setup_observables()
@@ -816,7 +807,6 @@ class VibrationPickPlace(ManipulationEnv):
         if self.metrics is not None:
             self.metrics.reset()
         self.success_evaluator.reset()
-        self._last_success_evaluation = None
 
     def _settle_reset_support(self):
         """Find loaded contact equilibrium before starting the episode clock.
@@ -919,6 +909,8 @@ class VibrationPickPlace(ManipulationEnv):
 
     def _pre_action(self, action, policy_step=False):
         super()._pre_action(action, policy_step=policy_step)
+        # The privileged snapshot reports the action the policy actually sent.
+        self._phase05_last_action = np.asarray(action, dtype=np.float32).reshape(-1).copy()
 
     def _update_phase05_provider(self, sample_time_s, policy_step=False):
         self.table_imu_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
@@ -947,49 +939,20 @@ class VibrationPickPlace(ManipulationEnv):
             "privileged_actions": self._phase05_last_action.copy(),
             "privileged_can_pose_world": can_pose_world,
             "privileged_goal_center_world": np.asarray(target_world, dtype=float),
-            "privileged_support": {
-                "deck_body_name": self.deck_body_name,
-                "worktable_body_name": self.worktable_body_name,
-                "metrics_driver_response": metrics_report.get("driver_response", {}),
-                "metrics_table_response": metrics_report.get("table_response", {}),
-            },
-            "privileged_commanded_support": {
-                key: driver_response[key]
-                for key in ("command_pose", "command_twist", "command_acceleration")
-                if key in driver_response
-            },
-            "privileged_actual_support": {
-                "deck": driver_response.get("actual_pose"),
-                "deck_twist": driver_response.get("actual_twist"),
-                "deck_acceleration": driver_response.get("deck_acceleration"),
-                "table": table_response,
-            },
             "privileged_contacts": metrics_report.get("contacts", {}),
             "privileged_success_subconditions": success_report.get(
                 "subconditions", metrics_report.get("success_snapshot", {})
             ),
             "privileged_success": success_report,
             "privileged_parameters": self.policy_task_context,
-            "privileged_provider": provider_truth,
         }
-        # Keep the nested provider record convenient for consumers while also
-        # giving every truth field a directly auditable privileged_ name.
+        # Every truth field is published once, under the namespace the recorder
+        # validates; the flat names are the auditable contract.
         for key, value in provider_truth.items():
             snapshot[f"{PRIVILEGED_NAMESPACE}{key}"] = value
-        for key in (
-            "command_pose",
-            "command_twist",
-            "command_acceleration",
-            "actual_pose",
-            "actual_twist",
-            "deck_acceleration",
-        ):
-            if key in driver_response:
-                snapshot[f"{PRIVILEGED_NAMESPACE}deck_{key}"] = driver_response[key]
-        for key, value in table_response.items():
-            snapshot[f"{PRIVILEGED_NAMESPACE}table_{key}"] = value
-        if "support_state" in provider_truth:
-            snapshot[f"{PRIVILEGED_NAMESPACE}support_state"] = provider_truth["support_state"]
+        for prefix, response in (("deck_", driver_response), ("table_", table_response)):
+            for key, value in response.items():
+                snapshot[f"{PRIVILEGED_NAMESPACE}{prefix}{key}"] = value
         self.privileged_recorder.record(snapshot)
 
     def _audit_compiled_contract(self, sim):
@@ -1011,19 +974,18 @@ class VibrationPickPlace(ManipulationEnv):
             return
         # Success is a physics-step contract.  Keep the full diagnostic report
         # at 20 Hz, but update the small evaluator input on every substep.
-        self._last_success_evaluation = self.success_evaluator.evaluate(
+        evaluation = self.success_evaluator.evaluate(
             self.metrics.success_snapshot(self.sim), time_s=sample_time_s
         )
         if not self._control_steps or (self._physics_step_index + 1) % self._control_steps == 0:
             self.metrics.update(self.sim, time_s=sample_time_s)
-            self.metrics.attach_success(self._last_success_evaluation)
+            self.metrics.attach_success(evaluation)
 
     def _sample_metrics(self):
         if self.metrics is None:
             raise ShakeBenchMetricsError("metrics are unavailable before model construction")
         snapshot = self.metrics.update(self.sim, time_s=float(self.sim.data.time))
         evaluation = self.success_evaluator.evaluate(snapshot.success_snapshot, time_s=float(self.sim.data.time))
-        self._last_success_evaluation = evaluation
         return self.metrics.attach_success(evaluation)
 
     def target_frame_world_position(self):
@@ -1047,12 +1009,6 @@ class VibrationPickPlace(ManipulationEnv):
         return tuple(self._observables.keys())
 
     @property
-    def state_observation_keys(self):
-        """Alias for the State-track policy key contract."""
-
-        return self.policy_observation_keys
-
-    @property
     def vibration_observation_keys(self):
         """Return only the dedicated vibration keys visible at this tier."""
 
@@ -1064,7 +1020,7 @@ class VibrationPickPlace(ManipulationEnv):
 
         cached = getattr(self, "_policy_task_context_cache", None)
         if cached is not None:
-            return copy.deepcopy(cached)
+            return deepcopy(cached)
         if not hasattr(self, "arena"):
             return {"policy_rate_hz": float(self.control_freq)}
         target_spec = self.arena.target_container_spec
@@ -1157,9 +1113,8 @@ class VibrationPickPlace(ManipulationEnv):
             },
             "physics_profile": {
                 "profile_id": self.physics_profile.profile_id,
-                "scoreable": self.physics_profile.scoreable
-                and self._geometry_is_scoreable()
-                and self.task_spec is None,
+                # Scoring stays off until a topology passes experimental certification.
+                "scoreable": False,
             },
             "target_container": target_spec,
             "task_context": task_context,
@@ -1184,7 +1139,7 @@ class VibrationPickPlace(ManipulationEnv):
             **({"task": self.task_spec.contract(self.grasp_region)} if self.task_spec is not None else {}),
         }
         if hasattr(self, "sim"):
-            self._policy_task_context_cache = copy.deepcopy(context)
+            self._policy_task_context_cache = deepcopy(context)
         return context
 
     def get_policy_task_context(self):
@@ -1196,10 +1151,6 @@ class VibrationPickPlace(ManipulationEnv):
         """Return the public static task context for tools and tests."""
 
         return self.get_policy_task_context()
-
-    def _geometry_is_scoreable(self):
-        """New topology requires fresh experimental certification."""
-        return False
 
     def observation_contract(self):
         """Return the declared public State shape/unit/frame contract."""
@@ -1408,9 +1359,6 @@ class VibrationPickPlace(ManipulationEnv):
 
     def _check_success(self):
         return self._sample_metrics().success.passed
-
-    def visualize(self, vis_settings):
-        super().visualize(vis_settings=vis_settings)
 
     def _check_robot_configuration(self, robots):
         requested = list(robots) if isinstance(robots, (list, tuple)) else [robots]
