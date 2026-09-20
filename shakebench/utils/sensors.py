@@ -33,7 +33,6 @@ IMU_CHANNELS = (
     "angular_velocity_z",
 )
 IMU_SAMPLE_RATE_HZ = 200.0
-IMU_DT_S = 1.0 / IMU_SAMPLE_RATE_HZ
 IMU_POLICY_RATE_HZ = 20.0
 IMU_WINDOW_SAMPLES = 10
 IMU_WINDOW_SHAPE = (IMU_WINDOW_SAMPLES, len(IMU_CHANNELS))
@@ -54,6 +53,8 @@ GYRO_INITIAL_BIAS_STD_RAD_S = 0.05 * pi / 180.0
 ACCEL_BIAS_DIFFUSION_M_S2_SQRT_S = 1.0e-4
 GYRO_BIAS_DIFFUSION_RAD_S_SQRT_S = 1.0e-4 * pi / 180.0
 IMU_BITS = 16
+IMU_CODE_MIN = -(2 ** (IMU_BITS - 1))
+IMU_CODE_MAX = 2 ** (IMU_BITS - 1) - 1
 IMU_PROFILE_ID = "canonical_midgrade_v1"
 
 
@@ -163,38 +164,6 @@ def gyro_from_rigid_body_motion(
     return rotation.dot(omega)
 
 
-def imu_measurement_from_rigid_body_motion(
-    origin_acceleration_world_m_s2: Iterable[float],
-    angular_acceleration_world_rad_s2: Iterable[float],
-    angular_velocity_world_rad_s: Iterable[float],
-    lever_arm_world_m: Iterable[float] = (0.0, 0.0, 0.0),
-    gravity_world_m_s2: Iterable[float] = GRAVITY_WORLD_M_S2,
-    rotation_world_to_sensor: Iterable[Iterable[float]] = np.eye(3),
-) -> np.ndarray:
-    """Return the six clean channels in canonical accelerometer/gyro order."""
-
-    force = specific_force_from_rigid_body_motion(
-        origin_acceleration_world_m_s2,
-        angular_acceleration_world_rad_s2,
-        angular_velocity_world_rad_s,
-        lever_arm_world_m,
-        gravity_world_m_s2,
-        rotation_world_to_sensor,
-    )
-    gyro = gyro_from_rigid_body_motion(angular_velocity_world_rad_s, rotation_world_to_sensor)
-    return np.concatenate((force, gyro))
-
-
-# Short aliases are useful in physics-only tests and keep the equation seam
-# discoverable without making callers depend on one spelling.
-compute_specific_force = specific_force_from_rigid_body_motion
-compute_gyro_measurement = gyro_from_rigid_body_motion
-compute_imu_measurement = imu_measurement_from_rigid_body_motion
-specific_force = specific_force_from_rigid_body_motion
-spatial_angular_velocity = gyro_from_rigid_body_motion
-rigid_point_acceleration = rigid_body_point_acceleration
-
-
 @dataclass(frozen=True)
 class CanonicalIMUProfile:
     """Frozen numeric and semantic parameters for the canonical IMU."""
@@ -204,38 +173,25 @@ class CanonicalIMUProfile:
     policy_rate_hz: float = IMU_POLICY_RATE_HZ
     window_samples: int = IMU_WINDOW_SAMPLES
     delivery_delay_samples: int = IMU_DELIVERY_DELAY_SAMPLES
-    filter_order: int = BUTTERWORTH_ORDER
     cutoff_3db_hz: float = BUTTERWORTH_CUTOFF_HZ
     enbw_hz: float = BUTTERWORTH_ENBW_HZ
     filter_b: tuple[float, float, float] = tuple(float(x) for x in BUTTERWORTH_B)
     filter_a: tuple[float, float, float] = tuple(float(x) for x in BUTTERWORTH_A)
     accel_range_m_s2: float = ACCEL_RANGE_M_S2
-    accel_bits: int = IMU_BITS
     accel_noise_density_m_s2_sqrt_hz: float = ACCEL_NOISE_DENSITY_M_S2_SQRT_HZ
     accel_initial_bias_std_m_s2: float = ACCEL_INITIAL_BIAS_STD_M_S2
     accel_bias_diffusion_m_s2_sqrt_s: float = ACCEL_BIAS_DIFFUSION_M_S2_SQRT_S
     gyro_range_rad_s: float = GYRO_RANGE_RAD_S
-    gyro_bits: int = IMU_BITS
     gyro_noise_density_rad_s_sqrt_hz: float = GYRO_NOISE_DENSITY_RAD_S_SQRT_HZ
     gyro_initial_bias_std_rad_s: float = GYRO_INITIAL_BIAS_STD_RAD_S
     gyro_bias_diffusion_rad_s_sqrt_s: float = GYRO_BIAS_DIFFUSION_RAD_S_SQRT_S
     g0_m_s2: float = G0_M_S2
 
     def __post_init__(self) -> None:
-        if self.profile_id != IMU_PROFILE_ID:
-            raise ShakeBenchSensorError(f"profile_id must be {IMU_PROFILE_ID!r}")
         for name in ("sample_rate_hz", "policy_rate_hz", "cutoff_3db_hz", "enbw_hz", "g0_m_s2"):
             value = float(getattr(self, name))
             if not np.isfinite(value) or value <= 0.0:
                 raise ShakeBenchSensorError(f"{name} must be finite and positive")
-        if self.sample_rate_hz != IMU_SAMPLE_RATE_HZ or self.policy_rate_hz != IMU_POLICY_RATE_HZ:
-            raise ShakeBenchSensorError("the canonical IMU rates are fixed at 200 Hz and 20 Hz")
-        if int(self.window_samples) != IMU_WINDOW_SAMPLES:
-            raise ShakeBenchSensorError("the canonical IMU policy window is fixed at 10 samples")
-        if int(self.delivery_delay_samples) != IMU_DELIVERY_DELAY_SAMPLES:
-            raise ShakeBenchSensorError("the canonical IMU delivery delay is fixed at one sample")
-        if int(self.filter_order) != BUTTERWORTH_ORDER:
-            raise ShakeBenchSensorError("the canonical IMU filter order is fixed at two")
         try:
             filter_b = tuple(float(value) for value in self.filter_b)
             filter_a = tuple(float(value) for value in self.filter_a)
@@ -261,8 +217,6 @@ class CanonicalIMUProfile:
             if not np.isfinite(value) or (value <= 0.0 if "range" in name else value < 0.0):
                 requirement = "positive" if "range" in name else "non-negative"
                 raise ShakeBenchSensorError(f"{name} must be finite and {requirement}")
-        if int(self.accel_bits) != IMU_BITS or int(self.gyro_bits) != IMU_BITS:
-            raise ShakeBenchSensorError("the canonical accelerometer and gyro are fixed at 16 bit")
 
     @property
     def dt_s(self) -> float:
@@ -270,31 +224,15 @@ class CanonicalIMUProfile:
 
     @property
     def window_shape(self) -> tuple[int, int]:
-        return self.window_samples, len(IMU_CHANNELS)
+        return IMU_WINDOW_SHAPE
 
     @property
     def accel_quantization_step_m_s2(self) -> float:
-        return 2.0 * self.accel_range_m_s2 / (2**self.accel_bits)
+        return 2.0 * self.accel_range_m_s2 / (2**IMU_BITS)
 
     @property
     def gyro_quantization_step_rad_s(self) -> float:
-        return 2.0 * self.gyro_range_rad_s / (2**self.gyro_bits)
-
-    @property
-    def accel_code_min(self) -> int:
-        return -(2 ** (self.accel_bits - 1))
-
-    @property
-    def accel_code_max(self) -> int:
-        return 2 ** (self.accel_bits - 1) - 1
-
-    @property
-    def gyro_code_min(self) -> int:
-        return -(2 ** (self.gyro_bits - 1))
-
-    @property
-    def gyro_code_max(self) -> int:
-        return 2 ** (self.gyro_bits - 1) - 1
+        return 2.0 * self.gyro_range_rad_s / (2**IMU_BITS)
 
     @property
     def quantization_steps(self) -> np.ndarray:
@@ -348,7 +286,7 @@ class CanonicalIMUProfile:
             },
             "lowpass": {
                 "type": "butterworth",
-                "order": self.filter_order,
+                "order": BUTTERWORTH_ORDER,
                 "cutoff_3db_hz": self.cutoff_3db_hz,
                 "enbw_hz": self.enbw_hz,
                 "b": list(self.filter_b),
@@ -356,9 +294,9 @@ class CanonicalIMUProfile:
             },
             "accelerometer": {
                 "range_m_s2": self.accel_range_m_s2,
-                "bits": self.accel_bits,
-                "code_min": self.accel_code_min,
-                "code_max": self.accel_code_max,
+                "bits": IMU_BITS,
+                "code_min": IMU_CODE_MIN,
+                "code_max": IMU_CODE_MAX,
                 "lsb_m_s2": self.accel_quantization_step_m_s2,
                 "noise_density_m_s2_sqrt_hz": self.accel_noise_density_m_s2_sqrt_hz,
                 "initial_residual_bias_std_m_s2": self.accel_initial_bias_std_m_s2,
@@ -366,9 +304,9 @@ class CanonicalIMUProfile:
             },
             "gyroscope": {
                 "range_rad_s": self.gyro_range_rad_s,
-                "bits": self.gyro_bits,
-                "code_min": self.gyro_code_min,
-                "code_max": self.gyro_code_max,
+                "bits": IMU_BITS,
+                "code_min": IMU_CODE_MIN,
+                "code_max": IMU_CODE_MAX,
                 "lsb_rad_s": self.gyro_quantization_step_rad_s,
                 "noise_density_rad_s_sqrt_hz": self.gyro_noise_density_rad_s_sqrt_hz,
                 "initial_residual_bias_std_rad_s": self.gyro_initial_bias_std_rad_s,
@@ -455,42 +393,23 @@ class ButterworthLowpass:
             raise ShakeBenchSensorError(f"filter input must have shape (n, {self.channels})")
         return np.asarray([self.step(value) for value in samples], dtype=float)
 
-    filter_samples = filter
-
     def state(self) -> np.ndarray:
         result = np.concatenate((self.x1, self.x2, self.y1, self.y2))
         result.setflags(write=False)
         return result
 
-    def frequency_response(self, frequency_hz: Any, sample_rate_hz: float = IMU_SAMPLE_RATE_HZ) -> np.ndarray:
+    def frequency_response(self, frequency_hz: Any) -> np.ndarray:
         frequencies = np.asarray(frequency_hz, dtype=float)
         if (
             not np.all(np.isfinite(frequencies))
             or np.any(frequencies < 0.0)
-            or np.any(frequencies > sample_rate_hz / 2.0)
+            or np.any(frequencies > IMU_SAMPLE_RATE_HZ / 2.0)
         ):
             raise ShakeBenchSensorError("frequency_hz must lie in the finite Nyquist interval")
-        z_inverse = np.exp(-2j * pi * frequencies / sample_rate_hz)
+        z_inverse = np.exp(-2j * pi * frequencies / IMU_SAMPLE_RATE_HZ)
         numerator = self.b[0] + self.b[1] * z_inverse + self.b[2] * z_inverse**2
         denominator = self.a[0] + self.a[1] * z_inverse + self.a[2] * z_inverse**2
         return numerator / denominator
-
-    def enbw_hz(self, sample_rate_hz: float = IMU_SAMPLE_RATE_HZ, points: int = 200001) -> float:
-        if sample_rate_hz != IMU_SAMPLE_RATE_HZ and (not np.isfinite(sample_rate_hz) or sample_rate_hz <= 0.0):
-            raise ShakeBenchSensorError("sample_rate_hz must be finite and positive")
-        if (
-            sample_rate_hz == IMU_SAMPLE_RATE_HZ
-            and np.allclose(self.b, BUTTERWORTH_B)
-            and np.allclose(self.a, BUTTERWORTH_A)
-        ):
-            return BUTTERWORTH_ENBW_HZ
-        frequencies = np.linspace(0.0, sample_rate_hz / 2.0, int(points))
-        response = self.frequency_response(frequencies, sample_rate_hz=sample_rate_hz)
-        dc = abs(response[0])
-        return float(np.trapz(np.abs(response / dc) ** 2, frequencies))
-
-    response = frequency_response
-    equivalent_noise_bandwidth_hz = enbw_hz
 
 
 @dataclass(frozen=True)
@@ -498,7 +417,6 @@ class IMUSample:
     """One acquisition plus its privileged signal decomposition."""
 
     acquisition_time_s: float
-    delivery_time_s: float
     delivered_acquisition_time_s: float
     clean_measurement: np.ndarray
     bias: np.ndarray
@@ -535,7 +453,7 @@ class IMUSample:
         if not np.all(np.isfinite(raw_codes)) or not np.all(raw_codes == np.rint(raw_codes)):
             raise ShakeBenchSensorError("quantized_codes must be integral")
         codes = np.asarray(raw_codes, dtype=np.int64)
-        if np.any(codes < -(2 ** (IMU_BITS - 1))) or np.any(codes > 2 ** (IMU_BITS - 1) - 1):
+        if np.any(codes < IMU_CODE_MIN) or np.any(codes > IMU_CODE_MAX):
             raise ShakeBenchSensorError("quantized_codes must fit signed 16-bit range")
         codes = np.array(codes, dtype=np.int16, copy=True)
         codes.setflags(write=False)
@@ -558,42 +476,15 @@ class IMUSample:
         saturation = np.array(saturation, copy=True)
         saturation.setflags(write=False)
         object.__setattr__(self, "quantizer_saturation", saturation)
-        for name in ("acquisition_time_s", "delivery_time_s", "delivered_acquisition_time_s"):
+        for name in ("acquisition_time_s", "delivered_acquisition_time_s"):
             value = float(getattr(self, name))
             if not np.isfinite(value):
                 raise ShakeBenchSensorError(f"{name} must be finite")
             object.__setattr__(self, name, value)
 
-    @property
-    def measurement(self) -> np.ndarray:
-        """The value delivered by the one-sample queue."""
-
-        return self.delivered_measurement
-
-    @property
-    def clipping_flags(self) -> np.ndarray:
-        return self.clipping.copy()
-
-    @property
-    def quantizer_saturation_flags(self) -> np.ndarray:
-        return self.quantizer_saturation.copy()
-
-    @property
-    def quantized(self) -> np.ndarray:
-        return self.quantized_measurement.copy()
-
-    @property
-    def clean(self) -> np.ndarray:
-        return self.clean_measurement.copy()
-
-    @property
-    def noise(self) -> np.ndarray:
-        return self.white_noise.copy()
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "acquisition_time_s": self.acquisition_time_s,
-            "delivery_time_s": self.delivery_time_s,
             "delivered_acquisition_time_s": self.delivered_acquisition_time_s,
             "clean_measurement": self.clean_measurement.copy(),
             "bias": self.bias.copy(),
@@ -624,13 +515,6 @@ class _DeliveryItem:
         value.setflags(write=False)
         object.__setattr__(self, "acquisition_time_s", timestamp)
         object.__setattr__(self, "measurement", value)
-
-
-class _TraceView(dict):
-    """Mapping that also supports the historical ``trace()`` spelling."""
-
-    def __call__(self):
-        return self
 
 
 def _raw_model_data(sim: Any, data: Any = None) -> tuple[Any, Any]:
@@ -764,10 +648,6 @@ class CanonicalIMU:
         return self.mode == "canonical_noisy_v1"
 
     @property
-    def acquisition_rate_hz(self) -> float:
-        return self.profile.sample_rate_hz
-
-    @property
     def sample_rate_hz(self) -> float:
         return self.profile.sample_rate_hz
 
@@ -827,8 +707,8 @@ class CanonicalIMU:
         if self.is_noisy:
             prefill_signal = np.clip(prefill_signal, -self.profile.ranges, self.profile.ranges)
             prefill_codes = np.rint(prefill_signal / self.profile.quantization_steps).astype(np.int64)
-            prefill_codes[:3] = np.clip(prefill_codes[:3], self.profile.accel_code_min, self.profile.accel_code_max)
-            prefill_codes[3:] = np.clip(prefill_codes[3:], self.profile.gyro_code_min, self.profile.gyro_code_max)
+            prefill_codes[:3] = np.clip(prefill_codes[:3], IMU_CODE_MIN, IMU_CODE_MAX)
+            prefill_codes[3:] = np.clip(prefill_codes[3:], IMU_CODE_MIN, IMU_CODE_MAX)
             prefill_signal = prefill_codes * self.profile.quantization_steps
         self._window.clear()
         self._delivery_queue.clear()
@@ -867,10 +747,10 @@ class CanonicalIMU:
         steps = self.profile.quantization_steps
         codes = np.rint(clipped / steps).astype(np.int64)
         quantizer_saturation = np.zeros(6, dtype=bool)
-        quantizer_saturation[:3] = (codes[:3] < self.profile.accel_code_min) | (codes[:3] > self.profile.accel_code_max)
-        quantizer_saturation[3:] = (codes[3:] < self.profile.gyro_code_min) | (codes[3:] > self.profile.gyro_code_max)
-        codes[:3] = np.clip(codes[:3], self.profile.accel_code_min, self.profile.accel_code_max)
-        codes[3:] = np.clip(codes[3:], self.profile.gyro_code_min, self.profile.gyro_code_max)
+        quantizer_saturation[:3] = (codes[:3] < IMU_CODE_MIN) | (codes[:3] > IMU_CODE_MAX)
+        quantizer_saturation[3:] = (codes[3:] < IMU_CODE_MIN) | (codes[3:] > IMU_CODE_MAX)
+        codes[:3] = np.clip(codes[:3], IMU_CODE_MIN, IMU_CODE_MAX)
+        codes[3:] = np.clip(codes[3:], IMU_CODE_MIN, IMU_CODE_MAX)
         quantized = codes * steps
         return clipped, codes.astype(np.int16), quantized, clipping, quantizer_saturation
 
@@ -924,7 +804,6 @@ class CanonicalIMU:
         self._window.append(_DeliveryItem(delivered_item.acquisition_time_s, delivered_item.measurement.copy()))
         sample = IMUSample(
             acquisition_time_s=timestamp,
-            delivery_time_s=timestamp,
             delivered_acquisition_time_s=delivered_item.acquisition_time_s,
             clean_measurement=clean,
             bias=bias,
@@ -964,15 +843,10 @@ class CanonicalIMU:
         self._last_kinematics = kinematics
         return self.acquire(clean, timestamp_s=timestamp_s)
 
-    sample = acquire
-    process = acquire
-
     def window(self) -> np.ndarray:
         if len(self._window) != self.profile.window_samples:
             raise ShakeBenchSensorError("IMU window is not initialized")
         return np.asarray([item.measurement for item in self._window], dtype=np.float32)
-
-    get_window = window
 
     @property
     def acquisition_timestamps_s(self) -> np.ndarray:
@@ -1013,14 +887,11 @@ class CanonicalIMU:
             "delivered_measurement",
             "filter_state",
         )
-        timestamps = {
+        result = {
             "acquisition_time_s": self.acquisition_timestamps_s,
-            "delivery_time_s": np.asarray([sample.delivery_time_s for sample in self._records], dtype=float),
+            "acquisition_timestamps_s": self.acquisition_timestamps_s.copy(),
             "delivered_acquisition_time_s": self.delivered_acquisition_timestamps_s,
         }
-        timestamps["acquisition_timestamps_s"] = timestamps["acquisition_time_s"].copy()
-        timestamps["delivery_timestamps_s"] = timestamps["delivery_time_s"].copy()
-        result = dict(timestamps)
         for field in fields:
             if field in {"clipping", "quantizer_saturation"}:
                 value = np.asarray([getattr(sample, field) for sample in self._records], dtype=bool)
@@ -1033,10 +904,7 @@ class CanonicalIMU:
             result[field] = value
         for value in result.values():
             value.setflags(write=False)
-        return _TraceView(result)
-
-    def get_trace(self) -> dict[str, np.ndarray]:
-        return self.trace
+        return result
 
     def to_policy_observation(self) -> dict[str, np.ndarray]:
         return {
@@ -1044,11 +912,6 @@ class CanonicalIMU:
             "table_imu_dt_s": np.asarray(self.profile.dt_s, dtype=np.float32),
             "table_imu_timestamps_s": np.asarray(self.window_acquisition_timestamps_s, dtype=np.float64),
         }
-
-
-CanonicalIMUSensor = CanonicalIMU
-IMUSensor = CanonicalIMU
-ButterworthFilter = ButterworthLowpass
 
 
 __all__ = [
@@ -1060,12 +923,11 @@ __all__ = [
     "BUTTERWORTH_B",
     "BUTTERWORTH_CUTOFF_HZ",
     "BUTTERWORTH_ENBW_HZ",
-    "CanonicalIMUSensor",
-    "CanonicalIMU",
-    "CanonicalIMUProfile",
+    "ButterworthLowpass",
     "CANONICAL_IMU_PROFILE",
     "CANONICAL_IMU_PROFILE_HASH",
-    "IMUSensor",
+    "CanonicalIMU",
+    "CanonicalIMUProfile",
     "G0_M_S2",
     "GRAVITY_WORLD_M_S2",
     "GYRO_BIAS_DIFFUSION_RAD_S_SQRT_S",
@@ -1073,27 +935,12 @@ __all__ = [
     "GYRO_NOISE_DENSITY_RAD_S_SQRT_HZ",
     "GYRO_RANGE_RAD_S",
     "IMU_CHANNELS",
-    "IMU_DELIVERY_DELAY_SAMPLES",
-    "IMU_DT_S",
-    "IMU_POLICY_RATE_HZ",
-    "IMU_PROFILE_ID",
-    "IMU_SAMPLE_RATE_HZ",
     "IMU_WINDOW_SAMPLES",
-    "IMU_WINDOW_SHAPE",
     "IMUSample",
-    "ButterworthLowpass",
-    "ButterworthFilter",
     "ShakeBenchSensorError",
-    "clean_imu_measurement_from_sim",
     "canonical_imu_profile_hash",
-    "compute_gyro_measurement",
-    "compute_imu_measurement",
-    "compute_specific_force",
+    "clean_imu_measurement_from_sim",
     "gyro_from_rigid_body_motion",
-    "imu_measurement_from_rigid_body_motion",
     "rigid_body_point_acceleration",
-    "rigid_point_acceleration",
-    "specific_force",
     "specific_force_from_rigid_body_motion",
-    "spatial_angular_velocity",
 ]
