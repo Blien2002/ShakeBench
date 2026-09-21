@@ -797,9 +797,11 @@ class VibrationPickPlace(ManipulationEnv):
         self.reset_settle_duration_s = 0.0
         if not self.deterministic_reset:
             if self._randomize_apple_orientation:
-                from shakebench.utils.tasks import apple_pose_support, uniform_rotation_wxyz
+                from shakebench.utils.tasks import apple_pose_support, sample_apple_stable_quat_wxyz
 
-                self.object_start_quat_wxyz = uniform_rotation_wxyz(self.rng.random(3))
+                self.object_start_quat_wxyz = sample_apple_stable_quat_wxyz(
+                    self.rng.random(), self.rng.uniform(0.0, 2.0 * np.pi)
+                )
                 self.can_start_pose_envelope = apple_pose_support(self.object_start_quat_wxyz)
                 self.can_placement_z_offset_m = -self.can_start_pose_envelope[0]
                 self.placement_initializer.z_offset = self.can_placement_z_offset_m

@@ -25,7 +25,7 @@ def main(argv=None):
         "--objects",
         default=None,
         help=(
-            "Comma-separated registry object ids to sample; apples use uniform 3D orientations, "
+            "Comma-separated registry object ids to sample; apples sample stable rest poses plus yaw, "
             "other objects use registered poses, and mugs include upright and lying double-wall poses"
         ),
     )

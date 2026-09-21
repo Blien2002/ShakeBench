@@ -9,8 +9,8 @@ Every train state randomizes four independent channels: the object's planar
 position, its start pose (one registered rest pose, including the can's and the
 mug's lying poses), the world-frame yaw of that pose, and the excitation/IMU
 seeds.  The yaw carries an asymmetric object's facing direction, such as the
-mug's cup body, into the state. Apples instead sample Haar-uniform SO(3)
-rotations, with the start height measured from the oriented collision mesh.
+mug's cup body, into the state. Apples sample qualified stable rest poses
+plus yaw, with the start height measured from the oriented collision mesh.
 """
 
 from __future__ import annotations
@@ -26,16 +26,17 @@ from typing import Any
 from shakebench.utils.dev_states import CAN_NOMINAL_XY_M
 from shakebench.utils.state_schema import normalize_state
 from shakebench.utils.tasks import (
+    APPLE_STABLE_QUATS_WXYZ,
     OBJECTS,
     TaskSpec,
     apple_pose_support,
     compose_yaw_wxyz,
     registered_rest_pose,
-    uniform_rotation_wxyz,
+    sample_apple_stable_quat_wxyz,
 )
 
 TRAIN_STATE_SCHEMA = "shakebench.train_states"
-TRAIN_STATE_SCHEMA_VERSION = 4
+TRAIN_STATE_SCHEMA_VERSION = 5
 # Own namespace: sharing the Phase 07 dev namespace made generate_train_states
 # reproduce the frozen dev execution states word for word.
 TRAIN_STATE_GENERATOR_ID = "shakebench.sha256_uniform.train.v1"
@@ -205,8 +206,9 @@ def generate_train_states(
     """Return ``count`` deterministic train states around the can nominal spot.
 
     Position, orientation and the two seed channels are independent. Apples
-    sample SO(3); other objects sample yaw about a registered rest pose. With ``per_variant`` set, the
-    pool is filled one rest pose at a time instead of sampled at random, so a
+    sample qualified stable tilts plus yaw; other objects keep a registered rest
+    pose plus yaw. With ``per_variant`` set, the pool is filled one rest pose
+    at a time instead of sampled at random, so a
     collection can spend an exact episode budget on every object pose and grip.
     """
 
@@ -223,14 +225,14 @@ def generate_train_states(
         registered, lower_support = registered_rest_pose(spec, region)
         quat = compose_yaw_wxyz(registered, yaw)
         if spec.object_id == "apple":
-            quat = uniform_rotation_wxyz(_uniform_word(seed, index, f"apple_rotation_{axis}") for axis in range(3))
+            quat = sample_apple_stable_quat_wxyz(_uniform_word(seed, index, "apple_stable_pose"), yaw)
             lower_support = apple_pose_support(quat)[0]
         x = CAN_NOMINAL_XY_M[0] + (2.0 * _uniform_word(seed, index, "can_x") - 1.0) * half_range
         y = CAN_NOMINAL_XY_M[1] + (2.0 * _uniform_word(seed, index, "can_y") - 1.0) * half_range
         excitation_seed = _integer_word(seed, index, "excitation_seed")
         states.append(
             {
-                "state_id": f"shakebench-train-v1-s{seed}-r{half_range:g}-{index:04d}",
+                "state_id": f"shakebench-train-v2-s{seed}-r{half_range:g}-{index:04d}",
                 "split": "train",
                 "task": spec.to_dict(),
                 "grasp_region": region,
@@ -277,7 +279,7 @@ def build_train_state_artifact(
             "variants": [
                 {"object_id": spec.object_id, "grasp_region": region} for spec, region in pool
             ],
-            "apple_orientation_distribution": "haar_uniform_so3",
+            "apple_orientation_distribution": "uniform_stable_poses_plus_yaw_v1",
             "yaw_distribution": {
                 "channel": "object_yaw",
                 "distribution": "independent_uniform",
@@ -323,7 +325,7 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
         return all(math.isfinite(value) for value in offsets) and max(offsets) <= half_range + 1e-12
 
     def orientation_ok(row: Mapping[str, Any]) -> bool:
-        """Validate SO(3) apple poses and registered rest poses plus yaw otherwise."""
+        """Validate qualified rest poses plus the declared yaw."""
 
         try:
             spec = TaskSpec.from_mapping(row["task"])
@@ -344,6 +346,11 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
         registered = compose_yaw_wxyz(registered, yaw)
         if spec.object_id == "apple":
             lower_support = apple_pose_support(quat)[0]
+            if not any(
+                max(abs(actual - expected) for actual, expected in zip(quat, compose_yaw_wxyz(rest, yaw))) <= 1e-6
+                for rest in APPLE_STABLE_QUATS_WXYZ
+            ):
+                return False
             registered = quat
         return bool(
             max(abs(quat[axis] - registered[axis]) for axis in range(4)) <= 1e-6

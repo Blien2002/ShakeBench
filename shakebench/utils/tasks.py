@@ -382,18 +382,26 @@ def compose_yaw_wxyz(quat_wxyz, yaw_rad: float) -> tuple[float, float, float, fl
     )
 
 
-def uniform_rotation_wxyz(uniforms) -> tuple[float, float, float, float]:
-    """Map three independent U[0, 1) draws to a Haar-uniform SO(3) rotation."""
-    u, v, t = (float(value) for value in uniforms)
-    if not all(math.isfinite(value) and 0.0 <= value < 1.0 for value in (u, v, t)):
-        raise ValueError("rotation samples must lie in [0, 1)")
-    a, b = math.sqrt(1.0 - u), math.sqrt(u)
-    return (
-        b * math.cos(2 * math.pi * t),
-        a * math.sin(2 * math.pi * v),
-        a * math.cos(2 * math.pi * v),
-        b * math.sin(2 * math.pi * t),
-    )
+# Offline rest poses of the production apple mesh and collision-only inertia.
+# Qualified on the official metal contact pair: after re-placement, each pose
+# drifts <0.1 mm / 0.2 degrees over 3 s at eight evenly spaced world yaws.
+# Keep multiple stable tilts, including the stem-down basin; never sample a
+# fresh SO(3) orientation and depend on episode reset to roll it into place.
+APPLE_STABLE_QUATS_WXYZ = (
+    (-0.17702213004496917, 0.45213973885052333, -0.2938405914118793, 0.8233410768723005),
+    (0.9820839139298186, -0.02731141201894409, 0.04227366347463376, 0.18159903675475136),
+    (0.5442408630278318, 0.41824585870020337, 0.03934576191962827, -0.7261709135663685),
+    (0.07861162638718781, -0.9682437528999437, 0.08440907402060521, 0.22180927706022183),
+    (0.5989989149935111, 0.07142618520237173, 0.49680896428870724, 0.6239226337507041),
+)
+
+
+def sample_apple_stable_quat_wxyz(pose_uniform: float, yaw_rad: float) -> tuple[float, float, float, float]:
+    """Choose a qualified rest pose uniformly, then rotate about the table normal."""
+    if not math.isfinite(pose_uniform) or not 0.0 <= pose_uniform < 1.0:
+        raise ValueError("stable pose sample must lie in [0, 1)")
+    pose = APPLE_STABLE_QUATS_WXYZ[int(pose_uniform * len(APPLE_STABLE_QUATS_WXYZ))]
+    return compose_yaw_wxyz(pose, yaw_rad)
 
 
 @lru_cache(maxsize=1)
