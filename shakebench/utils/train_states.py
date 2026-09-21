@@ -9,7 +9,8 @@ Every train state randomizes four independent channels: the object's planar
 position, its start pose (one registered rest pose, including the can's and the
 mug's lying poses), the world-frame yaw of that pose, and the excitation/IMU
 seeds.  The yaw carries an asymmetric object's facing direction, such as the
-mug's cup body, into the state.
+mug's cup body, into the state. Apples instead sample Haar-uniform SO(3)
+rotations, with the start height measured from the oriented collision mesh.
 """
 
 from __future__ import annotations
@@ -24,10 +25,17 @@ from typing import Any
 
 from shakebench.utils.dev_states import CAN_NOMINAL_XY_M
 from shakebench.utils.state_schema import normalize_state
-from shakebench.utils.tasks import OBJECTS, TaskSpec, compose_yaw_wxyz, registered_rest_pose
+from shakebench.utils.tasks import (
+    OBJECTS,
+    TaskSpec,
+    apple_pose_support,
+    compose_yaw_wxyz,
+    registered_rest_pose,
+    uniform_rotation_wxyz,
+)
 
 TRAIN_STATE_SCHEMA = "shakebench.train_states"
-TRAIN_STATE_SCHEMA_VERSION = 3
+TRAIN_STATE_SCHEMA_VERSION = 4
 # Own namespace: sharing the Phase 07 dev namespace made generate_train_states
 # reproduce the frozen dev execution states word for word.
 TRAIN_STATE_GENERATOR_ID = "shakebench.sha256_uniform.train.v1"
@@ -63,7 +71,7 @@ def execution_state_fingerprint(state: Mapping[str, Any]) -> str:
     """Execution identity of one state, independent of its chosen ID and split.
 
     The comparison covers the inputs that decide an episode: the object start
-    position, task spec and start yaw, the excitation and IMU seeds, and the
+    position, task spec and orientation, the excitation and IMU seeds, and the
     time offset.  The worktable pose and the initial velocity are derived from
     those by every state producer and are omitted entirely by the frozen dev
     asset, so they are not part of the identity.
@@ -83,6 +91,15 @@ def execution_state_fingerprint(state: Mapping[str, Any]) -> str:
         }
     except (TypeError, ValueError):
         raise TrainStateError("state must carry numeric object_xy_m, seeds and t0_s") from None
+    if isinstance(normalized.get("task"), Mapping) and normalized["task"].get("object_id") == "apple":
+        quat = normalized.get("object_start_quat_wxyz")
+        if quat is None:
+            registered, _ = registered_rest_pose(TaskSpec(object_id="apple"))
+            quat = compose_yaw_wxyz(registered, payload["object_yaw_rad"])
+        # q and -q encode the same rotation; the legacy yaw is redundant here.
+        sign = -1.0 if next((value for value in quat if value != 0), 1.0) < 0 else 1.0
+        payload["object_start_quat_wxyz"] = [sign * float(value) if value else 0.0 for value in quat]
+        payload.pop("object_yaw_rad")
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str)
 
 
@@ -187,8 +204,8 @@ def generate_train_states(
 ) -> list[dict[str, Any]]:
     """Return ``count`` deterministic train states around the can nominal spot.
 
-    Position, rest pose, yaw and the two seed channels are independent; every
-    other field stays a fixed contract value.  With ``per_variant`` set, the
+    Position, orientation and the two seed channels are independent. Apples
+    sample SO(3); other objects sample yaw about a registered rest pose. With ``per_variant`` set, the
     pool is filled one rest pose at a time instead of sampled at random, so a
     collection can spend an exact episode budget on every object pose and grip.
     """
@@ -205,12 +222,15 @@ def generate_train_states(
         yaw = 2.0 * math.pi * _uniform_word(seed, index, "object_yaw")
         registered, lower_support = registered_rest_pose(spec, region)
         quat = compose_yaw_wxyz(registered, yaw)
+        if spec.object_id == "apple":
+            quat = uniform_rotation_wxyz(_uniform_word(seed, index, f"apple_rotation_{axis}") for axis in range(3))
+            lower_support = apple_pose_support(quat)[0]
         x = CAN_NOMINAL_XY_M[0] + (2.0 * _uniform_word(seed, index, "can_x") - 1.0) * half_range
         y = CAN_NOMINAL_XY_M[1] + (2.0 * _uniform_word(seed, index, "can_y") - 1.0) * half_range
         excitation_seed = _integer_word(seed, index, "excitation_seed")
         states.append(
             {
-                "state_id": f"shakebench-train-v0-s{seed}-r{half_range:g}-{index:04d}",
+                "state_id": f"shakebench-train-v1-s{seed}-r{half_range:g}-{index:04d}",
                 "split": "train",
                 "task": spec.to_dict(),
                 "grasp_region": region,
@@ -257,6 +277,7 @@ def build_train_state_artifact(
             "variants": [
                 {"object_id": spec.object_id, "grasp_region": region} for spec, region in pool
             ],
+            "apple_orientation_distribution": "haar_uniform_so3",
             "yaw_distribution": {
                 "channel": "object_yaw",
                 "distribution": "independent_uniform",
@@ -302,7 +323,7 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
         return all(math.isfinite(value) for value in offsets) and max(offsets) <= half_range + 1e-12
 
     def orientation_ok(row: Mapping[str, Any]) -> bool:
-        """The declared pose must be one registered rest pose plus one yaw."""
+        """Validate SO(3) apple poses and registered rest poses plus yaw otherwise."""
 
         try:
             spec = TaskSpec.from_mapping(row["task"])
@@ -321,6 +342,9 @@ def verify_train_state_artifact(payload_or_path: Mapping[str, Any] | str | Path)
             return False
         registered, lower_support = registered_rest_pose(spec, region)
         registered = compose_yaw_wxyz(registered, yaw)
+        if spec.object_id == "apple":
+            lower_support = apple_pose_support(quat)[0]
+            registered = quat
         return bool(
             max(abs(quat[axis] - registered[axis]) for axis in range(4)) <= 1e-6
             and max(abs(pose[3 + axis] - quat[axis]) for axis in range(4)) <= 1e-6

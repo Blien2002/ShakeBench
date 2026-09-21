@@ -25,8 +25,8 @@ def main(argv=None):
         "--objects",
         default=None,
         help=(
-            "Comma-separated registry object ids to sample; every object contributes its registered body "
-            "pose, and the mug contributes both its upright and its lying double-wall pose"
+            "Comma-separated registry object ids to sample; apples use uniform 3D orientations, "
+            "other objects use registered poses, and mugs include upright and lying double-wall poses"
         ),
     )
     parser.add_argument(

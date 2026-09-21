@@ -237,6 +237,9 @@ class VibrationPickPlace(ManipulationEnv):
         self.table_offset = _finite_vector("table_offset", table_offset, 3)
         self.target_container_friction = _finite_vector("target_container_friction", target_container_friction, 3)
         self.object_start_xy = _finite_vector("object_start_xy", object_start_xy, 2)
+        self._randomize_apple_orientation = (
+            self.task_spec is not None and self.task_spec.object_id == "apple" and object_start_quat_wxyz is None
+        )
         requested_quat = (
             self.task_spec.grasp_plan(self.grasp_region).get("start_quat_wxyz", self.task_spec.start_quat_wxyz)
             if object_start_quat_wxyz is None and self.task_spec is not None
@@ -478,7 +481,9 @@ class VibrationPickPlace(ManipulationEnv):
             expected_posed = self.task_spec.grasp_plan(self.grasp_region).get(
                 "start_pose_support", OBJECTS[self.task_spec.object_id]["start_pose_support"]
             )
-            if not np.allclose(self.can_start_pose_envelope, expected_posed, atol=1e-6, rtol=0):
+            if self.task_spec.object_id != "apple" and not np.allclose(
+                self.can_start_pose_envelope, expected_posed, atol=1e-6, rtol=0
+            ):
                 raise ShakeBenchMetricsError("task object start pose support differs from its state contract")
         inertia = equivalent_cylinder_inertia(
             self.object_mass_kg,
@@ -505,7 +510,7 @@ class VibrationPickPlace(ManipulationEnv):
                     "com_height_m", OBJECTS[self.task_spec.object_id]["com_height_m"]
                 )
             )
-            if abs(posed_com_height - expected_com_height) > 1e-4:
+            if self.task_spec.object_id != "apple" and abs(posed_com_height - expected_com_height) > 1e-4:
                 raise ShakeBenchMetricsError("task object centre of mass differs from its state contract")
         self.can_inertia = tuple(float(value) for value in inertia)
         can_body = self.can.get_obj()
@@ -791,6 +796,14 @@ class VibrationPickPlace(ManipulationEnv):
         super()._reset_internal()
         self.reset_settle_duration_s = 0.0
         if not self.deterministic_reset:
+            if self._randomize_apple_orientation:
+                from shakebench.utils.tasks import apple_pose_support, uniform_rotation_wxyz
+
+                self.object_start_quat_wxyz = uniform_rotation_wxyz(self.rng.random(3))
+                self.can_start_pose_envelope = apple_pose_support(self.object_start_quat_wxyz)
+                self.can_placement_z_offset_m = -self.can_start_pose_envelope[0]
+                self.placement_initializer.z_offset = self.can_placement_z_offset_m
+                self._policy_task_context_cache = None
             object_placements = self.placement_initializer.sample(on_top=False)
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(
@@ -1038,13 +1051,20 @@ class VibrationPickPlace(ManipulationEnv):
 
             grasp = self.task_spec.grasp_plan(self.grasp_region)
             task_grasp_opening_gate_m = float(grasp_opening_gate_m(self.task_spec, self.grasp_region))
-            # A state may only add one world-frame yaw to the registered rest
-            # pose; anything else was never qualified for this grasp plan.
+            # Asymmetric objects retain their registered rest pose plus yaw.
+            # Apples use a pose-aware centre grip for every orientation.
             registered_quat = grasp.get("start_quat_wxyz", self.task_spec.start_quat_wxyz)
-            object_pose_yaw_offset_rad = float(
-                relative_yaw_rad_wxyz(registered_quat, self.object_start_quat_wxyz)
-            )
-            grasp_offset_object = object_frame_grasp_offset(grasp, registered_quat)
+            if self.task_spec.object_id == "apple":
+                # Track the collision COM in all three dimensions as the fruit rotates.
+                grasp_offset_object = tuple(self.can_com)
+                rotation = np.empty(9)
+                mujoco.mju_quat2Mat(rotation, np.asarray(self.object_start_quat_wxyz))
+                grasp["pad_height_m"] = (
+                    float(rotation.reshape(3, 3).dot(self.can_com)[2]) - self.can_start_pose_envelope[0]
+                )
+            else:
+                object_pose_yaw_offset_rad = float(relative_yaw_rad_wxyz(registered_quat, self.object_start_quat_wxyz))
+                grasp_offset_object = object_frame_grasp_offset(grasp, registered_quat)
         robot_base_position = np.asarray(self.geometry_profile["robot_base_pos_m"], dtype=float) - np.asarray(
             self.robots[0].robot_model.bottom_offset, dtype=float
         )

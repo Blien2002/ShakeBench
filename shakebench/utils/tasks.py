@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from typing import Any, Protocol, runtime_checkable
 
 ROBOCASA_SOURCE_URL = "https://huggingface.co/datasets/robocasa/robocasa-assets"
@@ -381,6 +382,54 @@ def compose_yaw_wxyz(quat_wxyz, yaw_rad: float) -> tuple[float, float, float, fl
     )
 
 
+def uniform_rotation_wxyz(uniforms) -> tuple[float, float, float, float]:
+    """Map three independent U[0, 1) draws to a Haar-uniform SO(3) rotation."""
+    u, v, t = (float(value) for value in uniforms)
+    if not all(math.isfinite(value) and 0.0 <= value < 1.0 for value in (u, v, t)):
+        raise ValueError("rotation samples must lie in [0, 1)")
+    a, b = math.sqrt(1.0 - u), math.sqrt(u)
+    return (
+        b * math.cos(2 * math.pi * t),
+        a * math.sin(2 * math.pi * v),
+        a * math.cos(2 * math.pi * v),
+        b * math.sin(2 * math.pi * t),
+    )
+
+
+@lru_cache(maxsize=1)
+def _apple_collision_points():
+    """Compile the apple once to place arbitrary orientations above the table."""
+    import xml.etree.ElementTree as ET
+    from copy import deepcopy
+
+    import mujoco
+
+    from shakebench.utils.metrics import collision_support_points_in_frame
+
+    obj = make_task_object(TaskSpec(object_id="apple"))
+    root = ET.Element("mujoco")
+    root.append(deepcopy(obj.asset))
+    ET.SubElement(root, "worldbody").append(deepcopy(obj.get_obj()))
+    model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="unicode"))
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    return collision_support_points_in_frame(model, obj.root_body, obj.contact_geoms, obj.root_body, data=data)
+
+
+def apple_pose_support(quat_wxyz) -> tuple[float, float, float]:
+    """Return the actual apple mesh envelope for an arbitrary unit quaternion."""
+    import mujoco
+    import numpy as np
+
+    quat = np.asarray(quat_wxyz, dtype=float)
+    if quat.shape != (4,) or not np.all(np.isfinite(quat)) or not np.isclose(np.linalg.norm(quat), 1.0):
+        raise ValueError("apple orientation must be a finite unit quaternion")
+    rotation = np.empty(9)
+    mujoco.mju_quat2Mat(rotation, quat)
+    points = _apple_collision_points().dot(rotation.reshape(3, 3).T)
+    return (float(points[:, 2].min()), float(points[:, 2].max()), float(np.linalg.norm(points[:, :2], axis=1).max()))
+
+
 def relative_yaw_rad_wxyz(registered_wxyz, posed_wxyz) -> float:
     """Return the world-frame yaw of ``posed_wxyz`` relative to ``registered_wxyz``.
 
@@ -479,16 +528,17 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
     region = state.get("grasp_region", "body")
     if not isinstance(region, str) or not region:
         raise ValueError("grasp_region must be a non-empty string")
-    # The registered rest pose of the declared region plus one world-frame yaw
-    # is the only start pose a state may claim; everything else was never
-    # qualified for this grasp.
+    # Apples allow full SO(3); other objects retain their registered rest pose
+    # plus a world-frame yaw so their asymmetric grasp geometry stays valid.
     registered_quat = compose_yaw_wxyz(registered_rest_pose(spec, region)[0], yaw)
     expected_quat = np.asarray(state.get("object_start_quat_wxyz", registered_quat), dtype=float)
     pose = np.asarray(state.get("object_pose_worktable"), dtype=float)
     velocity = np.asarray(state.get("object_initial_velocity"), dtype=float)
     if (
         expected_quat.shape != (4,)
-        or not np.allclose(expected_quat, registered_quat, atol=1e-6, rtol=0)
+        or not np.all(np.isfinite(expected_quat))
+        or not np.isclose(np.linalg.norm(expected_quat), 1.0, atol=1e-6, rtol=0)
+        or (spec.object_id != "apple" and not np.allclose(expected_quat, registered_quat, atol=1e-6, rtol=0))
         or pose.shape != (7,)
         or not np.allclose(pose[:2], xy, atol=1e-12, rtol=0)
         or not np.allclose(pose[3:], expected_quat, atol=1e-6, rtol=0)
@@ -496,7 +546,11 @@ def task_env_kwargs(state: Mapping[str, Any]) -> dict:
         or velocity.shape != (6,)
         or np.any(velocity != 0)
     ):
-        raise ValueError("task states require their registered start pose, any declared yaw and zero velocity")
+        raise ValueError("task states require a supported unit start pose, consistent position and zero velocity")
+    if spec.object_id == "apple" and not np.isclose(
+        pose[2], 0.03 - apple_pose_support(expected_quat)[0], atol=1e-6, rtol=0
+    ):
+        raise ValueError("apple pose height must match its oriented collision support")
     kwargs = {"task": spec, "object_start_xy": tuple(xy), "object_start_quat_wxyz": tuple(expected_quat)}
     if "grasp_region" in state:
         kwargs["grasp_region"] = region
