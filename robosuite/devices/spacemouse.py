@@ -148,6 +148,8 @@ class SpaceMouse(Device):
         self._display_controls()
 
         self.single_click_and_hold = False
+        self._pressed_keys = set()
+        self._keyboard_grasp = False
 
         self._control = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self._reset_state = 0
@@ -212,10 +214,10 @@ class SpaceMouse(Device):
 
         print("")
         print_command("Control", "Command")
-        print_command("Right button", "reset simulation")
-        print_command("Left button (hold)", "close gripper")
-        print_command("Move mouse laterally", "move arm horizontally in x-y plane")
-        print_command("Move mouse vertically", "move arm vertically")
+        print_command("R / right button", "retry trajectory")
+        print_command("Space", "toggle gripper")
+        print_command("W/A/S/D", "move arm horizontally")
+        print_command("Q/E", "move arm down/up")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
         print_command("Control+C", "quit")
         print_command("b", "toggle arm/base mode (if applicable)")
@@ -239,6 +241,8 @@ class SpaceMouse(Device):
         self._control = np.zeros(6)
         # Reset grasp
         self.single_click_and_hold = False
+        self._pressed_keys = set()
+        self._keyboard_grasp = False
 
     def start_control(self):
         """
@@ -258,8 +262,18 @@ class SpaceMouse(Device):
         """
         if self._read_error is not None:
             raise OSError("SpaceMouse HID reader failed") from self._read_error
-        dpos = self.control[:3] * 0.005 * self.pos_sensitivity
-        dpos[:2] *= -1
+        dpos = (
+            np.array(
+                [
+                    ("d" in self._pressed_keys) - ("a" in self._pressed_keys),
+                    ("w" in self._pressed_keys) - ("s" in self._pressed_keys),
+                    ("e" in self._pressed_keys) - ("q" in self._pressed_keys),
+                ],
+                dtype=float,
+            )
+            * 0.005
+            * self.pos_sensitivity
+        )
         roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
 
         # convert RPY to an absolute orientation
@@ -340,7 +354,7 @@ class SpaceMouse(Device):
         Returns:
             float: Whether we're using single click and hold or not
         """
-        if self.single_click_and_hold:
+        if self.single_click_and_hold or self._keyboard_grasp:
             return 1.0
         return 0
 
@@ -350,7 +364,17 @@ class SpaceMouse(Device):
         Args:
             key (str): key that was pressed
         """
-        pass
+        name = getattr(key, "char", None)
+        name = "space" if name == " " else name
+        if name not in {"w", "a", "s", "d", "q", "e", "r", "space"}:
+            return
+        first_press = name not in self._pressed_keys
+        self._pressed_keys.add(name)
+        if name == "space" and first_press:
+            self._keyboard_grasp = not self._keyboard_grasp
+        elif name == "r" and first_press:
+            self._reset_state = 1
+            self._enabled = False
 
     def on_release(self, key):
         """
@@ -358,17 +382,8 @@ class SpaceMouse(Device):
         Args:
             key (str): key that was pressed
         """
-        try:
-            # controls for mobile base (only applicable if mobile base present)
-            if key.char == "b":
-                self.base_modes[self.active_robot] = not self.base_modes[self.active_robot]  # toggle mobile base
-            elif key.char == "s":
-                self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
-            elif key.char == "=":
-                self.active_robot = (self.active_robot + 1) % self.num_robots
-
-        except AttributeError as e:
-            pass
+        name = getattr(key, "char", None)
+        self._pressed_keys.discard("space" if name == " " else name)
 
     def _postprocess_device_outputs(self, dpos, drotation):
         drotation = drotation * 50

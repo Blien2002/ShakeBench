@@ -26,7 +26,7 @@ class SpaceMouseTeleop:
             self.window.title("ShakeBench: main | wrist - Enter: record, Esc: quit")
             tk.Label(
                 self.window,
-                text="Move cap: XYZ | Twist cap: rotate | Hold left: close gripper | Right: retry | Esc: quit",
+                text="WASD: move | Q/E: down/up | Space: grasp | R: retry | SpaceMouse: rotate | Esc: quit",
             ).pack()
             self.label = tk.Label(self.window)
             self.label.pack()
@@ -41,14 +41,14 @@ class SpaceMouseTeleop:
             self.window.bind("<Return>", lambda _: ready.set(True))
             self._show(reader.read(env._get_observations()))
             print(
-                "Press Enter to record. Move cap: XYZ; twist cap: rotate; hold left: close gripper; "
-                "right: retry; Esc: quit.",
+                "Press Enter to record. WASD: move; Q/E: down/up; Space: grasp; R: retry; "
+                "SpaceMouse: rotate; Esc: quit.",
                 flush=True,
             )
             self.window.wait_variable(ready)
             self._poll()
             self.device.start_control()
-            self.window.title("ShakeBench: RECORDING main | wrist - right button: retry, Esc: quit")
+            self.window.title("ShakeBench: RECORDING main | wrist - R: retry, Esc: quit")
         except BaseException:
             self.close()
             raise
