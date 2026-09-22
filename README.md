@@ -9,7 +9,7 @@
 
 环内/外半径从大到小为 30/55、27/50、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 160 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底板半径 200 mm、厚 12 mm；三个收纳槽深 4 mm，各比对应环外半径大 8 mm。中央无槽，蓝环的完整占地与各收纳槽之间至少留 10 mm。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
 
-参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。底板槽口具有真实碰撞深度，使用分块凸碰撞网格保留凹槽；视觉网格无质量、无碰撞。无新增依赖。
+参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。木杆使用 [ambientCG Wood 095](https://ambientcg.com/view?id=Wood095) 的 CC0 细木纹，并按圆台表面等比例展开；素材来源及校验值随贴图保存。底板槽口具有真实碰撞深度，使用分块凸碰撞网格保留凹槽；视觉网格无质量、无碰撞。无新增依赖。
 
 ```python
 import numpy as np

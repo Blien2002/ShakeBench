@@ -263,8 +263,8 @@ class RingOnPeg(ManipulationEnv):
         self.board_contact_names = add_ring_board(self.arena.asset, peg, slots, contact)
         shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
         # A convex frustum uses the same mesh for collision and appearance.
-        # Duplicate the seam positions: each side keeps its own u=0 or u=1.
-        angles = 2 * np.pi * (np.arange(65) % 64) / 64
+        # Duplicate the seam positions so the two edges have independent texture coordinates.
+        angles = 2 * np.pi * (np.arange(65) % 64) / 64 + np.pi
         vertices = [
             [radius * np.cos(a), radius * np.sin(a), z]
             for radius, z in ((PEG_RADIUS_M, 0), (PEG_TOP_RADIUS_M, shaft_height))
@@ -276,15 +276,38 @@ class RingOnPeg(ManipulationEnv):
             faces.extend([[i, j, j + 65], [i, j + 65, i + 65]])
         for i in range(1, 63):
             faces.extend([[0, i + 1, i], [65, 65 + i, 66 + i]])
+        # Develop the frustum into an annular sector: equal physical texture scale
+        # along and around the taper, rather than stretching a rectangular UV strip.
+        slant = np.hypot(shaft_height, PEG_RADIUS_M - PEG_TOP_RADIUS_M)
+        sector = np.linspace(-np.pi, np.pi, 65) * (PEG_RADIUS_M - PEG_TOP_RADIUS_M) / slant
+        radii = np.array([PEG_RADIUS_M, PEG_TOP_RADIUS_M]) * slant / (PEG_RADIUS_M - PEG_TOP_RADIUS_M)
+        # The source is 1024x512: a 160x80 mm patch keeps its texels square.
+        uv = [[(r * np.cos(a) - radii.mean()) / 0.16 + 0.5, r * np.sin(a) / 0.08 + 0.5] for r in radii for a in sector]
         ET.SubElement(
             self.arena.asset,
             "mesh",
             name="ring_peg_frustum",
             vertex=array_to_string(np.asarray(vertices).ravel()),
             face=array_to_string(np.asarray(faces).ravel()),
-            texcoord=array_to_string(
-                np.array([[i / 64, z / shaft_height] for z in (0, shaft_height) for i in range(65)]).ravel()
-            ),
+            texcoord=array_to_string(np.asarray(uv).ravel()),
+        )
+        ET.SubElement(
+            self.arena.asset,
+            "texture",
+            name="peg_fine_wood_texture",
+            type="2d",
+            file=xml_path_completion("textures/ambientcg_wood095_color_1k.png"),
+        )
+        ET.SubElement(
+            self.arena.asset,
+            "material",
+            name="peg_fine_wood",
+            texture="peg_fine_wood_texture",
+            texrepeat="1 1",
+            rgba="0.94 0.98 1 1",
+            emission="0.26",
+            specular="0.08",
+            shininess="0.12",
         )
         shapes = (
             ("shaft", {"type": "mesh", "mesh": "ring_peg_frustum"}),
@@ -303,7 +326,7 @@ class RingOnPeg(ManipulationEnv):
                     contype="0" if visual else "1",
                     conaffinity="0" if visual else "1",
                     mass="0",
-                    material="ring_wood",
+                    material="peg_fine_wood",
                 )
         self.rings = {
             name: make_ring(f"{name}_ring", **spec, half_height=RING_HALF_HEIGHT_M, segments=RING_SEGMENTS)
