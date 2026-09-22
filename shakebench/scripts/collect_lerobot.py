@@ -1,4 +1,4 @@
-"""Collect live gamma=0 oracle demonstrations in LeRobot v2.1 (embedded RGB PNGs)."""
+"""Collect gamma=0 oracle or SpaceMouse demonstrations in LeRobot v2.1 (embedded RGB PNGs)."""
 
 from __future__ import annotations
 
@@ -39,27 +39,52 @@ def dataset_features(height, width):
     }
 
 
-def collect_episode(dataset, state, *, horizon, width, height, main_camera="task_close"):
+def collect_episode(
+    dataset,
+    state,
+    *,
+    horizon,
+    width,
+    height,
+    main_camera="task_close",
+    device="oracle",
+    pos_sensitivity=1.0,
+    rot_sensitivity=1.0,
+):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
     profile = OracleControllerProfile()
     instruction = task_description(state)["instruction"]
     env, program = make_environment(state, gamma=0.0, horizon=horizon)
-    reader = None
+    reader = teleop = None
     try:
         if env.control_freq != dataset.fps or env.action_dim != 7:
-            raise ValueError("dataset must match the current 20 Hz, 7D oracle contract")
-        controller = ShakeBenchOracleController(
-            profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
+            raise ValueError("dataset must match the current 20 Hz, 7D OSC contract")
+        controller = (
+            ShakeBenchOracleController(
+                profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
+            )
+            if device == "oracle"
+            else None
         )
         reader = ShakeBenchCameraObservation(env, height=height, width=width, main_camera=main_camera)
+        if device == "spacemouse":
+            from shakebench.utils.teleop import SpaceMouseTeleop
+
+            teleop = SpaceMouseTeleop(env, reader, pos_sensitivity=pos_sensitivity, rot_sensitivity=rot_sensitivity)
         observation = env._get_observations()
         for step in range(horizon):
             sample = program.evaluate(step / dataset.fps)
             if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
                 raise ValueError("gamma=0 must command zero external excitation")
-            action = np.clip(controller.action(oracle_observation(env), time_s=step / dataset.fps), -1, 1)
-            if action.shape != (7,) or not np.isfinite(action).all():
-                raise ValueError("oracle produced an invalid action")
+            if teleop is not None:
+                action = teleop.action()
+                if action is None:
+                    dataset.clear_episode_buffer()
+                    return None
+            else:
+                action = np.clip(controller.action(oracle_observation(env), time_s=step / dataset.fps), -1, 1)
+            if action.shape != (7,) or not np.isfinite(action).all() or np.any(np.abs(action) > 1):
+                raise ValueError("controller produced an invalid action")
             visual = reader.read(observation)
             frame = {
                 "action": action.astype(np.float32),
@@ -72,13 +97,15 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
                 prior_cause=None,
                 task_rule_violation=False,
                 success_latched=bool(metrics["success"]["passed"]),
-                policy_abort=controller.abort_requested,
+                policy_abort=controller.abort_requested if controller is not None else False,
                 horizon_exhausted=step + 1 == horizon,
             )
             frame["next.reward"] = np.array([reward], dtype=np.float32)
             frame["next.done"] = np.array([cause is not None], dtype=bool)
             frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
             dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
+            if teleop is not None:
+                teleop.sync(frame)
             if cause is not None:
                 break
         dataset.save_episode()
@@ -96,19 +123,30 @@ def collect_episode(dataset, state, *, horizon, width, height, main_camera="task
                 "imu_mount": env._imu_mount_audit,
                 "imu_contract": env.observation_contract(),
                 "task_context": env.get_policy_task_context(),
-                "controller_profile": profile.to_dict(),
+                "controller_profile": profile.to_dict() if controller is not None else None,
+                "collector": device,
+                **({"pos_sensitivity": pos_sensitivity, "rot_sensitivity": rot_sensitivity} if teleop else {}),
             }
         )
     finally:
-        if reader is not None:
-            reader.close()
-        env.close()
+        try:
+            if teleop is not None:
+                teleop.close()
+        finally:
+            try:
+                if reader is not None:
+                    reader.close()
+            finally:
+                env.close()
 
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
-    parser.add_argument("--repo-id", default="shakebench/oracle-gamma-zero", help="Local dataset ID; no upload")
+    parser.add_argument("--repo-id", default=None, help="Local dataset ID; defaults to shakebench/<device>-gamma-zero")
+    parser.add_argument("--device", choices=("oracle", "spacemouse"), default="oracle")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.0)
+    parser.add_argument("--rot-sensitivity", type=float, default=1.0)
     parser.add_argument(
         "--states",
         type=Path,
@@ -130,6 +168,8 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     if min(args.width, args.height, args.horizon_steps) <= 0 or (args.limit is not None and args.limit <= 0):
         raise ValueError("dimensions, horizon and limit must be positive")
+    if any(not np.isfinite(value) or value <= 0 for value in (args.pos_sensitivity, args.rot_sensitivity)):
+        raise ValueError("SpaceMouse sensitivities must be finite and positive")
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     state_asset = load_state_asset(args.states)
@@ -151,7 +191,7 @@ def main(argv=None):
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
     instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in states))
     dataset = LeRobotDataset.create(
-        repo_id=args.repo_id,
+        repo_id=args.repo_id or f"shakebench/{args.device}-gamma-zero",
         root=args.output,
         fps=20,
         robot_type="Panda",
@@ -160,6 +200,7 @@ def main(argv=None):
     )
     manifest = {
         "complete": False,
+        "collector": args.device,
         "scoreable": False,
         "gamma": 0.0,
         "physics_backend": "mujoco_cpu",
@@ -186,14 +227,22 @@ def main(argv=None):
     write_json(manifest_path, manifest)
     try:
         for state in states:
-            episode = collect_episode(
-                dataset,
-                state,
-                horizon=args.horizon_steps,
-                width=args.width,
-                height=args.height,
-                main_camera=args.main_camera,
-            )
+            episode = None
+            while episode is None:
+                print(f"Collecting {state['state_id']} ({args.device})", flush=True)
+                episode = collect_episode(
+                    dataset,
+                    state,
+                    horizon=args.horizon_steps,
+                    width=args.width,
+                    height=args.height,
+                    main_camera=args.main_camera,
+                    device=args.device,
+                    pos_sensitivity=args.pos_sensitivity,
+                    rot_sensitivity=args.rot_sensitivity,
+                )
+                if episode is None:
+                    print("Discarded attempt; retrying the same state.", flush=True)
             manifest["episodes"].append(episode)
             # ponytail: the growing manifest is rewritten in place; an interrupt mid-write truncates it.
             write_json(manifest_path, manifest)

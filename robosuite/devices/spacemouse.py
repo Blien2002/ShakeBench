@@ -1,19 +1,8 @@
-"""Driver class for SpaceMouse controller.
+"""HID driver for SpaceMouse devices with split or combined motion reports.
 
-This class provides a driver support to SpaceMouse on macOS.
-In particular, we assume you are using a SpaceMouse Wireless by default.
-
-To set up a new SpaceMouse controller:
-    1. Download and install driver from https://www.3dconnexion.com/service/drivers.html
-    2. Install hidapi library through pip
-       (make sure you run uninstall hid first if it is installed).
-    3. Make sure SpaceMouse is connected before running the script
-    4. (Optional) Based on the model of SpaceMouse, you might need to change the
-       vendor id and product id that correspond to the device.
-
-For Linux support, you can find open-source Linux drivers and SDKs online.
-    See http://spacenav.sourceforge.net/
-
+Install ``hidapi`` (not the incompatible ``hid`` package) and connect the device
+before starting. On Linux, a udev rule must grant access to its USB/HID node.
+Vendor/product IDs are auto-detected when the configured IDs cannot be opened.
 """
 
 import threading
@@ -21,7 +10,7 @@ import time
 from collections import namedtuple
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
+from pynput.keyboard import Listener
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
@@ -29,12 +18,9 @@ try:
     import hid
 except ModuleNotFoundError as exc:
     raise ImportError(
-        "Unable to load module hid, required to interface with SpaceMouse. "
-        "Only macOS is officially supported. Install the additional "
-        "requirements with `pip install -r requirements-extra.txt`"
+        "Unable to load module hid, required to interface with SpaceMouse. Install it with `pip install hidapi`."
     ) from exc
 
-from pynput.keyboard import Controller, Key, Listener
 
 import robosuite.macros as macros
 from robosuite.devices import Device
@@ -169,24 +155,47 @@ class SpaceMouse(Device):
         self._enabled = False
 
         # launch a new listener thread to listen to SpaceMouse
+        try:
+            self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+        except BaseException:
+            self.device.close()
+            raise
+        self._stop_event = threading.Event()
+        self._read_error = None
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
 
-        # also add a keyboard for aux controls
-        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
-
         # start listening
-        self.listener.start()
+        try:
+            self.listener.start()
+        except BaseException:
+            self.close()
+            raise
 
     def _auto_detect_device(self):
         """Auto-detect and connect to first 3Dconnexion device."""
-        devices = [d for d in hid.enumerate() if d.get("manufacturer_string") == "3Dconnexion"]
+        devices = [
+            d
+            for d in hid.enumerate()
+            if d.get("vendor_id") == 0x256F
+            or (d.get("vendor_id") == 0x046D and d.get("product_id") in {0xC626, 0xC627, 0xC628, 0xC62B})
+            or d.get("manufacturer_string") == "3Dconnexion"
+        ]
         if not devices:
             raise OSError("No 3Dconnexion devices found")
 
         selected = devices[0]
-        self.device.open_path(selected["path"])
+        try:
+            self.device.open_path(selected["path"])
+        except OSError as exc:
+            self.device.close()
+            raise OSError(
+                "SpaceMouse found but cannot be opened. On Linux, grant this user access to the "
+                "device with a udev rule for USB vendor/product "
+                f"{selected['vendor_id']:04x}:{selected['product_id']:04x}, then reconnect it. "
+                "Also close any other application using the device."
+            ) from exc
         self.vendor_id = selected["vendor_id"]
         self.product_id = selected["product_id"]
         ROBOSUITE_DEFAULT_LOGGER.info(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
@@ -247,6 +256,8 @@ class SpaceMouse(Device):
         Returns:
             dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
         """
+        if self._read_error is not None:
+            raise OSError("SpaceMouse HID reader failed") from self._read_error
         dpos = self.control[:3] * 0.005 * self.pos_sensitivity
         roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
 
@@ -269,73 +280,46 @@ class SpaceMouse(Device):
     def run(self):
         """Listener method that keeps pulling new messages."""
 
-        t_last_click = -1
+        while not self._stop_event.is_set():
+            try:
+                report = self.device.read(13, timeout_ms=100)
+            except OSError as exc:
+                self._read_error = exc
+                return
+            if report and self._enabled:
+                self._process_report(report)
 
-        while True:
-            d = self.device.read(13)
-            if d is not None and self._enabled:
+    def _process_report(self, report):
+        """Decode both split 7-byte and combined 13-byte motion reports."""
+        if report[0] == 1 and len(report) >= 7:
+            self.y = convert(report[1], report[2])
+            self.x = convert(report[3], report[4])
+            self.z = -convert(report[5], report[6])
+            if len(report) >= 13:
+                self.roll = convert(report[7], report[8])
+                self.pitch = convert(report[9], report[10])
+                self.yaw = convert(report[11], report[12])
+        elif report[0] == 2 and len(report) >= 7:
+            self.roll = convert(report[1], report[2])
+            self.pitch = convert(report[3], report[4])
+            self.yaw = convert(report[5], report[6])
+        elif report[0] == 3 and len(report) >= 2:
+            self.single_click_and_hold = bool(report[1] & 1)
+            if report[1] & 2:
+                self._reset_state = 1
+                self._enabled = False
+                self._reset_internal_state()
+        self._control = [self.x, self.y, self.z, self.roll, self.pitch, self.yaw]
 
-                if self.product_id == 50741:
-                    ## logic for older spacemouse model
-
-                    if d[0] == 1:  ## readings from 6-DoF sensor
-                        self.y = convert(d[1], d[2])
-                        self.x = convert(d[3], d[4])
-                        self.z = convert(d[5], d[6]) * -1.0
-
-                    elif d[0] == 2:
-
-                        self.roll = convert(d[1], d[2])
-                        self.pitch = convert(d[3], d[4])
-                        self.yaw = convert(d[5], d[6])
-
-                        self._control = [
-                            self.x,
-                            self.y,
-                            self.z,
-                            self.roll,
-                            self.pitch,
-                            self.yaw,
-                        ]
-                else:
-                    ## default logic for all other spacemouse models
-
-                    if d[0] == 1:  ## readings from 6-DoF sensor
-                        self.y = convert(d[1], d[2])
-                        self.x = convert(d[3], d[4])
-                        self.z = convert(d[5], d[6]) * -1.0
-
-                        self.roll = convert(d[7], d[8])
-                        self.pitch = convert(d[9], d[10])
-                        self.yaw = convert(d[11], d[12])
-
-                        self._control = [
-                            self.x,
-                            self.y,
-                            self.z,
-                            self.roll,
-                            self.pitch,
-                            self.yaw,
-                        ]
-
-                if d[0] == 3:  ## readings from the side buttons
-
-                    # press left button
-                    if d[1] == 1:
-                        t_click = time.time()
-                        elapsed_time = t_click - t_last_click
-                        t_last_click = t_click
-                        self.single_click_and_hold = True
-
-                    # release left button
-                    if d[1] == 0:
-                        self.single_click_and_hold = False
-
-                    # right button is for reset
-                    if d[1] == 2:
-                        self._reset_state = 1
-                        self._enabled = False
-                        self._reset_internal_state()
+    def close(self):
+        """Stop listeners before releasing the HID handle; safe to call twice."""
+        self._enabled = False
+        self._stop_event.set()
+        self.listener.stop()
+        self.thread.join()
+        if self.device is not None:
+            self.device.close()
+            self.device = None
 
     @property
     def control(self):
