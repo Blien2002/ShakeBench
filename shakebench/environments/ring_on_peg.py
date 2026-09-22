@@ -263,7 +263,8 @@ class RingOnPeg(ManipulationEnv):
         self.board_contact_names = add_ring_board(self.arena.asset, peg, slots, contact)
         shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
         # A convex frustum uses the same mesh for collision and appearance.
-        angles = np.linspace(0, 2 * np.pi, 64, endpoint=False)
+        # Duplicate the seam positions: each side keeps its own u=0 or u=1.
+        angles = 2 * np.pi * (np.arange(65) % 64) / 64
         vertices = [
             [radius * np.cos(a), radius * np.sin(a), z]
             for radius, z in ((PEG_RADIUS_M, 0), (PEG_TOP_RADIUS_M, shaft_height))
@@ -271,10 +272,10 @@ class RingOnPeg(ManipulationEnv):
         ]
         faces = []
         for i in range(64):
-            j = (i + 1) % 64
-            faces.extend([[i, j, j + 64], [i, j + 64, i + 64]])
+            j = i + 1
+            faces.extend([[i, j, j + 65], [i, j + 65, i + 65]])
         for i in range(1, 63):
-            faces.extend([[0, i + 1, i], [64, 64 + i, 65 + i]])
+            faces.extend([[0, i + 1, i], [65, 65 + i, 66 + i]])
         ET.SubElement(
             self.arena.asset,
             "mesh",
@@ -282,7 +283,7 @@ class RingOnPeg(ManipulationEnv):
             vertex=array_to_string(np.asarray(vertices).ravel()),
             face=array_to_string(np.asarray(faces).ravel()),
             texcoord=array_to_string(
-                np.array([[i / 63, z / shaft_height] for z in (0, shaft_height) for i in range(64)]).ravel()
+                np.array([[i / 64, z / shaft_height] for z in (0, shaft_height) for i in range(65)]).ravel()
             ),
         )
         shapes = (
