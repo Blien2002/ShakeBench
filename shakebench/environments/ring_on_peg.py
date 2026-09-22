@@ -630,7 +630,7 @@ register_task(
         normalize_state=validate_state,
         env_kwargs=lambda state: {"ring_state": state},
         describe=lambda state: {
-            "task_id": "ring_on_peg.v4",
+            "task_id": "ring_on_peg",
             "instruction": "Stack the blue large ring, green medium ring, then yellow small ring on the wooden peg.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},

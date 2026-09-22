@@ -21,7 +21,7 @@ from shakebench.utils.tasks import OBJECTS, task_variants
 
 TASK_STATE_SCHEMA = "shakebench.phase09.task_states"
 TASK_STATE_SCHEMA_VERSION = 3
-TASK_STATE_FILENAMES = {split: f"shakebench_task_states_{split}_v3.json" for split in ("official", "knee")}
+TASK_STATE_FILENAMES = {split: f"shakebench_task_states_{split}.json" for split in ("official", "knee")}
 #: Retired artifacts.  They stay on disk as evidence and are never read.
 RETIRED_TASK_STATE_FILENAMES = tuple(f"shakebench_task_states_{split}_v2.json" for split in ("official", "knee"))
 

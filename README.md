@@ -29,11 +29,11 @@ finally:
 ```bash
 python -m shakebench.scripts.evaluate \
   --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states_v4.json \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states.json \
   --policy my_policy:make_policy --observation-source contract
 ```
 
-v4 状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧 v1/v2/v3 状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
+套环状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
 
 随附状态池包含 20 个随机布局。生成更多布局（同种子可复现）：
 
@@ -49,8 +49,8 @@ SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7
 source /home/miracle04/.venvs/shakebench-lerobot/bin/activate
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
   --device spacemouse --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states_v4.json \
-  --output out/spacemouse_ring_stack_v4 --limit 20 \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states.json \
+  --output out/spacemouse_ring_stack --limit 20 \
   --horizon-steps 2400 --pos-sensitivity 0.2 --rot-sensitivity 0.3
 ```
 
@@ -58,11 +58,11 @@ Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切�
 
 ```bash
 python -m shakebench.scripts.export_sft_subset \
-  --dataset out/spacemouse_ring_stack_v4 --output out/spacemouse_ring_stack_v4_sft
+  --dataset out/spacemouse_ring_stack --output out/spacemouse_ring_stack_sft
 python -m shakebench.scripts.verify_collection \
-  --dataset out/spacemouse_ring_stack_v4_sft \
+  --dataset out/spacemouse_ring_stack_sft \
   --task-module shakebench.environments.ring_on_peg \
-  --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states_v4.json
+  --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states.json
 ```
 
 上述校验检查来源状态、格式、动作、图像和成功终止；若有独立评测状态池，须一并加入 `--eval-assets` 才能检查训练/评测隔离。当前 pick-place oracle 不支持套环，误选 `--device oracle` 会在创建数据集前报错。

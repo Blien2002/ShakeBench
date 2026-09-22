@@ -35,7 +35,7 @@ from shakebench.utils.oracle import OracleControllerProfile  # noqa: E402
 from shakebench.utils.scene import load_scene_visual_config  # noqa: E402
 from shakebench.utils.tasks import OBJECTS, TaskSpec  # noqa: E402
 
-DEFAULT_STATES = Path(models.assets_root, "shakebench_task_states_official_v3.json")
+DEFAULT_STATES = Path(models.assets_root, "shakebench_task_states_official.json")
 
 
 def select_task_state(path: Path, object_id: str, occurrence: int = 0) -> dict:
