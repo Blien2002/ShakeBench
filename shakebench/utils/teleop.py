@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image, ImageTk
 
 _PREVIEW_MARGIN_PX = 32
-_PREVIEW_HEADER_PX = 72
+_PREVIEW_HEADER_PX = 112
 
 
 class SpaceMouseTeleop:
@@ -32,6 +32,8 @@ class SpaceMouseTeleop:
                 self.window,
                 text="WASD: move | Q/E: down/up | Space: grasp | R: retry | SpaceMouse: rotate | Esc: quit",
             ).pack()
+            self.grasp_label = tk.Label(self.window, font=("sans", 18, "bold"), pady=8)
+            self.grasp_label.pack(fill="x")
             self.label = tk.Label(self.window)
             self.label.pack()
             ready = tk.BooleanVar(self.window, False)
@@ -69,9 +71,48 @@ class SpaceMouseTeleop:
             self._display_size = self._fit_preview_size(image.size)
             self.window.geometry(f"{self._display_size[0]}x{self._display_size[1] + _PREVIEW_HEADER_PX}")
         if image.size != self._display_size:
-            image = image.resize(self._display_size, Image.Resampling.LANCZOS)
+            image = image.resize(self._display_size, Image.Resampling.NEAREST)
         self.photo = ImageTk.PhotoImage(image, master=self.window)
         self.label.configure(image=self.photo)
+        message, color = self._grasp_hint()
+        self.grasp_label.configure(text=message, bg=color, fg="white")
+
+    def _grasp_hint(self):
+        """Conservative ring-wall grasp guidance from live collision-pad geometry."""
+        if not hasattr(self.env, "ring_body_ids"):
+            return "Space: grasp | R: retry", "#444444"
+        env = self.env
+        model, data = env.sim.model, env.sim.data
+        pads = env.robots[0].gripper["right"].important_geoms
+        ids = [model.geom_name2id(pads[side][0]) for side in ("left_fingerpad", "right_fingerpad")]
+        centers = np.array([data.geom_xpos[i] for i in ids])
+        context = env.get_policy_task_context()
+        name = min(
+            env.ring_body_ids, key=lambda n: np.linalg.norm(centers.mean(axis=0) - data.xpos[env.ring_body_ids[n]])
+        )
+        body = env.ring_body_ids[name]
+        rotation = data.xmat[body].reshape(3, 3)
+        local = (centers - data.xpos[body]) @ rotation
+        # Bounding boxes account for pad thickness and tilted ring/pad frames.
+        extents = np.array([np.abs(rotation.T @ data.geom_xmat[i].reshape(3, 3)) @ model.geom_size[i] for i in ids])
+        radii = np.linalg.norm(local[:, :2], axis=1)
+        inner, outer = np.argsort(radii)
+        ring = context["rings"][name]
+        clearance = np.linalg.norm(extents[:, :2], axis=1)
+        aligned = (
+            radii[inner] + clearance[inner] < ring["inner_radius"]
+            and radii[outer] - clearance[outer] > ring["outer_radius"]
+            and np.dot(local[inner, :2], local[outer, :2]) > 0
+        )
+        colors = {"large": "蓝环", "medium": "绿环", "small": "黄环"}
+        prefix = colors.get(name, name)
+        if not aligned:
+            return f"{prefix}：调整对齐（两指分别位于孔内、环外）", "#a85b00"
+        overlap = context["ring_half_height_m"] + extents[:, 2] - np.abs(local[:, 2])
+        if np.min(overlap) >= 0.004:
+            return f"{prefix}：可以闭合 · 按空格（几何提示）", "#167a36"
+        direction = "继续下降" if local[:, 2].mean() > 0 else "稍微抬高"
+        return f"{prefix}：{direction} · 高度差 {local[:, 2].mean() * 1000:+.0f} mm", "#a85b00"
 
     def _fit_preview_size(self, image_size):
         """Scale the display-only preview to the largest size that fits the screen."""
