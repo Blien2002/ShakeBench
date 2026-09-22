@@ -33,7 +33,7 @@ python -m shakebench.scripts.evaluate \
   --policy my_policy:make_policy --observation-source contract
 ```
 
-套环状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
+套环状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集尚不支持套环；CPU Oracle 支持按蓝、绿、黄顺序自动套环。
 
 随附状态池包含 20 个随机布局。生成更多布局（同种子可复现）：
 
@@ -47,11 +47,11 @@ SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7
 
 ```bash
 source /home/miracle04/.venvs/shakebench-lerobot/bin/activate
-MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot_spacemouse \
   --device spacemouse --task ring_on_peg \
   --output out/spacemouse_ring_stack --limit 20
 
-MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot_spacemouse \
   --device spacemouse --task pick_place \
   --output out/spacemouse_pick_place_static --limit 1
 ```
@@ -69,7 +69,18 @@ python -m shakebench.scripts.verify_collection \
   --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states.json
 ```
 
-上述校验检查来源状态、格式、动作、图像和成功终止；若有独立评测状态池，须一并加入 `--eval-assets` 才能检查训练/评测隔离。当前 pick-place oracle 不支持套环，误选 `--device oracle` 会在创建数据集前报错。
+上述校验检查来源状态、格式、动作、图像和成功终止；若有独立评测状态池，须一并加入 `--eval-assets` 才能检查训练/评测隔离。套环自动采集使用独立的特权状态 Oracle，以 OSC 动作完成抓取、抬升和释放；失败尝试会标记为失败，成功子集仍由上述导出器筛选。
+
+```bash
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
+python -m shakebench.scripts.collect_lerobot \
+  --device oracle --task ring_on_peg --physics-profile teleop \
+  --output out/oracle_ring_stack --limit 20
+```
+
+`teleop` 是较快、不可认证评分的物理配置；Oracle 读取仿真真值作为控制输入，但数据集图像仍为任务配置指定的 256×256。初始位置可能不可抓取或发生滑落，请以采集清单中的成功数量为准。
+
+所有 IL 训练数据（CPU/GPU Oracle、SpaceMouse、SFT 子集）不包含 IMU 观测、统计或安装审计。底层 IMU 传感器、仿真接口和非 IL 实验能力保留，供后续阶段使用。
 
 # robosuite
 

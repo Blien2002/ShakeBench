@@ -74,9 +74,6 @@ def _frame(observation, action, images):
         "observation.images.main": np.asarray(images["observation.images.main"]).copy(),
         "observation.images.wrist": np.asarray(images["observation.images.wrist"]).copy(),
         "observation.state": state_vector(observation),
-        "observation.table_imu_window": np.asarray(observation["table_imu_window"], dtype=np.float32),
-        "observation.table_imu_timestamps_s": np.asarray(observation["table_imu_timestamps_s"], dtype=np.float64),
-        "observation.table_imu_dt_s": np.atleast_1d(np.asarray(observation["table_imu_dt_s"], dtype=np.float32)),
     }
 
 
@@ -103,7 +100,7 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
         main_name = main_names[0]
         batch = MJWarpBatch(envs, programs, device=device)
         readers.extend(
-            ShakeBenchCameraObservation(env, height=height, width=width, main_camera=name)
+            ShakeBenchCameraObservation(env, height=height, width=width, main_camera=name, include_imu=False)
             for env, name in zip(envs, main_names)
         )
         observations = batch.reset()
@@ -171,7 +168,6 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
                     "success": cause == "success_latched",
                     "termination_cause": cause,
                     "vibration": vibration_record(program),
-                    "imu_mount": env._imu_mount_audit,
                     "task_context": env.get_policy_task_context(),
                     "controller_profile": profile.to_dict(),
                     "physics_backend": "mujoco_warp",
@@ -276,6 +272,7 @@ def main(argv=None):
         )
         manifest = {
             "complete": False,
+            "imu_enabled": False,
             "scoreable": False,
             "gamma": 0.0,
             "physics_backend": "mujoco_warp",

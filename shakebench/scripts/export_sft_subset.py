@@ -2,8 +2,8 @@
 
 Failed rollouts stay in the source dataset for audit.  The exported copy holds
 only episodes selected by the frozen rule (``success_latched``), renumbered from
-zero so the official LeRobot reader can enumerate it, and records a byte-for-byte
-copy of the source manifest plus the source index of every exported episode, so a
+zero so the official LeRobot reader can enumerate it, and records the
+source manifest without IMU audit fields plus the source index of every exported episode, so a
 trainer can prove which demonstrations it consumed.
 """
 
@@ -127,6 +127,7 @@ def _write_renumbered_parquet(source: Path, target: Path, *, episode_index: int,
     import pyarrow.parquet as pq
 
     table = pq.read_table(source)
+    table = table.drop([name for name in table.column_names if name.startswith("observation.table_imu")])
     length = table.num_rows
     for name, values in (
         ("episode_index", np.full(length, episode_index, dtype=np.int64)),
@@ -178,7 +179,15 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
     for name in FORMAT_METADATA_FILES:
         if (meta / name).is_file():
             shutil.copy2(meta / name, exported_meta / name)
-    (exported_meta / SOURCE_MANIFEST_FILENAME).write_bytes(manifest_bytes)
+    source_record = {
+        **manifest,
+        "imu_enabled": False,
+        "episodes": [
+            {key: value for key, value in episode.items() if key not in {"imu_mount", "imu_contract"}}
+            for episode in manifest["episodes"]
+        ],
+    }
+    (exported_meta / SOURCE_MANIFEST_FILENAME).write_text(json.dumps(source_record, indent=2) + "\n")
 
     episodes_jsonl, stats_jsonl, manifest_episodes = [], [], []
     first_frame_index = 0
@@ -195,13 +204,18 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
             first_frame_index=first_frame_index,
         )
         episodes_jsonl.append(dict(episode_rows[source_index], episode_index=new_index))
-        stats = dict(stats_rows[source_index].get("stats", {}))
+        stats = {
+            k: v
+            for k, v in stats_rows[source_index].get("stats", {}).items()
+            if not k.startswith("observation.table_imu")
+        }
         if "episode_index" in stats:
             stats["episode_index"] = _counter_stats([new_index] * length)
         if "index" in stats:
             stats["index"] = _counter_stats(range(first_frame_index, first_frame_index + length))
         stats_jsonl.append({"episode_index": new_index, "stats": stats})
-        manifest_episodes.append(dict(episode, episode_index=new_index, source_episode_index=source_index))
+        clean_episode = {k: v for k, v in episode.items() if k not in {"imu_mount", "imu_contract"}}
+        manifest_episodes.append(dict(clean_episode, episode_index=new_index, source_episode_index=source_index))
         first_frame_index += length
 
     _write_jsonl(exported_meta / "episodes.jsonl", episodes_jsonl)
@@ -209,6 +223,7 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
     if (meta / "stats.json").is_file():
         aggregated = aggregate_episode_stats([row["stats"] for row in stats_jsonl])
         (exported_meta / "stats.json").write_text(json.dumps(aggregated, indent=4) + "\n", encoding="utf-8")
+    info["features"] = {k: v for k, v in info["features"].items() if not k.startswith("observation.table_imu")}
     info.update(
         {
             "total_episodes": len(selected),
@@ -223,6 +238,7 @@ def export_subset(dataset: Path, output: Path, *, include_failures: bool = False
     exported_manifest = {
         **{key: value for key, value in manifest.items() if key not in {"episodes", "requested_states", "sft_subset"}},
         "complete": True,
+        "imu_enabled": False,
         "source_dataset": dataset.name,
         "requested_states": [episode["state"]["state_id"] for episode in manifest_episodes],
         "episodes": manifest_episodes,

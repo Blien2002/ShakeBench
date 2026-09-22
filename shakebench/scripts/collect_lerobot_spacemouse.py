@@ -1,4 +1,4 @@
-"""Collect static Oracle demonstrations in LeRobot v2.1 without IMU observations."""
+"""Collect static keyboard/SpaceMouse demonstrations with resumable LeRobot output."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.websocket_policy import modality_metadata
 
 
-def dataset_features(height, width, *, include_imu=False):
+def dataset_features(height, width, *, include_imu=True):
     return {
         **observation_features(height, width, include_imu=include_imu),
         "action": {"dtype": "float32", "shape": (7,), "names": ACTION_NAMES},
@@ -40,6 +40,29 @@ def dataset_features(height, width, *, include_imu=False):
         "next.done": {"dtype": "bool", "shape": (1,), "names": None},
         "next.success": {"dtype": "bool", "shape": (1,), "names": None},
     }
+
+
+def _load_spacemouse_resume(output, requested_states):
+    """Load a resumable SpaceMouse manifest and return it with its prefix length."""
+    manifest_path = output / "meta" / "shakebench_collection.json"
+    if not manifest_path.is_file():
+        raise FileExistsError(f"cannot resume {output}: missing shakebench_collection.json")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume {output}: invalid collection manifest") from exc
+    if manifest.get("collector") != "spacemouse":
+        raise FileExistsError(f"refusing to resume non-SpaceMouse dataset {output}")
+    requested_ids = [state["state_id"] for state in requested_states]
+    if manifest.get("requested_states") != requested_ids:
+        raise ValueError("resume arguments must select the same states as the existing collection")
+    episodes = manifest.get("episodes")
+    if not isinstance(episodes, list) or len(episodes) > len(requested_states):
+        raise ValueError("existing collection manifest has an invalid episode prefix")
+    for index, episode in enumerate(episodes):
+        if not isinstance(episode, dict) or episode.get("state", {}).get("state_id") != requested_ids[index]:
+            raise ValueError("existing collection episodes do not match the requested state order")
+    return manifest, len(episodes)
 
 
 def collect_episode(
@@ -56,13 +79,13 @@ def collect_episode(
     rot_sensitivity=1.0,
 ):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
-    ring_oracle = device == "oracle" and task_type(state) == "ring_on_peg"
-    if device == "oracle" and not ring_oracle:
+    if device == "oracle":
         require_pick_place(state, consumer="oracle collection")
+    include_imu = device != "spacemouse"
     profile = OracleControllerProfile()
     instruction = task_description(state)["instruction"]
     env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
-    reader = None
+    reader = teleop = None
     try:
         metrics_hook = getattr(env, "_record_post_physics_metrics", None)
         imu_hook = getattr(env, "_update_phase05_provider", None)
@@ -76,8 +99,12 @@ def collect_episode(
                 env._post_physics_step_hooks = [
                     control_boundary_metrics if hook == metrics_hook else hook for hook in env._post_physics_step_hooks
                 ]
-            env._post_integration_refresh_stride = env._control_steps
-        if imu_hook is not None:
+            env._post_integration_refresh_stride = (
+                env._control_steps
+                if not include_imu
+                else int(env.physics_profile.scheduler["post_integration_refresh_stride"])
+            )
+        if not include_imu and imu_hook is not None:
             env._post_physics_step_hooks = [hook for hook in env._post_physics_step_hooks if hook != imu_hook]
         if env.control_freq != dataset.fps or env.action_dim != 7:
             raise ValueError("dataset must match the current 20 Hz, 7D OSC contract")
@@ -85,23 +112,34 @@ def collect_episode(
             ShakeBenchOracleController(
                 profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
             )
-            if device == "oracle" and not ring_oracle
+            if device == "oracle"
             else None
         )
-        if ring_oracle:
-            from shakebench.utils.ring_oracle import RingStackOracle
-
-            controller = RingStackOracle(env)
         reader = ShakeBenchCameraObservation(
-            env, height=height, width=width, main_camera=main_camera, include_imu=False
+            env, height=height, width=width, main_camera=main_camera, include_imu=include_imu
         )
+        if device == "spacemouse":
+            from shakebench.utils.teleop import SpaceMouseTeleop
+
+            teleop = SpaceMouseTeleop(
+                env,
+                reader,
+                pos_sensitivity=pos_sensitivity,
+                rot_sensitivity=rot_sensitivity,
+            )
         observation = env._get_observations()
         for step in range(horizon):
             sample = program.evaluate(step / dataset.fps)
             if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
                 raise ValueError("gamma=0 must command zero external excitation")
-            if ring_oracle:
-                action = controller.action()
+            if teleop is not None:
+                action = teleop.action()
+                if action is None:
+                    image_writer = getattr(dataset, "image_writer", None)
+                    if image_writer is not None:
+                        image_writer.wait_until_done()
+                    dataset.clear_episode_buffer()
+                    return None
             else:
                 action = np.clip(controller.action(oracle_observation(env), time_s=step / dataset.fps), -1, 1)
             if action.shape != (7,) or not np.isfinite(action).all() or np.any(np.abs(action) > 1):
@@ -125,6 +163,8 @@ def collect_episode(
             frame["next.done"] = np.array([cause is not None], dtype=bool)
             frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
             dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
+            if teleop is not None:
+                teleop.sync(frame)
             if cause is not None:
                 break
         dataset.save_episode()
@@ -139,22 +179,28 @@ def collect_episode(
                 "success": cause == "success_latched",
                 "termination_cause": cause,
                 "vibration": vibration_record(program),
+                **(
+                    {"imu_mount": env._imu_mount_audit, "imu_contract": env.observation_contract()}
+                    if include_imu
+                    else {}
+                ),
                 "task_context": env.get_policy_task_context(),
                 "task_metrics": metrics,
-                "controller_profile": (
-                    ({"controller": "ring_stack_oracle"} if ring_oracle else profile.to_dict())
-                    if controller is not None
-                    else None
-                ),
+                "controller_profile": profile.to_dict() if controller is not None else None,
                 "collector": device,
+                **({"pos_sensitivity": pos_sensitivity, "rot_sensitivity": rot_sensitivity} if teleop else {}),
             }
         )
     finally:
         try:
-            if reader is not None:
-                reader.close()
+            if teleop is not None:
+                teleop.close()
         finally:
-            env.close()
+            try:
+                if reader is not None:
+                    reader.close()
+            finally:
+                env.close()
 
 
 def build_parser():
@@ -167,10 +213,10 @@ def build_parser():
         "--output",
         type=Path,
         required=True,
-        help="New local Oracle dataset directory",
+        help="Local dataset directory; interrupted SpaceMouse collections resume in place",
     )
     parser.add_argument("--repo-id", default=None, help="Local dataset ID; defaults to shakebench/<device>-gamma-zero")
-    parser.add_argument("--device", choices=("oracle",), default="oracle")
+    parser.add_argument("--device", choices=("spacemouse",), default="spacemouse")
     parser.add_argument(
         "--physics-profile",
         choices=("official", "teleop"),
@@ -276,11 +322,33 @@ def main(argv=None):
         raise ValueError(f"selected states do not belong to --task {args.task}")
     if args.device == "oracle":
         for state in states:
-            if task_type(state) != "ring_on_peg":
-                require_pick_place(state, consumer="oracle collection")
+            require_pick_place(state, consumer="oracle collection")
     selected_states = states
+    resume_manifest = None
+    completed_count = 0
+    existing_dataset = False
     if args.output.exists():
-        raise FileExistsError(f"refusing to overwrite {args.output}")
+        if args.device != "spacemouse":
+            raise FileExistsError(f"refusing to overwrite {args.output}")
+        resume_manifest, completed_count = _load_spacemouse_resume(args.output, selected_states)
+        if completed_count == len(selected_states):
+            resume_manifest["complete"] = True
+            resume_manifest.pop("error", None)
+            resume_manifest["sft_subset"] = sft_subset_summary(resume_manifest["episodes"])
+            write_json(args.output / "meta" / "shakebench_collection.json", resume_manifest)
+            print(f"Collection already complete: {args.output}", flush=True)
+            return 0
+        parquet_files = tuple(args.output.rglob("*.parquet"))
+        if parquet_files:
+            existing_dataset = True
+            shutil.rmtree(args.output / "images", ignore_errors=True)
+        elif completed_count:
+            raise ValueError("existing manifest lists episodes but the LeRobot dataset has no parquet files")
+        else:
+            # Only an interrupted first episode can reach this branch. Its scratch
+            # images are incomplete and there is no saved data to discard.
+            shutil.rmtree(args.output)
+        states = states[completed_count:]
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
@@ -288,42 +356,53 @@ def main(argv=None):
     physics_profile = args.physics_profile or ("teleop" if args.device == "spacemouse" else "official")
     instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in selected_states))
     repo_id = args.repo_id or f"shakebench/{args.device}-gamma-zero"
-    dataset = LeRobotDataset.create(
-        repo_id=repo_id,
-        root=args.output,
-        fps=20,
-        robot_type="Panda",
-        features=dataset_features(args.height, args.width),
-        use_videos=False,
-    )
-    manifest = {
-        "complete": False,
-        "task": args.task,
-        "collector": args.device,
-        "scoreable": False,
-        "gamma": 0.0,
-        "physics_backend": "mujoco_cpu",
-        "physics_profile": physics_profile,
-        "imu_enabled": False,
-        "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
-        "tasks": instructions,
-        "task_modules": args.task_module,
-        "episodes_per_state": args.episodes_per_state,
-        "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
-        "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
-        "action_space": {
-            "controller": "OSC_POSE",
-            "frame": "robot_base",
-            "normalized_bounds": [-1, 1],
-            "translation_scale_m": 0.05,
-            "rotation_scale_rad": 0.5,
-            "gripper": "-1 open, +1 close",
-        },
-        "requested_states": [state["state_id"] for state in selected_states],
-        "proprioception": proprioception_metadata(),
-        "state_authority": state_asset["authority"],
-        "episodes": [],
-    }
+    if existing_dataset:
+        dataset = LeRobotDataset(repo_id, root=args.output)
+        dataset.episode_buffer = dataset.create_episode_buffer()
+    else:
+        dataset = LeRobotDataset.create(
+            repo_id=repo_id,
+            root=args.output,
+            fps=20,
+            robot_type="Panda",
+            features=dataset_features(args.height, args.width, include_imu=args.device != "spacemouse"),
+            use_videos=False,
+        )
+    if args.device == "spacemouse":
+        dataset.start_image_writer(num_processes=0, num_threads=8)
+    if resume_manifest is None:
+        manifest = {
+            "complete": False,
+            "task": args.task,
+            "collector": args.device,
+            "scoreable": False,
+            "gamma": 0.0,
+            "physics_backend": "mujoco_cpu",
+            "physics_profile": physics_profile,
+            "imu_enabled": args.device != "spacemouse",
+            "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
+            "tasks": instructions,
+            "task_modules": args.task_module,
+            "episodes_per_state": args.episodes_per_state,
+            "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
+            "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
+            "action_space": {
+                "controller": "OSC_POSE",
+                "frame": "robot_base",
+                "normalized_bounds": [-1, 1],
+                "translation_scale_m": 0.05,
+                "rotation_scale_rad": 0.5,
+                "gripper": "-1 open, +1 close",
+            },
+            "requested_states": [state["state_id"] for state in selected_states],
+            "proprioception": proprioception_metadata(),
+            "state_authority": state_asset["authority"],
+            "episodes": [],
+        }
+    else:
+        manifest = resume_manifest
+        manifest["complete"] = False
+        manifest.pop("error", None)
     manifest_path = args.output / "meta" / "shakebench_collection.json"
     write_json(args.output / "meta" / "modality.json", modality_metadata())
     write_json(manifest_path, manifest)
