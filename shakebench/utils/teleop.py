@@ -6,6 +6,9 @@ import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk
 
+_PREVIEW_MARGIN_PX = 32
+_PREVIEW_HEADER_PX = 72
+
 
 class SpaceMouseTeleop:
     """Reuse robosuite's normalized OSC mapping and display the recorded cameras."""
@@ -16,6 +19,7 @@ class SpaceMouseTeleop:
         self.env = env
         self.window = None
         self.closed = False
+        self._display_size = None
         self.device = SpaceMouse(
             env,
             pos_sensitivity=pos_sensitivity,
@@ -60,8 +64,24 @@ class SpaceMouseTeleop:
 
     def _show(self, frame):
         pixels = np.concatenate([frame["observation.images.main"], frame["observation.images.wrist"]], axis=1)
-        self.photo = ImageTk.PhotoImage(Image.fromarray(pixels), master=self.window)
+        image = Image.fromarray(pixels)
+        if self._display_size is None:
+            self._display_size = self._fit_preview_size(image.size)
+            self.window.geometry(f"{self._display_size[0]}x{self._display_size[1] + _PREVIEW_HEADER_PX}")
+        if image.size != self._display_size:
+            image = image.resize(self._display_size, Image.Resampling.LANCZOS)
+        self.photo = ImageTk.PhotoImage(image, master=self.window)
         self.label.configure(image=self.photo)
+
+    def _fit_preview_size(self, image_size):
+        """Scale the display-only preview to the largest size that fits the screen."""
+        image_width, image_height = image_size
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        max_width = max(1, screen_width - 2 * _PREVIEW_MARGIN_PX)
+        max_height = max(1, screen_height - _PREVIEW_HEADER_PX - 2 * _PREVIEW_MARGIN_PX)
+        scale = min(max_width / image_width, max_height / image_height)
+        return max(1, round(image_width * scale)), max(1, round(image_height * scale))
 
     def action(self):
         self._poll()
