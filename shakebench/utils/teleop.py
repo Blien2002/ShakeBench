@@ -91,6 +91,10 @@ class SpaceMouseTeleop:
         return robot.create_action_vector({arm: controls[f"{arm}_delta"], f"{arm}_gripper": controls[f"{arm}_gripper"]})
 
     def sync(self, frame):
+        success = self.env.get_metrics()["success"]
+        if "stage" in success:
+            total = len(self.env.get_policy_task_context()["placement_order"])
+            self.window.title(f"ShakeBench: RECORDING - Rings {success['stage']}/{total} - R: retry, Esc: quit")
         self._show(frame)
         self._poll()
         # Never catch up with bursts of stale human commands after a slow frame.

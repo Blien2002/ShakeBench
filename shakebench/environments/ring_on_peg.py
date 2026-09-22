@@ -208,7 +208,8 @@ class RingOnPeg(ManipulationEnv):
         )
         self.set_xml_processor(self.physics_profile.process_xml)
         self.deck_driver.install(self)
-        self.add_post_physics_step_hook(self._after_physics)
+        self.add_post_physics_step_hook(self._record_post_physics_metrics)
+        self.add_post_physics_step_hook(self._update_phase05_provider)
         self.load_model_on_init = eager
         if eager:
             self.reset()
@@ -232,6 +233,7 @@ class RingOnPeg(ManipulationEnv):
             worktable_mount=self.worktable_mount,
             scene_config=self.scene_path,
         )
+        self.worktable_body_name = self.arena.worktable_body_name
         support = (
             ET.parse(xml_path_completion(self.geometry_profile["robot_support_mjcf"]))
             .getroot()
@@ -424,8 +426,10 @@ class RingOnPeg(ManipulationEnv):
             raise RuntimeError("ring reset did not settle within 5 simulation seconds")
         data.qvel[:], data.qacc_warmstart[:], data.time = 0, 0, 0
 
-    def _after_physics(self, sample_time_s, policy_step=False):
+    def _update_phase05_provider(self, sample_time_s, policy_step=False):
         self.table_imu_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
+
+    def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
         self._conditions = {name: self._success_conditions(name) for name in RINGS}
         if self._success:
             return

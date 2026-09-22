@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
@@ -31,7 +32,7 @@ from shakebench.scripts.export_sft_subset import COLLECTION_MANIFEST_FILENAME, i
 from shakebench.scripts.run_oracle import load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.rollout import STATE_NAMES, task_description
-from shakebench.utils.train_states import split_overlap
+from shakebench.utils.task_registry import split_overlap
 
 DEFAULT_ASSETS = (
     Path(models.assets_root, "shakebench_states_dev.json"),
@@ -220,7 +221,7 @@ def check_split_disjoint(episodes, assets, source):
     }
 
 
-def check_episode_schema(tables):
+def check_episode_schema(tables, *, include_imu=True, image_shapes=None):
     expected = {
         "observation.state": (8,),
         "observation.table_imu_window": (10, 6),
@@ -228,7 +229,11 @@ def check_episode_schema(tables):
         "observation.table_imu_dt_s": (1,),
         "action": (7,),
     }
+    if not include_imu:
+        expected = {key: shape for key, shape in expected.items() if not key.startswith("observation.table_imu")}
     for number, table in tables.items():
+        if not include_imu and any(key.startswith("observation.table_imu") for key in table.column_names):
+            raise VerificationError(f"episode {number}: IMU columns contradict imu_enabled=false")
         missing = sorted(set(expected) - set(table.column_names))
         if missing:
             raise VerificationError(f"episode {number}: missing columns {missing}")
@@ -242,7 +247,8 @@ def check_episode_schema(tables):
                 raise VerificationError(f"episode {number}: {name} has non-finite values")
         for name in ("observation.images.main", "observation.images.wrist"):
             first = np.asarray(Image.open(_buffer(table[name][0].as_py())))
-            if first.shape != (256, 256, 3) or first.dtype != np.uint8:
+            shape = tuple(image_shapes[name]) if image_shapes else (256, 256, 3)
+            if first.shape != shape or first.dtype != np.uint8:
                 raise VerificationError(f"episode {number}: {name} is {first.shape} {first.dtype}")
     return True, {"columns": sorted(tables[min(tables)].column_names)}
 
@@ -277,22 +283,23 @@ def check_outcomes(episodes, tables):
     return True, {"episodes": len(episodes)}
 
 
-def check_time_and_imu(tables):
+def check_time_and_imu(tables, *, include_imu=True):
     for number, table in tables.items():
-        stamps = np.asarray(table["observation.table_imu_timestamps_s"].to_pylist(), dtype=np.float64)
-        dt = np.asarray(table["observation.table_imu_dt_s"].to_pylist(), dtype=np.float64).reshape(-1)
         timestamps = np.asarray(table["timestamp"].to_pylist(), dtype=np.float64).reshape(-1)
         frames = np.asarray(table["frame_index"].to_pylist(), dtype=np.float64)
-        if np.any(np.diff(stamps, axis=1) <= 0):
-            raise VerificationError(f"episode {number}: IMU timestamps are not strictly increasing")
-        if np.any(dt <= 0):
-            raise VerificationError(f"episode {number}: IMU dt is not positive")
         if not np.allclose(timestamps, frames / 20.0, atol=1e-6):
             raise VerificationError(f"episode {number}: timestamp is not frame_index / fps")
-    return True, {"episodes": len(tables)}
+        if include_imu:
+            stamps = np.asarray(table["observation.table_imu_timestamps_s"].to_pylist(), dtype=np.float64)
+            dt = np.asarray(table["observation.table_imu_dt_s"].to_pylist(), dtype=np.float64).reshape(-1)
+            if np.any(np.diff(stamps, axis=1) <= 0):
+                raise VerificationError(f"episode {number}: IMU timestamps are not strictly increasing")
+            if np.any(dt <= 0):
+                raise VerificationError(f"episode {number}: IMU dt is not positive")
+    return True, {"episodes": len(tables), "imu_enabled": include_imu}
 
 
-def check_images(dataset, tables, *, stride):
+def check_images(dataset, tables, *, stride, allow_repeated_views=False):
     """Sampled pixels: blank frames, swapped cameras, writer stalls, world mixing."""
     seen = {}
     samples = 0
@@ -309,13 +316,19 @@ def check_images(dataset, tables, *, stride):
             if np.array_equal(main, wrist):
                 raise VerificationError(f"episode {number} frame {index}: main view equals the wrist view")
             digest = hashlib.sha1(main.tobytes()).hexdigest()
-            if digest == previous:
+            # Human pauses and repeated initial states legitimately repeat pixels.
+            if not allow_repeated_views and digest == previous:
                 raise VerificationError(f"episode {number} frame {index}: main view repeats the previous sample")
             previous = digest
-            if digest in seen and seen[digest] != number:
+            if not allow_repeated_views and digest in seen and seen[digest] != number:
                 raise VerificationError(f"episode {number} frame {index}: main view duplicates episode {seen[digest]}")
             seen[digest] = number
-    return True, {"sampled_frames": samples, "stride": stride, "unique_main_views": len(seen)}
+    return True, {
+        "sampled_frames": samples,
+        "stride": stride,
+        "unique_main_views": len(seen),
+        "repeated_views_allowed": allow_repeated_views,
+    }
 
 
 def _read_jsonl(path):
@@ -338,6 +351,9 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", required=True, type=Path)
     parser.add_argument(
+        "--task-module", action="append", default=[], help="Import task definitions for language and split checks"
+    )
+    parser.add_argument(
         "--eval-assets",
         type=Path,
         nargs="+",
@@ -351,10 +367,15 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    for module in args.task_module:
+        importlib.import_module(module)
     report = {"schema_id": "shakebench.collection_verification", "schema_version": 1, "dataset": str(args.dataset)}
     dataset = args.dataset
     tables = _tables(dataset)
     manifest, episodes = _manifest_contract(dataset)
+    include_imu = manifest.get("imu_enabled", True)
+    features = json.loads((dataset / "meta/info.json").read_text())["features"]
+    image_shapes = {key: value["shape"] for key, value in features.items() if key.startswith("observation.images.")}
     report["checks"] = {}
     _check(report, "manifest", check_manifest, dataset)
     _check(report, "state_authority", check_state_authority, dataset, args.eval_assets)
@@ -363,13 +384,25 @@ def main(argv=None):
     _check(report, "indexing", check_indexing, dataset, episodes, tables)
     _check(report, "no_derived_caches", check_no_derived_caches, dataset)
     _check(report, "language", check_language, dataset, episodes, tables)
-    source = report["checks"]["state_authority"]["detail"].get("asset") if report["checks"]["state_authority"] else None
+    source = (
+        report["checks"]["state_authority"]["detail"].get("asset")
+        if report["checks"]["state_authority"]["passed"]
+        else None
+    )
     _check(report, "split_disjoint", check_split_disjoint, episodes, args.eval_assets, source)
-    _check(report, "episode_schema", check_episode_schema, tables)
+    _check(report, "episode_schema", check_episode_schema, tables, include_imu=include_imu, image_shapes=image_shapes)
     _check(report, "actions", check_actions, tables)
     _check(report, "outcomes", check_outcomes, episodes, tables)
-    _check(report, "time_and_imu", check_time_and_imu, tables)
-    _check(report, "images", check_images, dataset, tables, stride=max(1, args.image_stride))
+    _check(report, "time_and_imu", check_time_and_imu, tables, include_imu=include_imu)
+    _check(
+        report,
+        "images",
+        check_images,
+        dataset,
+        tables,
+        stride=max(1, args.image_stride),
+        allow_repeated_views=manifest.get("collector") == "spacemouse",
+    )
     report["passed"] = all(check["passed"] for check in report["checks"].values())
     report["failed_checks"] = sorted(name for name, check in report["checks"].items() if not check["passed"])
     if args.report is not None:

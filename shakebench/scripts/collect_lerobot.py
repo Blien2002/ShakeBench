@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import shutil
 from pathlib import Path
 
@@ -10,7 +11,6 @@ import numpy as np
 
 from shakebench import models
 from shakebench.scripts.export_sft_subset import sft_subset_summary
-from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
@@ -26,6 +26,8 @@ from shakebench.utils.rollout import (
     proprioception_metadata,
     task_description,
 )
+from shakebench.utils.task_registry import require_pick_place
+from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.websocket_policy import modality_metadata
 
 
@@ -53,31 +55,33 @@ def collect_episode(
     rot_sensitivity=1.0,
 ):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
+    if device == "oracle":
+        require_pick_place(state, consumer="oracle collection")
     include_imu = device != "spacemouse"
     profile = OracleControllerProfile()
     instruction = task_description(state)["instruction"]
     env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
-    if getattr(getattr(env, "physics_profile", None), "status", None) == "teleop_non_scoreable":
-        metrics_hook = env._record_post_physics_metrics
-
-        def control_boundary_metrics(sample_time_s, policy_step=False):
-            if (env._physics_step_index + 1) % env._control_steps == 0:
-                metrics_hook(sample_time_s, policy_step)
-
-        env._post_physics_step_hooks = [
-            control_boundary_metrics if hook == metrics_hook else hook for hook in env._post_physics_step_hooks
-        ]
-        env._post_integration_refresh_stride = (
-            env._control_steps
-            if not include_imu
-            else int(env.physics_profile.scheduler["post_integration_refresh_stride"])
-        )
-    if not include_imu:
-        env._post_physics_step_hooks = [
-            hook for hook in env._post_physics_step_hooks if hook != env._update_phase05_provider
-        ]
     reader = teleop = None
     try:
+        metrics_hook = getattr(env, "_record_post_physics_metrics", None)
+        imu_hook = getattr(env, "_update_phase05_provider", None)
+        if getattr(getattr(env, "physics_profile", None), "status", None) == "teleop_non_scoreable":
+
+            def control_boundary_metrics(sample_time_s, policy_step=False):
+                if (env._physics_step_index + 1) % env._control_steps == 0:
+                    metrics_hook(sample_time_s, policy_step)
+
+            if metrics_hook is not None:
+                env._post_physics_step_hooks = [
+                    control_boundary_metrics if hook == metrics_hook else hook for hook in env._post_physics_step_hooks
+                ]
+            env._post_integration_refresh_stride = (
+                env._control_steps
+                if not include_imu
+                else int(env.physics_profile.scheduler["post_integration_refresh_stride"])
+            )
+        if not include_imu and imu_hook is not None:
+            env._post_physics_step_hooks = [hook for hook in env._post_physics_step_hooks if hook != imu_hook]
         if env.control_freq != dataset.fps or env.action_dim != 7:
             raise ValueError("dataset must match the current 20 Hz, 7D OSC contract")
         controller = (
@@ -157,6 +161,7 @@ def collect_episode(
                     else {}
                 ),
                 "task_context": env.get_policy_task_context(),
+                "task_metrics": metrics,
                 "controller_profile": profile.to_dict() if controller is not None else None,
                 "collector": device,
                 **({"pos_sensitivity": pos_sensitivity, "rot_sensitivity": rot_sensitivity} if teleop else {}),
@@ -193,9 +198,18 @@ def build_parser():
         default=Path(models.assets_root, "shakebench_states_dev.json"),
         help="Verified state asset: frozen dev, committed official/knee, task variants, or a generated train pool",
     )
+    parser.add_argument(
+        "--task-module", action="append", default=[], help="Import a task registration module before loading states"
+    )
+    parser.add_argument(
+        "--episodes-per-state", type=int, default=1, help="Repeat each selected initial state this many times"
+    )
     parser.add_argument("--state-id", action="append", help="Select exact state IDs; default: every state in the asset")
     parser.add_argument(
-        "--limit", type=int, default=None, help="Episode budget; cannot exceed the selected state count"
+        "--limit",
+        type=int,
+        default=None,
+        help="Episode budget; cannot exceed selected states times --episodes-per-state",
     )
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--width", type=int, default=256)
@@ -206,12 +220,16 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    if min(args.width, args.height, args.horizon_steps) <= 0 or (args.limit is not None and args.limit <= 0):
+    if min(args.width, args.height, args.horizon_steps, args.episodes_per_state) <= 0 or (
+        args.limit is not None and args.limit <= 0
+    ):
         raise ValueError("dimensions, horizon and limit must be positive")
     if any(not np.isfinite(value) or value <= 0 for value in (args.pos_sensitivity, args.rot_sensitivity)):
         raise ValueError("SpaceMouse sensitivities must be finite and positive")
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
+    for module in args.task_module:
+        importlib.import_module(module)
     state_asset = load_state_asset(args.states)
     states = state_asset["states"]
     if args.state_id:
@@ -219,12 +237,16 @@ def main(argv=None):
         if unknown:
             raise ValueError(f"unknown state IDs: {sorted(unknown)}")
         states = [state for state in states if state["state_id"] in args.state_id]
+    states = [state for state in states for _ in range(args.episodes_per_state)]
     if args.limit is not None and args.limit > len(states):
         raise ValueError(
             f"--limit {args.limit} exceeds the {len(states)} selected states; "
-            "generate a larger pool with shakebench.scripts.generate_train_states"
+            "increase --episodes-per-state or select more states"
         )
     states = states[: args.limit]
+    if args.device == "oracle":
+        for state in states:
+            require_pick_place(state, consumer="oracle collection")
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
@@ -251,6 +273,8 @@ def main(argv=None):
         "imu_enabled": args.device != "spacemouse",
         "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         "tasks": instructions,
+        "task_modules": args.task_module,
+        "episodes_per_state": args.episodes_per_state,
         "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
         "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
         "action_space": {

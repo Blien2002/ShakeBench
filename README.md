@@ -35,6 +35,30 @@ python -m shakebench.scripts.evaluate \
 
 v3 状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；收纳槽与初始环位置一致，底板以杆为中心。旧 v1/v2 状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
 
+SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7D 动作，不采集 IMU）：
+
+```bash
+source /home/miracle04/.venvs/shakebench-lerobot/bin/activate
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
+  --device spacemouse --task-module shakebench.environments.ring_on_peg \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states_v3.json \
+  --output out/spacemouse_ring_stack --episodes-per-state 20 \
+  --horizon-steps 2400 --pos-sensitivity 0.2 --rot-sensitivity 0.3
+```
+
+Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，三环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz；输出目录必须不存在。
+
+```bash
+python -m shakebench.scripts.export_sft_subset \
+  --dataset out/spacemouse_ring_stack --output out/spacemouse_ring_stack_sft
+python -m shakebench.scripts.verify_collection \
+  --dataset out/spacemouse_ring_stack_sft \
+  --task-module shakebench.environments.ring_on_peg \
+  --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states_v3.json
+```
+
+上述校验检查来源状态、格式、动作、图像和成功终止；若有独立评测状态池，须一并加入 `--eval-assets` 才能检查训练/评测隔离。当前 pick-place oracle 不支持套环，误选 `--device oracle` 会在创建数据集前报错。
+
 # robosuite
 
 ![gallery of_environments](docs/images/gallery.png)
