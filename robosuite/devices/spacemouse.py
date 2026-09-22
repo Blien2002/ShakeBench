@@ -266,7 +266,7 @@ class SpaceMouse(Device):
             np.array(
                 [
                     ("d" in self._pressed_keys) - ("a" in self._pressed_keys),
-                    ("w" in self._pressed_keys) - ("s" in self._pressed_keys),
+                    ("s" in self._pressed_keys) - ("w" in self._pressed_keys),
                     ("e" in self._pressed_keys) - ("q" in self._pressed_keys),
                 ],
                 dtype=float,
