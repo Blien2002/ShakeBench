@@ -43,16 +43,20 @@ python -m shakebench.scripts.generate_ring_states --output out/ring_states.json 
 
 采集时将 `--states` 指向生成的文件，每条状态对应一个布局，R 重试保持当前布局。
 
-SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7D 动作，不采集 IMU）：
+SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7D 动作，不采集 IMU）。所有任务必须显式指定 `--task`，没有默认任务：
 
 ```bash
 source /home/miracle04/.venvs/shakebench-lerobot/bin/activate
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
-  --device spacemouse --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states.json \
-  --output out/spacemouse_ring_stack --limit 20 \
-  --horizon-steps 2400 --pos-sensitivity 0.2 --rot-sensitivity 0.3
+  --device spacemouse --task ring_on_peg \
+  --output out/spacemouse_ring_stack --limit 20
+
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
+  --device spacemouse --task pick_place \
+  --output out/spacemouse_pick_place_static --limit 1
 ```
+
+各任务独立读取 `shakebench/models/assets/collection_<task>.json`，其中定义状态池、注册模块、时程、操作灵敏度、图像尺寸和主相机。命令行同名参数优先，例如 `--horizon-steps 3000`；`--config /path/to/collection.json` 可替换整份配置，配置中的相对状态路径相对于该 JSON 所在目录。套环默认 2400 步、位移/旋转灵敏度 0.2/0.3；pick-place 默认 1200 步、灵敏度 1.0/1.0。`--limit` 是整个采集计划的 episode 数量，中断续采仍使用原计划。
 
 Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，三环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz。SpaceMouse 采集被中断后，使用相同参数再次运行会从 manifest 中的下一个状态继续；第一条轨迹尚未保存时只清理临时图像，不覆盖已保存 episode。
 

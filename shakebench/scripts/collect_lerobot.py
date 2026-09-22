@@ -27,7 +27,7 @@ from shakebench.utils.rollout import (
     proprioception_metadata,
     task_description,
 )
-from shakebench.utils.task_registry import require_pick_place
+from shakebench.utils.task_registry import require_pick_place, task_type
 from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.websocket_policy import modality_metadata
 
@@ -205,6 +205,10 @@ def collect_episode(
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task", required=True, help="Explicit task name, e.g. pick_place or ring_on_peg")
+    parser.add_argument(
+        "--config", type=Path, help="Override the task's collection JSON; relative states resolve beside it"
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -219,12 +223,11 @@ def build_parser():
         default=None,
         help="Defaults to teleop for SpaceMouse and official for oracle collection",
     )
-    parser.add_argument("--pos-sensitivity", type=float, default=1.0)
-    parser.add_argument("--rot-sensitivity", type=float, default=1.0)
+    parser.add_argument("--pos-sensitivity", type=float)
+    parser.add_argument("--rot-sensitivity", type=float)
     parser.add_argument(
         "--states",
         type=Path,
-        default=Path(models.assets_root, "shakebench_states_dev.json"),
         help="Verified state asset: frozen dev, committed official/knee, task variants, or a generated train pool",
     )
     parser.add_argument(
@@ -240,15 +243,59 @@ def build_parser():
         default=None,
         help="Episode budget; cannot exceed selected states times --episodes-per-state",
     )
-    parser.add_argument("--horizon-steps", type=int, default=1200)
-    parser.add_argument("--width", type=int, default=256)
-    parser.add_argument("--height", type=int, default=256)
-    parser.add_argument("--main-camera", default="task_close", help="task_close preset or a compiled camera name")
+    parser.add_argument("--horizon-steps", type=int)
+    parser.add_argument("--width", type=int)
+    parser.add_argument("--height", type=int)
+    parser.add_argument("--main-camera", help="task_close preset or a compiled camera name")
     return parser
 
 
+def parse_args(argv=None):
+    """Apply explicit task configuration, then command-line overrides."""
+    parser = build_parser()
+    selected, _ = parser.parse_known_args(argv)
+    config_path = selected.config
+    if config_path is None:
+        if not selected.task.isidentifier():
+            parser.error("--task must be a task identifier")
+        config_path = Path(models.assets_root, f"collection_{selected.task}.json")
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        parser.error(f"cannot load task configuration {config_path}: {exc}")
+    required = {
+        "states",
+        "task_module",
+        "horizon_steps",
+        "pos_sensitivity",
+        "rot_sensitivity",
+        "width",
+        "height",
+        "main_camera",
+    }
+    if not isinstance(config, dict) or set(config) != required:
+        parser.error(f"task configuration must contain exactly: {sorted(required)}")
+    if (
+        not isinstance(config["states"], str)
+        or not isinstance(config["task_module"], list)
+        or not all(isinstance(module, str) for module in config["task_module"])
+    ):
+        parser.error("configuration states must be a path and task_module must be a list of module names")
+    for key in ("width", "height", "horizon_steps"):
+        if type(config[key]) is not int or config[key] <= 0:
+            parser.error(f"configuration {key} must be a positive integer")
+    for key in ("pos_sensitivity", "rot_sensitivity"):
+        if type(config[key]) not in (int, float) or not np.isfinite(config[key]) or config[key] <= 0:
+            parser.error(f"configuration {key} must be finite and positive")
+    if not isinstance(config["main_camera"], str) or not config["main_camera"]:
+        parser.error("configuration main_camera must be a nonempty name")
+    config["states"] = config_path.parent / config["states"]
+    parser.set_defaults(**config)
+    return parser.parse_args(argv)
+
+
 def main(argv=None):
-    args = build_parser().parse_args(argv)
+    args = parse_args(argv)
     if min(args.width, args.height, args.horizon_steps, args.episodes_per_state) <= 0 or (
         args.limit is not None and args.limit <= 0
     ):
@@ -271,6 +318,8 @@ def main(argv=None):
             "increase --episodes-per-state or select more states"
         )
     states = states[: args.limit]
+    if any(task_type(state) != args.task for state in states):
+        raise ValueError(f"selected states do not belong to --task {args.task}")
     if args.device == "oracle":
         for state in states:
             require_pick_place(state, consumer="oracle collection")
@@ -324,6 +373,7 @@ def main(argv=None):
     if resume_manifest is None:
         manifest = {
             "complete": False,
+            "task": args.task,
             "collector": args.device,
             "scoreable": False,
             "gamma": 0.0,
