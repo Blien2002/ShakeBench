@@ -54,7 +54,7 @@ MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot
   --horizon-steps 2400 --pos-sensitivity 0.2 --rot-sensitivity 0.3
 ```
 
-Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，三环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz；输出目录必须不存在。
+Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，三环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz。SpaceMouse 采集被中断后，使用相同参数再次运行会从 manifest 中的下一个状态继续；第一条轨迹尚未保存时只清理临时图像，不覆盖已保存 episode。
 
 ```bash
 python -m shakebench.scripts.export_sft_subset \

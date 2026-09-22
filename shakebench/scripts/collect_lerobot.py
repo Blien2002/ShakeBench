@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
 import shutil
 from pathlib import Path
 
@@ -39,6 +40,29 @@ def dataset_features(height, width, *, include_imu=True):
         "next.done": {"dtype": "bool", "shape": (1,), "names": None},
         "next.success": {"dtype": "bool", "shape": (1,), "names": None},
     }
+
+
+def _load_spacemouse_resume(output, requested_states):
+    """Load a resumable SpaceMouse manifest and return it with its prefix length."""
+    manifest_path = output / "meta" / "shakebench_collection.json"
+    if not manifest_path.is_file():
+        raise FileExistsError(f"cannot resume {output}: missing shakebench_collection.json")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume {output}: invalid collection manifest") from exc
+    if manifest.get("collector") != "spacemouse":
+        raise FileExistsError(f"refusing to resume non-SpaceMouse dataset {output}")
+    requested_ids = [state["state_id"] for state in requested_states]
+    if manifest.get("requested_states") != requested_ids:
+        raise ValueError("resume arguments must select the same states as the existing collection")
+    episodes = manifest.get("episodes")
+    if not isinstance(episodes, list) or len(episodes) > len(requested_states):
+        raise ValueError("existing collection manifest has an invalid episode prefix")
+    for index, episode in enumerate(episodes):
+        if not isinstance(episode, dict) or episode.get("state", {}).get("state_id") != requested_ids[index]:
+            raise ValueError("existing collection episodes do not match the requested state order")
+    return manifest, len(episodes)
 
 
 def collect_episode(
@@ -181,7 +205,12 @@ def collect_episode(
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Local dataset directory; interrupted SpaceMouse collections resume in place",
+    )
     parser.add_argument("--repo-id", default=None, help="Local dataset ID; defaults to shakebench/<device>-gamma-zero")
     parser.add_argument("--device", choices=("oracle", "spacemouse"), default="oracle")
     parser.add_argument(
@@ -226,8 +255,6 @@ def main(argv=None):
         raise ValueError("dimensions, horizon and limit must be positive")
     if any(not np.isfinite(value) or value <= 0 for value in (args.pos_sensitivity, args.rot_sensitivity)):
         raise ValueError("SpaceMouse sensitivities must be finite and positive")
-    if args.output.exists():
-        raise FileExistsError(f"refusing to overwrite {args.output}")
     for module in args.task_module:
         importlib.import_module(module)
     state_asset = load_state_asset(args.states)
@@ -247,49 +274,85 @@ def main(argv=None):
     if args.device == "oracle":
         for state in states:
             require_pick_place(state, consumer="oracle collection")
+    selected_states = states
+    resume_manifest = None
+    completed_count = 0
+    existing_dataset = False
+    if args.output.exists():
+        if args.device != "spacemouse":
+            raise FileExistsError(f"refusing to overwrite {args.output}")
+        resume_manifest, completed_count = _load_spacemouse_resume(args.output, selected_states)
+        if completed_count == len(selected_states):
+            resume_manifest["complete"] = True
+            resume_manifest.pop("error", None)
+            resume_manifest["sft_subset"] = sft_subset_summary(resume_manifest["episodes"])
+            write_json(args.output / "meta" / "shakebench_collection.json", resume_manifest)
+            print(f"Collection already complete: {args.output}", flush=True)
+            return 0
+        parquet_files = tuple(args.output.rglob("*.parquet"))
+        if parquet_files:
+            existing_dataset = True
+            shutil.rmtree(args.output / "images", ignore_errors=True)
+        elif completed_count:
+            raise ValueError("existing manifest lists episodes but the LeRobot dataset has no parquet files")
+        else:
+            # Only an interrupted first episode can reach this branch. Its scratch
+            # images are incomplete and there is no saved data to discard.
+            shutil.rmtree(args.output)
+        states = states[completed_count:]
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
     physics_profile = args.physics_profile or ("teleop" if args.device == "spacemouse" else "official")
-    instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in states))
-    dataset = LeRobotDataset.create(
-        repo_id=args.repo_id or f"shakebench/{args.device}-gamma-zero",
-        root=args.output,
-        fps=20,
-        robot_type="Panda",
-        features=dataset_features(args.height, args.width, include_imu=args.device != "spacemouse"),
-        use_videos=False,
-    )
+    instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in selected_states))
+    repo_id = args.repo_id or f"shakebench/{args.device}-gamma-zero"
+    if existing_dataset:
+        dataset = LeRobotDataset(repo_id, root=args.output)
+        dataset.episode_buffer = dataset.create_episode_buffer()
+    else:
+        dataset = LeRobotDataset.create(
+            repo_id=repo_id,
+            root=args.output,
+            fps=20,
+            robot_type="Panda",
+            features=dataset_features(args.height, args.width, include_imu=args.device != "spacemouse"),
+            use_videos=False,
+        )
     if args.device == "spacemouse":
         dataset.start_image_writer(num_processes=0, num_threads=8)
-    manifest = {
-        "complete": False,
-        "collector": args.device,
-        "scoreable": False,
-        "gamma": 0.0,
-        "physics_backend": "mujoco_cpu",
-        "physics_profile": physics_profile,
-        "imu_enabled": args.device != "spacemouse",
-        "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
-        "tasks": instructions,
-        "task_modules": args.task_module,
-        "episodes_per_state": args.episodes_per_state,
-        "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
-        "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
-        "action_space": {
-            "controller": "OSC_POSE",
-            "frame": "robot_base",
-            "normalized_bounds": [-1, 1],
-            "translation_scale_m": 0.05,
-            "rotation_scale_rad": 0.5,
-            "gripper": "-1 open, +1 close",
-        },
-        "requested_states": [state["state_id"] for state in states],
-        "proprioception": proprioception_metadata(),
-        "state_authority": state_asset["authority"],
-        "episodes": [],
-    }
+    if resume_manifest is None:
+        manifest = {
+            "complete": False,
+            "collector": args.device,
+            "scoreable": False,
+            "gamma": 0.0,
+            "physics_backend": "mujoco_cpu",
+            "physics_profile": physics_profile,
+            "imu_enabled": args.device != "spacemouse",
+            "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
+            "tasks": instructions,
+            "task_modules": args.task_module,
+            "episodes_per_state": args.episodes_per_state,
+            "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
+            "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
+            "action_space": {
+                "controller": "OSC_POSE",
+                "frame": "robot_base",
+                "normalized_bounds": [-1, 1],
+                "translation_scale_m": 0.05,
+                "rotation_scale_rad": 0.5,
+                "gripper": "-1 open, +1 close",
+            },
+            "requested_states": [state["state_id"] for state in selected_states],
+            "proprioception": proprioception_metadata(),
+            "state_authority": state_asset["authority"],
+            "episodes": [],
+        }
+    else:
+        manifest = resume_manifest
+        manifest["complete"] = False
+        manifest.pop("error", None)
     manifest_path = args.output / "meta" / "shakebench_collection.json"
     write_json(args.output / "meta" / "modality.json", modality_metadata())
     write_json(manifest_path, manifest)
