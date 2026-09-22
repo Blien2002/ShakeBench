@@ -1,0 +1,25 @@
+{
+  "schema_id": "shakebench.ring_on_peg.states",
+  "schema_version": 1,
+  "states": [
+    {
+      "state_id": "ring-on-peg-000",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 1
+      },
+      "ring_xy_m": [
+        -0.1,
+        -0.13
+      ],
+      "ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.1,
+        0.15
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    }
+  ]
+}

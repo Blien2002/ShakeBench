@@ -1,7 +1,37 @@
-> **ShakeBench 当前场景（2026-09-14）**：`VibrationPickPlace` 是唯一公开任务入口，使用 `world_fixed_arm_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
+> **ShakeBench 当前场景（2026-09-22）**：`VibrationPickPlace` 提供抓放任务，`RingOnPeg` 提供单环套柱任务；当前默认场景为 `world_fixed_rigid_table_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
 > IMU 世界模型计划的 B/C/D 阶段已完成，新场景尚未取得实验认证。Phase 06–08 的选型、发布、handoff、authority 与 evidence 链已删除，当前完整性校验只绑定 physics profile 与 geometry/scene/arena/support 资产（`python -m shakebench.utils.runtime_verifier --write` 可重建清单）。桌下 IMU、双相机数据采集和策略接入接口已提供，视频历史/预测器训练仍由独立模块负责。
 > 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
 > ShakeBench 专用代码与资源位于 shakebench/ 包，导入入口为 shakebench.make；robosuite/ 保留通用框架。策略接入见 shakebench/utils/websocket_policy.py（WebSocket 策略协议，与具体模型无关），Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
+
+## 套环任务（CPU 开发版）
+
+机械臂抓起橙色环，套到蓝色竖直柱上，并松手放在桌面。复用工作台、振动驱动、Panda 和桌下 IMU；环使用原生分段中空碰撞体。成功要求真实孔径内穿柱、近水平落桌、无机器人接触、相对桌面稳定，连续满足 0.5 秒后锁存；奖励为成功时 1，否则 0。
+
+环内/外半径为 25/45 mm，厚 16 mm；柱半径 12 mm，高 80 mm。孔内判定逐面检查分段环的内壁，允许 0.5 mm 接触容差。参考 [RLBench 的目标检测](https://github.com/stepjam/RLBench/blob/02720bba4c73fe02eb75df946b8791b806028a9d/rlbench/tasks/insert_onto_square_peg.py)、[MetaWorld 的圆环装配](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/envs/sawyer_assembly_peg_v3.py) 和本仓库 robosuite 的 `HollowCylinderObject`；ShakeBench 额外按移动桌面坐标检查松手后的稳定停留。
+
+```python
+import numpy as np
+from shakebench.environments.ring_on_peg import default_state
+from shakebench.utils.rollout import ShakeBenchTaskEnv
+
+task = ShakeBenchTaskEnv(default_state(), gamma=0.0, observation_source="contract")
+try:
+    observation, info = task.reset()
+    observation, reward, terminated, truncated, info = task.step(np.zeros(7))
+finally:
+    task.close()
+```
+
+导入 `shakebench.environments.ring_on_peg` 后也可使用 `shakebench.make("RingOnPeg")`。共享策略评测入口：
+
+```bash
+python -m shakebench.scripts.evaluate \
+  --task-module shakebench.environments.ring_on_peg \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states_v1.json \
+  --policy my_policy:make_policy --observation-source contract
+```
+
+状态文件显式记录桌面坐标系内的环/柱位置、环初始 yaw、激励和 IMU 种子。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
 
 # robosuite
 
