@@ -19,8 +19,8 @@ from PIL import Image
 from robosuite.utils import transform_utils as T
 from shakebench.demos.demo_oracle_video import _task_close_camera
 from shakebench.utils.outcomes import resolve_termination_cause, validate_outcome
-from shakebench.utils.state_schema import normalize_state
-from shakebench.utils.tasks import OBJECTS, TaskSpec
+from shakebench.utils.privilege import assert_policy_observation_is_clean
+from shakebench.utils.task_registry import describe_task, prepare_task_state
 
 TASK = "Pick up the object from the metal table and place it in the target crate."
 CAMERAS = {"observation.images.main": "task_close", "observation.images.wrist": "robot0_eye_in_hand"}
@@ -73,16 +73,7 @@ ERROR_TAXONOMY = {
 
 
 def task_description(state: Mapping[str, Any]) -> dict[str, str]:
-    if "task" not in state:
-        return {"task_id": "pick_place.mug", "instruction": TASK}
-    spec = TaskSpec.from_mapping(state["task"])
-    return {
-        "task_id": spec.variant_id,
-        "instruction": (
-            f"Pick up the {OBJECTS[spec.object_id]['instruction']} from the metal table "
-            "and place it in the target crate."
-        ),
-    }
+    return describe_task(state)
 
 
 def observation_features(height, width):
@@ -283,7 +274,7 @@ class ShakeBenchTaskEnv:
             raise ValueError("state must include a non-empty state_id")
         # Verified committed assets name the object can_*; the shared boundary
         # normalizes both schemas once, before any rollout starts.
-        self.state = deepcopy(normalize_state(state))
+        self.state = prepare_task_state(state)
         self.description = task_description(self.state)
         self.gamma, self.horizon = float(gamma), horizon
         self.mode, self.physics_profile = mode, physics_profile
@@ -346,6 +337,7 @@ class ShakeBenchTaskEnv:
             payload = {
                 key: np.asarray(observation[key], dtype=float).copy() for key in self.env.policy_observation_keys
             }
+        assert_policy_observation_is_clean(payload)
         return {
             **payload,
             "task": self.description["instruction"],
@@ -353,7 +345,7 @@ class ShakeBenchTaskEnv:
         }
 
     def reset(self, *, seed=None, options=None):
-        from shakebench.scripts.gpu_batch import make_environment
+        from shakebench.utils.task_runtime import make_environment
 
         if seed is not None:
             raise ValueError("episode seeds are fixed by the authenticated state asset")
@@ -391,7 +383,7 @@ class ShakeBenchTaskEnv:
         metrics = self.env.get_metrics()
         cause = resolve_termination_cause(
             prior_cause=None,
-            task_rule_violation=False,
+            task_rule_violation=bool(metrics.get("task_rule_violation", False)),
             success_latched=bool(metrics["success"]["passed"]),
             policy_abort=False,
             horizon_exhausted=self.steps >= self.horizon,

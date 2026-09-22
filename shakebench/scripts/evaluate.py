@@ -30,7 +30,7 @@ from shakebench.utils.rollout import (
     invalid_episode_result,
     rollout_policy,
 )
-from shakebench.utils.train_states import assert_split_disjoint, split_overlap
+from shakebench.utils.task_registry import assert_split_disjoint, split_overlap
 
 EVALUATION_SCHEMA_ID = "shakebench.policy_evaluation"
 EVALUATION_SCHEMA_VERSION = 1
@@ -127,6 +127,9 @@ def requested_state_ids(states, selectors):
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--task-module", action="append", default=[], help="Import a trusted task registration module (repeatable)"
+    )
     parser.add_argument("--policy", required=True, help="module:factory returning a predict()-capable policy")
     parser.add_argument("--policy-arg", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--policy-id", default=None, help="Label recorded with the results; defaults to --policy")
@@ -169,6 +172,8 @@ def summarize(episodes):
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    for module_name in args.task_module:
+        importlib.import_module(module_name)
     if args.output is not None and args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     if min(args.horizon_steps, args.action_horizon) < 1:

@@ -151,6 +151,11 @@ def load_state_asset(path: str | Path) -> dict[str, Any]:
         raise OracleRunError(f"state asset read failed: {exc}") from exc
     if not isinstance(payload, Mapping):
         raise OracleRunError("state asset must be an object")
+    from shakebench.utils.task_registry import load_extension_states
+
+    extension = load_extension_states(payload)
+    if extension is not None:
+        return extension
     if payload.get("schema_id") == "shakebench.phase07.dev_states":
         states = load_dev_states(source)
         return {"states": states, "authority": {"kind": "dev", "dev_state_anchor": _dev_state_anchor(source)}}
@@ -439,6 +444,9 @@ def run_episode(
 
     # The verifier binds this episode to the committed record it reloads from the
     # asset, so the alias-normalized execution copy never replaces that record.
+    from shakebench.utils.task_registry import require_pick_place
+
+    require_pick_place(state, consumer="pick-place oracle")
     state = normalize_state(state)
     state_id = str(state["state_id"])
     seed = int(state.get("excitation_seed", state.get("seed", 0)))

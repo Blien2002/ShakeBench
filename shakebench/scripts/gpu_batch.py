@@ -30,45 +30,15 @@ from shakebench.utils.oracle import (
 )
 from shakebench.utils.outcomes import resolve_termination_cause, validate_outcome
 from shakebench.utils.providers import TABLE_IMU_POLICY_KEYS
-from shakebench.utils.state_schema import normalize_state
 
 
 def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_profile="official"):
-    """Use the same inputs and reset sequence as the CPU oracle runner."""
-    import shakebench
-    from robosuite.controllers import load_composite_controller_config
-    from shakebench.utils.tasks import task_env_kwargs
+    """Compatibility entry for pick-place GPU/oracle collection callers."""
+    from shakebench.utils.task_registry import require_pick_place
+    from shakebench.utils.task_runtime import make_environment as build_environment
 
-    state = normalize_state(state)
-    seed = int(state.get("excitation_seed", state.get("seed", 0)))
-    t0 = float(state.get("t0_s", 0.0))
-    variant = "task" in state
-    kwargs = task_env_kwargs(state) if variant else {"object_start_xy": tuple(state["object_xy_m"])}
-    env = shakebench.make(
-        "VibrationPickPlace",
-        robots="Panda",
-        controller_configs=load_composite_controller_config(robot="Panda"),
-        has_renderer=False,
-        has_offscreen_renderer=False,
-        use_camera_obs=False,
-        use_object_obs=False,
-        physics_profile=physics_profile,
-        geometry_profile=DEFAULT_GEOMETRY_PROFILE,
-        imu_mode="canonical_noisy_v1",
-        vibration={"mode": mode, "gamma": gamma, "seed": seed, "t0_s": t0},
-        **kwargs,
-        imu_seed=int(state.get("imu_seed", seed)),
-        horizon=horizon,
-        ignore_done=True,
-        seed=seed,
-        hard_reset=False,
-    )
-    try:
-        env.reset()
-    except BaseException:
-        env.close()
-        raise
-    return env, env.deck_driver.trajectory
+    require_pick_place(state, consumer="GPU/oracle collection")
+    return build_environment(state, gamma=gamma, horizon=horizon, mode=mode, physics_profile=physics_profile)
 
 
 def _write_npz(path, arrays):
