@@ -259,6 +259,7 @@ class SpaceMouse(Device):
         if self._read_error is not None:
             raise OSError("SpaceMouse HID reader failed") from self._read_error
         dpos = self.control[:3] * 0.005 * self.pos_sensitivity
+        dpos[:2] *= -1
         roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
 
         # convert RPY to an absolute orientation

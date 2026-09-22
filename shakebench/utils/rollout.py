@@ -76,18 +76,24 @@ def task_description(state: Mapping[str, Any]) -> dict[str, str]:
     return describe_task(state)
 
 
-def observation_features(height, width):
+def observation_features(height, width, *, include_imu=True):
     """LeRobot-compatible array schema; language uses its task metadata table."""
-    return {
+    features = {
         **{
             key: {"dtype": "image", "shape": (height, width, 3), "names": ["height", "width", "channels"]}
             for key in CAMERAS
         },
         "observation.state": {"dtype": "float32", "shape": (8,), "names": STATE_NAMES},
-        "observation.table_imu_window": {"dtype": "float32", "shape": (10, 6), "names": None},
-        "observation.table_imu_timestamps_s": {"dtype": "float64", "shape": (10,), "names": None},
-        "observation.table_imu_dt_s": {"dtype": "float32", "shape": (1,), "names": None},
     }
+    if include_imu:
+        features.update(
+            {
+                "observation.table_imu_window": {"dtype": "float32", "shape": (10, 6), "names": None},
+                "observation.table_imu_timestamps_s": {"dtype": "float64", "shape": (10,), "names": None},
+                "observation.table_imu_dt_s": {"dtype": "float32", "shape": (1,), "names": None},
+            }
+        )
+    return features
 
 
 def validated_actions(value):
@@ -123,7 +129,7 @@ def episode_outcome(termination_cause: str) -> tuple[str, str | None]:
 class ShakeBenchCameraObservation:
     """Shared camera and sensor extraction for collection and policy evaluation."""
 
-    def __init__(self, env, *, height=256, width=256, main_camera="task_close"):
+    def __init__(self, env, *, height=256, width=256, main_camera="task_close", include_imu=True):
         self.env = env
         if not isinstance(height, int) or isinstance(height, bool) or height <= 0:
             raise ValueError("height must be a positive integer")
@@ -131,7 +137,7 @@ class ShakeBenchCameraObservation:
             raise ValueError("width must be a positive integer")
         if not isinstance(main_camera, str) or not main_camera:
             raise ValueError("main_camera must be a non-empty camera name")
-        self.height, self.width, self.main_camera = height, width, main_camera
+        self.height, self.width, self.main_camera, self.include_imu = height, width, main_camera, include_imu
         model = env.sim.model._model
         model.vis.global_.offwidth = max(model.vis.global_.offwidth, width)
         model.vis.global_.offheight = max(model.vis.global_.offheight, height)
@@ -197,16 +203,17 @@ class ShakeBenchCameraObservation:
                 self.env.sim.data.qpos[robot._ref_gripper_joint_pos_indexes["right"]],
             )
         ).astype(np.float32)
-        for name in ("table_imu_window", "table_imu_timestamps_s", "table_imu_dt_s"):
-            dtype = np.float64 if name == "table_imu_timestamps_s" else np.float32
-            result[f"observation.{name}"] = np.atleast_1d(np.asarray(observation[name], dtype=dtype)).copy()
+        if self.include_imu:
+            for name in ("table_imu_window", "table_imu_timestamps_s", "table_imu_dt_s"):
+                dtype = np.float64 if name == "table_imu_timestamps_s" else np.float32
+                result[f"observation.{name}"] = np.atleast_1d(np.asarray(observation[name], dtype=dtype)).copy()
         if result["observation.state"].shape != (8,):
             raise ValueError("observation.state must have shape (8,)")
-        if result["observation.table_imu_window"].shape != (10, 6):
+        if self.include_imu and result["observation.table_imu_window"].shape != (10, 6):
             raise ValueError("table_imu_window must have shape (10, 6)")
-        if result["observation.table_imu_timestamps_s"].shape != (10,):
+        if self.include_imu and result["observation.table_imu_timestamps_s"].shape != (10,):
             raise ValueError("table_imu_timestamps_s must have shape (10,)")
-        if result["observation.table_imu_dt_s"].shape != (1,):
+        if self.include_imu and result["observation.table_imu_dt_s"].shape != (1,):
             raise ValueError("table_imu_dt_s must have shape (1,)")
         if any(not np.isfinite(value).all() for value in result.values()):
             raise ValueError("non-finite policy observation")

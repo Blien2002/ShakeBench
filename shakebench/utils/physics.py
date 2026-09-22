@@ -7,6 +7,8 @@ The benchmark has two deliberately different configuration paths:
 * ``probe`` / ``training`` is an explicit, non-scoreable compatibility
   profile.  It is useful for exploratory physics work and cannot silently be
   mistaken for the official benchmark configuration.
+* ``teleop`` is a non-scoreable CPU profile with a coarser timestep for
+  responsive human demonstration collection.
 
 This module is intentionally independent of task success, controllers, and
 policy observations.  It only owns environment physics and the provenance
@@ -34,6 +36,7 @@ PHYSICS_PROFILE_SCHEMA_ID = "shakebench.official.physics"
 PHYSICS_PROFILE_SCHEMA_VERSION = 1
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
 PROBE_PHYSICS_PROFILE_ID = "shakebench.probe.physics"
+TELEOP_PHYSICS_PROFILE_ID = "shakebench.teleop_cpu_fast.physics"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics"
 
 
@@ -633,6 +636,22 @@ def make_probe_physics_profile() -> PhysicsProfile:
     return _validate_payload(payload, source="generated probe profile", require_official=False)
 
 
+def make_teleop_physics_profile() -> PhysicsProfile:
+    """Return the non-scoreable CPU profile used for responsive teleoperation."""
+
+    payload = _thaw(make_probe_physics_profile().payload)
+    payload.update(
+        profile_id=TELEOP_PHYSICS_PROFILE_ID,
+        status="teleop_non_scoreable",
+        not_scoreable_reason="coarser timestep for responsive human teleoperation",
+    )
+    payload["physics"]["timestep"]["physics_timestep_s"] = 0.0025
+    payload["physics"]["scheduler"]["control_steps"] = 20
+    payload["physics"]["scheduler"]["post_integration_refresh_stride"] = 2
+    payload["physics"]["deck"]["eq_solref"] = [0.005, 0.5]
+    return _validate_payload(payload, source="generated teleop profile", require_official=False)
+
+
 def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
     """Resolve an environment profile name or immutable profile object."""
 
@@ -647,6 +666,8 @@ def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
         return resolved
     if isinstance(profile, str) and profile in {"probe", "training", "probe_non_scoreable"}:
         return make_probe_physics_profile()
+    if isinstance(profile, str) and profile in {"teleop", "teleop_non_scoreable"}:
+        return make_teleop_physics_profile()
     if isinstance(profile, (str, Path)):
         profile_path = Path(profile)
         try:
@@ -662,7 +683,7 @@ def resolve_physics_profile(profile: Any = None) -> PhysicsProfile:
         if payload.get("scoreable") is True:
             raise PhysicsProfileError("scoreable mappings must be loaded from the package official profile")
         return _validate_payload(payload, source="in-memory physics profile", require_official=False)
-    raise PhysicsProfileError("physics_profile must be official, probe, a path, mapping, or PhysicsProfile")
+    raise PhysicsProfileError("physics_profile must be official, probe, teleop, a path, mapping, or PhysicsProfile")
 
 
 __all__ = [
@@ -671,10 +692,12 @@ __all__ = [
     "PHYSICS_PROFILE_SCHEMA_ID",
     "PHYSICS_PROFILE_SCHEMA_VERSION",
     "PROBE_PHYSICS_PROFILE_ID",
+    "TELEOP_PHYSICS_PROFILE_ID",
     "PhysicsProfile",
     "PhysicsProfileError",
     "PhysicsProfileIntegrityError",
     "load_official_physics_profile",
     "make_probe_physics_profile",
+    "make_teleop_physics_profile",
     "resolve_physics_profile",
 ]

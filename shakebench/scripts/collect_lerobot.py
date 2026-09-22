@@ -29,9 +29,9 @@ from shakebench.utils.rollout import (
 from shakebench.utils.websocket_policy import modality_metadata
 
 
-def dataset_features(height, width):
+def dataset_features(height, width, *, include_imu=True):
     return {
-        **observation_features(height, width),
+        **observation_features(height, width, include_imu=include_imu),
         "action": {"dtype": "float32", "shape": (7,), "names": ACTION_NAMES},
         "next.reward": {"dtype": "float32", "shape": (1,), "names": None},
         "next.done": {"dtype": "bool", "shape": (1,), "names": None},
@@ -48,13 +48,34 @@ def collect_episode(
     height,
     main_camera="task_close",
     device="oracle",
+    physics_profile="official",
     pos_sensitivity=1.0,
     rot_sensitivity=1.0,
 ):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
+    include_imu = device != "spacemouse"
     profile = OracleControllerProfile()
     instruction = task_description(state)["instruction"]
-    env, program = make_environment(state, gamma=0.0, horizon=horizon)
+    env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
+    if getattr(getattr(env, "physics_profile", None), "status", None) == "teleop_non_scoreable":
+        metrics_hook = env._record_post_physics_metrics
+
+        def control_boundary_metrics(sample_time_s, policy_step=False):
+            if (env._physics_step_index + 1) % env._control_steps == 0:
+                metrics_hook(sample_time_s, policy_step)
+
+        env._post_physics_step_hooks = [
+            control_boundary_metrics if hook == metrics_hook else hook for hook in env._post_physics_step_hooks
+        ]
+        env._post_integration_refresh_stride = (
+            env._control_steps
+            if not include_imu
+            else int(env.physics_profile.scheduler["post_integration_refresh_stride"])
+        )
+    if not include_imu:
+        env._post_physics_step_hooks = [
+            hook for hook in env._post_physics_step_hooks if hook != env._update_phase05_provider
+        ]
     reader = teleop = None
     try:
         if env.control_freq != dataset.fps or env.action_dim != 7:
@@ -66,11 +87,18 @@ def collect_episode(
             if device == "oracle"
             else None
         )
-        reader = ShakeBenchCameraObservation(env, height=height, width=width, main_camera=main_camera)
+        reader = ShakeBenchCameraObservation(
+            env, height=height, width=width, main_camera=main_camera, include_imu=include_imu
+        )
         if device == "spacemouse":
             from shakebench.utils.teleop import SpaceMouseTeleop
 
-            teleop = SpaceMouseTeleop(env, reader, pos_sensitivity=pos_sensitivity, rot_sensitivity=rot_sensitivity)
+            teleop = SpaceMouseTeleop(
+                env,
+                reader,
+                pos_sensitivity=pos_sensitivity,
+                rot_sensitivity=rot_sensitivity,
+            )
         observation = env._get_observations()
         for step in range(horizon):
             sample = program.evaluate(step / dataset.fps)
@@ -79,6 +107,9 @@ def collect_episode(
             if teleop is not None:
                 action = teleop.action()
                 if action is None:
+                    image_writer = getattr(dataset, "image_writer", None)
+                    if image_writer is not None:
+                        image_writer.wait_until_done()
                     dataset.clear_episode_buffer()
                     return None
             else:
@@ -120,8 +151,11 @@ def collect_episode(
                 "success": cause == "success_latched",
                 "termination_cause": cause,
                 "vibration": vibration_record(program),
-                "imu_mount": env._imu_mount_audit,
-                "imu_contract": env.observation_contract(),
+                **(
+                    {"imu_mount": env._imu_mount_audit, "imu_contract": env.observation_contract()}
+                    if include_imu
+                    else {}
+                ),
                 "task_context": env.get_policy_task_context(),
                 "controller_profile": profile.to_dict() if controller is not None else None,
                 "collector": device,
@@ -145,6 +179,12 @@ def build_parser():
     parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
     parser.add_argument("--repo-id", default=None, help="Local dataset ID; defaults to shakebench/<device>-gamma-zero")
     parser.add_argument("--device", choices=("oracle", "spacemouse"), default="oracle")
+    parser.add_argument(
+        "--physics-profile",
+        choices=("official", "teleop"),
+        default=None,
+        help="Defaults to teleop for SpaceMouse and official for oracle collection",
+    )
     parser.add_argument("--pos-sensitivity", type=float, default=1.0)
     parser.add_argument("--rot-sensitivity", type=float, default=1.0)
     parser.add_argument(
@@ -189,22 +229,26 @@ def main(argv=None):
 
     if CODEBASE_VERSION != "v2.1":
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
+    physics_profile = args.physics_profile or ("teleop" if args.device == "spacemouse" else "official")
     instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in states))
     dataset = LeRobotDataset.create(
         repo_id=args.repo_id or f"shakebench/{args.device}-gamma-zero",
         root=args.output,
         fps=20,
         robot_type="Panda",
-        features=dataset_features(args.height, args.width),
+        features=dataset_features(args.height, args.width, include_imu=args.device != "spacemouse"),
         use_videos=False,
     )
+    if args.device == "spacemouse":
+        dataset.start_image_writer(num_processes=0, num_threads=8)
     manifest = {
         "complete": False,
         "collector": args.device,
         "scoreable": False,
         "gamma": 0.0,
         "physics_backend": "mujoco_cpu",
-        "physics_profile": "official",
+        "physics_profile": physics_profile,
+        "imu_enabled": args.device != "spacemouse",
         "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         "tasks": instructions,
         "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
@@ -238,6 +282,7 @@ def main(argv=None):
                     height=args.height,
                     main_camera=args.main_camera,
                     device=args.device,
+                    physics_profile=physics_profile,
                     pos_sensitivity=args.pos_sensitivity,
                     rot_sensitivity=args.rot_sensitivity,
                 )
@@ -255,7 +300,10 @@ def main(argv=None):
         # Training consumes the success-only selection; every attempt stays in
         # this manifest so failures remain auditable.
         manifest["sft_subset"] = sft_subset_summary(manifest["episodes"])
-        write_json(manifest_path, manifest)
+        try:
+            write_json(manifest_path, manifest)
+        finally:
+            dataset.stop_image_writer()
     return 0
 
 

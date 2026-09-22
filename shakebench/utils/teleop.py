@@ -16,10 +16,18 @@ class SpaceMouseTeleop:
         self.env = env
         self.window = None
         self.closed = False
-        self.device = SpaceMouse(env, pos_sensitivity=pos_sensitivity, rot_sensitivity=rot_sensitivity)
+        self.device = SpaceMouse(
+            env,
+            pos_sensitivity=pos_sensitivity,
+            rot_sensitivity=rot_sensitivity,
+        )
         try:
             self.window = tk.Tk()
             self.window.title("ShakeBench: main | wrist - Enter: record, Esc: quit")
+            tk.Label(
+                self.window,
+                text="Move cap: XYZ | Twist cap: rotate | Hold left: close gripper | Right: retry | Esc: quit",
+            ).pack()
             self.label = tk.Label(self.window)
             self.label.pack()
             ready = tk.BooleanVar(self.window, False)
@@ -32,7 +40,11 @@ class SpaceMouseTeleop:
             self.window.bind("<Escape>", quit_preview)
             self.window.bind("<Return>", lambda _: ready.set(True))
             self._show(reader.read(env._get_observations()))
-            print("Press Enter in the preview to record; hold left button to grasp, right button to retry.", flush=True)
+            print(
+                "Press Enter to record. Move cap: XYZ; twist cap: rotate; hold left: close gripper; "
+                "right: retry; Esc: quit.",
+                flush=True,
+            )
             self.window.wait_variable(ready)
             self._poll()
             self.device.start_control()
@@ -48,8 +60,7 @@ class SpaceMouseTeleop:
 
     def _show(self, frame):
         pixels = np.concatenate([frame["observation.images.main"], frame["observation.images.wrist"]], axis=1)
-        image = Image.fromarray(pixels)
-        self.photo = ImageTk.PhotoImage(image.resize((image.width * 2, image.height * 2)), master=self.window)
+        self.photo = ImageTk.PhotoImage(Image.fromarray(pixels), master=self.window)
         self.label.configure(image=self.photo)
 
     def action(self):
