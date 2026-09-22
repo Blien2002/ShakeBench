@@ -1,0 +1,589 @@
+{
+  "schema_id": "shakebench.ring_on_peg.states",
+  "schema_version": 4,
+  "generator": {
+    "seed": 0
+  },
+  "states": [
+    {
+      "state_id": "ring-stack-s0-0000",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.010693792564276439,
+        -0.09208531449445188
+      ],
+      "medium_ring_xy_m": [
+        -0.2252495313829699,
+        -0.19338894578858837
+      ],
+      "small_ring_xy_m": [
+        0.05277728611209809,
+        0.16510223091108872
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0001",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.02161112072381524,
+        0.09179862439359937
+      ],
+      "medium_ring_xy_m": [
+        0.05370727948375159,
+        -0.19890459993194076
+      ],
+      "small_ring_xy_m": [
+        0.07074441204595916,
+        0.016584488099636696
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0002",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.13210371940654148,
+        -0.030925111520936632
+      ],
+      "medium_ring_xy_m": [
+        -0.2298049183876333,
+        -0.15028668940017442
+      ],
+      "small_ring_xy_m": [
+        0.001424789289706907,
+        0.058875804629700046
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0003",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.11899557688411594,
+        0.19233413551049205
+      ],
+      "medium_ring_xy_m": [
+        0.006795114413050085,
+        0.06018371050712651
+      ],
+      "small_ring_xy_m": [
+        0.007840823005538428,
+        -0.04443143040835848
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0004",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.19136525819193195,
+        0.0885953360776327
+      ],
+      "medium_ring_xy_m": [
+        -0.050872443908738685,
+        -0.07590324977641774
+      ],
+      "small_ring_xy_m": [
+        -0.06509927082055594,
+        0.15579513373960013
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0005",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.09625566574424987,
+        -0.0568819213163719
+      ],
+      "medium_ring_xy_m": [
+        -0.03424926093728606,
+        -0.07125224356962315
+      ],
+      "small_ring_xy_m": [
+        -0.09901715980986195,
+        0.15610974080191692
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0006",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.15822326632798328,
+        0.04927485787441696
+      ],
+      "medium_ring_xy_m": [
+        0.04335539069592603,
+        -0.10425222280281915
+      ],
+      "small_ring_xy_m": [
+        -0.11899785820356226,
+        -0.13988821324206438
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0007",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.07787782800625667,
+        0.1185297081149177
+      ],
+      "medium_ring_xy_m": [
+        -0.15696880476225092,
+        -0.17919147957423617
+      ],
+      "small_ring_xy_m": [
+        -0.2073289035771161,
+        0.03213295439474026
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0008",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.13246939218518786,
+        0.06879795118254373
+      ],
+      "medium_ring_xy_m": [
+        -0.1681744401714432,
+        0.17684524420259912
+      ],
+      "small_ring_xy_m": [
+        -0.10856033943186172,
+        -0.1578018881719082
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0009",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.013521065445704666,
+        0.170861821227147
+      ],
+      "medium_ring_xy_m": [
+        0.10161972297759553,
+        -0.01598194427636157
+      ],
+      "small_ring_xy_m": [
+        -0.09072389423195851,
+        0.09379342871549173
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0010",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.01601143607630995,
+        0.17282387464535132
+      ],
+      "medium_ring_xy_m": [
+        -0.19862425201887413,
+        0.09160604683052376
+      ],
+      "small_ring_xy_m": [
+        -0.18644495559630075,
+        0.18905152552918197
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0011",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.08037680005938741,
+        0.12894953101722817
+      ],
+      "medium_ring_xy_m": [
+        -0.06720434742918041,
+        -0.10705083214427846
+      ],
+      "small_ring_xy_m": [
+        -0.14419310197477467,
+        0.015573763048874756
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0012",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.08060898156916865,
+        0.17240692639246202
+      ],
+      "medium_ring_xy_m": [
+        -0.22541614397216353,
+        0.09280247826262433
+      ],
+      "small_ring_xy_m": [
+        -0.018825631098361217,
+        -0.18865385395459158
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0013",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.01891911821762654,
+        -0.19360330819057123
+      ],
+      "medium_ring_xy_m": [
+        0.03286236084831412,
+        0.005103489304831232
+      ],
+      "small_ring_xy_m": [
+        -0.14680874645846437,
+        -0.10332971436226202
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0014",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.07972259543730476,
+        -0.10965222863307025
+      ],
+      "medium_ring_xy_m": [
+        -0.19516030589929795,
+        -0.08466769719696897
+      ],
+      "small_ring_xy_m": [
+        0.0514958793286,
+        0.02419038080247432
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0015",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.13616836280476421,
+        -0.034841462927642924
+      ],
+      "medium_ring_xy_m": [
+        0.05452354954952776,
+        0.050602584967901376
+      ],
+      "small_ring_xy_m": [
+        0.1052679513710792,
+        -0.052238235563327656
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0016",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.06538483497902159,
+        -0.14181058472538732
+      ],
+      "medium_ring_xy_m": [
+        -0.0936562787706744,
+        0.1639835846649188
+      ],
+      "small_ring_xy_m": [
+        -0.2244959201154465,
+        0.1290825120726008
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0017",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.09046174654635913,
+        0.1319215941112411
+      ],
+      "medium_ring_xy_m": [
+        -0.2364163581093749,
+        -0.053981536896691745
+      ],
+      "small_ring_xy_m": [
+        -0.21169318662036962,
+        0.0610458305346554
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0018",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        -0.14141432450415942,
+        0.08106082826391453
+      ],
+      "medium_ring_xy_m": [
+        0.09976851369915268,
+        -0.1492731590955009
+      ],
+      "small_ring_xy_m": [
+        -0.06401416313995287,
+        0.19058492877441785
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0019",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 4
+      },
+      "large_ring_xy_m": [
+        0.03924882771665822,
+        -0.0764570549122956
+      ],
+      "medium_ring_xy_m": [
+        -0.14285875721971195,
+        0.14524808167572711
+      ],
+      "small_ring_xy_m": [
+        -0.1262603236676279,
+        -0.126915048429375
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "medium_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06,
+        0.0
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    }
+  ]
+}

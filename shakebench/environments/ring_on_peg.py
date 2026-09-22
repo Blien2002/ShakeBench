@@ -22,8 +22,6 @@ from shakebench.models.arenas import ShakeBenchArena
 from shakebench.models.objects.ring_board import (
     BOARD_HEIGHT_M,
     BOARD_RADIUS_M,
-    SLOT_CLEARANCE_M,
-    SLOT_DEPTH_M,
     add_ring_board,
 )
 from shakebench.models.objects.rings import make_ring
@@ -68,7 +66,7 @@ def default_state():
     """Return a complete deterministic development episode."""
     return {
         "state_id": "ring-stack-000",
-        "task": {"task_type": "ring_on_peg", "version": 3},
+        "task": {"task_type": "ring_on_peg", "version": 4},
         "large_ring_xy_m": [0.005, -0.113],
         "medium_ring_xy_m": [-0.190, 0.0],
         "small_ring_xy_m": [0.005, 0.113],
@@ -86,9 +84,9 @@ def validate_state(state):
     """Validate explicit horizontal, stationary starts without hidden randomness."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("ring state fields must match the explicit version 3 schema")
-    if state["task"] != {"task_type": "ring_on_peg", "version": 3} or type(state["task"]["version"]) is not int:
-        raise ValueError("expected ring_on_peg task version 3")
+        raise ValueError("ring state fields must match the explicit version 4 schema")
+    if state["task"] != {"task_type": "ring_on_peg", "version": 4} or type(state["task"]["version"]) is not int:
+        raise ValueError("expected ring_on_peg task version 4")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be a nonempty string")
     result = deepcopy(dict(state))
@@ -96,21 +94,21 @@ def validate_state(state):
     if peg_xy.shape != (2,) or not np.isfinite(peg_xy).all() or np.any(np.abs(peg_xy) + BOARD_RADIUS_M > [0.325, 0.30]):
         raise ValueError("wooden board must lie entirely on the tabletop")
     result["peg_xy_m"] = peg_xy.tolist()
-    slots = []
+    placed = []
     for name, spec in RINGS.items():
         key = f"{name}_ring_xy_m"
         xy = np.asarray(state[key], dtype=float)
-        radius = spec["outer_radius"] + SLOT_CLEARANCE_M
+        radius = spec["outer_radius"]
         if xy.shape != (2,) or not np.isfinite(xy).all():
             raise ValueError(f"{key} must be a finite 2D position")
         distance = np.linalg.norm(xy - peg_xy)
-        if distance + radius + 0.005 > BOARD_RADIUS_M:
-            raise ValueError("storage slot must fit inside the wooden board")
-        if distance < RINGS["large"]["outer_radius"] + radius + 0.01:
-            raise ValueError("storage slots must clear the central large-ring footprint")
-        if any(np.linalg.norm(xy - other) < radius + other_radius + 0.01 for other, other_radius in slots):
-            raise ValueError("storage slots must be separated")
-        slots.append((xy, radius))
+        if np.any(np.abs(xy) + radius > [0.325, 0.30]):
+            raise ValueError("rings must lie entirely on the tabletop")
+        if distance < radius + PEG_RADIUS_M:
+            raise ValueError("initial rings must not intersect the wooden peg")
+        if any(np.linalg.norm(xy - other) < radius + other_radius for other, other_radius in placed):
+            raise ValueError("initial rings must not overlap")
+        placed.append((xy, radius))
         result[key] = xy.tolist()
     for key in (*[f"{name}_ring_yaw_rad" for name in RINGS], "t0_s"):
         if isinstance(state[key], bool) or not isinstance(state[key], (int, float)) or not np.isfinite(state[key]):
@@ -124,12 +122,39 @@ def validate_state(state):
     return result
 
 
+def sample_state(rng, *, base_state=None, state_id=None):
+    """Sample non-overlapping rings in the reachable tabletop area.
+
+    The base does not exclude ring positions: a ring may settle against its rim.
+    Explicit sampled states make collection retries and evaluation reproducible.
+    """
+    state = deepcopy(default_state() if base_state is None else base_state)
+    placed = []
+    peg_xy = np.asarray(state["peg_xy_m"])
+    for name, spec in RINGS.items():
+        radius = spec["outer_radius"]
+        for _ in range(1000):
+            xy = rng.uniform([-0.24, -0.20], [0.12, 0.20])
+            if np.linalg.norm(xy - peg_xy) < radius + PEG_RADIUS_M:
+                continue
+            if any(np.linalg.norm(xy - other) < radius + other_radius for other, other_radius in placed):
+                continue
+            state[f"{name}_ring_xy_m"] = xy.tolist()
+            placed.append((xy, radius))
+            break
+        else:
+            raise ValueError("could not sample three non-overlapping ring positions")
+    if state_id is not None:
+        state["state_id"] = state_id
+    return validate_state(state)
+
+
 def load_states(payload):
     """Load explicit development records; validate every pose and seed."""
     if (
         payload.get("schema_id") != STATE_SCHEMA
         or type(payload.get("schema_version")) is not int
-        or payload["schema_version"] != 3
+        or payload["schema_version"] != 4
     ):
         raise ValueError("unsupported ring state schema/version")
     if not isinstance(payload.get("states"), list) or not payload["states"]:
@@ -157,6 +182,8 @@ class RingOnPeg(ManipulationEnv):
         controller_configs=None,
         **kwargs,
     ):
+        self._randomize_rings = ring_state is None
+        self._placement_rng = np.random.default_rng(kwargs.get("seed"))
         self.ring_state = validate_state(default_state() if ring_state is None else ring_state)
         self.physics_profile = resolve_physics_profile(physics_profile)
         self.geometry_profile = load_geometry_profile(geometry_profile)
@@ -255,14 +282,7 @@ class RingOnPeg(ManipulationEnv):
             ]
         )
         contact["priority"] = "1"
-        slots = [
-            (
-                np.asarray(self.ring_state[f"{name}_ring_xy_m"]) - self.peg_origin[:2],
-                spec["outer_radius"] + SLOT_CLEARANCE_M,
-            )
-            for name, spec in RINGS.items()
-        ]
-        self.board_contact_names = add_ring_board(self.arena.asset, peg, slots, contact)
+        self.board_contact_names = add_ring_board(self.arena.asset, peg, contact)
         shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
         # A convex frustum uses the same mesh for collision and appearance.
         # Duplicate the seam positions so the two edges have independent texture coordinates.
@@ -379,6 +399,8 @@ class RingOnPeg(ManipulationEnv):
     def _reset_internal(self):
         super()._reset_internal()
         if not self.deterministic_reset:
+            if self._randomize_rings:
+                self.ring_state = sample_state(self._placement_rng, base_state=self.ring_state)
             for name, ring in self.rings.items():
                 yaw = self.ring_state[f"{name}_ring_yaw_rad"]
                 self.sim.data.set_joint_qpos(
@@ -388,7 +410,7 @@ class RingOnPeg(ManipulationEnv):
                             self.arena.table_top_abs
                             + [
                                 *self.ring_state[f"{name}_ring_xy_m"],
-                                BOARD_HEIGHT_M - SLOT_DEPTH_M + RING_HALF_HEIGHT_M + 0.001,
+                                BOARD_HEIGHT_M + RING_HALF_HEIGHT_M + 0.001,
                             ]
                         ),
                         np.cos(yaw / 2),
@@ -410,8 +432,15 @@ class RingOnPeg(ManipulationEnv):
         qpos_ids = [*robot._ref_joint_pos_indexes, *robot._ref_gripper_joint_pos_indexes["right"]]
         qvel_ids = [*robot._ref_joint_vel_indexes, *robot._ref_gripper_joint_vel_indexes["right"]]
         fixed_pose = data.qpos[qpos_ids].copy()
+        # Rim-supported rings can rock slightly: distinguish m/s from rad/s.
+        velocity_limits = np.full(model.nv, 0.001)
+        for name, ring in self.rings.items():
+            adr = model.jnt_dofadr[self.sim.model.joint_name2id(ring.joints[0])]
+            velocity_limits[adr + 3 : adr + 6] = 0.001 / RINGS[name]["outer_radius"]
         quiet = 0
-        stride = max(1, round(0.005 / model.opt.timestep))
+        stride = max(1, round(0.1 / model.opt.timestep))
+        previous_pose = data.qpos.copy()
+        mean_velocity = np.zeros(model.nv)
         for step in range(round(5 / model.opt.timestep)):
             mujoco.mj_step(model, data)
             data.qpos[qpos_ids], data.qvel[qvel_ids] = fixed_pose, 0
@@ -419,8 +448,11 @@ class RingOnPeg(ManipulationEnv):
                 continue
             if not np.isfinite(data.qpos).all() or not np.isfinite(data.qvel).all():
                 raise RuntimeError("non-finite ring reset")
-            quiet = quiet + stride if np.max(np.abs(data.qvel)) < 0.001 else 0
-            if quiet * model.opt.timestep >= 0.1:
+            # Use pose drift over 100 ms, not instantaneous soft-contact jitter.
+            mujoco.mj_differentiatePos(model, mean_velocity, stride * model.opt.timestep, previous_pose, data.qpos)
+            previous_pose[:] = data.qpos
+            quiet = quiet + stride if np.all(np.abs(mean_velocity) < velocity_limits) else 0
+            if quiet * model.opt.timestep >= 0.2:
                 break
         else:
             raise RuntimeError("ring reset did not settle within 5 simulation seconds")
@@ -558,14 +590,12 @@ class RingOnPeg(ManipulationEnv):
     def get_policy_task_context(self):
         return {
             "task_type": "ring_on_peg",
-            "version": 3,
+            "version": 4,
             "scoreable": False,
             "rings": deepcopy(RINGS),
             "placement_order": list(RINGS),
             "board_radius_m": BOARD_RADIUS_M,
             "board_height_m": BOARD_HEIGHT_M,
-            "slot_depth_m": SLOT_DEPTH_M,
-            "slot_clearance_m": SLOT_CLEARANCE_M,
             "peg_head_radius_m": PEG_HEAD_RADIUS_M,
             "ring_half_height_m": RING_HALF_HEIGHT_M,
             "ring_segments": RING_SEGMENTS,
@@ -600,7 +630,7 @@ register_task(
         normalize_state=validate_state,
         env_kwargs=lambda state: {"ring_state": state},
         describe=lambda state: {
-            "task_id": "ring_on_peg.v3",
+            "task_id": "ring_on_peg.v4",
             "instruction": "Stack the blue large ring, green medium ring, then yellow small ring on the wooden peg.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},

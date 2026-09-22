@@ -5,11 +5,11 @@
 
 ## 套环任务（CPU 开发版）
 
-机械臂从圆形木底板的三个收纳浅槽中，依次取出蓝色大环、绿色中环、黄色小环，按从大到小的顺序套到中央圆头木杆上。三环环壁厚度为 25/23/21 mm，支持 Panda 一指入孔、一指贴外壁的夹取方式。每一阶段要求已放置的环位置正确、松手并稳定 0.5 秒，且后续环还未放在杆上；仅三个环全部完成后奖励 1。错误顺序可以通过移走提前放置的环纠正。阶段真值只在 metrics 中报告。
+机械臂从台面随机位置依次抓取蓝色大环、绿色中环、黄色小环，按从大到小的顺序套到中央圆头木杆上。三环环壁厚度为 25/23/21 mm，支持 Panda 一指入孔、一指贴外壁的夹取方式。每一阶段要求已放置的环位置正确、松手并稳定 0.5 秒，且后续环还未放在杆上；仅三个环全部完成后奖励 1。错误顺序可以通过移走提前放置的环纠正。阶段真值只在 metrics 中报告。
 
-环内/外半径从大到小为 30/55、27/50、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 160 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底板半径 200 mm、厚 12 mm；三个收纳槽深 4 mm，各比对应环外半径大 8 mm。中央无槽，蓝环的完整占地与各收纳槽之间至少留 10 mm。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
+环内/外半径从大到小为 30/55、27/50、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 160 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底盘为无槽实心圆盘，半径 62 mm、厚 12 mm，比蓝环外缘宽 7 mm。三个环随机分布在桌面可操作区域，互不重叠，可接触底盘边缘。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
 
-参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。木杆使用 [ambientCG Wood 095](https://ambientcg.com/view?id=Wood095) 的 CC0 细木纹，并按圆台表面等比例展开；素材来源及校验值随贴图保存。底板槽口具有真实碰撞深度，使用分块凸碰撞网格保留凹槽；视觉网格无质量、无碰撞。无新增依赖。
+参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。木杆使用 [ambientCG Wood 095](https://ambientcg.com/view?id=Wood095) 的 CC0 细木纹，并按圆台表面等比例展开；素材来源及校验值随贴图保存。底盘仅使用一个圆柱碰撞体；视觉网格无质量、无碰撞。无新增依赖。
 
 ```python
 import numpy as np
@@ -29,11 +29,19 @@ finally:
 ```bash
 python -m shakebench.scripts.evaluate \
   --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states_v3.json \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states_v4.json \
   --policy my_policy:make_policy --observation-source contract
 ```
 
-v3 状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；收纳槽与初始环位置一致，底板以杆为中心。旧 v1/v2 状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
+v4 状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧 v1/v2/v3 状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
+
+随附状态池包含 20 个随机布局。生成更多布局（同种子可复现）：
+
+```bash
+python -m shakebench.scripts.generate_ring_states --output out/ring_states.json --count 100 --seed 42
+```
+
+采集时将 `--states` 指向生成的文件，每条状态对应一个布局，R 重试保持当前布局。
 
 SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7D 动作，不采集 IMU）：
 
@@ -41,8 +49,8 @@ SpaceMouse＋键盘静态采集（LeRobot v2.1，双相机＋8D 本体状态＋7
 source /home/miracle04/.venvs/shakebench-lerobot/bin/activate
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot \
   --device spacemouse --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states_v3.json \
-  --output out/spacemouse_ring_stack --episodes-per-state 20 \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states_v4.json \
+  --output out/spacemouse_ring_stack_v4 --limit 20 \
   --horizon-steps 2400 --pos-sensitivity 0.2 --rot-sensitivity 0.3
 ```
 
@@ -50,11 +58,11 @@ Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切�
 
 ```bash
 python -m shakebench.scripts.export_sft_subset \
-  --dataset out/spacemouse_ring_stack --output out/spacemouse_ring_stack_sft
+  --dataset out/spacemouse_ring_stack_v4 --output out/spacemouse_ring_stack_v4_sft
 python -m shakebench.scripts.verify_collection \
-  --dataset out/spacemouse_ring_stack_sft \
+  --dataset out/spacemouse_ring_stack_v4_sft \
   --task-module shakebench.environments.ring_on_peg \
-  --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states_v3.json
+  --eval-assets shakebench/models/assets/shakebench_ring_on_peg_states_v4.json
 ```
 
 上述校验检查来源状态、格式、动作、图像和成功终止；若有独立评测状态池，须一并加入 `--eval-assets` 才能检查训练/评测隔离。当前 pick-place oracle 不支持套环，误选 `--device oracle` 会在创建数据集前报错。
