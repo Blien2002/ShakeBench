@@ -6,8 +6,6 @@ Vendor/product IDs are auto-detected when the configured IDs cannot be opened.
 """
 
 import threading
-import time
-from collections import namedtuple
 
 import numpy as np
 from pynput.keyboard import Listener
@@ -25,17 +23,6 @@ except ModuleNotFoundError as exc:
 import robosuite.macros as macros
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix
-
-AxisSpec = namedtuple("AxisSpec", ["channel", "byte1", "byte2", "scale"])
-
-SPACE_MOUSE_SPEC = {
-    "x": AxisSpec(channel=1, byte1=1, byte2=2, scale=1),
-    "y": AxisSpec(channel=1, byte1=3, byte2=4, scale=-1),
-    "z": AxisSpec(channel=1, byte1=5, byte2=6, scale=-1),
-    "roll": AxisSpec(channel=1, byte1=7, byte2=8, scale=-1),
-    "pitch": AxisSpec(channel=1, byte1=9, byte2=10, scale=-1),
-    "yaw": AxisSpec(channel=1, byte1=11, byte2=12, scale=1),
-}
 
 
 def to_int16(y1, y2):
@@ -142,12 +129,10 @@ class SpaceMouse(Device):
         ROBOSUITE_DEFAULT_LOGGER.info("Product: %s" % self.device.get_product_string())
 
         # 6-DOF variables
-        self.x, self.y, self.z = 0, 0, 0
         self.roll, self.pitch, self.yaw = 0, 0, 0
 
         self._display_controls()
 
-        self.single_click_and_hold = False
         self._pressed_keys = set()
         self._keyboard_grasp = False
 
@@ -214,15 +199,12 @@ class SpaceMouse(Device):
 
         print("")
         print_command("Control", "Command")
-        print_command("R / right button", "retry trajectory")
+        print_command("R", "retry trajectory")
         print_command("Space", "toggle gripper")
         print_command("W/A/S/D", "move arm horizontally")
         print_command("Q/E", "move arm down/up")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
         print_command("Control+C", "quit")
-        print_command("b", "toggle arm/base mode (if applicable)")
-        print_command("s", "switch active arm (if multi-armed robot)")
-        print_command("=", "switch active robot (if multi-robot environment)")
         print("")
         print("NOTE: Auto-detects 3Dconnexion devices. Use device_path for specific device.")
         print("")
@@ -235,12 +217,10 @@ class SpaceMouse(Device):
 
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         # Reset 6-DOF variables
-        self.x, self.y, self.z = 0, 0, 0
         self.roll, self.pitch, self.yaw = 0, 0, 0
         # Reset control
         self._control = np.zeros(6)
         # Reset grasp
-        self.single_click_and_hold = False
         self._pressed_keys = set()
         self._keyboard_grasp = False
 
@@ -262,18 +242,8 @@ class SpaceMouse(Device):
         """
         if self._read_error is not None:
             raise OSError("SpaceMouse HID reader failed") from self._read_error
-        dpos = (
-            np.array(
-                [
-                    ("d" in self._pressed_keys) - ("a" in self._pressed_keys),
-                    ("s" in self._pressed_keys) - ("w" in self._pressed_keys),
-                    ("e" in self._pressed_keys) - ("q" in self._pressed_keys),
-                ],
-                dtype=float,
-            )
-            * 0.005
-            * self.pos_sensitivity
-        )
+        # Translation is constructed in the scene frame by the teleop collector.
+        dpos = np.zeros(3)
         roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
 
         # convert RPY to an absolute orientation
@@ -306,25 +276,15 @@ class SpaceMouse(Device):
 
     def _process_report(self, report):
         """Decode both split 7-byte and combined 13-byte motion reports."""
-        if report[0] == 1 and len(report) >= 7:
-            self.y = convert(report[1], report[2])
-            self.x = convert(report[3], report[4])
-            self.z = -convert(report[5], report[6])
-            if len(report) >= 13:
-                self.roll = convert(report[7], report[8])
-                self.pitch = convert(report[9], report[10])
-                self.yaw = convert(report[11], report[12])
+        if report[0] == 1 and len(report) >= 13:
+            self.roll = convert(report[7], report[8])
+            self.pitch = convert(report[9], report[10])
+            self.yaw = convert(report[11], report[12])
         elif report[0] == 2 and len(report) >= 7:
             self.roll = convert(report[1], report[2])
             self.pitch = convert(report[3], report[4])
             self.yaw = convert(report[5], report[6])
-        elif report[0] == 3 and len(report) >= 2:
-            self.single_click_and_hold = bool(report[1] & 1)
-            if report[1] & 2:
-                self._reset_state = 1
-                self._enabled = False
-                self._reset_internal_state()
-        self._control = [self.x, self.y, self.z, self.roll, self.pitch, self.yaw]
+        self._control = [0, 0, 0, self.roll, self.pitch, self.yaw]
 
     def close(self):
         """Stop listeners before releasing the HID handle; safe to call twice."""
@@ -352,11 +312,9 @@ class SpaceMouse(Device):
         Maps internal states into gripper commands.
 
         Returns:
-            float: Whether we're using single click and hold or not
+            float: Latched keyboard gripper command
         """
-        if self.single_click_and_hold or self._keyboard_grasp:
-            return 1.0
-        return 0
+        return float(self._keyboard_grasp)
 
     def on_press(self, key):
         """
@@ -393,11 +351,3 @@ class SpaceMouse(Device):
         drotation = np.clip(drotation, -1, 1)
 
         return dpos, drotation
-
-
-if __name__ == "__main__":
-
-    space_mouse = SpaceMouse()
-    for i in range(100):
-        ROBOSUITE_DEFAULT_LOGGER.info(f"Control: {space_mouse.control}, Gripper: {space_mouse.control_gripper}")
-        time.sleep(0.02)

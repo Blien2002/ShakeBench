@@ -1,4 +1,4 @@
-"""Collect gamma=0 oracle or SpaceMouse demonstrations in LeRobot v2.1 (embedded RGB PNGs)."""
+"""Collect gamma=0 oracle or keyboard/SpaceMouse demonstrations in LeRobot v2.1 (embedded RGB PNGs)."""
 
 from __future__ import annotations
 

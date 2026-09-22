@@ -1,4 +1,4 @@
-"""SpaceMouse input and a paced camera preview for LeRobot collection."""
+"""Keyboard translation/grasp and SpaceMouse rotation for LeRobot collection."""
 
 import time
 import tkinter as tk
