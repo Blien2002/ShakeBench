@@ -71,6 +71,23 @@ class SpaceMouseTeleop:
             return None
         robot = self.env.robots[0]
         arm = robot.arms[0]
+        controller = robot.part_controllers[arm]
+        keys = self.device._pressed_keys.copy()
+        # Construct movement in world coordinates, then use the OSC input frame.
+        forward = np.array(self.env.sim.data.get_body_xpos(self.env.worktable_body_name)) - controller.origin_pos
+        forward[2] = 0
+        forward /= max(np.linalg.norm(forward), 1e-8)
+        right = np.array(self.env.sim.data.get_camera_xmat("robot0_eye_in_hand"))[:, 0].copy()
+        right[2] = 0
+        right /= max(np.linalg.norm(right), 1e-8)
+        translation = (
+            forward * (("w" in keys) - ("s" in keys))
+            + right * (("d" in keys) - ("a" in keys))
+            + np.array([0.0, 0.0, ("e" in keys) - ("q" in keys)])
+        )
+        if controller.input_ref_frame == "base":
+            translation = controller.origin_ori.T @ translation
+        controls[f"{arm}_delta"][:3] = np.clip(translation * 0.625 * self.device.pos_sensitivity, -1, 1)
         return robot.create_action_vector({arm: controls[f"{arm}_delta"], f"{arm}_gripper": controls[f"{arm}_gripper"]})
 
     def sync(self, frame):

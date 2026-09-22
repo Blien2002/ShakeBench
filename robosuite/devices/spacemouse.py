@@ -364,7 +364,7 @@ class SpaceMouse(Device):
         Args:
             key (str): key that was pressed
         """
-        name = getattr(key, "char", None)
+        name = getattr(key, "char", None) or getattr(key, "name", None)
         name = "space" if name == " " else name
         if name not in {"w", "a", "s", "d", "q", "e", "r", "space"}:
             return
@@ -382,7 +382,7 @@ class SpaceMouse(Device):
         Args:
             key (str): key that was pressed
         """
-        name = getattr(key, "char", None)
+        name = getattr(key, "char", None) or getattr(key, "name", None)
         self._pressed_keys.discard("space" if name == " " else name)
 
     def _postprocess_device_outputs(self, dpos, drotation):
