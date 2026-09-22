@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 
 from robosuite.models.objects.composite import HollowCylinderObject
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, xml_path_completion
 
 
 def make_ring(name, *, outer_radius, inner_radius, half_height, segments, rgba):
@@ -61,15 +61,20 @@ def make_ring(name, *, outer_radius, inner_radius, half_height, segments, rgba):
         vertex=array_to_string(np.asarray(vertices).ravel()),
         normal=array_to_string(np.asarray(vertex_normals).ravel()),
         face=array_to_string(np.asarray(faces).ravel()),
+        texcoord=array_to_string((np.asarray(vertices)[:, :2] / (2 * outer_radius) + 0.5).ravel()),
+    )
+    ET.SubElement(
+        ring.asset, "texture", name=f"{name}_wood", type="2d", file=xml_path_completion("textures/light-wood.png")
     )
     ET.SubElement(
         ring.asset,
         "material",
         name=material_name,
         rgba=array_to_string(rgba),
-        specular="0.35",
-        shininess="0.32",
-        reflectance="0.04",
+        texture=f"{name}_wood",
+        texrepeat="1 1",
+        specular="0.12",
+        shininess="0.15",
     )
     ET.SubElement(
         body,

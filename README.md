@@ -1,15 +1,15 @@
-> **ShakeBench 当前场景（2026-09-22）**：`VibrationPickPlace` 提供抓放任务，`RingOnPeg` 提供先大后小的双环套柱任务；当前默认场景为 `world_fixed_rigid_table_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
+> **ShakeBench 当前场景（2026-09-22）**：`VibrationPickPlace` 提供抓放任务，`RingOnPeg` 提供从大到小的三环木质套柱任务；当前默认场景为 `world_fixed_rigid_table_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
 > IMU 世界模型计划的 B/C/D 阶段已完成，新场景尚未取得实验认证。Phase 06–08 的选型、发布、handoff、authority 与 evidence 链已删除，当前完整性校验只绑定 physics profile 与 geometry/scene/arena/support 资产（`python -m shakebench.utils.runtime_verifier --write` 可重建清单）。桌下 IMU、双相机数据采集和策略接入接口已提供，视频历史/预测器训练仍由独立模块负责。
 > 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
 > ShakeBench 专用代码与资源位于 shakebench/ 包，导入入口为 shakebench.make；robosuite/ 保留通用框架。策略接入见 shakebench/utils/websocket_policy.py（WebSocket 策略协议，与具体模型无关），Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
 
 ## 套环任务（CPU 开发版）
 
-机械臂先把大橙环套到金属杆上，再把小青环套到同一根杆上、叠在大环上。第一阶段要求大环落桌、松手并稳定 0.5 秒，且小环还未放在杆上；第二阶段要求两环位置正确、小环由大环支撑、均已松手并稳定 0.5 秒。仅最终成功奖励 1。先小后大或同时摆好不会推进第一阶段；移开小环后可以纠正顺序。阶段真值只在 metrics 中报告。
+机械臂从圆形木底板的三个收纳浅槽中，依次取出蓝色大环、绿色中环、黄色小环，按从大到小的顺序套到中央圆头木杆上。三环环壁厚度为 25/23/21 mm，支持 Panda 一指入孔、一指贴外壁的夹取方式。每一阶段要求已放置的环位置正确、松手并稳定 0.5 秒，且后续环还未放在杆上；仅三个环全部完成后奖励 1。错误顺序可以通过移走提前放置的环纠正。阶段真值只在 metrics 中报告。
 
-大环内/外半径为 25/55 mm，小环为 20/40 mm，两环均厚 16 mm；杆半径 12 mm、高 100 mm。环孔仍按真实分段内壁判定，允许 0.5 mm 接触容差。复用工作台、振动、Panda、IMU 和共享 CPU rollout。
+环内/外半径从大到小为 30/55、27/50、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 160 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底板半径 200 mm、厚 12 mm；三个收纳槽深 4 mm，各比对应环外半径大 8 mm。中央无槽，蓝环的完整占地与各收纳槽之间至少留 10 mm。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
 
-参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环继续使用 16 段碰撞体，改用 96 段圆周、1.5 mm 圆角的独立外观网格，具有平顶和平底；视觉网格无质量、无碰撞。杆采用金属材质、匹配碰撞的圆顶导向头和薄底座，底座半径为 17 mm，小于两环内半径。网格在本地程序化生成，无第三方网格依赖。
+参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。底板槽口具有真实碰撞深度，使用分块凸碰撞网格保留凹槽；视觉网格无质量、无碰撞。无新增依赖。
 
 ```python
 import numpy as np
@@ -29,11 +29,11 @@ finally:
 ```bash
 python -m shakebench.scripts.evaluate \
   --task-module shakebench.environments.ring_on_peg \
-  --states shakebench/models/assets/shakebench_ring_on_peg_states_v2.json \
+  --states shakebench/models/assets/shakebench_ring_on_peg_states_v3.json \
   --policy my_policy:make_policy --observation-source contract
 ```
 
-v2 状态文件显式记录桌面坐标系内两环/杆的位置、各环初始 yaw、激励和 IMU 种子。旧 v1 单环状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
+v3 状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；收纳槽与初始环位置一致，底板以杆为中心。旧 v1/v2 状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集和现有 pick-place oracle 尚不支持套环。
 
 # robosuite
 

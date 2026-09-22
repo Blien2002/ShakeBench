@@ -1,4 +1,4 @@
-"""Ordered large-then-small ring stacking on the shaken worktable; import to register the task.
+"""Ordered three-ring stacking on the shaken worktable; import to register the task.
 
 The ring uses robosuite's box-built hollow cylinder. Poses in state assets are
 relative to the tabletop; the peg is rigidly attached to that moving table.
@@ -8,6 +8,7 @@ Only explicit CPU development states are supported, never certified scores.
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
 from copy import deepcopy
+from itertools import combinations
 
 import mujoco
 import numpy as np
@@ -18,6 +19,13 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
+from shakebench.models.objects.ring_board import (
+    BOARD_HEIGHT_M,
+    BOARD_RADIUS_M,
+    SLOT_CLEARANCE_M,
+    SLOT_DEPTH_M,
+    add_ring_board,
+)
 from shakebench.models.objects.rings import make_ring
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.deck import DeckDriver
@@ -35,8 +43,9 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 RINGS = {
-    "large": {"outer_radius": 0.055, "inner_radius": 0.025, "rgba": [0.94, 0.42, 0.055, 1]},
-    "small": {"outer_radius": 0.040, "inner_radius": 0.020, "rgba": [0.035, 0.48, 0.55, 1]},
+    "large": {"outer_radius": 0.055, "inner_radius": 0.030, "rgba": [0.08, 0.28, 0.90, 1]},
+    "medium": {"outer_radius": 0.050, "inner_radius": 0.027, "rgba": [0.12, 0.65, 0.24, 1]},
+    "small": {"outer_radius": 0.045, "inner_radius": 0.024, "rgba": [1.0, 0.85, 0.035, 1]},
 }
 RING_HALF_HEIGHT_M = 0.008
 RING_SEGMENTS = 16
@@ -46,8 +55,10 @@ RING_WALL_NORMALS = np.array(
         for i in range(RING_SEGMENTS)
     ]
 )
-PEG_RADIUS_M = 0.012
-PEG_HEIGHT_M = 0.100
+PEG_RADIUS_M = 0.018
+PEG_TOP_RADIUS_M = 0.009
+PEG_HEIGHT_M = 0.160
+PEG_HEAD_RADIUS_M = 0.0125
 HOLD_DURATION_S = 0.5
 HOLE_PENETRATION_TOLERANCE_M = 0.0005
 STATE_SCHEMA = "shakebench.ring_on_peg.states"
@@ -57,12 +68,14 @@ def default_state():
     """Return a complete deterministic development episode."""
     return {
         "state_id": "ring-stack-000",
-        "task": {"task_type": "ring_on_peg", "version": 2},
-        "large_ring_xy_m": [-0.10, -0.15],
-        "small_ring_xy_m": [-0.10, 0.0],
+        "task": {"task_type": "ring_on_peg", "version": 3},
+        "large_ring_xy_m": [0.005, -0.113],
+        "medium_ring_xy_m": [-0.190, 0.0],
+        "small_ring_xy_m": [0.005, 0.113],
         "large_ring_yaw_rad": 0.0,
+        "medium_ring_yaw_rad": 0.0,
         "small_ring_yaw_rad": 0.0,
-        "peg_xy_m": [-0.10, 0.15],
+        "peg_xy_m": [-0.060, 0.0],
         "excitation_seed": 0,
         "imu_seed": 0,
         "t0_s": 0.0,
@@ -73,28 +86,33 @@ def validate_state(state):
     """Validate explicit horizontal, stationary starts without hidden randomness."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("ring state fields must match the explicit version 2 schema")
-    if state["task"] != {"task_type": "ring_on_peg", "version": 2} or type(state["task"]["version"]) is not int:
-        raise ValueError("expected ring_on_peg task version 2")
+        raise ValueError("ring state fields must match the explicit version 3 schema")
+    if state["task"] != {"task_type": "ring_on_peg", "version": 3} or type(state["task"]["version"]) is not int:
+        raise ValueError("expected ring_on_peg task version 3")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be a nonempty string")
     result = deepcopy(dict(state))
-    footprints = {f"{name}_ring_xy_m": spec["outer_radius"] + 0.005 for name, spec in RINGS.items()}
-    footprints["peg_xy_m"] = 0.017
-    for key, radius in footprints.items():
-        value = np.asarray(state[key], dtype=float)
-        if value.shape != (2,) or not np.isfinite(value).all() or np.any(np.abs(value) + radius > [0.325, 0.30]):
-            raise ValueError(f"{key} must lie entirely on the tabletop")
-        result[key] = value.tolist()
-    keys = list(footprints)
-    for i, first in enumerate(keys):
-        for second in keys[i + 1 :]:
-            if (
-                np.linalg.norm(np.subtract(result[first], result[second]))
-                < footprints[first] + footprints[second] + 0.01
-            ):
-                raise ValueError("ring and peg starts must be separated")
-    for key in ("large_ring_yaw_rad", "small_ring_yaw_rad", "t0_s"):
+    peg_xy = np.asarray(state["peg_xy_m"], dtype=float)
+    if peg_xy.shape != (2,) or not np.isfinite(peg_xy).all() or np.any(np.abs(peg_xy) + BOARD_RADIUS_M > [0.325, 0.30]):
+        raise ValueError("wooden board must lie entirely on the tabletop")
+    result["peg_xy_m"] = peg_xy.tolist()
+    slots = []
+    for name, spec in RINGS.items():
+        key = f"{name}_ring_xy_m"
+        xy = np.asarray(state[key], dtype=float)
+        radius = spec["outer_radius"] + SLOT_CLEARANCE_M
+        if xy.shape != (2,) or not np.isfinite(xy).all():
+            raise ValueError(f"{key} must be a finite 2D position")
+        distance = np.linalg.norm(xy - peg_xy)
+        if distance + radius + 0.005 > BOARD_RADIUS_M:
+            raise ValueError("storage slot must fit inside the wooden board")
+        if distance < RINGS["large"]["outer_radius"] + radius + 0.01:
+            raise ValueError("storage slots must clear the central large-ring footprint")
+        if any(np.linalg.norm(xy - other) < radius + other_radius + 0.01 for other, other_radius in slots):
+            raise ValueError("storage slots must be separated")
+        slots.append((xy, radius))
+        result[key] = xy.tolist()
+    for key in (*[f"{name}_ring_yaw_rad" for name in RINGS], "t0_s"):
         if isinstance(state[key], bool) or not isinstance(state[key], (int, float)) or not np.isfinite(state[key]):
             raise ValueError(f"{key} must be finite")
         result[key] = float(state[key])
@@ -111,7 +129,7 @@ def load_states(payload):
     if (
         payload.get("schema_id") != STATE_SCHEMA
         or type(payload.get("schema_version")) is not int
-        or payload["schema_version"] != 2
+        or payload["schema_version"] != 3
     ):
         raise ValueError("unsupported ring state schema/version")
     if not isinstance(payload.get("states"), list) or not payload["states"]:
@@ -123,7 +141,7 @@ def load_states(payload):
 
 
 class RingOnPeg(ManipulationEnv):
-    """Stack the large ring first, then the small ring, on the moving-table peg."""
+    """Stack blue, green, then yellow rings on the moving-table wooden peg."""
 
     def __init__(
         self,
@@ -220,53 +238,72 @@ class RingOnPeg(ManipulationEnv):
             .find("./worldbody/body[@name='robot_support']")
         )
         self.arena.worldbody.append(support)
-        self.peg_origin = np.array([*self.ring_state["peg_xy_m"], self.arena.table_half_size[2]])
+        self.peg_origin = np.array([*self.ring_state["peg_xy_m"], self.arena.table_half_size[2] + BOARD_HEIGHT_M])
         peg = ET.SubElement(self.arena.worktable_body, "body", name="ring_peg", pos=array_to_string(self.peg_origin))
-        # The fixture belongs to the existing 32 kg worktable assembly.
-        for name, rgba, specular, shininess in (
-            ("peg_steel", "0.62 0.66 0.70 1", "0.7", "0.65"),
-            ("peg_base", "0.12 0.15 0.18 1", "0.4", "0.35"),
-        ):
-            ET.SubElement(self.arena.asset, "material", name=name, rgba=rgba, specular=specular, shininess=shininess)
-        shaft_height = PEG_HEIGHT_M - PEG_RADIUS_M
+        # The fixed board and peg belong to the existing 32 kg table assembly.
+        contact = self.physics_profile.pair_attributes(
+            float(self.physics_profile.contact["sliding_mu"]["table_object"])
+        )
+        # Geom friction uses three coefficients, unlike an explicit five-coefficient pair.
+        contact["friction"] = array_to_string(
+            [
+                float(self.physics_profile.contact["sliding_mu"]["table_object"]),
+                self.physics_profile.contact_torsional_mu,
+                self.physics_profile.contact_rolling_mu,
+            ]
+        )
+        contact["priority"] = "1"
+        slots = [
+            (
+                np.asarray(self.ring_state[f"{name}_ring_xy_m"]) - self.peg_origin[:2],
+                spec["outer_radius"] + SLOT_CLEARANCE_M,
+            )
+            for name, spec in RINGS.items()
+        ]
+        self.board_contact_names = add_ring_board(self.arena.asset, peg, slots, contact)
+        shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
+        # A convex frustum uses the same mesh for collision and appearance.
+        angles = np.linspace(0, 2 * np.pi, 64, endpoint=False)
+        vertices = [
+            [radius * np.cos(a), radius * np.sin(a), z]
+            for radius, z in ((PEG_RADIUS_M, 0), (PEG_TOP_RADIUS_M, shaft_height))
+            for a in angles
+        ]
+        faces = []
+        for i in range(64):
+            j = (i + 1) % 64
+            faces.extend([[i, j, j + 64], [i, j + 64, i + 64]])
+        for i in range(1, 63):
+            faces.extend([[0, i + 1, i], [64, 64 + i, 65 + i]])
+        ET.SubElement(
+            self.arena.asset,
+            "mesh",
+            name="ring_peg_frustum",
+            vertex=array_to_string(np.asarray(vertices).ravel()),
+            face=array_to_string(np.asarray(faces).ravel()),
+            texcoord=array_to_string(
+                np.array([[i / 63, z / shaft_height] for z in (0, shaft_height) for i in range(64)]).ravel()
+            ),
+        )
         shapes = (
-            ("shaft", "cylinder", f"{PEG_RADIUS_M} {shaft_height / 2}", f"0 0 {shaft_height / 2}", "peg_steel"),
-            ("cap", "sphere", str(PEG_RADIUS_M), f"0 0 {shaft_height}", "peg_steel"),
-            ("base", "cylinder", "0.017 0.002", "0 0 0.002", "peg_base"),
+            ("shaft", {"type": "mesh", "mesh": "ring_peg_frustum"}),
+            ("cap", {"type": "sphere", "size": str(PEG_HEAD_RADIUS_M), "pos": f"0 0 {shaft_height}"}),
         )
         self.peg_contact_names = []
-        for name, kind, size, pos, material in shapes:
+        for name, attributes in shapes:
             self.peg_contact_names.append(f"ring_peg_{name}_collision")
             for visual in (False, True):
                 ET.SubElement(
                     peg,
                     "geom",
                     name=f"ring_peg_{name}_{'visual' if visual else 'collision'}",
-                    type=kind,
-                    size=size,
-                    pos=pos,
+                    **attributes,
                     group=str(int(visual)),
                     contype="0" if visual else "1",
                     conaffinity="0" if visual else "1",
                     mass="0",
-                    material=material,
+                    material="ring_wood",
                 )
-        # Recessed screw heads stay within the base footprint and have no collision.
-        for i, angle in enumerate(np.linspace(0, 2 * np.pi, 4, endpoint=False)):
-            xy = 0.0145 * np.array([np.cos(angle), np.sin(angle)])
-            ET.SubElement(
-                peg,
-                "geom",
-                name=f"peg_screw_{i}",
-                type="cylinder",
-                size="0.0018 0.0002",
-                pos=array_to_string([*xy, 0.004]),
-                material="peg_steel",
-                group="1",
-                contype="0",
-                conaffinity="0",
-                mass="0",
-            )
         self.rings = {
             name: make_ring(f"{name}_ring", **spec, half_height=RING_HALF_HEIGHT_M, segments=RING_SEGMENTS)
             for name, spec in RINGS.items()
@@ -286,8 +323,8 @@ class RingOnPeg(ManipulationEnv):
                         finger_contact=finger,
                     )
                     ET.SubElement(self.model.contact, "pair", geom1=ring_geom, geom2=partner, **attributes)
-        for large in self.rings["large"].contact_geoms:
-            for small in self.rings["small"].contact_geoms:
+        for first, second in combinations(self.rings.values(), 2):
+            for large, small in ((a, b) for a in first.contact_geoms for b in second.contact_geoms):
                 ET.SubElement(
                     self.model.contact,
                     "pair",
@@ -307,6 +344,7 @@ class RingOnPeg(ManipulationEnv):
             name: {model.geom_name2id(geom) for geom in ring.contact_geoms} for name, ring in self.rings.items()
         }
         self.peg_geom_ids = {model.geom_name2id(name) for name in self.peg_contact_names}
+        self.board_geom_ids = {model.geom_name2id(name) for name in self.board_contact_names}
         self.table_geom_id = model.geom_name2id("table_collision")
         self.robot_geom_ids = {
             model.geom_name2id(name) for name in model.geom_names if name.startswith(("robot0_", "gripper0_"))
@@ -322,7 +360,10 @@ class RingOnPeg(ManipulationEnv):
                     [
                         *(
                             self.arena.table_top_abs
-                            + [*self.ring_state[f"{name}_ring_xy_m"], RING_HALF_HEIGHT_M + 0.001]
+                            + [
+                                *self.ring_state[f"{name}_ring_xy_m"],
+                                BOARD_HEIGHT_M - SLOT_DEPTH_M + RING_HALF_HEIGHT_M + 0.001,
+                            ]
                         ),
                         np.cos(yaw / 2),
                         0,
@@ -364,17 +405,19 @@ class RingOnPeg(ManipulationEnv):
         self._conditions = {name: self._success_conditions(name) for name in RINGS}
         if self._success:
             return
-        large, small = self._conditions["large"], self._conditions["small"]
-        # Stage 1 only starts with the small ring off the peg. A wrong-order or
-        # simultaneous placement can be corrected by removing the small ring.
-        ready = all(large.values()) and (not small["on_peg"] if self._stage == 0 else all(small.values()))
+        ordered = list(self._conditions.values())
+        # Every completed ring must remain seated. Later rings must stay off the
+        # peg until their turn; removing an early ring permits order correction.
+        ready = all(all(c.values()) for c in ordered[: self._stage + 1]) and not any(
+            c["on_peg"] for c in ordered[self._stage + 1 :]
+        )
         if ready:
             if self._candidate_since is None:
                 self._candidate_since = sample_time_s
             if sample_time_s - self._candidate_since >= HOLD_DURATION_S - 1e-12:
                 self._stage += 1
                 self._candidate_since = None
-                self._success = self._stage == 2
+                self._success = self._stage == len(RINGS)
         else:
             self._candidate_since = None
 
@@ -388,24 +431,28 @@ class RingOnPeg(ManipulationEnv):
         axis = rotation[:, 2]
         peg_in_ring = -rotation @ pose.position_m
         cosine = abs(axis[2])
-        # Check every inner wall, including the tilted cylinder's elliptical
-        # cross-section and axis drift through the ring thickness. Wall contact
-        # is valid; an inscribed-circle test would reject correctly seated rings.
+        # Bound the taper by its widest radius across the ring slab, then check
+        # every polygon wall including tilt. This is conservative for tilted rings.
         clearance = -np.inf
         if cosine > 0.5:
             intersection = peg_in_ring[:2] - peg_in_ring[2] * axis[:2] / axis[2]
             slope = RING_WALL_NORMALS @ axis[:2] / axis[2]
+            lowest_z = (
+                pose.position_m[2]
+                - (RING_HALF_HEIGHT_M + RINGS[name]["inner_radius"] * np.sqrt(max(0.0, 1 - cosine**2))) / cosine
+            )
+            shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
+            radius = PEG_RADIUS_M + (PEG_TOP_RADIUS_M - PEG_RADIUS_M) * np.clip(lowest_z / shaft_height, 0, 1)
             extent = (
-                RING_WALL_NORMALS @ intersection
-                + PEG_RADIUS_M * np.sqrt(1 + slope**2)
-                + RING_HALF_HEIGHT_M * np.abs(slope)
+                RING_WALL_NORMALS @ intersection + radius * np.sqrt(1 + slope**2) + RING_HALF_HEIGHT_M * np.abs(slope)
             )
             clearance = RINGS[name]["inner_radius"] * np.cos(np.pi / RING_SEGMENTS) - np.max(extent)
         support_force, any_support_force, released = 0.0, 0.0, True
-        support_ids = {self.table_geom_id} if name == "large" else self.ring_geom_ids["large"]
-        all_support_ids = (
-            {self.table_geom_id} | self.peg_geom_ids | self.ring_geom_ids["large"] | self.ring_geom_ids["small"]
-        )
+        ring_index = list(RINGS).index(name)
+        support_ids = self.board_geom_ids if ring_index == 0 else self.ring_geom_ids[list(RINGS)[ring_index - 1]]
+        all_support_ids = {self.table_geom_id} | self.board_geom_ids | self.peg_geom_ids
+        for ids in self.ring_geom_ids.values():
+            all_support_ids |= ids
         force = np.zeros(6)
         for index in range(data.ncon):
             contact = data.contact[index]
@@ -431,7 +478,7 @@ class RingOnPeg(ManipulationEnv):
             ),
             "threaded": bool(clearance >= -HOLE_PENETRATION_TOLERANCE_M),
             "upright": bool(cosine >= np.cos(np.deg2rad(10))),
-            "seated": bool(abs(pose.position_m[2] - RING_HALF_HEIGHT_M * (1 if name == "large" else 3)) <= 0.003),
+            "seated": bool(abs(pose.position_m[2] - RING_HALF_HEIGHT_M * (2 * ring_index + 1)) <= 0.003),
             "supported": bool(support_force > 0.01),
             "released": released,
             "stable": bool(
@@ -462,10 +509,13 @@ class RingOnPeg(ManipulationEnv):
             ("robot0_joint_vel", (7,), "rad/s", "robot_base"),
             ("robot0_gripper_qpos", (2,), "m", "gripper"),
             ("robot0_gripper_qvel", (2,), "m/s", "gripper"),
-            *((f"{prefix}_pos_robot_base", (3,), "m", "robot_base") for prefix in ("large_ring", "small_ring", "peg")),
+            *(
+                (f"{prefix}_pos_robot_base", (3,), "m", "robot_base")
+                for prefix in ("large_ring", "medium_ring", "small_ring", "peg")
+            ),
             *(
                 (f"{prefix}_quat_wxyz_robot_base", (4,), "unit quaternion wxyz", "robot_base")
-                for prefix in ("large_ring", "small_ring", "peg")
+                for prefix in ("large_ring", "medium_ring", "small_ring", "peg")
             ),
         ):
             contract[key] = {"shape": shape, "dtype": "float64", "units": units, "frame": frame}
@@ -480,13 +530,19 @@ class RingOnPeg(ManipulationEnv):
     def get_policy_task_context(self):
         return {
             "task_type": "ring_on_peg",
-            "version": 2,
+            "version": 3,
             "scoreable": False,
             "rings": deepcopy(RINGS),
-            "placement_order": ["large", "small"],
+            "placement_order": list(RINGS),
+            "board_radius_m": BOARD_RADIUS_M,
+            "board_height_m": BOARD_HEIGHT_M,
+            "slot_depth_m": SLOT_DEPTH_M,
+            "slot_clearance_m": SLOT_CLEARANCE_M,
+            "peg_head_radius_m": PEG_HEAD_RADIUS_M,
             "ring_half_height_m": RING_HALF_HEIGHT_M,
             "ring_segments": RING_SEGMENTS,
-            "peg_radius_m": PEG_RADIUS_M,
+            "peg_base_radius_m": PEG_RADIUS_M,
+            "peg_top_radius_m": PEG_TOP_RADIUS_M,
             "peg_height_m": PEG_HEIGHT_M,
             "hold_duration_s": HOLD_DURATION_S,
             "hole_penetration_tolerance_m": HOLE_PENETRATION_TOLERANCE_M,
@@ -516,8 +572,8 @@ register_task(
         normalize_state=validate_state,
         env_kwargs=lambda state: {"ring_state": state},
         describe=lambda state: {
-            "task_id": "ring_on_peg.v2",
-            "instruction": "Place the large orange ring on the metal peg first, then stack the small teal ring on top.",
+            "task_id": "ring_on_peg.v3",
+            "instruction": "Stack the blue large ring, green medium ring, then yellow small ring on the wooden peg.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),
