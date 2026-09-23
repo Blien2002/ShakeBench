@@ -22,7 +22,7 @@ from shakebench.utils.outcomes import resolve_termination_cause, validate_outcom
 from shakebench.utils.privilege import assert_policy_observation_is_clean
 from shakebench.utils.task_registry import describe_task, prepare_task_state
 
-TASK = "Pick up the object from the metal table and place it in the target crate."
+TASK = "Pick up the object from the phenolic table and place it in the target crate."
 CAMERAS = {"observation.images.main": "task_close", "observation.images.wrist": "robot0_eye_in_hand"}
 ACTION_NAMES = ["delta_x", "delta_y", "delta_z", "delta_rx", "delta_ry", "delta_rz", "gripper"]
 STATE_NAMES = ["eef_x", "eef_y", "eef_z", "eef_rx", "eef_ry", "eef_rz", "left_finger_qpos", "right_finger_qpos"]

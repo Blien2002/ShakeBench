@@ -198,12 +198,12 @@ def _pick_place_description(state):
     if "task" not in state:
         return {
             "task_id": "pick_place.mug",
-            "instruction": "Pick up the object from the metal table and place it in the target crate.",
+            "instruction": "Pick up the object from the phenolic table and place it in the target crate.",
         }
     spec = TaskSpec.from_mapping(state["task"])
     return {
         "task_id": spec.variant_id,
-        "instruction": f"Pick up the {OBJECTS[spec.object_id]['instruction']} from the metal table "
+        "instruction": f"Pick up the {OBJECTS[spec.object_id]['instruction']} from the phenolic table "
         "and place it in the target crate.",
     }
 
