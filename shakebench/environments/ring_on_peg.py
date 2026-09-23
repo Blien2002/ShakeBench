@@ -61,7 +61,7 @@ HOLE_PENETRATION_TOLERANCE_M = 0.0005
 STATE_SCHEMA = "shakebench.ring_on_peg.states"
 DEFAULT_PEG_XY_M = (-0.060, -0.150)
 RING_SPAWN_LOW_M = (-0.200, 0.040)
-RING_SPAWN_HIGH_M = (0.120, 0.190)
+RING_SPAWN_HIGH_M = (0.060, 0.190)
 
 
 def default_state():
@@ -70,7 +70,7 @@ def default_state():
         "state_id": "ring-stack-000",
         "task": {"task_type": "ring_on_peg", "version": 5},
         "large_ring_xy_m": [-0.110, 0.115],
-        "small_ring_xy_m": [0.070, 0.115],
+        "small_ring_xy_m": [0.050, 0.115],
         "large_ring_yaw_rad": 0.0,
         "small_ring_yaw_rad": 0.0,
         "peg_xy_m": list(DEFAULT_PEG_XY_M),
