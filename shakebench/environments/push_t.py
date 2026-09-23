@@ -125,7 +125,7 @@ def load_states(payload):
 
 
 class PushT(ManipulationEnv):
-    """Push the wooden T onto the fluorescent green tabletop target without lifting."""
+    """Push the wooden T onto the matte green tabletop target without lifting."""
 
     def __init__(
         self,
@@ -234,7 +234,15 @@ class PushT(ManipulationEnv):
                 [np.cos(self.task_state["target_yaw_rad"] / 2), 0, 0, np.sin(self.task_state["target_yaw_rad"] / 2)]
             ),
         )
-        ET.SubElement(self.arena.asset, "material", name="push_t_green", rgba="0.3 1 0.015 1", emission="0.6")
+        ET.SubElement(
+            self.arena.asset,
+            "material",
+            name="push_t_green",
+            rgba="0.32 0.58 0.38 1",
+            emission="0",
+            specular="0.05",
+            shininess="0.1",
+        )
         # A 0.1 mm visual decal: no collision, no mass, rigidly attached to the table.
         for index, (center, size) in enumerate(RECTANGLES):
             ET.SubElement(
@@ -429,7 +437,7 @@ register_task(
         env_kwargs=lambda state: {"task_state": state},
         describe=lambda state: {
             "task_id": "push_t",
-            "instruction": "Push the light wooden T onto the fluorescent green T target without lifting it.",
+            "instruction": "Push the light wooden T onto the matte green T target without lifting it.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),

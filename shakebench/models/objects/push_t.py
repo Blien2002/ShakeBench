@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 
 from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import xml_path_completion
+from shakebench.models import xml_path_completion
 
 HALF_HEIGHT_M = 0.01
 # Non-overlapping crossbar and stem: 150 x 150 x 20 mm, 30 mm stroke.
@@ -30,22 +30,29 @@ def make_tee():
         rgba=[0.92, 0.82, 0.65, 1],
     )
     ET.SubElement(
-        tee.asset, "texture", name="push_t_light_wood", type="2d", file=xml_path_completion("textures/light-wood.png")
+        tee.asset,
+        "texture",
+        name="push_t_light_wood",
+        type="2d",
+        file=xml_path_completion("textures/ambientcg_wood095_color_1k.png"),
     )
+    # Physical-scale mapping keeps the grain size consistent across both boxes.
     ET.SubElement(
         tee.asset,
         "material",
         name="push_t_wood",
         texture="push_t_light_wood",
-        texrepeat="1 1",
-        rgba="1 0.95 0.85 1",
+        texrepeat="6.25 12.5",
+        texuniform="true",
+        rgba="1 0.97 0.91 1",
         specular="0.08",
-        shininess="0.1",
+        shininess="0.15",
     )
     for geom in tee.get_obj().iter("geom"):
         if geom.get("group") == "1":
             geom.set("material", "push_t_wood")
             geom.set("mass", "0")
+            geom.attrib.pop("rgba", None)
     return tee
 
 
