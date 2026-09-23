@@ -76,8 +76,8 @@ OBJECTS = {
             "vertical_tolerance_m": 0.002,
         },
     },
-    # The same can in two declared start poses: standing, and lying on its side.
-    "can1": {
+    # One can with standing and side-lying start poses.
+    "can": {
         "asset": "robosuite.models.objects.CanObject",
         "source": "robosuite CanObject (can.stl)",
         "source_instance": "robosuite/models/assets/objects/meshes/can.stl",
@@ -100,32 +100,6 @@ OBJECTS = {
             "pad_height_m": 0.0407,
             "offset_xy_m": (0.0, 0.0),
             "yaw_free": True,
-            "vertical_tolerance_m": 0.002,
-        },
-    },
-    "can2": {
-        "asset": "robosuite.models.objects.CanObject",
-        "source": "robosuite CanObject (can.stl)",
-        "source_instance": "robosuite/models/assets/objects/meshes/can.stl",
-        "source_url": "https://github.com/ARISE-Initiative/robosuite",
-        "source_license": "MIT",
-        "asset_scale": (1.0, 1.0, 1.0),
-        "official_asset_scale": (1.0, 1.0, 1.0),
-        "object_class": "receptacle",
-        "friction_class": "tinplate",
-        "table_mu": 0.20,
-        "mass_kg": 0.40,
-        "support": (-0.040297003330440104, 0.03970300217508332, 0.02509177806572465),
-        # Lying on its side: close about 5 mm below the axis to cradle the can.
-        "start_pose_support": (-0.024984, 0.025016001, 0.04628817),
-        "com_height_m": 0.025043,
-        "start_quat_wxyz": (0.707107, 0.0, -0.707107, 0.0),
-        "instruction": "food can lying on its side",
-        "grasp": {
-            "hold_width_m": 0.0502,
-            "pad_height_m": 0.020,
-            "offset_xy_m": (0.0, 0.0),
-            # Finish descending below the axis before the fingers start closing.
             "vertical_tolerance_m": 0.002,
         },
     },
@@ -177,6 +151,11 @@ class TaskSpec:
     @property
     def variant_id(self):
         return f"{self.task_type}.{self.object_id}"
+
+    def pose_id(self, region="body"):
+        """Name a distinct pose without changing the object's public ID."""
+
+        return self.variant_id if region == "body" else f"{self.variant_id}.{region}"
 
     @property
     def surface_id(self):
@@ -232,6 +211,18 @@ class TaskSpec:
                 "start_pose_support": (-0.02478028593, 0.03842944253, 0.05657461336),
                 "com_height_m": 0.02966551020,
             }
+        if region == "side" and self.object_id == "can":
+            # Cradle the side-lying can about 5 mm below its axis.
+            return {
+                "hold_width_m": 0.0502,
+                "pad_height_m": 0.020,
+                "offset_xy_m": (0.0, 0.0),
+                "vertical_tolerance_m": 0.002,
+                "start_quat_wxyz": (0.707107, 0.0, -0.707107, 0.0),
+                "start_pose_support": (-0.024984, 0.025016001, 0.04628817),
+                "com_height_m": 0.025043,
+                "instruction": "food can lying on its side",
+            }
         if region == "body":
             return dict(OBJECTS[self.object_id]["grasp"])
         if region == "handle" and self.object_id == "mug":
@@ -259,7 +250,7 @@ class TaskSpec:
             "target_object_sliding_mu": self.target_sliding_mu,
             "finger_object_sliding_mu": 1.0,
             "object_mass_kg": self.object_mass_kg,
-            "object_start_quat_wxyz": list(grasp.get("start_quat_wxyz", self.start_quat_wxyz)),
+            "object_start_quat_wxyz": list(registered_rest_pose(self, region)[0]),
             "object_com_height_m": float(grasp.get("com_height_m", entry["com_height_m"])),
             "object_grasp": {
                 "hold_width_m": float(grasp["hold_width_m"]),
@@ -315,9 +306,15 @@ def make_task_object(spec: TaskSpec | None, *, name="task_object"):
 
 
 def task_variants() -> tuple[TaskSpec, ...]:
-    """Return the frozen variants of the current task set."""
+    """Return one task selector per object; poses are selected by grasp region."""
 
     return tuple(TaskSpec(object_id=object_id) for object_id in OBJECTS)
+
+
+def task_pose_variants() -> tuple[tuple[TaskSpec, str], ...]:
+    """Return the four established object-pose variants."""
+
+    return tuple((spec, "body") for spec in task_variants()) + ((TaskSpec(object_id="can"), "side"),)
 
 
 @runtime_checkable
@@ -473,8 +470,8 @@ def relative_yaw_rad_wxyz(registered_wxyz, posed_wxyz) -> float:
 def registered_rest_pose(spec: TaskSpec, region: str = "body") -> tuple[tuple[float, ...], float]:
     """Return one grasp region's measured table rest pose and origin height.
 
-    A region may declare its own pose, as the mug's side regions do; every other
-    region reuses the registry pose of the task variant.
+    A region may declare its own pose, as the mug and can side regions do; other
+    regions reuse the registry pose of the task variant.
     """
 
     entry = OBJECTS[spec.object_id]
@@ -600,7 +597,7 @@ def validate_task_registry() -> None:
                 f"{object_id}: hold width {hold_width:.4f} m leaves less than "
                 f"{GRASP_JAW_MARGIN_MIN_M:.3f} m of Panda jaw margin"
             )
-        if object_id != "can2" and pad_height < float(entry["com_height_m"]):
+        if pad_height < float(entry["com_height_m"]):
             raise ValueError(
                 f"{object_id}: grasp pads at {grasp['pad_height_m']:.4f} m sit below the "
                 f"{entry['com_height_m']:.4f} m centre of mass and would spin the object in the jaws"
@@ -633,6 +630,7 @@ __all__ = [
     "object_frame_grasp_offset",
     "task_env_kwargs",
     "task_start_quat_wxyz",
+    "task_pose_variants",
     "task_variants",
     "validate_task_registry",
 ]

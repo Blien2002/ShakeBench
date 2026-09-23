@@ -165,7 +165,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-000.pick_place.can1",
+      "state_id": "shakebench-knee-v3-000.pick_place.can",
       "t0_s": 0.6746472851410676,
       "target_reference": {
         "frame": "worktable",
@@ -182,7 +182,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -192,6 +192,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1175976271,
+      "grasp_region": "side",
       "imu_seed": 3651749953,
       "object_initial_velocity": [
         0.0,
@@ -224,7 +225,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-000.pick_place.can2",
+      "state_id": "shakebench-knee-v3-000.pick_place.can.side",
       "t0_s": 0.6746472851410676,
       "target_reference": {
         "frame": "worktable",
@@ -241,7 +242,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -401,7 +402,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-001.pick_place.can1",
+      "state_id": "shakebench-knee-v3-001.pick_place.can",
       "t0_s": 0.7117962152262943,
       "target_reference": {
         "frame": "worktable",
@@ -418,7 +419,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -428,6 +429,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1778136321,
+      "grasp_region": "side",
       "imu_seed": 2462665273,
       "object_initial_velocity": [
         0.0,
@@ -460,7 +462,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-001.pick_place.can2",
+      "state_id": "shakebench-knee-v3-001.pick_place.can.side",
       "t0_s": 0.7117962152262943,
       "target_reference": {
         "frame": "worktable",
@@ -477,7 +479,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -637,7 +639,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-002.pick_place.can1",
+      "state_id": "shakebench-knee-v3-002.pick_place.can",
       "t0_s": 0.6573468175419493,
       "target_reference": {
         "frame": "worktable",
@@ -654,7 +656,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -664,6 +666,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1848528735,
+      "grasp_region": "side",
       "imu_seed": 1267329793,
       "object_initial_velocity": [
         0.0,
@@ -696,7 +699,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-002.pick_place.can2",
+      "state_id": "shakebench-knee-v3-002.pick_place.can.side",
       "t0_s": 0.6573468175419493,
       "target_reference": {
         "frame": "worktable",
@@ -713,7 +716,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -873,7 +876,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-003.pick_place.can1",
+      "state_id": "shakebench-knee-v3-003.pick_place.can",
       "t0_s": 0.07975676598966203,
       "target_reference": {
         "frame": "worktable",
@@ -890,7 +893,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -900,6 +903,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2972006184,
+      "grasp_region": "side",
       "imu_seed": 1496405714,
       "object_initial_velocity": [
         0.0,
@@ -932,7 +936,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-003.pick_place.can2",
+      "state_id": "shakebench-knee-v3-003.pick_place.can.side",
       "t0_s": 0.07975676598966203,
       "target_reference": {
         "frame": "worktable",
@@ -949,7 +953,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1109,7 +1113,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-004.pick_place.can1",
+      "state_id": "shakebench-knee-v3-004.pick_place.can",
       "t0_s": 0.3643593036080498,
       "target_reference": {
         "frame": "worktable",
@@ -1126,7 +1130,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1136,6 +1140,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2799182347,
+      "grasp_region": "side",
       "imu_seed": 1349285626,
       "object_initial_velocity": [
         0.0,
@@ -1168,7 +1173,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-004.pick_place.can2",
+      "state_id": "shakebench-knee-v3-004.pick_place.can.side",
       "t0_s": 0.3643593036080498,
       "target_reference": {
         "frame": "worktable",
@@ -1185,7 +1190,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1345,7 +1350,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-005.pick_place.can1",
+      "state_id": "shakebench-knee-v3-005.pick_place.can",
       "t0_s": 0.36592336130998804,
       "target_reference": {
         "frame": "worktable",
@@ -1362,7 +1367,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1372,6 +1377,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3045565716,
+      "grasp_region": "side",
       "imu_seed": 1421135020,
       "object_initial_velocity": [
         0.0,
@@ -1404,7 +1410,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-005.pick_place.can2",
+      "state_id": "shakebench-knee-v3-005.pick_place.can.side",
       "t0_s": 0.36592336130998804,
       "target_reference": {
         "frame": "worktable",
@@ -1421,7 +1427,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1581,7 +1587,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-006.pick_place.can1",
+      "state_id": "shakebench-knee-v3-006.pick_place.can",
       "t0_s": 0.2758330028129478,
       "target_reference": {
         "frame": "worktable",
@@ -1598,7 +1604,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1608,6 +1614,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3083001667,
+      "grasp_region": "side",
       "imu_seed": 1658469973,
       "object_initial_velocity": [
         0.0,
@@ -1640,7 +1647,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-006.pick_place.can2",
+      "state_id": "shakebench-knee-v3-006.pick_place.can.side",
       "t0_s": 0.2758330028129478,
       "target_reference": {
         "frame": "worktable",
@@ -1657,7 +1664,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1817,7 +1824,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-007.pick_place.can1",
+      "state_id": "shakebench-knee-v3-007.pick_place.can",
       "t0_s": 0.6085280069346305,
       "target_reference": {
         "frame": "worktable",
@@ -1834,7 +1841,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -1844,6 +1851,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1071951727,
+      "grasp_region": "side",
       "imu_seed": 4109914981,
       "object_initial_velocity": [
         0.0,
@@ -1876,7 +1884,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-007.pick_place.can2",
+      "state_id": "shakebench-knee-v3-007.pick_place.can.side",
       "t0_s": 0.6085280069346305,
       "target_reference": {
         "frame": "worktable",
@@ -1893,7 +1901,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2053,7 +2061,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-008.pick_place.can1",
+      "state_id": "shakebench-knee-v3-008.pick_place.can",
       "t0_s": 0.4276455203744168,
       "target_reference": {
         "frame": "worktable",
@@ -2070,7 +2078,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2080,6 +2088,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 4173836589,
+      "grasp_region": "side",
       "imu_seed": 3611299872,
       "object_initial_velocity": [
         0.0,
@@ -2112,7 +2121,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-008.pick_place.can2",
+      "state_id": "shakebench-knee-v3-008.pick_place.can.side",
       "t0_s": 0.4276455203744168,
       "target_reference": {
         "frame": "worktable",
@@ -2129,7 +2138,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2289,7 +2298,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-009.pick_place.can1",
+      "state_id": "shakebench-knee-v3-009.pick_place.can",
       "t0_s": 0.5301368133965448,
       "target_reference": {
         "frame": "worktable",
@@ -2306,7 +2315,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2316,6 +2325,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1443519808,
+      "grasp_region": "side",
       "imu_seed": 3035887915,
       "object_initial_velocity": [
         0.0,
@@ -2348,7 +2358,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-009.pick_place.can2",
+      "state_id": "shakebench-knee-v3-009.pick_place.can.side",
       "t0_s": 0.5301368133965448,
       "target_reference": {
         "frame": "worktable",
@@ -2365,7 +2375,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2525,7 +2535,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-010.pick_place.can1",
+      "state_id": "shakebench-knee-v3-010.pick_place.can",
       "t0_s": 0.17355040283841391,
       "target_reference": {
         "frame": "worktable",
@@ -2542,7 +2552,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2552,6 +2562,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2837419813,
+      "grasp_region": "side",
       "imu_seed": 1682977859,
       "object_initial_velocity": [
         0.0,
@@ -2584,7 +2595,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-010.pick_place.can2",
+      "state_id": "shakebench-knee-v3-010.pick_place.can.side",
       "t0_s": 0.17355040283841391,
       "target_reference": {
         "frame": "worktable",
@@ -2601,7 +2612,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2761,7 +2772,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-011.pick_place.can1",
+      "state_id": "shakebench-knee-v3-011.pick_place.can",
       "t0_s": 0.5117752418018544,
       "target_reference": {
         "frame": "worktable",
@@ -2778,7 +2789,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2788,6 +2799,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2881904516,
+      "grasp_region": "side",
       "imu_seed": 2219424597,
       "object_initial_velocity": [
         0.0,
@@ -2820,7 +2832,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-011.pick_place.can2",
+      "state_id": "shakebench-knee-v3-011.pick_place.can.side",
       "t0_s": 0.5117752418018544,
       "target_reference": {
         "frame": "worktable",
@@ -2837,7 +2849,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -2997,7 +3009,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-012.pick_place.can1",
+      "state_id": "shakebench-knee-v3-012.pick_place.can",
       "t0_s": 0.7153577961056411,
       "target_reference": {
         "frame": "worktable",
@@ -3014,7 +3026,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3024,6 +3036,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 477443595,
+      "grasp_region": "side",
       "imu_seed": 3682357234,
       "object_initial_velocity": [
         0.0,
@@ -3056,7 +3069,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-012.pick_place.can2",
+      "state_id": "shakebench-knee-v3-012.pick_place.can.side",
       "t0_s": 0.7153577961056411,
       "target_reference": {
         "frame": "worktable",
@@ -3073,7 +3086,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3233,7 +3246,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-013.pick_place.can1",
+      "state_id": "shakebench-knee-v3-013.pick_place.can",
       "t0_s": 0.7842243869329162,
       "target_reference": {
         "frame": "worktable",
@@ -3250,7 +3263,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3260,6 +3273,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3915047264,
+      "grasp_region": "side",
       "imu_seed": 3299174154,
       "object_initial_velocity": [
         0.0,
@@ -3292,7 +3306,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-013.pick_place.can2",
+      "state_id": "shakebench-knee-v3-013.pick_place.can.side",
       "t0_s": 0.7842243869329162,
       "target_reference": {
         "frame": "worktable",
@@ -3309,7 +3323,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3469,7 +3483,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-014.pick_place.can1",
+      "state_id": "shakebench-knee-v3-014.pick_place.can",
       "t0_s": 0.3149001394494521,
       "target_reference": {
         "frame": "worktable",
@@ -3486,7 +3500,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3496,6 +3510,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 840181097,
+      "grasp_region": "side",
       "imu_seed": 1981732783,
       "object_initial_velocity": [
         0.0,
@@ -3528,7 +3543,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-014.pick_place.can2",
+      "state_id": "shakebench-knee-v3-014.pick_place.can.side",
       "t0_s": 0.3149001394494521,
       "target_reference": {
         "frame": "worktable",
@@ -3545,7 +3560,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3705,7 +3720,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-015.pick_place.can1",
+      "state_id": "shakebench-knee-v3-015.pick_place.can",
       "t0_s": 0.5622535548751305,
       "target_reference": {
         "frame": "worktable",
@@ -3722,7 +3737,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3732,6 +3747,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1771406529,
+      "grasp_region": "side",
       "imu_seed": 1581418267,
       "object_initial_velocity": [
         0.0,
@@ -3764,7 +3780,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-015.pick_place.can2",
+      "state_id": "shakebench-knee-v3-015.pick_place.can.side",
       "t0_s": 0.5622535548751305,
       "target_reference": {
         "frame": "worktable",
@@ -3781,7 +3797,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3941,7 +3957,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-016.pick_place.can1",
+      "state_id": "shakebench-knee-v3-016.pick_place.can",
       "t0_s": 0.19020793380514028,
       "target_reference": {
         "frame": "worktable",
@@ -3958,7 +3974,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -3968,6 +3984,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2954396227,
+      "grasp_region": "side",
       "imu_seed": 605487215,
       "object_initial_velocity": [
         0.0,
@@ -4000,7 +4017,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-016.pick_place.can2",
+      "state_id": "shakebench-knee-v3-016.pick_place.can.side",
       "t0_s": 0.19020793380514028,
       "target_reference": {
         "frame": "worktable",
@@ -4017,7 +4034,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4177,7 +4194,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-017.pick_place.can1",
+      "state_id": "shakebench-knee-v3-017.pick_place.can",
       "t0_s": 0.215437140033907,
       "target_reference": {
         "frame": "worktable",
@@ -4194,7 +4211,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4204,6 +4221,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3495282653,
+      "grasp_region": "side",
       "imu_seed": 2038182804,
       "object_initial_velocity": [
         0.0,
@@ -4236,7 +4254,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-017.pick_place.can2",
+      "state_id": "shakebench-knee-v3-017.pick_place.can.side",
       "t0_s": 0.215437140033907,
       "target_reference": {
         "frame": "worktable",
@@ -4253,7 +4271,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4413,7 +4431,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-018.pick_place.can1",
+      "state_id": "shakebench-knee-v3-018.pick_place.can",
       "t0_s": 0.6638210415371161,
       "target_reference": {
         "frame": "worktable",
@@ -4430,7 +4448,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4440,6 +4458,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3120051575,
+      "grasp_region": "side",
       "imu_seed": 2696588615,
       "object_initial_velocity": [
         0.0,
@@ -4472,7 +4491,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-018.pick_place.can2",
+      "state_id": "shakebench-knee-v3-018.pick_place.can.side",
       "t0_s": 0.6638210415371161,
       "target_reference": {
         "frame": "worktable",
@@ -4489,7 +4508,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4649,7 +4668,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-019.pick_place.can1",
+      "state_id": "shakebench-knee-v3-019.pick_place.can",
       "t0_s": 0.8938353399186806,
       "target_reference": {
         "frame": "worktable",
@@ -4666,7 +4685,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4676,6 +4695,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3407463928,
+      "grasp_region": "side",
       "imu_seed": 297528452,
       "object_initial_velocity": [
         0.0,
@@ -4708,7 +4728,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-019.pick_place.can2",
+      "state_id": "shakebench-knee-v3-019.pick_place.can.side",
       "t0_s": 0.8938353399186806,
       "target_reference": {
         "frame": "worktable",
@@ -4725,7 +4745,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4885,7 +4905,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-020.pick_place.can1",
+      "state_id": "shakebench-knee-v3-020.pick_place.can",
       "t0_s": 0.4511063866449622,
       "target_reference": {
         "frame": "worktable",
@@ -4902,7 +4922,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -4912,6 +4932,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2820645099,
+      "grasp_region": "side",
       "imu_seed": 1850846490,
       "object_initial_velocity": [
         0.0,
@@ -4944,7 +4965,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-020.pick_place.can2",
+      "state_id": "shakebench-knee-v3-020.pick_place.can.side",
       "t0_s": 0.4511063866449622,
       "target_reference": {
         "frame": "worktable",
@@ -4961,7 +4982,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5121,7 +5142,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-021.pick_place.can1",
+      "state_id": "shakebench-knee-v3-021.pick_place.can",
       "t0_s": 0.12905475377840228,
       "target_reference": {
         "frame": "worktable",
@@ -5138,7 +5159,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5148,6 +5169,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2617477138,
+      "grasp_region": "side",
       "imu_seed": 646019812,
       "object_initial_velocity": [
         0.0,
@@ -5180,7 +5202,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-021.pick_place.can2",
+      "state_id": "shakebench-knee-v3-021.pick_place.can.side",
       "t0_s": 0.12905475377840228,
       "target_reference": {
         "frame": "worktable",
@@ -5197,7 +5219,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5357,7 +5379,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-022.pick_place.can1",
+      "state_id": "shakebench-knee-v3-022.pick_place.can",
       "t0_s": 0.5233363730662596,
       "target_reference": {
         "frame": "worktable",
@@ -5374,7 +5396,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5384,6 +5406,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2825309715,
+      "grasp_region": "side",
       "imu_seed": 2927321469,
       "object_initial_velocity": [
         0.0,
@@ -5416,7 +5439,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-022.pick_place.can2",
+      "state_id": "shakebench-knee-v3-022.pick_place.can.side",
       "t0_s": 0.5233363730662596,
       "target_reference": {
         "frame": "worktable",
@@ -5433,7 +5456,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5593,7 +5616,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-023.pick_place.can1",
+      "state_id": "shakebench-knee-v3-023.pick_place.can",
       "t0_s": 0.7042551545479471,
       "target_reference": {
         "frame": "worktable",
@@ -5610,7 +5633,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5620,6 +5643,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3299061218,
+      "grasp_region": "side",
       "imu_seed": 1291636891,
       "object_initial_velocity": [
         0.0,
@@ -5652,7 +5676,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-023.pick_place.can2",
+      "state_id": "shakebench-knee-v3-023.pick_place.can.side",
       "t0_s": 0.7042551545479471,
       "target_reference": {
         "frame": "worktable",
@@ -5669,7 +5693,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5829,7 +5853,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-024.pick_place.can1",
+      "state_id": "shakebench-knee-v3-024.pick_place.can",
       "t0_s": 0.5642978755778085,
       "target_reference": {
         "frame": "worktable",
@@ -5846,7 +5870,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -5856,6 +5880,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 661369187,
+      "grasp_region": "side",
       "imu_seed": 2718050129,
       "object_initial_velocity": [
         0.0,
@@ -5888,7 +5913,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-024.pick_place.can2",
+      "state_id": "shakebench-knee-v3-024.pick_place.can.side",
       "t0_s": 0.5642978755778085,
       "target_reference": {
         "frame": "worktable",
@@ -5905,7 +5930,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6065,7 +6090,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-025.pick_place.can1",
+      "state_id": "shakebench-knee-v3-025.pick_place.can",
       "t0_s": 0.4718658023841406,
       "target_reference": {
         "frame": "worktable",
@@ -6082,7 +6107,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6092,6 +6117,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1702049764,
+      "grasp_region": "side",
       "imu_seed": 2553392439,
       "object_initial_velocity": [
         0.0,
@@ -6124,7 +6150,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-025.pick_place.can2",
+      "state_id": "shakebench-knee-v3-025.pick_place.can.side",
       "t0_s": 0.4718658023841406,
       "target_reference": {
         "frame": "worktable",
@@ -6141,7 +6167,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6301,7 +6327,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-026.pick_place.can1",
+      "state_id": "shakebench-knee-v3-026.pick_place.can",
       "t0_s": 0.8957744523701561,
       "target_reference": {
         "frame": "worktable",
@@ -6318,7 +6344,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6328,6 +6354,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3617906623,
+      "grasp_region": "side",
       "imu_seed": 378930728,
       "object_initial_velocity": [
         0.0,
@@ -6360,7 +6387,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-026.pick_place.can2",
+      "state_id": "shakebench-knee-v3-026.pick_place.can.side",
       "t0_s": 0.8957744523701561,
       "target_reference": {
         "frame": "worktable",
@@ -6377,7 +6404,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6537,7 +6564,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-027.pick_place.can1",
+      "state_id": "shakebench-knee-v3-027.pick_place.can",
       "t0_s": 0.8605103386021096,
       "target_reference": {
         "frame": "worktable",
@@ -6554,7 +6581,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6564,6 +6591,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3074868133,
+      "grasp_region": "side",
       "imu_seed": 668851239,
       "object_initial_velocity": [
         0.0,
@@ -6596,7 +6624,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-027.pick_place.can2",
+      "state_id": "shakebench-knee-v3-027.pick_place.can.side",
       "t0_s": 0.8605103386021096,
       "target_reference": {
         "frame": "worktable",
@@ -6613,7 +6641,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6773,7 +6801,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-028.pick_place.can1",
+      "state_id": "shakebench-knee-v3-028.pick_place.can",
       "t0_s": 0.9103449031733633,
       "target_reference": {
         "frame": "worktable",
@@ -6790,7 +6818,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -6800,6 +6828,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3460512181,
+      "grasp_region": "side",
       "imu_seed": 2972906598,
       "object_initial_velocity": [
         0.0,
@@ -6832,7 +6861,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-028.pick_place.can2",
+      "state_id": "shakebench-knee-v3-028.pick_place.can.side",
       "t0_s": 0.9103449031733633,
       "target_reference": {
         "frame": "worktable",
@@ -6849,7 +6878,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7009,7 +7038,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-029.pick_place.can1",
+      "state_id": "shakebench-knee-v3-029.pick_place.can",
       "t0_s": 0.13477044022800744,
       "target_reference": {
         "frame": "worktable",
@@ -7026,7 +7055,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7036,6 +7065,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2921995948,
+      "grasp_region": "side",
       "imu_seed": 605101635,
       "object_initial_velocity": [
         0.0,
@@ -7068,7 +7098,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-029.pick_place.can2",
+      "state_id": "shakebench-knee-v3-029.pick_place.can.side",
       "t0_s": 0.13477044022800744,
       "target_reference": {
         "frame": "worktable",
@@ -7085,7 +7115,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7245,7 +7275,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-030.pick_place.can1",
+      "state_id": "shakebench-knee-v3-030.pick_place.can",
       "t0_s": 0.8001150565454578,
       "target_reference": {
         "frame": "worktable",
@@ -7262,7 +7292,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7272,6 +7302,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1270398675,
+      "grasp_region": "side",
       "imu_seed": 3776827573,
       "object_initial_velocity": [
         0.0,
@@ -7304,7 +7335,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-030.pick_place.can2",
+      "state_id": "shakebench-knee-v3-030.pick_place.can.side",
       "t0_s": 0.8001150565454578,
       "target_reference": {
         "frame": "worktable",
@@ -7321,7 +7352,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7481,7 +7512,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-031.pick_place.can1",
+      "state_id": "shakebench-knee-v3-031.pick_place.can",
       "t0_s": 0.7684305784646542,
       "target_reference": {
         "frame": "worktable",
@@ -7498,7 +7529,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7508,6 +7539,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2779823280,
+      "grasp_region": "side",
       "imu_seed": 3992693610,
       "object_initial_velocity": [
         0.0,
@@ -7540,7 +7572,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-031.pick_place.can2",
+      "state_id": "shakebench-knee-v3-031.pick_place.can.side",
       "t0_s": 0.7684305784646542,
       "target_reference": {
         "frame": "worktable",
@@ -7557,7 +7589,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7717,7 +7749,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-032.pick_place.can1",
+      "state_id": "shakebench-knee-v3-032.pick_place.can",
       "t0_s": 0.1290821395287553,
       "target_reference": {
         "frame": "worktable",
@@ -7734,7 +7766,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7744,6 +7776,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3295534772,
+      "grasp_region": "side",
       "imu_seed": 3340002702,
       "object_initial_velocity": [
         0.0,
@@ -7776,7 +7809,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-032.pick_place.can2",
+      "state_id": "shakebench-knee-v3-032.pick_place.can.side",
       "t0_s": 0.1290821395287553,
       "target_reference": {
         "frame": "worktable",
@@ -7793,7 +7826,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7953,7 +7986,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-033.pick_place.can1",
+      "state_id": "shakebench-knee-v3-033.pick_place.can",
       "t0_s": 0.15570696020838276,
       "target_reference": {
         "frame": "worktable",
@@ -7970,7 +8003,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -7980,6 +8013,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 258254237,
+      "grasp_region": "side",
       "imu_seed": 1426756531,
       "object_initial_velocity": [
         0.0,
@@ -8012,7 +8046,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-033.pick_place.can2",
+      "state_id": "shakebench-knee-v3-033.pick_place.can.side",
       "t0_s": 0.15570696020838276,
       "target_reference": {
         "frame": "worktable",
@@ -8029,7 +8063,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8189,7 +8223,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-034.pick_place.can1",
+      "state_id": "shakebench-knee-v3-034.pick_place.can",
       "t0_s": 0.31907970758753146,
       "target_reference": {
         "frame": "worktable",
@@ -8206,7 +8240,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8216,6 +8250,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2715948355,
+      "grasp_region": "side",
       "imu_seed": 2741306398,
       "object_initial_velocity": [
         0.0,
@@ -8248,7 +8283,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-034.pick_place.can2",
+      "state_id": "shakebench-knee-v3-034.pick_place.can.side",
       "t0_s": 0.31907970758753146,
       "target_reference": {
         "frame": "worktable",
@@ -8265,7 +8300,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8425,7 +8460,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-035.pick_place.can1",
+      "state_id": "shakebench-knee-v3-035.pick_place.can",
       "t0_s": 0.9135117013790012,
       "target_reference": {
         "frame": "worktable",
@@ -8442,7 +8477,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8452,6 +8487,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 4187519215,
+      "grasp_region": "side",
       "imu_seed": 3494336184,
       "object_initial_velocity": [
         0.0,
@@ -8484,7 +8520,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-035.pick_place.can2",
+      "state_id": "shakebench-knee-v3-035.pick_place.can.side",
       "t0_s": 0.9135117013790012,
       "target_reference": {
         "frame": "worktable",
@@ -8501,7 +8537,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8661,7 +8697,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-036.pick_place.can1",
+      "state_id": "shakebench-knee-v3-036.pick_place.can",
       "t0_s": 0.1840388023884233,
       "target_reference": {
         "frame": "worktable",
@@ -8678,7 +8714,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8688,6 +8724,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 442858675,
+      "grasp_region": "side",
       "imu_seed": 338636392,
       "object_initial_velocity": [
         0.0,
@@ -8720,7 +8757,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-036.pick_place.can2",
+      "state_id": "shakebench-knee-v3-036.pick_place.can.side",
       "t0_s": 0.1840388023884233,
       "target_reference": {
         "frame": "worktable",
@@ -8737,7 +8774,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8897,7 +8934,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-037.pick_place.can1",
+      "state_id": "shakebench-knee-v3-037.pick_place.can",
       "t0_s": 0.4324689799601395,
       "target_reference": {
         "frame": "worktable",
@@ -8914,7 +8951,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -8924,6 +8961,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3231690186,
+      "grasp_region": "side",
       "imu_seed": 45999239,
       "object_initial_velocity": [
         0.0,
@@ -8956,7 +8994,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-037.pick_place.can2",
+      "state_id": "shakebench-knee-v3-037.pick_place.can.side",
       "t0_s": 0.4324689799601395,
       "target_reference": {
         "frame": "worktable",
@@ -8973,7 +9011,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9133,7 +9171,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-038.pick_place.can1",
+      "state_id": "shakebench-knee-v3-038.pick_place.can",
       "t0_s": 0.5760343324855944,
       "target_reference": {
         "frame": "worktable",
@@ -9150,7 +9188,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9160,6 +9198,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2115009567,
+      "grasp_region": "side",
       "imu_seed": 1066213005,
       "object_initial_velocity": [
         0.0,
@@ -9192,7 +9231,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-038.pick_place.can2",
+      "state_id": "shakebench-knee-v3-038.pick_place.can.side",
       "t0_s": 0.5760343324855944,
       "target_reference": {
         "frame": "worktable",
@@ -9209,7 +9248,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9369,7 +9408,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-039.pick_place.can1",
+      "state_id": "shakebench-knee-v3-039.pick_place.can",
       "t0_s": 0.07545068548707307,
       "target_reference": {
         "frame": "worktable",
@@ -9386,7 +9425,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9396,6 +9435,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3940414610,
+      "grasp_region": "side",
       "imu_seed": 4115102076,
       "object_initial_velocity": [
         0.0,
@@ -9428,7 +9468,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-039.pick_place.can2",
+      "state_id": "shakebench-knee-v3-039.pick_place.can.side",
       "t0_s": 0.07545068548707307,
       "target_reference": {
         "frame": "worktable",
@@ -9445,7 +9485,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9605,7 +9645,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-040.pick_place.can1",
+      "state_id": "shakebench-knee-v3-040.pick_place.can",
       "t0_s": 0.6747309398879404,
       "target_reference": {
         "frame": "worktable",
@@ -9622,7 +9662,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9632,6 +9672,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2696734411,
+      "grasp_region": "side",
       "imu_seed": 1017287571,
       "object_initial_velocity": [
         0.0,
@@ -9664,7 +9705,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-040.pick_place.can2",
+      "state_id": "shakebench-knee-v3-040.pick_place.can.side",
       "t0_s": 0.6747309398879404,
       "target_reference": {
         "frame": "worktable",
@@ -9681,7 +9722,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9841,7 +9882,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-041.pick_place.can1",
+      "state_id": "shakebench-knee-v3-041.pick_place.can",
       "t0_s": 0.366668462950955,
       "target_reference": {
         "frame": "worktable",
@@ -9858,7 +9899,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -9868,6 +9909,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2401633031,
+      "grasp_region": "side",
       "imu_seed": 2942276814,
       "object_initial_velocity": [
         0.0,
@@ -9900,7 +9942,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-041.pick_place.can2",
+      "state_id": "shakebench-knee-v3-041.pick_place.can.side",
       "t0_s": 0.366668462950955,
       "target_reference": {
         "frame": "worktable",
@@ -9917,7 +9959,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10077,7 +10119,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-042.pick_place.can1",
+      "state_id": "shakebench-knee-v3-042.pick_place.can",
       "t0_s": 0.5354984398538811,
       "target_reference": {
         "frame": "worktable",
@@ -10094,7 +10136,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10104,6 +10146,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2025985402,
+      "grasp_region": "side",
       "imu_seed": 130564541,
       "object_initial_velocity": [
         0.0,
@@ -10136,7 +10179,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-042.pick_place.can2",
+      "state_id": "shakebench-knee-v3-042.pick_place.can.side",
       "t0_s": 0.5354984398538811,
       "target_reference": {
         "frame": "worktable",
@@ -10153,7 +10196,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10313,7 +10356,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-043.pick_place.can1",
+      "state_id": "shakebench-knee-v3-043.pick_place.can",
       "t0_s": 0.45809144105794253,
       "target_reference": {
         "frame": "worktable",
@@ -10330,7 +10373,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10340,6 +10383,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3628929613,
+      "grasp_region": "side",
       "imu_seed": 4181572007,
       "object_initial_velocity": [
         0.0,
@@ -10372,7 +10416,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-043.pick_place.can2",
+      "state_id": "shakebench-knee-v3-043.pick_place.can.side",
       "t0_s": 0.45809144105794253,
       "target_reference": {
         "frame": "worktable",
@@ -10389,7 +10433,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10549,7 +10593,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-044.pick_place.can1",
+      "state_id": "shakebench-knee-v3-044.pick_place.can",
       "t0_s": 0.42282335922610814,
       "target_reference": {
         "frame": "worktable",
@@ -10566,7 +10610,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10576,6 +10620,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 375120744,
+      "grasp_region": "side",
       "imu_seed": 3765502372,
       "object_initial_velocity": [
         0.0,
@@ -10608,7 +10653,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-044.pick_place.can2",
+      "state_id": "shakebench-knee-v3-044.pick_place.can.side",
       "t0_s": 0.42282335922610814,
       "target_reference": {
         "frame": "worktable",
@@ -10625,7 +10670,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10785,7 +10830,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-045.pick_place.can1",
+      "state_id": "shakebench-knee-v3-045.pick_place.can",
       "t0_s": 0.45837678515433694,
       "target_reference": {
         "frame": "worktable",
@@ -10802,7 +10847,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -10812,6 +10857,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 465967280,
+      "grasp_region": "side",
       "imu_seed": 935582565,
       "object_initial_velocity": [
         0.0,
@@ -10844,7 +10890,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-045.pick_place.can2",
+      "state_id": "shakebench-knee-v3-045.pick_place.can.side",
       "t0_s": 0.45837678515433694,
       "target_reference": {
         "frame": "worktable",
@@ -10861,7 +10907,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11021,7 +11067,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-046.pick_place.can1",
+      "state_id": "shakebench-knee-v3-046.pick_place.can",
       "t0_s": 0.13647832306729987,
       "target_reference": {
         "frame": "worktable",
@@ -11038,7 +11084,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11048,6 +11094,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1755928308,
+      "grasp_region": "side",
       "imu_seed": 3271510620,
       "object_initial_velocity": [
         0.0,
@@ -11080,7 +11127,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-046.pick_place.can2",
+      "state_id": "shakebench-knee-v3-046.pick_place.can.side",
       "t0_s": 0.13647832306729987,
       "target_reference": {
         "frame": "worktable",
@@ -11097,7 +11144,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11257,7 +11304,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-047.pick_place.can1",
+      "state_id": "shakebench-knee-v3-047.pick_place.can",
       "t0_s": 0.6969958308734612,
       "target_reference": {
         "frame": "worktable",
@@ -11274,7 +11321,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11284,6 +11331,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3292073664,
+      "grasp_region": "side",
       "imu_seed": 3222673902,
       "object_initial_velocity": [
         0.0,
@@ -11316,7 +11364,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-047.pick_place.can2",
+      "state_id": "shakebench-knee-v3-047.pick_place.can.side",
       "t0_s": 0.6969958308734612,
       "target_reference": {
         "frame": "worktable",
@@ -11333,7 +11381,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11493,7 +11541,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-048.pick_place.can1",
+      "state_id": "shakebench-knee-v3-048.pick_place.can",
       "t0_s": 0.22055149246111097,
       "target_reference": {
         "frame": "worktable",
@@ -11510,7 +11558,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11520,6 +11568,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2882021409,
+      "grasp_region": "side",
       "imu_seed": 1649395226,
       "object_initial_velocity": [
         0.0,
@@ -11552,7 +11601,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-048.pick_place.can2",
+      "state_id": "shakebench-knee-v3-048.pick_place.can.side",
       "t0_s": 0.22055149246111097,
       "target_reference": {
         "frame": "worktable",
@@ -11569,7 +11618,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11729,7 +11778,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-049.pick_place.can1",
+      "state_id": "shakebench-knee-v3-049.pick_place.can",
       "t0_s": 0.039431146509269814,
       "target_reference": {
         "frame": "worktable",
@@ -11746,7 +11795,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11756,6 +11805,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1871613045,
+      "grasp_region": "side",
       "imu_seed": 7056531,
       "object_initial_velocity": [
         0.0,
@@ -11788,7 +11838,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-049.pick_place.can2",
+      "state_id": "shakebench-knee-v3-049.pick_place.can.side",
       "t0_s": 0.039431146509269814,
       "target_reference": {
         "frame": "worktable",
@@ -11805,7 +11855,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11965,7 +12015,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-050.pick_place.can1",
+      "state_id": "shakebench-knee-v3-050.pick_place.can",
       "t0_s": 0.9209682826174574,
       "target_reference": {
         "frame": "worktable",
@@ -11982,7 +12032,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -11992,6 +12042,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3204461379,
+      "grasp_region": "side",
       "imu_seed": 3270831735,
       "object_initial_velocity": [
         0.0,
@@ -12024,7 +12075,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-050.pick_place.can2",
+      "state_id": "shakebench-knee-v3-050.pick_place.can.side",
       "t0_s": 0.9209682826174574,
       "target_reference": {
         "frame": "worktable",
@@ -12041,7 +12092,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12201,7 +12252,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-051.pick_place.can1",
+      "state_id": "shakebench-knee-v3-051.pick_place.can",
       "t0_s": 0.4225879769074015,
       "target_reference": {
         "frame": "worktable",
@@ -12218,7 +12269,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12228,6 +12279,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 46244146,
+      "grasp_region": "side",
       "imu_seed": 1754923034,
       "object_initial_velocity": [
         0.0,
@@ -12260,7 +12312,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-051.pick_place.can2",
+      "state_id": "shakebench-knee-v3-051.pick_place.can.side",
       "t0_s": 0.4225879769074015,
       "target_reference": {
         "frame": "worktable",
@@ -12277,7 +12329,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12437,7 +12489,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-052.pick_place.can1",
+      "state_id": "shakebench-knee-v3-052.pick_place.can",
       "t0_s": 0.45130616064108914,
       "target_reference": {
         "frame": "worktable",
@@ -12454,7 +12506,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12464,6 +12516,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1336016608,
+      "grasp_region": "side",
       "imu_seed": 2770468839,
       "object_initial_velocity": [
         0.0,
@@ -12496,7 +12549,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-052.pick_place.can2",
+      "state_id": "shakebench-knee-v3-052.pick_place.can.side",
       "t0_s": 0.45130616064108914,
       "target_reference": {
         "frame": "worktable",
@@ -12513,7 +12566,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12673,7 +12726,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-053.pick_place.can1",
+      "state_id": "shakebench-knee-v3-053.pick_place.can",
       "t0_s": 0.3364279370339814,
       "target_reference": {
         "frame": "worktable",
@@ -12690,7 +12743,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12700,6 +12753,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 139821044,
+      "grasp_region": "side",
       "imu_seed": 3495913826,
       "object_initial_velocity": [
         0.0,
@@ -12732,7 +12786,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-053.pick_place.can2",
+      "state_id": "shakebench-knee-v3-053.pick_place.can.side",
       "t0_s": 0.3364279370339814,
       "target_reference": {
         "frame": "worktable",
@@ -12749,7 +12803,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12909,7 +12963,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-054.pick_place.can1",
+      "state_id": "shakebench-knee-v3-054.pick_place.can",
       "t0_s": 0.518013216707535,
       "target_reference": {
         "frame": "worktable",
@@ -12926,7 +12980,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -12936,6 +12990,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 4093741108,
+      "grasp_region": "side",
       "imu_seed": 3359695536,
       "object_initial_velocity": [
         0.0,
@@ -12968,7 +13023,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-054.pick_place.can2",
+      "state_id": "shakebench-knee-v3-054.pick_place.can.side",
       "t0_s": 0.518013216707535,
       "target_reference": {
         "frame": "worktable",
@@ -12985,7 +13040,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13145,7 +13200,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-055.pick_place.can1",
+      "state_id": "shakebench-knee-v3-055.pick_place.can",
       "t0_s": 0.06486095501909842,
       "target_reference": {
         "frame": "worktable",
@@ -13162,7 +13217,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13172,6 +13227,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3227542501,
+      "grasp_region": "side",
       "imu_seed": 2989486595,
       "object_initial_velocity": [
         0.0,
@@ -13204,7 +13260,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-055.pick_place.can2",
+      "state_id": "shakebench-knee-v3-055.pick_place.can.side",
       "t0_s": 0.06486095501909842,
       "target_reference": {
         "frame": "worktable",
@@ -13221,7 +13277,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13381,7 +13437,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-056.pick_place.can1",
+      "state_id": "shakebench-knee-v3-056.pick_place.can",
       "t0_s": 0.6593736523828495,
       "target_reference": {
         "frame": "worktable",
@@ -13398,7 +13454,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13408,6 +13464,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 4128010964,
+      "grasp_region": "side",
       "imu_seed": 2775661771,
       "object_initial_velocity": [
         0.0,
@@ -13440,7 +13497,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-056.pick_place.can2",
+      "state_id": "shakebench-knee-v3-056.pick_place.can.side",
       "t0_s": 0.6593736523828495,
       "target_reference": {
         "frame": "worktable",
@@ -13457,7 +13514,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13617,7 +13674,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-057.pick_place.can1",
+      "state_id": "shakebench-knee-v3-057.pick_place.can",
       "t0_s": 0.9960059041143032,
       "target_reference": {
         "frame": "worktable",
@@ -13634,7 +13691,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13644,6 +13701,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 322479372,
+      "grasp_region": "side",
       "imu_seed": 2095286717,
       "object_initial_velocity": [
         0.0,
@@ -13676,7 +13734,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-057.pick_place.can2",
+      "state_id": "shakebench-knee-v3-057.pick_place.can.side",
       "t0_s": 0.9960059041143032,
       "target_reference": {
         "frame": "worktable",
@@ -13693,7 +13751,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13853,7 +13911,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-058.pick_place.can1",
+      "state_id": "shakebench-knee-v3-058.pick_place.can",
       "t0_s": 0.06898960085107514,
       "target_reference": {
         "frame": "worktable",
@@ -13870,7 +13928,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -13880,6 +13938,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2270417193,
+      "grasp_region": "side",
       "imu_seed": 1615752966,
       "object_initial_velocity": [
         0.0,
@@ -13912,7 +13971,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-058.pick_place.can2",
+      "state_id": "shakebench-knee-v3-058.pick_place.can.side",
       "t0_s": 0.06898960085107514,
       "target_reference": {
         "frame": "worktable",
@@ -13929,7 +13988,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14089,7 +14148,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-059.pick_place.can1",
+      "state_id": "shakebench-knee-v3-059.pick_place.can",
       "t0_s": 0.4276080249384744,
       "target_reference": {
         "frame": "worktable",
@@ -14106,7 +14165,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14116,6 +14175,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 679187013,
+      "grasp_region": "side",
       "imu_seed": 2848489382,
       "object_initial_velocity": [
         0.0,
@@ -14148,7 +14208,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-059.pick_place.can2",
+      "state_id": "shakebench-knee-v3-059.pick_place.can.side",
       "t0_s": 0.4276080249384744,
       "target_reference": {
         "frame": "worktable",
@@ -14165,7 +14225,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14325,7 +14385,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-060.pick_place.can1",
+      "state_id": "shakebench-knee-v3-060.pick_place.can",
       "t0_s": 0.8472212748291958,
       "target_reference": {
         "frame": "worktable",
@@ -14342,7 +14402,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14352,6 +14412,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2407220165,
+      "grasp_region": "side",
       "imu_seed": 1707052043,
       "object_initial_velocity": [
         0.0,
@@ -14384,7 +14445,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-060.pick_place.can2",
+      "state_id": "shakebench-knee-v3-060.pick_place.can.side",
       "t0_s": 0.8472212748291958,
       "target_reference": {
         "frame": "worktable",
@@ -14401,7 +14462,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14561,7 +14622,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-061.pick_place.can1",
+      "state_id": "shakebench-knee-v3-061.pick_place.can",
       "t0_s": 0.36485352312161445,
       "target_reference": {
         "frame": "worktable",
@@ -14578,7 +14639,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14588,6 +14649,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 456473324,
+      "grasp_region": "side",
       "imu_seed": 223678435,
       "object_initial_velocity": [
         0.0,
@@ -14620,7 +14682,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-061.pick_place.can2",
+      "state_id": "shakebench-knee-v3-061.pick_place.can.side",
       "t0_s": 0.36485352312161445,
       "target_reference": {
         "frame": "worktable",
@@ -14637,7 +14699,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14797,7 +14859,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-062.pick_place.can1",
+      "state_id": "shakebench-knee-v3-062.pick_place.can",
       "t0_s": 0.10078258085496548,
       "target_reference": {
         "frame": "worktable",
@@ -14814,7 +14876,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -14824,6 +14886,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2938392821,
+      "grasp_region": "side",
       "imu_seed": 2698416981,
       "object_initial_velocity": [
         0.0,
@@ -14856,7 +14919,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-062.pick_place.can2",
+      "state_id": "shakebench-knee-v3-062.pick_place.can.side",
       "t0_s": 0.10078258085496548,
       "target_reference": {
         "frame": "worktable",
@@ -14873,7 +14936,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15033,7 +15096,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-063.pick_place.can1",
+      "state_id": "shakebench-knee-v3-063.pick_place.can",
       "t0_s": 0.4150994730521058,
       "target_reference": {
         "frame": "worktable",
@@ -15050,7 +15113,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15060,6 +15123,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1972108297,
+      "grasp_region": "side",
       "imu_seed": 383592670,
       "object_initial_velocity": [
         0.0,
@@ -15092,7 +15156,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-063.pick_place.can2",
+      "state_id": "shakebench-knee-v3-063.pick_place.can.side",
       "t0_s": 0.4150994730521058,
       "target_reference": {
         "frame": "worktable",
@@ -15109,7 +15173,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15269,7 +15333,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-064.pick_place.can1",
+      "state_id": "shakebench-knee-v3-064.pick_place.can",
       "t0_s": 0.39659670071901587,
       "target_reference": {
         "frame": "worktable",
@@ -15286,7 +15350,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15296,6 +15360,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2931226193,
+      "grasp_region": "side",
       "imu_seed": 2252607695,
       "object_initial_velocity": [
         0.0,
@@ -15328,7 +15393,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-064.pick_place.can2",
+      "state_id": "shakebench-knee-v3-064.pick_place.can.side",
       "t0_s": 0.39659670071901587,
       "target_reference": {
         "frame": "worktable",
@@ -15345,7 +15410,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15505,7 +15570,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-065.pick_place.can1",
+      "state_id": "shakebench-knee-v3-065.pick_place.can",
       "t0_s": 0.937306888349634,
       "target_reference": {
         "frame": "worktable",
@@ -15522,7 +15587,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15532,6 +15597,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1897522196,
+      "grasp_region": "side",
       "imu_seed": 3355649125,
       "object_initial_velocity": [
         0.0,
@@ -15564,7 +15630,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-065.pick_place.can2",
+      "state_id": "shakebench-knee-v3-065.pick_place.can.side",
       "t0_s": 0.937306888349634,
       "target_reference": {
         "frame": "worktable",
@@ -15581,7 +15647,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15741,7 +15807,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-066.pick_place.can1",
+      "state_id": "shakebench-knee-v3-066.pick_place.can",
       "t0_s": 0.9598163801068241,
       "target_reference": {
         "frame": "worktable",
@@ -15758,7 +15824,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15768,6 +15834,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1811227938,
+      "grasp_region": "side",
       "imu_seed": 1488547589,
       "object_initial_velocity": [
         0.0,
@@ -15800,7 +15867,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-066.pick_place.can2",
+      "state_id": "shakebench-knee-v3-066.pick_place.can.side",
       "t0_s": 0.9598163801068241,
       "target_reference": {
         "frame": "worktable",
@@ -15817,7 +15884,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -15977,7 +16044,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-067.pick_place.can1",
+      "state_id": "shakebench-knee-v3-067.pick_place.can",
       "t0_s": 0.3305579818222493,
       "target_reference": {
         "frame": "worktable",
@@ -15994,7 +16061,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16004,6 +16071,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3975771648,
+      "grasp_region": "side",
       "imu_seed": 2255589192,
       "object_initial_velocity": [
         0.0,
@@ -16036,7 +16104,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-067.pick_place.can2",
+      "state_id": "shakebench-knee-v3-067.pick_place.can.side",
       "t0_s": 0.3305579818222493,
       "target_reference": {
         "frame": "worktable",
@@ -16053,7 +16121,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16213,7 +16281,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-068.pick_place.can1",
+      "state_id": "shakebench-knee-v3-068.pick_place.can",
       "t0_s": 0.0864594437172229,
       "target_reference": {
         "frame": "worktable",
@@ -16230,7 +16298,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16240,6 +16308,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 974265344,
+      "grasp_region": "side",
       "imu_seed": 1373344179,
       "object_initial_velocity": [
         0.0,
@@ -16272,7 +16341,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-068.pick_place.can2",
+      "state_id": "shakebench-knee-v3-068.pick_place.can.side",
       "t0_s": 0.0864594437172229,
       "target_reference": {
         "frame": "worktable",
@@ -16289,7 +16358,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16449,7 +16518,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-069.pick_place.can1",
+      "state_id": "shakebench-knee-v3-069.pick_place.can",
       "t0_s": 0.03494267050750752,
       "target_reference": {
         "frame": "worktable",
@@ -16466,7 +16535,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16476,6 +16545,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1768314959,
+      "grasp_region": "side",
       "imu_seed": 3817285517,
       "object_initial_velocity": [
         0.0,
@@ -16508,7 +16578,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-069.pick_place.can2",
+      "state_id": "shakebench-knee-v3-069.pick_place.can.side",
       "t0_s": 0.03494267050750752,
       "target_reference": {
         "frame": "worktable",
@@ -16525,7 +16595,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16685,7 +16755,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-070.pick_place.can1",
+      "state_id": "shakebench-knee-v3-070.pick_place.can",
       "t0_s": 0.871268594486958,
       "target_reference": {
         "frame": "worktable",
@@ -16702,7 +16772,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16712,6 +16782,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1300622580,
+      "grasp_region": "side",
       "imu_seed": 1209587504,
       "object_initial_velocity": [
         0.0,
@@ -16744,7 +16815,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-070.pick_place.can2",
+      "state_id": "shakebench-knee-v3-070.pick_place.can.side",
       "t0_s": 0.871268594486958,
       "target_reference": {
         "frame": "worktable",
@@ -16761,7 +16832,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16921,7 +16992,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-071.pick_place.can1",
+      "state_id": "shakebench-knee-v3-071.pick_place.can",
       "t0_s": 0.6138572116993105,
       "target_reference": {
         "frame": "worktable",
@@ -16938,7 +17009,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -16948,6 +17019,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1335308408,
+      "grasp_region": "side",
       "imu_seed": 2823755734,
       "object_initial_velocity": [
         0.0,
@@ -16980,7 +17052,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-071.pick_place.can2",
+      "state_id": "shakebench-knee-v3-071.pick_place.can.side",
       "t0_s": 0.6138572116993105,
       "target_reference": {
         "frame": "worktable",
@@ -16997,7 +17069,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17157,7 +17229,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-072.pick_place.can1",
+      "state_id": "shakebench-knee-v3-072.pick_place.can",
       "t0_s": 0.575539842905561,
       "target_reference": {
         "frame": "worktable",
@@ -17174,7 +17246,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17184,6 +17256,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2726582944,
+      "grasp_region": "side",
       "imu_seed": 1251800419,
       "object_initial_velocity": [
         0.0,
@@ -17216,7 +17289,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-072.pick_place.can2",
+      "state_id": "shakebench-knee-v3-072.pick_place.can.side",
       "t0_s": 0.575539842905561,
       "target_reference": {
         "frame": "worktable",
@@ -17233,7 +17306,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17393,7 +17466,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-073.pick_place.can1",
+      "state_id": "shakebench-knee-v3-073.pick_place.can",
       "t0_s": 0.284025225614296,
       "target_reference": {
         "frame": "worktable",
@@ -17410,7 +17483,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17420,6 +17493,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 787239028,
+      "grasp_region": "side",
       "imu_seed": 4187336868,
       "object_initial_velocity": [
         0.0,
@@ -17452,7 +17526,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-073.pick_place.can2",
+      "state_id": "shakebench-knee-v3-073.pick_place.can.side",
       "t0_s": 0.284025225614296,
       "target_reference": {
         "frame": "worktable",
@@ -17469,7 +17543,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17629,7 +17703,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-074.pick_place.can1",
+      "state_id": "shakebench-knee-v3-074.pick_place.can",
       "t0_s": 0.9491626783424517,
       "target_reference": {
         "frame": "worktable",
@@ -17646,7 +17720,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17656,6 +17730,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1150508277,
+      "grasp_region": "side",
       "imu_seed": 3744270016,
       "object_initial_velocity": [
         0.0,
@@ -17688,7 +17763,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-074.pick_place.can2",
+      "state_id": "shakebench-knee-v3-074.pick_place.can.side",
       "t0_s": 0.9491626783424517,
       "target_reference": {
         "frame": "worktable",
@@ -17705,7 +17780,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17865,7 +17940,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-075.pick_place.can1",
+      "state_id": "shakebench-knee-v3-075.pick_place.can",
       "t0_s": 0.4748638208907348,
       "target_reference": {
         "frame": "worktable",
@@ -17882,7 +17957,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -17892,6 +17967,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2081594042,
+      "grasp_region": "side",
       "imu_seed": 635191689,
       "object_initial_velocity": [
         0.0,
@@ -17924,7 +18000,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-075.pick_place.can2",
+      "state_id": "shakebench-knee-v3-075.pick_place.can.side",
       "t0_s": 0.4748638208907348,
       "target_reference": {
         "frame": "worktable",
@@ -17941,7 +18017,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18101,7 +18177,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-076.pick_place.can1",
+      "state_id": "shakebench-knee-v3-076.pick_place.can",
       "t0_s": 0.47148775563185563,
       "target_reference": {
         "frame": "worktable",
@@ -18118,7 +18194,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18128,6 +18204,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3864378610,
+      "grasp_region": "side",
       "imu_seed": 3582424535,
       "object_initial_velocity": [
         0.0,
@@ -18160,7 +18237,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-076.pick_place.can2",
+      "state_id": "shakebench-knee-v3-076.pick_place.can.side",
       "t0_s": 0.47148775563185563,
       "target_reference": {
         "frame": "worktable",
@@ -18177,7 +18254,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18337,7 +18414,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-077.pick_place.can1",
+      "state_id": "shakebench-knee-v3-077.pick_place.can",
       "t0_s": 0.937647298802615,
       "target_reference": {
         "frame": "worktable",
@@ -18354,7 +18431,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18364,6 +18441,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1360483380,
+      "grasp_region": "side",
       "imu_seed": 889355589,
       "object_initial_velocity": [
         0.0,
@@ -18396,7 +18474,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-077.pick_place.can2",
+      "state_id": "shakebench-knee-v3-077.pick_place.can.side",
       "t0_s": 0.937647298802615,
       "target_reference": {
         "frame": "worktable",
@@ -18413,7 +18491,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18573,7 +18651,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-078.pick_place.can1",
+      "state_id": "shakebench-knee-v3-078.pick_place.can",
       "t0_s": 0.4300753864539022,
       "target_reference": {
         "frame": "worktable",
@@ -18590,7 +18668,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18600,6 +18678,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2262563024,
+      "grasp_region": "side",
       "imu_seed": 3990091640,
       "object_initial_velocity": [
         0.0,
@@ -18632,7 +18711,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-078.pick_place.can2",
+      "state_id": "shakebench-knee-v3-078.pick_place.can.side",
       "t0_s": 0.4300753864539022,
       "target_reference": {
         "frame": "worktable",
@@ -18649,7 +18728,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18809,7 +18888,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-079.pick_place.can1",
+      "state_id": "shakebench-knee-v3-079.pick_place.can",
       "t0_s": 0.03372819924941099,
       "target_reference": {
         "frame": "worktable",
@@ -18826,7 +18905,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -18836,6 +18915,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1805921401,
+      "grasp_region": "side",
       "imu_seed": 2851507313,
       "object_initial_velocity": [
         0.0,
@@ -18868,7 +18948,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-079.pick_place.can2",
+      "state_id": "shakebench-knee-v3-079.pick_place.can.side",
       "t0_s": 0.03372819924941099,
       "target_reference": {
         "frame": "worktable",
@@ -18885,7 +18965,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19045,7 +19125,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-080.pick_place.can1",
+      "state_id": "shakebench-knee-v3-080.pick_place.can",
       "t0_s": 0.8805796733206834,
       "target_reference": {
         "frame": "worktable",
@@ -19062,7 +19142,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19072,6 +19152,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2430224588,
+      "grasp_region": "side",
       "imu_seed": 598616352,
       "object_initial_velocity": [
         0.0,
@@ -19104,7 +19185,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-080.pick_place.can2",
+      "state_id": "shakebench-knee-v3-080.pick_place.can.side",
       "t0_s": 0.8805796733206834,
       "target_reference": {
         "frame": "worktable",
@@ -19121,7 +19202,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19281,7 +19362,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-081.pick_place.can1",
+      "state_id": "shakebench-knee-v3-081.pick_place.can",
       "t0_s": 0.03248081722431748,
       "target_reference": {
         "frame": "worktable",
@@ -19298,7 +19379,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19308,6 +19389,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1707062605,
+      "grasp_region": "side",
       "imu_seed": 2616753803,
       "object_initial_velocity": [
         0.0,
@@ -19340,7 +19422,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-081.pick_place.can2",
+      "state_id": "shakebench-knee-v3-081.pick_place.can.side",
       "t0_s": 0.03248081722431748,
       "target_reference": {
         "frame": "worktable",
@@ -19357,7 +19439,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19517,7 +19599,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-082.pick_place.can1",
+      "state_id": "shakebench-knee-v3-082.pick_place.can",
       "t0_s": 0.5932083146506136,
       "target_reference": {
         "frame": "worktable",
@@ -19534,7 +19616,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19544,6 +19626,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2650820240,
+      "grasp_region": "side",
       "imu_seed": 2281173402,
       "object_initial_velocity": [
         0.0,
@@ -19576,7 +19659,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-082.pick_place.can2",
+      "state_id": "shakebench-knee-v3-082.pick_place.can.side",
       "t0_s": 0.5932083146506136,
       "target_reference": {
         "frame": "worktable",
@@ -19593,7 +19676,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19753,7 +19836,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-083.pick_place.can1",
+      "state_id": "shakebench-knee-v3-083.pick_place.can",
       "t0_s": 0.35527304858052533,
       "target_reference": {
         "frame": "worktable",
@@ -19770,7 +19853,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19780,6 +19863,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2179211041,
+      "grasp_region": "side",
       "imu_seed": 629263069,
       "object_initial_velocity": [
         0.0,
@@ -19812,7 +19896,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-083.pick_place.can2",
+      "state_id": "shakebench-knee-v3-083.pick_place.can.side",
       "t0_s": 0.35527304858052533,
       "target_reference": {
         "frame": "worktable",
@@ -19829,7 +19913,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -19989,7 +20073,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-084.pick_place.can1",
+      "state_id": "shakebench-knee-v3-084.pick_place.can",
       "t0_s": 0.0941212718314787,
       "target_reference": {
         "frame": "worktable",
@@ -20006,7 +20090,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20016,6 +20100,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 941391386,
+      "grasp_region": "side",
       "imu_seed": 2164422221,
       "object_initial_velocity": [
         0.0,
@@ -20048,7 +20133,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-084.pick_place.can2",
+      "state_id": "shakebench-knee-v3-084.pick_place.can.side",
       "t0_s": 0.0941212718314787,
       "target_reference": {
         "frame": "worktable",
@@ -20065,7 +20150,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20225,7 +20310,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-085.pick_place.can1",
+      "state_id": "shakebench-knee-v3-085.pick_place.can",
       "t0_s": 0.5370984651841547,
       "target_reference": {
         "frame": "worktable",
@@ -20242,7 +20327,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20252,6 +20337,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2559649416,
+      "grasp_region": "side",
       "imu_seed": 1189055576,
       "object_initial_velocity": [
         0.0,
@@ -20284,7 +20370,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-085.pick_place.can2",
+      "state_id": "shakebench-knee-v3-085.pick_place.can.side",
       "t0_s": 0.5370984651841547,
       "target_reference": {
         "frame": "worktable",
@@ -20301,7 +20387,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20461,7 +20547,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-086.pick_place.can1",
+      "state_id": "shakebench-knee-v3-086.pick_place.can",
       "t0_s": 0.32393108351514455,
       "target_reference": {
         "frame": "worktable",
@@ -20478,7 +20564,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20488,6 +20574,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2601135610,
+      "grasp_region": "side",
       "imu_seed": 2854036756,
       "object_initial_velocity": [
         0.0,
@@ -20520,7 +20607,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-086.pick_place.can2",
+      "state_id": "shakebench-knee-v3-086.pick_place.can.side",
       "t0_s": 0.32393108351514455,
       "target_reference": {
         "frame": "worktable",
@@ -20537,7 +20624,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20697,7 +20784,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-087.pick_place.can1",
+      "state_id": "shakebench-knee-v3-087.pick_place.can",
       "t0_s": 0.07051800451104726,
       "target_reference": {
         "frame": "worktable",
@@ -20714,7 +20801,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20724,6 +20811,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1855266289,
+      "grasp_region": "side",
       "imu_seed": 1165974408,
       "object_initial_velocity": [
         0.0,
@@ -20756,7 +20844,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-087.pick_place.can2",
+      "state_id": "shakebench-knee-v3-087.pick_place.can.side",
       "t0_s": 0.07051800451104726,
       "target_reference": {
         "frame": "worktable",
@@ -20773,7 +20861,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20933,7 +21021,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-088.pick_place.can1",
+      "state_id": "shakebench-knee-v3-088.pick_place.can",
       "t0_s": 0.07762498864468588,
       "target_reference": {
         "frame": "worktable",
@@ -20950,7 +21038,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -20960,6 +21048,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 4029810027,
+      "grasp_region": "side",
       "imu_seed": 532794646,
       "object_initial_velocity": [
         0.0,
@@ -20992,7 +21081,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-088.pick_place.can2",
+      "state_id": "shakebench-knee-v3-088.pick_place.can.side",
       "t0_s": 0.07762498864468588,
       "target_reference": {
         "frame": "worktable",
@@ -21009,7 +21098,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21169,7 +21258,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-089.pick_place.can1",
+      "state_id": "shakebench-knee-v3-089.pick_place.can",
       "t0_s": 0.9815071169533858,
       "target_reference": {
         "frame": "worktable",
@@ -21186,7 +21275,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21196,6 +21285,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 2025669312,
+      "grasp_region": "side",
       "imu_seed": 3997464422,
       "object_initial_velocity": [
         0.0,
@@ -21228,7 +21318,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-089.pick_place.can2",
+      "state_id": "shakebench-knee-v3-089.pick_place.can.side",
       "t0_s": 0.9815071169533858,
       "target_reference": {
         "frame": "worktable",
@@ -21245,7 +21335,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21405,7 +21495,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-090.pick_place.can1",
+      "state_id": "shakebench-knee-v3-090.pick_place.can",
       "t0_s": 0.47921047324047145,
       "target_reference": {
         "frame": "worktable",
@@ -21422,7 +21512,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21432,6 +21522,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3441532768,
+      "grasp_region": "side",
       "imu_seed": 4100789887,
       "object_initial_velocity": [
         0.0,
@@ -21464,7 +21555,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-090.pick_place.can2",
+      "state_id": "shakebench-knee-v3-090.pick_place.can.side",
       "t0_s": 0.47921047324047145,
       "target_reference": {
         "frame": "worktable",
@@ -21481,7 +21572,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21641,7 +21732,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-091.pick_place.can1",
+      "state_id": "shakebench-knee-v3-091.pick_place.can",
       "t0_s": 0.12019387239914762,
       "target_reference": {
         "frame": "worktable",
@@ -21658,7 +21749,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21668,6 +21759,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1066248514,
+      "grasp_region": "side",
       "imu_seed": 2342010142,
       "object_initial_velocity": [
         0.0,
@@ -21700,7 +21792,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-091.pick_place.can2",
+      "state_id": "shakebench-knee-v3-091.pick_place.can.side",
       "t0_s": 0.12019387239914762,
       "target_reference": {
         "frame": "worktable",
@@ -21717,7 +21809,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21877,7 +21969,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-092.pick_place.can1",
+      "state_id": "shakebench-knee-v3-092.pick_place.can",
       "t0_s": 0.8556177092451378,
       "target_reference": {
         "frame": "worktable",
@@ -21894,7 +21986,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -21904,6 +21996,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3545130737,
+      "grasp_region": "side",
       "imu_seed": 877206825,
       "object_initial_velocity": [
         0.0,
@@ -21936,7 +22029,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-092.pick_place.can2",
+      "state_id": "shakebench-knee-v3-092.pick_place.can.side",
       "t0_s": 0.8556177092451378,
       "target_reference": {
         "frame": "worktable",
@@ -21953,7 +22046,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22113,7 +22206,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-093.pick_place.can1",
+      "state_id": "shakebench-knee-v3-093.pick_place.can",
       "t0_s": 0.5578773206087535,
       "target_reference": {
         "frame": "worktable",
@@ -22130,7 +22223,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22140,6 +22233,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 168208258,
+      "grasp_region": "side",
       "imu_seed": 507915169,
       "object_initial_velocity": [
         0.0,
@@ -22172,7 +22266,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-093.pick_place.can2",
+      "state_id": "shakebench-knee-v3-093.pick_place.can.side",
       "t0_s": 0.5578773206087535,
       "target_reference": {
         "frame": "worktable",
@@ -22189,7 +22283,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22349,7 +22443,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-094.pick_place.can1",
+      "state_id": "shakebench-knee-v3-094.pick_place.can",
       "t0_s": 0.6611833248391484,
       "target_reference": {
         "frame": "worktable",
@@ -22366,7 +22460,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22376,6 +22470,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 659478266,
+      "grasp_region": "side",
       "imu_seed": 3585606243,
       "object_initial_velocity": [
         0.0,
@@ -22408,7 +22503,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-094.pick_place.can2",
+      "state_id": "shakebench-knee-v3-094.pick_place.can.side",
       "t0_s": 0.6611833248391484,
       "target_reference": {
         "frame": "worktable",
@@ -22425,7 +22520,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22585,7 +22680,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-095.pick_place.can1",
+      "state_id": "shakebench-knee-v3-095.pick_place.can",
       "t0_s": 0.40425568841469817,
       "target_reference": {
         "frame": "worktable",
@@ -22602,7 +22697,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22612,6 +22707,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3357701149,
+      "grasp_region": "side",
       "imu_seed": 3384287997,
       "object_initial_velocity": [
         0.0,
@@ -22644,7 +22740,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-095.pick_place.can2",
+      "state_id": "shakebench-knee-v3-095.pick_place.can.side",
       "t0_s": 0.40425568841469817,
       "target_reference": {
         "frame": "worktable",
@@ -22661,7 +22757,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22821,7 +22917,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-096.pick_place.can1",
+      "state_id": "shakebench-knee-v3-096.pick_place.can",
       "t0_s": 0.22457751890832764,
       "target_reference": {
         "frame": "worktable",
@@ -22838,7 +22934,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -22848,6 +22944,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 312165796,
+      "grasp_region": "side",
       "imu_seed": 2994442447,
       "object_initial_velocity": [
         0.0,
@@ -22880,7 +22977,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-096.pick_place.can2",
+      "state_id": "shakebench-knee-v3-096.pick_place.can.side",
       "t0_s": 0.22457751890832764,
       "target_reference": {
         "frame": "worktable",
@@ -22897,7 +22994,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23057,7 +23154,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-097.pick_place.can1",
+      "state_id": "shakebench-knee-v3-097.pick_place.can",
       "t0_s": 0.6206157011377552,
       "target_reference": {
         "frame": "worktable",
@@ -23074,7 +23171,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23084,6 +23181,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 3978497533,
+      "grasp_region": "side",
       "imu_seed": 2913440640,
       "object_initial_velocity": [
         0.0,
@@ -23116,7 +23214,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-097.pick_place.can2",
+      "state_id": "shakebench-knee-v3-097.pick_place.can.side",
       "t0_s": 0.6206157011377552,
       "target_reference": {
         "frame": "worktable",
@@ -23133,7 +23231,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23293,7 +23391,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-098.pick_place.can1",
+      "state_id": "shakebench-knee-v3-098.pick_place.can",
       "t0_s": 0.9540867489370147,
       "target_reference": {
         "frame": "worktable",
@@ -23310,7 +23408,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23320,6 +23418,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 21976586,
+      "grasp_region": "side",
       "imu_seed": 182147803,
       "object_initial_velocity": [
         0.0,
@@ -23352,7 +23451,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-098.pick_place.can2",
+      "state_id": "shakebench-knee-v3-098.pick_place.can.side",
       "t0_s": 0.9540867489370147,
       "target_reference": {
         "frame": "worktable",
@@ -23369,7 +23468,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23529,7 +23628,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-099.pick_place.can1",
+      "state_id": "shakebench-knee-v3-099.pick_place.can",
       "t0_s": 0.6065004439153587,
       "target_reference": {
         "frame": "worktable",
@@ -23546,7 +23645,7 @@
         ]
       },
       "task": {
-        "object_id": "can1",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     },
@@ -23556,6 +23655,7 @@
         "selection": "unselected; Phase 09 knee calibration only"
       },
       "excitation_seed": 1980605566,
+      "grasp_region": "side",
       "imu_seed": 3800753411,
       "object_initial_velocity": [
         0.0,
@@ -23588,7 +23688,7 @@
       "schema_id": "shakebench.phase09.task_states.record",
       "schema_version": 3,
       "split": "knee",
-      "state_id": "shakebench-knee-v3-099.pick_place.can2",
+      "state_id": "shakebench-knee-v3-099.pick_place.can.side",
       "t0_s": 0.6065004439153587,
       "target_reference": {
         "frame": "worktable",
@@ -23605,7 +23705,7 @@
         ]
       },
       "task": {
-        "object_id": "can2",
+        "object_id": "can",
         "task_type": "pick_place"
       }
     }
@@ -23635,7 +23735,8 @@
         ],
         "opening_allowance_m": 0.01,
         "pad_height_m": 0.028,
-        "pads_above_com": true
+        "pads_above_com": true,
+        "yaw_free": true
       },
       "object_id": "apple",
       "object_mass_kg": 0.16,
@@ -23661,7 +23762,7 @@
       ],
       "qualification": "pending_task_variant_requalification",
       "schema_id": "shakebench.task.v3",
-      "stability_constraint": "start pose is the measured free-settled rest pose; the grasp pads never close below the object centre of mass",
+      "stability_constraint": "start pose is the measured free-settled rest pose; upright grasps close at or above the centre of mass, while the lying can is cradled below its axis",
       "success_rule": "majority of the collision geometry inside the crate footprint, resting on the crate floor, released; orientation and residual speed are reported but do not gate success",
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
@@ -23672,7 +23773,7 @@
       "task_type": "pick_place",
       "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     },
-    "pick_place.can1": {
+    "pick_place.can": {
       "finger_object_sliding_mu": 1.0,
       "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
@@ -23695,9 +23796,10 @@
         ],
         "opening_allowance_m": 0.01,
         "pad_height_m": 0.0407,
-        "pads_above_com": true
+        "pads_above_com": true,
+        "yaw_free": true
       },
-      "object_id": "can1",
+      "object_id": "can",
       "object_mass_kg": 0.4,
       "object_official_registry_scale": [
         1.0,
@@ -23721,7 +23823,7 @@
       ],
       "qualification": "pending_task_variant_requalification",
       "schema_id": "shakebench.task.v3",
-      "stability_constraint": "start pose is the measured free-settled rest pose; the grasp pads never close below the object centre of mass",
+      "stability_constraint": "start pose is the measured free-settled rest pose; upright grasps close at or above the centre of mass, while the lying can is cradled below its axis",
       "success_rule": "majority of the collision geometry inside the crate footprint, resting on the crate floor, released; orientation and residual speed are reported but do not gate success",
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
@@ -23732,7 +23834,7 @@
       "task_type": "pick_place",
       "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     },
-    "pick_place.can2": {
+    "pick_place.can.side": {
       "finger_object_sliding_mu": 1.0,
       "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
@@ -23754,10 +23856,11 @@
           0.0
         ],
         "opening_allowance_m": 0.01,
-        "pad_height_m": 0.0251,
-        "pads_above_com": true
+        "pad_height_m": 0.02,
+        "pads_above_com": false,
+        "yaw_free": false
       },
-      "object_id": "can2",
+      "object_id": "can",
       "object_mass_kg": 0.4,
       "object_official_registry_scale": [
         1.0,
@@ -23781,7 +23884,7 @@
       ],
       "qualification": "pending_task_variant_requalification",
       "schema_id": "shakebench.task.v3",
-      "stability_constraint": "start pose is the measured free-settled rest pose; the grasp pads never close below the object centre of mass",
+      "stability_constraint": "start pose is the measured free-settled rest pose; upright grasps close at or above the centre of mass, while the lying can is cradled below its axis",
       "success_rule": "majority of the collision geometry inside the crate footprint, resting on the crate floor, released; orientation and residual speed are reported but do not gate success",
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
@@ -23815,7 +23918,8 @@
         ],
         "opening_allowance_m": 0.01,
         "pad_height_m": 0.035,
-        "pads_above_com": true
+        "pads_above_com": true,
+        "yaw_free": false
       },
       "object_id": "mug",
       "object_mass_kg": 0.3,
@@ -23841,7 +23945,7 @@
       ],
       "qualification": "pending_task_variant_requalification",
       "schema_id": "shakebench.task.v3",
-      "stability_constraint": "start pose is the measured free-settled rest pose; the grasp pads never close below the object centre of mass",
+      "stability_constraint": "start pose is the measured free-settled rest pose; upright grasps close at or above the centre of mass, while the lying can is cradled below its axis",
       "success_rule": "majority of the collision geometry inside the crate footprint, resting on the crate floor, released; orientation and residual speed are reported but do not gate success",
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
@@ -23858,8 +23962,8 @@
   "variant_count": 4,
   "variant_state_counts": {
     "pick_place.apple": 100,
-    "pick_place.can1": 100,
-    "pick_place.can2": 100,
+    "pick_place.can": 100,
+    "pick_place.can.side": 100,
     "pick_place.mug": 100
   }
 }

@@ -1,7 +1,7 @@
-"""Deterministic task-state expansion for the current eight-object task set.
+"""Deterministic task-state expansion for the four object-pose variants.
 
 Official parents are assigned one variant each, in a balanced round robin.
-Knee parents retain all eight variants for paired calibration diagnostics.
+Knee parents retain all four variants for paired calibration diagnostics.
 No outcome-dependent filtering or Gamma selection occurs here.  Version 2
 artifacts describe the retired two-surface task set and are rejected: their
 records name objects and a surface dimension that no longer exist.
@@ -17,7 +17,7 @@ from pathlib import Path
 from shakebench import models
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.committed_states import build_committed_state_artifact
-from shakebench.utils.tasks import OBJECTS, task_variants
+from shakebench.utils.tasks import registered_rest_pose, task_pose_variants
 
 TASK_STATE_SCHEMA = "shakebench.phase09.task_states"
 TASK_STATE_SCHEMA_VERSION = 3
@@ -28,25 +28,23 @@ RETIRED_TASK_STATE_FILENAMES = tuple(f"shakebench_task_states_{split}_v2.json" f
 
 def build_task_state_artifact(split: str) -> dict:
     base = build_committed_state_artifact(split)
-    variants = task_variants()
+    variants = task_pose_variants()
     parents = base["states"]
-    contracts = {spec.variant_id: spec.contract() for spec in variants}
+    contracts = {spec.pose_id(region): spec.contract(region) for spec, region in variants}
     records = []
     for index, parent in enumerate(parents):
         selected = (variants[index % len(variants)],) if split == "official" else variants
-        for spec in selected:
-            # The registered start pose is measured, not recomputed here: the
-            # object-frame envelope cannot predict a pose whose thinnest axis
-            # is not the object's own +z (the spatula and the potato).
-            lower = float(OBJECTS[spec.object_id]["start_pose_support"][0])
-            quat = spec.start_quat_wxyz
+        for spec, region in selected:
+            # Registered poses and support heights preserve each grip's contact geometry.
+            quat, lower = registered_rest_pose(spec, region)
             record = {
                 "schema_id": TASK_STATE_SCHEMA + ".record",
                 "schema_version": TASK_STATE_SCHEMA_VERSION,
-                "state_id": f"{parent['state_id'].replace('-v1-', '-v3-')}.{spec.variant_id}",
+                "state_id": f"{parent['state_id'].replace('-v1-', '-v3-')}.{spec.pose_id(region)}",
                 "parent_state_id": parent["state_id"],
                 "split": split,
                 "task": spec.to_dict(),
+                **({"grasp_region": region} if region != "body" else {}),
                 "object_xy_m": list(parent["can_xy_m"]),
                 "object_pose_worktable": [
                     *parent["can_xy_m"],
@@ -75,7 +73,10 @@ def build_task_state_artifact(split: str) -> dict:
         "available_parent_state_count": len(base["states"]),
         "variant_assignment": "round_robin_by_parent_index" if split == "official" else "full_cross_product",
         "variant_state_counts": {
-            spec.variant_id: sum(row["task"] == spec.to_dict() for row in records) for spec in variants
+            spec.pose_id(region): sum(
+                row["task"] == spec.to_dict() and row.get("grasp_region", "body") == region for row in records
+            )
+            for spec, region in variants
         },
         "state_count": len(records),
         "aggregation": "one pick_place state pool; equal weight per state; pair tiers by full state_id",

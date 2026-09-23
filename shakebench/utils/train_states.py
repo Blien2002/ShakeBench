@@ -141,8 +141,9 @@ def _validate_per_variant(per_variant: Any) -> int | None:
 #: Rest poses the train pool samples per object; an object not listed here is
 #: sampled in its registry body pose.  The mug keeps one entry per qualified
 #: grip: the double-wall body grip in the registry upright pose, and the
-#: double-wall grip of the lying cup. Single-wall pinches are retired.
-TRAIN_POSE_REGIONS = {"mug": ("body", "side_double_wall")}
+#: double-wall grip of the lying cup. The can has standing and side-lying
+#: poses. Single-wall mug pinches are retired.
+TRAIN_POSE_REGIONS = {"mug": ("body", "side_double_wall"), "can": ("body", "side")}
 
 
 def _pose_regions(object_id: str) -> tuple[str, ...]:

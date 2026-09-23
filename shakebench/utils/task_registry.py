@@ -201,9 +201,11 @@ def _pick_place_description(state):
             "instruction": "Pick up the object from the phenolic table and place it in the target crate.",
         }
     spec = TaskSpec.from_mapping(state["task"])
+    region = state.get("grasp_region", "body")
+    object_name = spec.grasp_plan(region).get("instruction", OBJECTS[spec.object_id]["instruction"])
     return {
         "task_id": spec.variant_id,
-        "instruction": f"Pick up the {OBJECTS[spec.object_id]['instruction']} from the phenolic table "
+        "instruction": f"Pick up the {object_name} from the phenolic table "
         "and place it in the target crate.",
     }
 
