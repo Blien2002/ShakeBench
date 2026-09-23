@@ -160,7 +160,7 @@ class RingStackOracle:
             lift = 0.21 if np.linalg.norm(start[:2] - peg[:2]) < 0.1 else 0.12
 
             self.phase = "approach"
-            yield from self._follow([grasp + [0, 0, 0.06]], -1, speed=0.32, acceleration=0.8, response_scale=0.2)
+            yield from self._follow([grasp + [0, 0, 0.06]], -1, speed=0.41, acceleration=1.02, response_scale=0.2)
             if self.abort_requested:
                 return
             self.phase = "descend"
@@ -187,8 +187,8 @@ class RingStackOracle:
                     peg + [0, 0, 0.177] - offset,
                 ],
                 1,
-                speed=0.30,
-                acceleration=0.7,
+                speed=0.39,
+                acceleration=0.93,
                 response_scale=0.2,
             )
             if self.abort_requested:
@@ -200,7 +200,9 @@ class RingStackOracle:
             self.phase = "release"
             yield from self._hold(-1, 4)
             self.phase = "retreat"
-            yield from self._follow([peg + [0, 0, 0.27] - offset], -1, speed=0.30, acceleration=0.7, response_scale=0.2)
+            yield from self._follow(
+                [peg + [0, 0, 0.27] - offset], -1, speed=0.39, acceleration=0.93, response_scale=0.2
+            )
             if self.abort_requested:
                 return
 
