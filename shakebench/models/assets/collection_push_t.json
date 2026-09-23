@@ -5,7 +5,7 @@
   "states": "shakebench_push_t_states.json",
   "horizon_steps": 2400,
   "pos_sensitivity": 0.2,
-  "rot_sensitivity": 0.3,
+  "rot_sensitivity": 0.0,
   "width": 256,
   "height": 256,
   "main_camera": "task_close"

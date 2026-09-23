@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from shakebench.environments.push_t import STATE_SCHEMA, sample_state
+from shakebench.environments.push_t import SCHEMA_VERSION, STATE_SCHEMA, sample_state
 
 
 def main(argv=None):
@@ -20,7 +20,7 @@ def main(argv=None):
     rng = np.random.default_rng(args.seed)
     payload = {
         "schema_id": STATE_SCHEMA,
-        "schema_version": 1,
+        "schema_version": SCHEMA_VERSION,
         "generator": {"seed": args.seed},
         "states": [sample_state(rng, state_id=f"push-t-s{args.seed}-{i:04d}") for i in range(args.count)],
     }

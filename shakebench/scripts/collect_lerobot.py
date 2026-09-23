@@ -238,9 +238,18 @@ def parse_args(argv=None):
     for key in ("width", "height", "horizon_steps"):
         if type(config[key]) is not int or config[key] <= 0:
             parser.error(f"configuration {key} must be a positive integer")
-    for key in ("pos_sensitivity", "rot_sensitivity"):
-        if type(config[key]) not in (int, float) or not np.isfinite(config[key]) or config[key] <= 0:
-            parser.error(f"configuration {key} must be finite and positive")
+    if (
+        type(config["pos_sensitivity"]) not in (int, float)
+        or not np.isfinite(config["pos_sensitivity"])
+        or config["pos_sensitivity"] <= 0
+    ):
+        parser.error("configuration pos_sensitivity must be finite and positive")
+    if (
+        type(config["rot_sensitivity"]) not in (int, float)
+        or not np.isfinite(config["rot_sensitivity"])
+        or config["rot_sensitivity"] < 0
+    ):
+        parser.error("configuration rot_sensitivity must be finite and nonnegative")
     if not isinstance(config["main_camera"], str) or not config["main_camera"]:
         parser.error("configuration main_camera must be a nonempty name")
     config["states"] = config_path.parent / config["states"]
@@ -254,8 +263,10 @@ def main(argv=None):
         args.limit is not None and args.limit <= 0
     ):
         raise ValueError("dimensions, horizon and limit must be positive")
-    if any(not np.isfinite(value) or value <= 0 for value in (args.pos_sensitivity, args.rot_sensitivity)):
-        raise ValueError("SpaceMouse sensitivities must be finite and positive")
+    if not np.isfinite(args.pos_sensitivity) or args.pos_sensitivity <= 0:
+        raise ValueError("SpaceMouse position sensitivity must be finite and positive")
+    if not np.isfinite(args.rot_sensitivity) or args.rot_sensitivity < 0:
+        raise ValueError("SpaceMouse rotation sensitivity must be finite and nonnegative")
     for module in args.task_module:
         importlib.import_module(module)
     state_asset = load_state_asset(args.states)

@@ -29,21 +29,28 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 STATE_SCHEMA = "shakebench.push_t.states"
+SCHEMA_VERSION = 2
+TASK_VERSION = 2
+COVERAGE_THRESHOLD = 0.90
+SUCCESS_HOLD_S = 0.5
+LIFT_HEIGHT_M = 0.005
+LIFT_DURATION_S = 0.2
+PUSHER_SLIDING_MU = 0.5
+MAX_REACHABLE_X_M = 0.10
+MAX_VISIBLE_ABS_Y_M = 0.25
+MIN_START_GOAL_DISTANCE_M = 0.05
+MAX_START_GOAL_DISTANCE_M = 0.30
 
 
 def default_state():
     """Explicit stationary start, in metres relative to the tabletop."""
     return {
         "state_id": "push-t-000",
-        "task": {"task_type": "push_t", "version": 1},
+        "task": {"task_type": "push_t", "version": TASK_VERSION},
         "object_xy_m": [-0.14, -0.12],
         "object_yaw_rad": 0.0,
         "target_xy_m": [0.02, 0.10],
         "target_yaw_rad": 0.0,
-        "coverage_threshold": 0.95,
-        "success_hold_s": 0.5,
-        "lift_height_m": 0.005,
-        "lift_duration_s": 0.2,
         "excitation_seed": 0,
         "imu_seed": 0,
         "t0_s": 0.0,
@@ -54,28 +61,22 @@ def validate_state(state):
     """Reject hidden fields, invalid geometry, thresholds and random seeds."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("push_t state fields must match version 1")
-    if state["task"] != {"task_type": "push_t", "version": 1} or type(state["task"]["version"]) is not int:
-        raise ValueError("expected push_t task version 1")
+        raise ValueError(f"push_t state fields must match version {TASK_VERSION}")
+    if state["task"] != {"task_type": "push_t", "version": TASK_VERSION} or type(state["task"]["version"]) is not int:
+        raise ValueError(f"expected push_t task version {TASK_VERSION}")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be nonempty")
     result = deepcopy(dict(state))
     for key in (
         "object_yaw_rad",
         "target_yaw_rad",
-        "coverage_threshold",
-        "success_hold_s",
-        "lift_height_m",
-        "lift_duration_s",
         "t0_s",
     ):
         if isinstance(state[key], bool) or not isinstance(state[key], (int, float)) or not np.isfinite(state[key]):
             raise ValueError(f"{key} must be finite")
         result[key] = float(state[key])
-    if not 0 < result["coverage_threshold"] <= 1 or result["t0_s"] < 0:
-        raise ValueError("invalid coverage threshold or time offset")
-    if any(result[k] <= 0 for k in ("success_hold_s", "lift_height_m", "lift_duration_s")):
-        raise ValueError("hold durations and lift height must be positive")
+    if result["t0_s"] < 0:
+        raise ValueError("t0_s must be nonnegative")
     for prefix in ("object", "target"):
         xy = np.asarray(state[f"{prefix}_xy_m"], dtype=float)
         if xy.shape != (2,) or not np.isfinite(xy).all():
@@ -83,8 +84,13 @@ def validate_state(state):
         yaw = result[f"{prefix}_yaw_rad"]
         rotation = np.array([[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]])
         polygons, _ = projected_geometry(np.r_[xy, HALF_HEIGHT_M], rotation)
-        if any(np.any(np.abs(p) > [0.325, 0.30]) for p in polygons):
-            raise ValueError("the entire T must lie on the tabletop")
+        points = np.vstack(polygons)
+        if (
+            np.any(np.abs(points) > [0.325, 0.30])
+            or points[:, 0].max() > MAX_REACHABLE_X_M
+            or np.abs(points[:, 1]).max() > MAX_VISIBLE_ABS_Y_M
+        ):
+            raise ValueError("the entire T must lie in the reachable, task_close-visible tabletop region")
         result[f"{prefix}_xy_m"] = xy.tolist()
     for key in ("excitation_seed", "imu_seed"):
         if type(state[key]) is not int or not 0 <= state[key] < 2**32:
@@ -93,16 +99,27 @@ def validate_state(state):
 
 
 def sample_state(rng, *, state_id=None):
-    """Sample separated starts, recording every source of randomness."""
-    state = default_state()
-    state.update(
-        object_xy_m=rng.uniform([-0.20, -0.19], [-0.08, -0.10]).tolist(),
-        target_xy_m=rng.uniform([-0.04, 0.08], [0.08, 0.18]).tolist(),
-        object_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
-        target_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
-        excitation_seed=int(rng.integers(2**32)),
-        imu_seed=int(rng.integers(2**32)),
-    )
+    """Sample random push directions and 5--30 cm distances in the shared feasible region."""
+    for _ in range(10_000):
+        state = default_state()
+        object_xy = rng.uniform([-0.24, -0.175], [0.025, 0.175])
+        distance = rng.uniform(MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M)
+        direction = rng.uniform(-np.pi, np.pi)
+        state.update(
+            object_xy_m=object_xy.tolist(),
+            target_xy_m=(object_xy + distance * np.array([np.cos(direction), np.sin(direction)])).tolist(),
+            object_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
+            target_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
+            excitation_seed=int(rng.integers(2**32)),
+            imu_seed=int(rng.integers(2**32)),
+        )
+        try:
+            state = validate_state(state)
+        except ValueError:
+            continue
+        break
+    else:
+        raise ValueError("could not sample a reachable and task_close-visible Push-T state")
     if state_id is not None:
         state["state_id"] = state_id
     return validate_state(state)
@@ -113,7 +130,7 @@ def load_states(payload):
     if (
         payload.get("schema_id") != STATE_SCHEMA
         or type(payload.get("schema_version")) is not int
-        or payload["schema_version"] != 1
+        or payload["schema_version"] != SCHEMA_VERSION
     ):
         raise ValueError("unsupported push_t schema/version")
     if not isinstance(payload.get("states"), list) or not payload["states"]:
@@ -169,6 +186,7 @@ class PushT(ManipulationEnv):
         self._lift_since = None
         self._candidate_since = None
         self._conditions = {}
+        self._max_coverage = 0.0
         self.use_object_obs = use_object_obs
         eager = kwargs.pop("load_model_on_init", True)
         if kwargs.pop("control_freq", 20) != 20:
@@ -278,14 +296,18 @@ class PushT(ManipulationEnv):
         self.tee = make_tee()
         self.model = ManipulationTask(self.arena, [robot.robot_model], [self.tee])
         configure_scene_rendering(self.model.root, self.arena.scene_config)
-        pads = robot.gripper["right"].important_geoms
-        finger_names = pads["left_fingerpad"] + pads["right_fingerpad"]
+        gripper = robot.gripper["right"]
+        pads = gripper.important_geoms
+        pusher_names = [
+            f"{gripper.naming_prefix}hand_collision",
+            *dict.fromkeys(pads["left_finger"] + pads["right_finger"]),
+        ]
         for geom in self.tee.contact_geoms:
-            for partner in ["table_collision", *finger_names]:
-                finger = partner in finger_names
+            for partner in ["table_collision", *pusher_names]:
+                pusher = partner in pusher_names
                 attributes = self.physics_profile.pair_attributes(
-                    float(self.physics_profile.contact["sliding_mu"]["finger_object" if finger else "table_object"]),
-                    finger_contact=finger,
+                    PUSHER_SLIDING_MU if pusher else float(self.physics_profile.contact["sliding_mu"]["table_object"]),
+                    finger_contact=pusher,
                 )
                 ET.SubElement(self.model.contact, "pair", geom1=geom, geom2=partner, **attributes)
 
@@ -317,6 +339,7 @@ class PushT(ManipulationEnv):
         self._success = self._violation = False
         self._candidate_since = self._lift_since = None
         self._conditions = {}
+        self._max_coverage = 0.0
         self._record_post_physics_metrics(float(self.sim.data.time))
 
     def _settle(self):
@@ -361,6 +384,7 @@ class PushT(ManipulationEnv):
         rotation = target_rotation.T @ data.xmat[self.tee_body_id].reshape(3, 3)
         polygons, lowest = projected_geometry(position, rotation)
         overlap = coverage(polygons)
+        self._max_coverage = max(self._max_coverage, overlap)
         supported = any(
             c.dist <= 0.001
             and (
@@ -369,19 +393,19 @@ class PushT(ManipulationEnv):
             )
             for c in data.contact[: data.ncon]
         )
-        lifted = lowest > self.task_state["lift_height_m"]
+        lifted = lowest > LIFT_HEIGHT_M
         if lifted:
             if self._lift_since is None:
                 self._lift_since = sample_time_s
-            if sample_time_s - self._lift_since >= self.task_state["lift_duration_s"] - 1e-12:
+            if sample_time_s - self._lift_since >= LIFT_DURATION_S - 1e-12:
                 self._violation = True
         else:
             self._lift_since = None
-        ready = overlap >= self.task_state["coverage_threshold"] and supported and not lifted
+        ready = overlap >= COVERAGE_THRESHOLD and supported and not lifted
         if ready and not self._violation:
             if self._candidate_since is None:
                 self._candidate_since = sample_time_s
-            if sample_time_s - self._candidate_since >= self.task_state["success_hold_s"] - 1e-12:
+            if sample_time_s - self._candidate_since >= SUCCESS_HOLD_S - 1e-12:
                 self._success = True
         else:
             self._candidate_since = None
@@ -424,19 +448,26 @@ class PushT(ManipulationEnv):
     def get_policy_task_context(self):
         return {
             "task_type": "push_t",
-            "version": 1,
+            "version": TASK_VERSION,
             "scoreable": False,
-            **{
-                key: self.task_state[key]
-                for key in ("coverage_threshold", "success_hold_s", "lift_height_m", "lift_duration_s")
-            },
+            "coverage_threshold": COVERAGE_THRESHOLD,
+            "success_hold_s": SUCCESS_HOLD_S,
+            "lift_height_m": LIFT_HEIGHT_M,
+            "lift_duration_s": LIFT_DURATION_S,
+            "pusher_sliding_mu": PUSHER_SLIDING_MU,
+            "max_reachable_x_m": MAX_REACHABLE_X_M,
+            "max_visible_abs_y_m": MAX_VISIBLE_ABS_Y_M,
+            "start_goal_distance_m": [MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M],
         }
 
     def get_metrics(self):
+        conditions = deepcopy(self._conditions)
+        final_coverage = float(conditions.pop("coverage", 0.0))
         return {
             "success": {"passed": bool(self._success)},
             "task_rule_violation": bool(self._violation),
-            **deepcopy(self._conditions),
+            "coverage": {"final": final_coverage, "maximum": float(self._max_coverage)},
+            **conditions,
         }
 
     def _check_success(self):
