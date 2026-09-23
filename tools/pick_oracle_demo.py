@@ -6,7 +6,7 @@ Phase 07 dev list, so any registered object can be recorded at a requested
 Gamma.  One object per process; the environment build dominates the runtime.
 
 Usage:
-    MUJOCO_GL=egl PYTHONPATH=. python3 -u tools/pickv2_oracle_demo.py \
+    MUJOCO_GL=egl PYTHONPATH=. python3 -u tools/pick_oracle_demo.py \
         --object mug --grasp-region handle --gamma 0.5 --output out/pickv2_demos/mug_handle.mp4
 
 The episode stops on its own at the oracle abort or at the latched success, so

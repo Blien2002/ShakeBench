@@ -7,7 +7,7 @@ compiled geometry in ShakeBench is exactly the geometry recorded in
 `SOURCES.json` and checked by `tests/test_shakebench_pick_place_v2_assets.py`.
 
 Usage:
-    python tools/build_pickv2_assets.py --source <extracted objaverse dir> \
+    python tools/build_pick_assets.py --source <extracted objaverse dir> \
         --dest shakebench/models/assets/objects/robocasa
 """
 
@@ -131,7 +131,7 @@ def measure_sites(path: Path) -> tuple[float, float, float]:
 
     import mujoco
     import numpy as np
-    from pickv2_measure import geom_points
+    from pick_measure import geom_points
 
     model = mujoco.MjModel.from_xml_path(str(path))
     data = mujoco.MjData(model)

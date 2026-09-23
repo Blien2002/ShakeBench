@@ -7,12 +7,12 @@ subconditions.  One environment build costs about a minute on its own
 the ones you need side by side.
 
 Usage:
-    PYTHONPATH=. python3 -u tools/pickv2_oracle_probe.py <object_id|legacy> [steps]
+    PYTHONPATH=. python3 -u tools/pick_oracle_probe.py <object_id|legacy> [steps]
 
 Examples:
-    PYTHONPATH=. python3 -u tools/pickv2_oracle_probe.py can 400
+    PYTHONPATH=. python3 -u tools/pick_oracle_probe.py can 400
     for id in mug apple cereal; do
-      PYTHONPATH=. python3 -u tools/pickv2_oracle_probe.py "$id" 400 >"/tmp/$id.log" 2>&1 &
+      PYTHONPATH=. python3 -u tools/pick_oracle_probe.py "$id" 400 >"/tmp/$id.log" 2>&1 &
     done
 
 Read the trace bottom up: the last phase line is the farthest phase reached.

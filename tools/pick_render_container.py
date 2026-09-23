@@ -5,7 +5,7 @@ container and renders a few camera angles, so the container geometry can be
 checked visually in seconds instead of minutes.
 
 Usage:
-    MUJOCO_GL=egl PYOPENGL_PLATFORM=egl PYTHONPATH=. python3 tools/pickv2_render_container.py \
+    MUJOCO_GL=egl PYOPENGL_PLATFORM=egl PYTHONPATH=. python3 tools/pick_render_container.py \
         --output-dir out/pickv2/container
 """
 

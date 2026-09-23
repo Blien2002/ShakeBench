@@ -9,7 +9,7 @@ three placements are the acceptance cases the task rule has to separate:
 * ``outside``    - resting on the table beside the crate: must fail;
 * ``straddling`` - balanced on a crate wall: must fail.
 
-Usage: python tools/pickv2_success_cases.py [--objects mug apple ...]
+Usage: python tools/pick_success_cases.py [--objects mug apple ...]
 """
 
 from __future__ import annotations

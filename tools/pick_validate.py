@@ -1,8 +1,8 @@
 """Validate the eight-object task set: load, reset, settle, and (optionally) place.
 
 Usage:
-    python tools/pickv2_validate.py                # load/reset/settle report
-    python tools/pickv2_validate.py --oracle       # add the scripted pick-and-place run
+    python tools/pick_validate.py                # load/reset/settle report
+    python tools/pick_validate.py --oracle       # add the scripted pick-and-place run
 
 Reports per variant: compiled-vs-registry collision envelope, placement height,
 settle duration, post-settle drift of the object from its registered start

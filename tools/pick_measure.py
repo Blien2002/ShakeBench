@@ -5,7 +5,7 @@ collision-geometry bounding box, principal-axis extents (a proxy for the
 stable lying pose) and the compiled body mass/inertia that the visual geoms
 would contribute if they were left in the inertial computation.
 
-Usage: python tools/pickv2_measure.py <name>=<xml path> [<name>=<xml> ...]
+Usage: python tools/pick_measure.py <name>=<xml path> [<name>=<xml> ...]
 """
 
 from __future__ import annotations

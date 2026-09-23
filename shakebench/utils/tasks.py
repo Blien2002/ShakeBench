@@ -6,7 +6,7 @@ interchanged:
 
 * **official** - the RoboCasa instance path, registry scale and license;
 * **geometry** - the contact-geometry envelope measured from the compiled
-  asset in the object frame (``tools/pickv2_design.py``);
+  asset in the object frame (``tools/pick_design.py``);
 * **design** - the task's own mass, friction pair and grasp plan.
 
 Masses are per-object design values (a real mug, a real potato), not the

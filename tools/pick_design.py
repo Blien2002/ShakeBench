@@ -11,7 +11,7 @@ Poses that keep moving under gravity are re-declared from their settled pose
 and checked again, so an unstable authored orientation cannot reach the task
 registry.
 
-Usage: python tools/pickv2_design.py
+Usage: python tools/pick_design.py
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ DECLARED = {
 
 
 def collision_points(model, data) -> np.ndarray:
-    from pickv2_measure import geom_points
+    from pick_measure import geom_points
 
     return np.concatenate(
         [
