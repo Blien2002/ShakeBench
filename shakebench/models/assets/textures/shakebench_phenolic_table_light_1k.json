@@ -1,8 +1,8 @@
 {
   "asset": "shakebench_phenolic_table_light_1k",
   "generator": "OpenAI built-in ImageGen",
-  "prompt": "Clean matte light gray-white phenolic resin laminate; seamless square albedo; extremely fine dense non-directional resin micro-speckling; near-uniform; no large cloudy areas, shadows, highlights, seams, text, scratches, stains, wood, metal, stone, terrazzo, marble, or concrete patterns.",
-  "source_output": "exec-c7c1a285-8822-46ab-a483-cd4e9aadda05.png",
+  "prompt": "Nearly uniform matte light gray-white phenolic laminate; seamless square albedo; barely perceptible tiny non-directional resin micro-speckles; no large-scale pattern, lighting, stone, wood, metal, text, damage, or seams.",
+  "source_output": "exec-01628d82-b46a-4e9d-a288-9e41c5151551.png",
   "modifications": "Converted to RGB and resized from 1254x1254 to 1024x1024 with Lanczos; no color grading.",
-  "sha256": "eb1274a663c147eb3bd94c2c3d61122bb3b9650793c2e880cc1dd970d5f3e076"
+  "sha256": "40e5a0e52ee2b1d1cebcdb8e38c8849d32b5f941a3feb0ef4de01f5cf0a82f3a"
 }
