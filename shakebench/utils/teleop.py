@@ -104,7 +104,7 @@ class SpaceMouseTeleop:
             and radii[outer] - clearance[outer] > ring["outer_radius"]
             and np.dot(local[inner, :2], local[outer, :2]) > 0
         )
-        colors = {"large": "蓝环", "medium": "绿环", "small": "黄环"}
+        colors = {"large": "蓝环", "small": "黄环"}
         prefix = colors.get(name, name)
         if not aligned:
             return f"{prefix}：调整对齐（两指分别位于孔内、环外）", "#a85b00"

@@ -20,7 +20,7 @@ def main(argv=None):
     rng = np.random.default_rng(args.seed)
     payload = {
         "schema_id": STATE_SCHEMA,
-        "schema_version": 4,
+        "schema_version": 5,
         "generator": {"seed": args.seed},
         "states": [sample_state(rng, state_id=f"ring-stack-s{args.seed}-{i:04d}") for i in range(args.count)],
     }

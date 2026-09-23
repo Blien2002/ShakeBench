@@ -1,4 +1,4 @@
-"""Ordered three-ring stacking on the shaken worktable; import to register the task.
+"""Ordered two-ring stacking on the shaken worktable; import to register the task.
 
 The ring uses robosuite's box-built hollow cylinder. Poses in state assets are
 relative to the tabletop; the peg is rigidly attached to that moving table.
@@ -42,7 +42,6 @@ from shakebench.utils.task_registry import TaskDefinition, register_state_loader
 
 RINGS = {
     "large": {"outer_radius": 0.055, "inner_radius": 0.030, "rgba": [0.08, 0.28, 0.90, 1]},
-    "medium": {"outer_radius": 0.050, "inner_radius": 0.027, "rgba": [0.12, 0.65, 0.24, 1]},
     "small": {"outer_radius": 0.045, "inner_radius": 0.024, "rgba": [1.0, 0.85, 0.035, 1]},
 }
 RING_HALF_HEIGHT_M = 0.008
@@ -55,7 +54,7 @@ RING_WALL_NORMALS = np.array(
 )
 PEG_RADIUS_M = 0.018
 PEG_TOP_RADIUS_M = 0.009
-PEG_HEIGHT_M = 0.160
+PEG_HEIGHT_M = 0.120
 PEG_HEAD_RADIUS_M = 0.0125
 HOLD_DURATION_S = 0.5
 HOLE_PENETRATION_TOLERANCE_M = 0.0005
@@ -66,12 +65,10 @@ def default_state():
     """Return a complete deterministic development episode."""
     return {
         "state_id": "ring-stack-000",
-        "task": {"task_type": "ring_on_peg", "version": 4},
+        "task": {"task_type": "ring_on_peg", "version": 5},
         "large_ring_xy_m": [0.005, -0.113],
-        "medium_ring_xy_m": [-0.190, 0.0],
         "small_ring_xy_m": [0.005, 0.113],
         "large_ring_yaw_rad": 0.0,
-        "medium_ring_yaw_rad": 0.0,
         "small_ring_yaw_rad": 0.0,
         "peg_xy_m": [-0.060, 0.0],
         "excitation_seed": 0,
@@ -84,9 +81,9 @@ def validate_state(state):
     """Validate explicit horizontal, stationary starts without hidden randomness."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("ring state fields must match the explicit version 4 schema")
-    if state["task"] != {"task_type": "ring_on_peg", "version": 4} or type(state["task"]["version"]) is not int:
-        raise ValueError("expected ring_on_peg task version 4")
+        raise ValueError("ring state fields must match the explicit version 5 schema")
+    if state["task"] != {"task_type": "ring_on_peg", "version": 5} or type(state["task"]["version"]) is not int:
+        raise ValueError("expected ring_on_peg task version 5")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be a nonempty string")
     result = deepcopy(dict(state))
@@ -143,7 +140,7 @@ def sample_state(rng, *, base_state=None, state_id=None):
             placed.append((xy, radius))
             break
         else:
-            raise ValueError("could not sample three non-overlapping ring positions")
+            raise ValueError("could not sample two non-overlapping ring positions")
     if state_id is not None:
         state["state_id"] = state_id
     return validate_state(state)
@@ -154,7 +151,7 @@ def load_states(payload):
     if (
         payload.get("schema_id") != STATE_SCHEMA
         or type(payload.get("schema_version")) is not int
-        or payload["schema_version"] != 4
+        or payload["schema_version"] != 5
     ):
         raise ValueError("unsupported ring state schema/version")
     if not isinstance(payload.get("states"), list) or not payload["states"]:
@@ -166,7 +163,7 @@ def load_states(payload):
 
 
 class RingOnPeg(ManipulationEnv):
-    """Stack blue, green, then yellow rings on the moving-table wooden peg."""
+    """Stack the blue ring, then the yellow ring, on the moving-table wooden peg."""
 
     def __init__(
         self,
@@ -569,13 +566,10 @@ class RingOnPeg(ManipulationEnv):
             ("robot0_joint_vel", (7,), "rad/s", "robot_base"),
             ("robot0_gripper_qpos", (2,), "m", "gripper"),
             ("robot0_gripper_qvel", (2,), "m/s", "gripper"),
-            *(
-                (f"{prefix}_pos_robot_base", (3,), "m", "robot_base")
-                for prefix in ("large_ring", "medium_ring", "small_ring", "peg")
-            ),
+            *((f"{prefix}_pos_robot_base", (3,), "m", "robot_base") for prefix in ("large_ring", "small_ring", "peg")),
             *(
                 (f"{prefix}_quat_wxyz_robot_base", (4,), "unit quaternion wxyz", "robot_base")
-                for prefix in ("large_ring", "medium_ring", "small_ring", "peg")
+                for prefix in ("large_ring", "small_ring", "peg")
             ),
         ):
             contract[key] = {"shape": shape, "dtype": "float64", "units": units, "frame": frame}
@@ -590,7 +584,7 @@ class RingOnPeg(ManipulationEnv):
     def get_policy_task_context(self):
         return {
             "task_type": "ring_on_peg",
-            "version": 4,
+            "version": 5,
             "scoreable": False,
             "rings": deepcopy(RINGS),
             "placement_order": list(RINGS),
@@ -631,7 +625,7 @@ register_task(
         env_kwargs=lambda state: {"ring_state": state},
         describe=lambda state: {
             "task_id": "ring_on_peg",
-            "instruction": "Stack the blue large ring, green medium ring, then yellow small ring on the wooden peg.",
+            "instruction": "Stack the blue large ring, then the yellow small ring on the wooden peg.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),

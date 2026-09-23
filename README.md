@@ -1,13 +1,13 @@
-> **ShakeBench 当前场景（2026-09-22）**：`VibrationPickPlace` 提供抓放任务，`RingOnPeg` 提供从大到小的三环木质套柱任务；当前默认场景为 `world_fixed_rigid_table_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
+> **ShakeBench 当前场景（2026-09-23）**：`VibrationPickPlace` 提供抓放任务，`RingOnPeg` 提供从大到小的双环木质套柱任务；当前默认场景为 `world_fixed_rigid_table_v1`。Panda 不带移动底座，直接固定安装在岸边实体地基上；地基与岸边齐平，临坑三边的顶部和竖直壁均带黑色包边。
 > IMU 世界模型计划的 B/C/D 阶段已完成，新场景尚未取得实验认证。Phase 06–08 的选型、发布、handoff、authority 与 evidence 链已删除，当前完整性校验只绑定 physics profile 与 geometry/scene/arena/support 资产（`python -m shakebench.utils.runtime_verifier --write` 可重建清单）。桌下 IMU、双相机数据采集和策略接入接口已提供，视频历史/预测器训练仍由独立模块负责。
 > 运行与验证见 [世界固定机械臂场景](docs/world_fixed_arm_scene.md)。
 > ShakeBench 专用代码与资源位于 shakebench/ 包，导入入口为 shakebench.make；robosuite/ 保留通用框架。策略接入见 shakebench/utils/websocket_policy.py（WebSocket 策略协议，与具体模型无关），Gamma=0 数据采集见 [LeRobot 采集说明](docs/lerobot_collection.md)。
 
 ## 套环任务（CPU 开发版）
 
-机械臂从台面随机位置依次抓取蓝色大环、绿色中环、黄色小环，按从大到小的顺序套到中央圆头木杆上。三环环壁厚度为 25/23/21 mm，支持 Panda 一指入孔、一指贴外壁的夹取方式。每一阶段要求已放置的环位置正确、松手并稳定 0.5 秒，且后续环还未放在杆上；仅三个环全部完成后奖励 1。错误顺序可以通过移走提前放置的环纠正。阶段真值只在 metrics 中报告。
+机械臂从台面随机位置依次抓取蓝色大环、黄色小环，按从大到小的顺序套到中央圆头木杆上。两环环壁厚度为 25/21 mm，支持 Panda 一指入孔、一指贴外壁的夹取方式。每一阶段要求已放置的环位置正确、松手并稳定 0.5 秒，且后续环还未放在杆上；仅两个环全部完成后奖励 1。错误顺序可以通过移走提前放置的环纠正。阶段真值只在 metrics 中报告。
 
-环内/外半径从大到小为 30/55、27/50、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 160 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底盘为无槽实心圆盘，半径 62 mm、厚 12 mm，比蓝环外缘宽 7 mm。三个环随机分布在桌面可操作区域，互不重叠，可接触底盘边缘。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
+环内/外半径从大到小为 30/55、24/45 mm，均厚 16 mm。木杆为陡圆台，底端/顶端半径为 18/9 mm，总高 120 mm，球形头半径 12.5 mm，小于最小环的有效孔径。浅木纹底盘为无槽实心圆盘，半径 62 mm、厚 12 mm，比蓝环外缘宽 7 mm。两个环随机分布在桌面可操作区域，互不重叠，可接触底盘边缘。底板和杆固定在移动工作台上，复用振动、Panda、IMU 和共享 CPU rollout。
 
 参考 [MetaWorld 的外观/碰撞分离](https://github.com/Farama-Foundation/Metaworld/blob/59fc34d7768af9785e4688c3e1db671424f4a6c3/metaworld/assets/objects/assets/assembly_peg.xml)，环保留 16 段碰撞体，采用独立圆角外观网格和仓库已有的浅木纹理。木杆使用 [ambientCG Wood 095](https://ambientcg.com/view?id=Wood095) 的 CC0 细木纹，并按圆台表面等比例展开；素材来源及校验值随贴图保存。底盘仅使用一个圆柱碰撞体；视觉网格无质量、无碰撞。无新增依赖。
 
@@ -33,7 +33,7 @@ python -m shakebench.scripts.evaluate \
   --policy my_policy:make_policy --observation-source contract
 ```
 
-套环状态文件显式记录桌面坐标系内三环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置三个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集尚不支持套环；CPU Oracle 支持按蓝、绿、黄顺序自动套环。
+套环状态文件显式记录桌面坐标系内双环/杆的位置、各环初始 yaw、激励和 IMU 种子；底盘以杆为中心。无显式 `ring_state` 的环境每次 reset 随机放置两个环，传入 `seed` 可重现序列；显式状态保持固定，便于重试和回放。旧状态会明确报错，避免以旧状态运行不同任务。开发状态不用于认证分数；GPU 批量采集尚不支持套环；CPU Oracle 支持按蓝、黄顺序自动套环。
 
 随附状态池包含 20 个随机布局。生成更多布局（同种子可复现）：
 
@@ -58,7 +58,7 @@ MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m shakebench.scripts.collect_lerobot
 
 各任务独立读取 `shakebench/models/assets/collection_<task>.json`，其中定义状态池、注册模块、时程、操作灵敏度、图像尺寸和主相机。命令行同名参数优先，例如 `--horizon-steps 3000`；`--config /path/to/collection.json` 可替换整份配置，配置中的相对状态路径相对于该 JSON 所在目录。套环默认 2400 步、位移/旋转灵敏度 0.2/0.3；pick-place 默认 1200 步、灵敏度 1.0/1.0。`--limit` 是整个采集计划的 episode 数量，中断续采仍使用原计划。
 
-Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，三环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz。SpaceMouse 采集被中断后，使用相同参数再次运行会从 manifest 中的下一个状态继续；第一条轨迹尚未保存时只清理临时图像，不覆盖已保存 episode。
+Enter 开始；WASD 平移，Q/E 降低/抬高，SpaceMouse 旋转，空格切换夹爪；R 丢弃当前尝试并重试，Esc 退出。窗口显示已完成环数，双环成功后自动保存；超时也保存但不进入成功训练子集。每条轨迹都从选定状态重新开始，`--episodes-per-state` 控制重复次数。默认 `teleop` 物理配置、仿真 20 Hz。SpaceMouse 采集被中断后，使用相同参数再次运行会从 manifest 中的下一个状态继续；第一条轨迹尚未保存时只清理临时图像，不覆盖已保存 episode。
 
 ```bash
 python -m shakebench.scripts.export_sft_subset \
