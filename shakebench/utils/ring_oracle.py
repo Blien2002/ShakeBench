@@ -152,9 +152,17 @@ class RingStackOracle:
             peg = env.sim.data.xpos[env.peg_body_id].copy()
             radial = self.orientation[:, 0].copy()
             radial[2] = 0
-            radius = (spec["outer_radius"] + spec["inner_radius"]) / 2
-            candidates = [side * radial * radius for side in (-1, 1)]
             eef = env.sim.data.site_xpos[self.site]
+            if name == "small":
+                # Center the entering pad in the hole; keep the blue ring grasp unchanged.
+                pad_names = env.robots[0].gripper["right"].important_geoms
+                candidates = [
+                    np.r_[eef[:2] - env.sim.data.geom_xpos[env.sim.model.geom_name2id(pad_names[key][0]), :2], 0]
+                    for key in ("left_fingerpad", "right_fingerpad")
+                ]
+            else:
+                radius = (spec["outer_radius"] + spec["inner_radius"]) / 2
+                candidates = [side * radial * radius for side in (-1, 1)]
             offset = min(candidates, key=lambda candidate: np.linalg.norm(start[:2] + candidate[:2] - eef[:2]))
             grasp = start + offset
             lift = 0.21 if np.linalg.norm(start[:2] - peg[:2]) < 0.1 else 0.12

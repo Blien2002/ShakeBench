@@ -136,6 +136,9 @@ def collect_batch(
         )
         observations = batch.reset()
         if ring:
+            # Ring steps refresh host state, but frame zero needs one refresh after reset.
+            for world, reader in enumerate(readers):
+                reader.sync_device_state(batch.data, world)
             from shakebench.utils.ring_oracle import RingStackOracle
 
             controllers = [RingStackOracle(env) for env in envs]
