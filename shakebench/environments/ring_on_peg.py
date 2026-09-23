@@ -59,6 +59,9 @@ PEG_HEAD_RADIUS_M = 0.0125
 HOLD_DURATION_S = 0.5
 HOLE_PENETRATION_TOLERANCE_M = 0.0005
 STATE_SCHEMA = "shakebench.ring_on_peg.states"
+DEFAULT_PEG_XY_M = (-0.060, 0.150)
+RING_SPAWN_LOW_M = (-0.200, -0.190)
+RING_SPAWN_HIGH_M = (0.120, -0.040)
 
 
 def default_state():
@@ -66,11 +69,11 @@ def default_state():
     return {
         "state_id": "ring-stack-000",
         "task": {"task_type": "ring_on_peg", "version": 5},
-        "large_ring_xy_m": [0.005, -0.113],
-        "small_ring_xy_m": [0.005, 0.113],
+        "large_ring_xy_m": [-0.110, -0.115],
+        "small_ring_xy_m": [0.070, -0.115],
         "large_ring_yaw_rad": 0.0,
         "small_ring_yaw_rad": 0.0,
-        "peg_xy_m": [-0.060, 0.0],
+        "peg_xy_m": list(DEFAULT_PEG_XY_M),
         "excitation_seed": 0,
         "imu_seed": 0,
         "t0_s": 0.0,
@@ -120,10 +123,10 @@ def validate_state(state):
 
 
 def sample_state(rng, *, base_state=None, state_id=None):
-    """Sample non-overlapping rings in the reachable tabletop area.
+    """Sample non-overlapping rings opposite the fixed peg side.
 
-    The base does not exclude ring positions: a ring may settle against its rim.
-    Explicit sampled states make collection retries and evaluation reproducible.
+    The split keeps the placement target clear while explicit sampled states make
+    collection retries and evaluation reproducible.
     """
     state = deepcopy(default_state() if base_state is None else base_state)
     placed = []
@@ -131,8 +134,8 @@ def sample_state(rng, *, base_state=None, state_id=None):
     for name, spec in RINGS.items():
         radius = spec["outer_radius"]
         for _ in range(1000):
-            xy = rng.uniform([-0.24, -0.20], [0.12, 0.20])
-            if np.linalg.norm(xy - peg_xy) < radius + PEG_RADIUS_M:
+            xy = rng.uniform(RING_SPAWN_LOW_M, RING_SPAWN_HIGH_M)
+            if np.linalg.norm(xy - peg_xy) < radius + BOARD_RADIUS_M:
                 continue
             if any(np.linalg.norm(xy - other) < radius + other_radius for other, other_radius in placed):
                 continue
