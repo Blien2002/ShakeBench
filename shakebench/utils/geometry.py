@@ -11,8 +11,8 @@ from shakebench import models
 #: The schema 2 profile predates the explicit mount field and is always the compliant
 #: six-axis isolation stage, retained as an extension of the rigid core scene.
 GEOMETRY_PROFILES = {
-    "world_fixed_arm_v1": ("shakebench_geometry_world_fixed_arm_v1.json", 2, "isolated"),
-    "world_fixed_rigid_table_v1": ("shakebench_geometry_world_fixed_rigid_table_v1.json", 3, "rigid"),
+    "world_fixed_arm_v1": ("shakebench_geometry_world_fixed_arm.json", 2, "isolated"),
+    "world_fixed_rigid_table_v1": ("shakebench_geometry_world_fixed_rigid_table.json", 3, "rigid"),
 }
 #: Next-version core scene: the worktable is bolted to the driven platen.
 DEFAULT_GEOMETRY_PROFILE = "world_fixed_rigid_table_v1"

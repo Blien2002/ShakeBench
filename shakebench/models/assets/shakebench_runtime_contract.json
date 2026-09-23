@@ -11,9 +11,9 @@
     "profile_id": "shakebench.official.physics"
   },
   "scene_assets": [
-    "shakebench_geometry_world_fixed_arm_v1.json",
-    "shakebench_geometry_world_fixed_rigid_table_v1.json",
-    "shakebench_scene_world_fixed_arm_v1.json",
+    "shakebench_geometry_world_fixed_arm.json",
+    "shakebench_geometry_world_fixed_rigid_table.json",
+    "shakebench_scene_world_fixed_arm.json",
     "arenas/shakebench_arena.xml",
     "arenas/shakebench_robot_support.xml"
   ],

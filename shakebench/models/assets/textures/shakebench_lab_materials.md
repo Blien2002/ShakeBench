@@ -4,7 +4,7 @@ These three textures are original deterministic assets from the user-owned
 ShakeBench reference project. Its `assets/textures/README.md` identifies them
 as repository-generated, from `tools/generate_lab_textures.py` and
 `tools/generate_platen_texture.py`, rather than the legacy photographic assets.
-Reference file hashes and purposes are recorded in `shakebench_scene_visual_v1.json`.
+Reference file hashes and purposes are recorded in `shakebench_scene_visual.json`.
 
 The source JPGs were decoded and saved as PNG for native MuJoCo compatibility.
 Decoded RGB pixels are identical; no color grading or AI texture generation was

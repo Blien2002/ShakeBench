@@ -19,9 +19,9 @@ RUNTIME_CONTRACT_FILENAME = "shakebench_runtime_contract.json"
 OFFICIAL_PHYSICS_PROFILE_FILENAME = "shakebench_official_physics.yaml"
 OFFICIAL_PHYSICS_PROFILE_ID = "shakebench.official.physics"
 SCENE_ASSET_FILENAMES = (
-    "shakebench_geometry_world_fixed_arm_v1.json",
-    "shakebench_geometry_world_fixed_rigid_table_v1.json",
-    "shakebench_scene_world_fixed_arm_v1.json",
+    "shakebench_geometry_world_fixed_arm.json",
+    "shakebench_geometry_world_fixed_rigid_table.json",
+    "shakebench_scene_world_fixed_arm.json",
     "arenas/shakebench_arena.xml",
     "arenas/shakebench_robot_support.xml",
 )

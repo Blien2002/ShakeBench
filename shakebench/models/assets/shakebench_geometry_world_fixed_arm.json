@@ -28,7 +28,7 @@
     0,
     0.299
   ],
-  "scene_config": "shakebench_scene_world_fixed_arm_v1.json",
+  "scene_config": "shakebench_scene_world_fixed_arm.json",
   "physics_effect": true,
   "retained_table_dimensions_m": [
     0.65,

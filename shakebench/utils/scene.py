@@ -37,7 +37,7 @@ from shakebench.utils.artifacts import json_ready as _json_ready
 
 SCENE_SCHEMA_ID = "shakebench.scene_visual"
 SCENE_SCHEMA_VERSION = 1
-DEFAULT_SCENE_VISUAL_CONFIG_FILENAME = "shakebench_scene_visual_v1.json"
+DEFAULT_SCENE_VISUAL_CONFIG_FILENAME = "shakebench_scene_visual.json"
 SCENE_CONFIG_PATH = Path(models.assets_root) / DEFAULT_SCENE_VISUAL_CONFIG_FILENAME
 #: Scene textures owned by the upstream robosuite package.  They are resolved
 #: from robosuite by name instead of being copied, and every other texture name
