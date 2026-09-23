@@ -120,7 +120,9 @@ def aggregate_episode_stats(stats_rows: Sequence[Mapping[str, Any]]) -> dict[str
     return aggregated
 
 
-def _write_renumbered_parquet(source: Path, target: Path, *, episode_index: int, first_frame_index: int) -> int:
+def _write_renumbered_parquet(
+    source: Path, target: Path, *, episode_index: int, first_frame_index: int, task_index: int | None = None
+) -> int:
     """Copy one episode parquet under the exported episode and global frame indices."""
 
     import pyarrow as pa
@@ -129,10 +131,13 @@ def _write_renumbered_parquet(source: Path, target: Path, *, episode_index: int,
     table = pq.read_table(source)
     table = table.drop([name for name in table.column_names if name.startswith("observation.table_imu")])
     length = table.num_rows
-    for name, values in (
+    columns = [
         ("episode_index", np.full(length, episode_index, dtype=np.int64)),
         ("index", np.arange(first_frame_index, first_frame_index + length, dtype=np.int64)),
-    ):
+    ]
+    if task_index is not None:
+        columns.append(("task_index", np.full(length, task_index, dtype=np.int64)))
+    for name, values in columns:
         table = table.set_column(table.schema.get_field_index(name), name, pa.array(values))
     target.parent.mkdir(parents=True, exist_ok=True)
     pq.write_table(table, target)

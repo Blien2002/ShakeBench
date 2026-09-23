@@ -3,8 +3,9 @@
 Runs with: python -m shakebench.scripts.collect_lerobot_gpu --output out/lerobot_gpu
 
 LeRobot mode uses the same v2.1 schema and MuJoCo camera path as shakebench_collect_lerobot;
---video-only writes MP4 files without a dataset. The rollout runs on the device. Frames use
-host MuJoCo rendering because MJWarp's
+--video-only writes MP4 files without a dataset, while --video-output saves synchronized
+rollout MP4s alongside LeRobot data. The rollout runs on the device. Frames use host MuJoCo
+rendering because MJWarp's
 renderer maps textures only onto plane and mesh geoms, which would flatten every textured
 box in this scene. The artifacts stay non-scoreable (see docs/mjwarp_collection.md); the CPU
 collector remains the scoreable path.
@@ -80,6 +81,15 @@ def _frame(observation, action, images):
     }
 
 
+def collection_task_description(state, *, legacy_metal_table=False):
+    """Return current task identity with optional legacy dataset wording."""
+    description = task_description(state)
+    if legacy_metal_table and task_type(state) == "pick_place":
+        object_name = {"apple": "apple", "mug": "mug", "can": "food can"}[state["task"]["object_id"]]
+        description["instruction"] = f"Pick up the {object_name} from the metal table and place it in the target crate."
+    return description
+
+
 def collect_batch(
     dataset,
     states,
@@ -92,6 +102,7 @@ def collect_batch(
     main_camera,
     on_saved=None,
     video_output=None,
+    legacy_task_instructions=False,
 ):
     """Run one homogeneous batch and save each world to LeRobot or MP4.
 
@@ -204,7 +215,7 @@ def collect_batch(
         episodes = []
         for world, (state, env, program) in enumerate(zip(states, envs, programs)):
             cause = causes[world] or "horizon_exhausted"
-            instruction = task_description(state)["instruction"]
+            instruction = collection_task_description(state, legacy_metal_table=legacy_task_instructions)["instruction"]
             if dataset is not None:
                 for step, frame in enumerate(frames[world]):
                     dataset.add_frame(frame, task=instruction, timestamp=step / 20)
@@ -249,6 +260,12 @@ def build_parser():
     )
     parser.add_argument("--video-only", action="store_true", help="Write one MP4 per state, without a LeRobot dataset")
     parser.add_argument(
+        "--video-output", type=Path, help="Write synchronized per-state MP4 files alongside LeRobot data"
+    )
+    parser.add_argument(
+        "--legacy-task-instructions", action="store_true", help="Use the previous dataset's metal-table wording"
+    )
+    parser.add_argument(
         "--task-module", action="append", default=[], help="Import a registered task before loading states"
     )
     parser.add_argument("--resume", action="store_true", help="Resume an incomplete dataset in --output")
@@ -281,6 +298,8 @@ def main(argv=None):
         importlib.import_module(module)
     if args.video_only and args.resume:
         raise ValueError("--resume is unavailable for video-only collection")
+    if args.video_only and args.video_output is not None:
+        raise ValueError("use --output for videos in --video-only mode; --video-output is for dataset mode")
     if (
         min(args.width, args.height, args.horizon_steps, args.num_worlds, args.num_shards) <= 0
         or (args.limit is not None and args.limit <= 0)
@@ -323,6 +342,7 @@ def main(argv=None):
                     physics_profile=args.physics_profile,
                     main_camera=args.main_camera,
                     video_output=args.output,
+                    legacy_task_instructions=args.legacy_task_instructions,
                 )
                 for episode in episodes:
                     print(
@@ -342,6 +362,10 @@ def main(argv=None):
         manifest = json.loads(manifest_path.read_text())
         if manifest.get("complete"):
             raise ValueError(f"dataset is already complete: {args.output}")
+        if manifest.get("video_output") != (str(args.video_output) if args.video_output else None):
+            raise ValueError("resume video output does not match the original collection")
+        if manifest.get("legacy_task_instructions", False) != args.legacy_task_instructions:
+            raise ValueError("resume task wording does not match the original collection")
         requested = [state["state_id"] for state in states]
         if manifest.get("requested_states") != requested:
             raise ValueError("resume states do not match the original collection")
@@ -349,6 +373,10 @@ def main(argv=None):
         if len(completed) != len(set(completed)):
             raise ValueError("resume manifest contains duplicate episodes")
         states = [state for state in states if state["state_id"] not in set(completed)]
+    if args.video_output is not None:
+        if args.video_output.exists() and any(args.video_output.iterdir()) and manifest is None:
+            raise FileExistsError(f"refusing to overwrite videos in {args.video_output}")
+        args.video_output.mkdir(parents=True, exist_ok=True)
     from lerobot.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 
     if CODEBASE_VERSION != "v2.1":
@@ -373,7 +401,12 @@ def main(argv=None):
             "physics_profile": args.physics_profile,
             "device": str(args.device),
             "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
-            "tasks": {state["state_id"]: task_description(state)["instruction"] for state in states},
+            "tasks": {
+                state["state_id"]: collection_task_description(state, legacy_metal_table=args.legacy_task_instructions)[
+                    "instruction"
+                ]
+                for state in states
+            },
             "cameras": {**CAMERAS, "observation.images.main": args.main_camera},
             "alignment": "observation_t, applied_action_t, next outcome; timestamp is episode-relative seconds",
             "action_space": {
@@ -390,6 +423,8 @@ def main(argv=None):
             "batch_size": args.num_worlds,
             "shard": {"index": args.shard_index, "num_shards": args.num_shards},
             "image_writer": {"processes": args.image_writer_processes, "threads": args.image_writer_threads},
+            "video_output": str(args.video_output) if args.video_output else None,
+            "legacy_task_instructions": args.legacy_task_instructions,
             "episodes": [],
         }
         write_json(args.output / "meta" / "modality.json", modality_metadata())
@@ -437,6 +472,8 @@ def main(argv=None):
                     physics_profile=args.physics_profile,
                     main_camera=args.main_camera,
                     on_saved=record_episode,
+                    video_output=args.video_output,
+                    legacy_task_instructions=args.legacy_task_instructions,
                 )
         manifest["complete"] = True
     except BaseException as exc:
