@@ -175,7 +175,7 @@ class RingStackOracle:
             yield from self._follow(
                 [grasp + [0, 0, 0.003]],
                 -1,
-                speed=0.10,
+                speed=0.11,
                 acceleration=0.3,
                 position_tolerance=0.005,
                 response_scale=0.2,
