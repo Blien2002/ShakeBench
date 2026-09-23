@@ -1,0 +1,10 @@
+{
+  "asset": "Metal030",
+  "source": "https://ambientcg.com/view?id=Metal030",
+  "download": "https://ambientcg.com/get?file=Metal030_1K-PNG.zip",
+  "archive_member": "Metal030_1K-PNG_Color.png",
+  "license": "CC0-1.0",
+  "license_url": "https://docs.ambientcg.com/license/",
+  "modifications": "None; original color map extracted from the source archive.",
+  "sha256": "1e47f59d8b8340592f14e96ae8b0e9f325e61b59512c500dfb7a22ee7fc724b1"
+}

@@ -11,7 +11,8 @@
     <material name="shakebench_phenolic_bench" reflectance="0.05" shininess="0.18" specular="0.25" texrepeat="3 3" texture="shakebench_phenolic" texuniform="true" />
     <texture file="../textures/steel-brushed.png" type="cube" name="shakebench_steel" />
     <material name="shakebench_frame_metal" reflectance="0.35" shininess="0.45" specular="0.45" texrepeat="1 1" texture="shakebench_steel" />
-    <material name="shakebench_table_metal" rgba="0.78 0.80 0.82 1" reflectance="0" shininess="0.3" specular="0.38" texrepeat="2 2" texuniform="false" texture="shakebench_steel" />
+    <texture file="../textures/ambientcg_metal030_color_1k.png" type="cube" name="shakebench_table_steel" />
+    <material name="shakebench_table_metal" rgba="0.78 0.80 0.82 1" reflectance="0" shininess="0.3" specular="0.38" texrepeat="2 2" texuniform="false" texture="shakebench_table_steel" />
     <material name="shakebench_mount_rubber" rgba="0.055 0.065 0.075 1" reflectance="0.02" shininess="0.08" specular="0.1" />
     <material name="shakebench_bolt_metal" rgba="0.28 0.30 0.32 1" reflectance="0.55" shininess="0.7" specular="0.65" />
     <texture file="../textures/shakebench_platen_threaded_holes_1k.png" type="2d" name="shakebench_platen_tex" />
