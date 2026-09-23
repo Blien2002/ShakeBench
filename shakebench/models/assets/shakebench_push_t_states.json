@@ -1,0 +1,489 @@
+{
+  "schema_id": "shakebench.push_t.states",
+  "schema_version": 1,
+  "generator": {
+    "seed": 20260923
+  },
+  "states": [
+    {
+      "state_id": "push-t-s20260923-0000",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.08122530046682198,
+        -0.1432783649483143
+      ],
+      "object_yaw_rad": -1.2545149030882452,
+      "target_xy_m": [
+        0.062297157896153026,
+        0.1016074744430514
+      ],
+      "target_yaw_rad": 3.089412562075819,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 4117099383,
+      "imu_seed": 177492916,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0001",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.184488551107863,
+        -0.16588781644003356
+      ],
+      "object_yaw_rad": -2.031854332935608,
+      "target_xy_m": [
+        0.05103383237010057,
+        0.15067636660820877
+      ],
+      "target_yaw_rad": 2.869121259816798,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 3327509718,
+      "imu_seed": 1894369583,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0002",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.12175671848809565,
+        -0.11854691051755202
+      ],
+      "object_yaw_rad": -1.0791055710052726,
+      "target_xy_m": [
+        0.05761751128605972,
+        0.08740101051143613
+      ],
+      "target_yaw_rad": 2.6561726382999087,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 544974219,
+      "imu_seed": 3901480413,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0003",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.12178049083409313,
+        -0.15513909459817762
+      ],
+      "object_yaw_rad": -3.099919512673261,
+      "target_xy_m": [
+        0.01486650295796308,
+        0.17823424427630002
+      ],
+      "target_yaw_rad": 0.9752878756799142,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 33870214,
+      "imu_seed": 1135348674,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0004",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.12845282003352315,
+        -0.1466999339408469
+      ],
+      "object_yaw_rad": -0.2947873874782232,
+      "target_xy_m": [
+        0.07432858115945445,
+        0.12721633645776792
+      ],
+      "target_yaw_rad": -0.9129663677619271,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 117651328,
+      "imu_seed": 3586932533,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0005",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.13654081093531747,
+        -0.16150484496847822
+      ],
+      "object_yaw_rad": -1.427837183272514,
+      "target_xy_m": [
+        0.01635470441150782,
+        0.10619687234408386
+      ],
+      "target_yaw_rad": -1.2330192845264745,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 1364498763,
+      "imu_seed": 1812941415,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0006",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.16665970981217856,
+        -0.13875518865612071
+      ],
+      "object_yaw_rad": -0.773252900010029,
+      "target_xy_m": [
+        0.02703154389308924,
+        0.15660105017474563
+      ],
+      "target_yaw_rad": -2.4051475439577388,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 311709631,
+      "imu_seed": 761927935,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0007",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.09153461763675515,
+        -0.1706741940546432
+      ],
+      "object_yaw_rad": 0.3522919383982459,
+      "target_xy_m": [
+        0.04449309820881555,
+        0.08352791606300342
+      ],
+      "target_yaw_rad": 2.106743209261591,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 634714707,
+      "imu_seed": 487752747,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0008",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.14323074401414843,
+        -0.10558937707501713
+      ],
+      "object_yaw_rad": -1.323529497088974,
+      "target_xy_m": [
+        0.02751788803387451,
+        0.13741352194430237
+      ],
+      "target_yaw_rad": 1.063467291329319,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 1808980504,
+      "imu_seed": 3034972257,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0009",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.17183977203672418,
+        -0.14866464074511365
+      ],
+      "object_yaw_rad": -1.0759709600835348,
+      "target_xy_m": [
+        0.05929366917615415,
+        0.13713925019431505
+      ],
+      "target_yaw_rad": 1.6948942180398676,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 3566430065,
+      "imu_seed": 177507489,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0010",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.15410714754478627,
+        -0.14707134828844332
+      ],
+      "object_yaw_rad": 2.3434844707853593,
+      "target_xy_m": [
+        0.0441621213538461,
+        0.17218655812898712
+      ],
+      "target_yaw_rad": 2.6002407248127275,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 2388757106,
+      "imu_seed": 1117173994,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0011",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.11924372550006201,
+        -0.13412437232847899
+      ],
+      "object_yaw_rad": 0.33437199060340905,
+      "target_xy_m": [
+        0.004218872183852022,
+        0.12326541312484475
+      ],
+      "target_yaw_rad": 2.355260920378007,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 1027020610,
+      "imu_seed": 2292999589,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0012",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.1544931058390679,
+        -0.1110465086831634
+      ],
+      "object_yaw_rad": 1.9827721131569822,
+      "target_xy_m": [
+        0.05876000512253005,
+        0.15302434487293382
+      ],
+      "target_yaw_rad": 1.6304556577078095,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 5282590,
+      "imu_seed": 4235488531,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0013",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.16691036439572202,
+        -0.15988996795849392
+      ],
+      "object_yaw_rad": -1.8501362472517804,
+      "target_xy_m": [
+        0.05522294566797,
+        0.14186855991182615
+      ],
+      "target_yaw_rad": 0.9253996049978319,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 4283077782,
+      "imu_seed": 664882439,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0014",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.17845789499541942,
+        -0.13719036929103987
+      ],
+      "object_yaw_rad": 1.300035162526851,
+      "target_xy_m": [
+        -0.012736203170711249,
+        0.16741208413648018
+      ],
+      "target_yaw_rad": -0.9795543530796058,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 946789333,
+      "imu_seed": 2453596407,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0015",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.1751343759470203,
+        -0.15484089418061525
+      ],
+      "object_yaw_rad": -1.0964643861251004,
+      "target_xy_m": [
+        -0.025113309675714613,
+        0.0984913768708876
+      ],
+      "target_yaw_rad": 1.866016052531462,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 1204170758,
+      "imu_seed": 2753308598,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0016",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.15912489960106413,
+        -0.13564125606331084
+      ],
+      "object_yaw_rad": 2.2926529681012697,
+      "target_xy_m": [
+        0.011907278653724068,
+        0.1769226461775018
+      ],
+      "target_yaw_rad": 0.2617522187966186,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 2762902156,
+      "imu_seed": 2961666502,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0017",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.17608537584903236,
+        -0.17683209148428575
+      ],
+      "object_yaw_rad": 2.843764642433679,
+      "target_xy_m": [
+        0.030688798916882136,
+        0.1088771774894892
+      ],
+      "target_yaw_rad": -1.491131577329868,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 1917556886,
+      "imu_seed": 867118900,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0018",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.14029732756824054,
+        -0.10414945752385775
+      ],
+      "object_yaw_rad": 1.8839505273871815,
+      "target_xy_m": [
+        0.05135458794898775,
+        0.09123167156676308
+      ],
+      "target_yaw_rad": -3.0462228711502295,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 3364959502,
+      "imu_seed": 520974979,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "push-t-s20260923-0019",
+      "task": {
+        "task_type": "push_t",
+        "version": 1
+      },
+      "object_xy_m": [
+        -0.17317068009315845,
+        -0.17565838135910505
+      ],
+      "object_yaw_rad": 2.1460164953709446,
+      "target_xy_m": [
+        0.021127958680104635,
+        0.13238342472414108
+      ],
+      "target_yaw_rad": -0.4756673036586103,
+      "coverage_threshold": 0.95,
+      "success_hold_s": 0.5,
+      "lift_height_m": 0.005,
+      "lift_duration_s": 0.2,
+      "excitation_seed": 341847677,
+      "imu_seed": 4198324629,
+      "t0_s": 0.0
+    }
+  ]
+}
