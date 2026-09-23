@@ -125,7 +125,7 @@ def load_states(payload):
 
 
 class PushT(ManipulationEnv):
-    """Push the wooden T onto the matte green tabletop target without lifting."""
+    """Push the wooden T onto the textured dark gray tabletop target without lifting."""
 
     def __init__(
         self,
@@ -234,14 +234,31 @@ class PushT(ManipulationEnv):
                 [np.cos(self.task_state["target_yaw_rad"] / 2), 0, 0, np.sin(self.task_state["target_yaw_rad"] / 2)]
             ),
         )
+        # Native micro-speckles distinguish the matte decal from the pale laminate.
+        ET.SubElement(
+            self.arena.asset,
+            "texture",
+            name="push_t_decal_grain",
+            type="2d",
+            builtin="flat",
+            width="128",
+            height="128",
+            rgb1="0.24 0.25 0.26",
+            mark="random",
+            markrgb="0.31 0.32 0.33",
+            random="0.2",
+        )
         ET.SubElement(
             self.arena.asset,
             "material",
-            name="push_t_green",
-            rgba="0.32 0.58 0.38 1",
+            name="push_t_decal",
+            texture="push_t_decal_grain",
+            texrepeat="8 8",
+            texuniform="true",
+            rgba="1 1 1 1",
             emission="0",
-            specular="0.05",
-            shininess="0.1",
+            specular="0.04",
+            shininess="0.08",
         )
         # A 0.1 mm visual decal: no collision, no mass, rigidly attached to the table.
         for index, (center, size) in enumerate(RECTANGLES):
@@ -252,7 +269,7 @@ class PushT(ManipulationEnv):
                 type="box",
                 pos=array_to_string([*center, 0.00005]),
                 size=array_to_string([*size, 0.00005]),
-                material="push_t_green",
+                material="push_t_decal",
                 group="1",
                 contype="0",
                 conaffinity="0",
@@ -437,7 +454,7 @@ register_task(
         env_kwargs=lambda state: {"task_state": state},
         describe=lambda state: {
             "task_id": "push_t",
-            "instruction": "Push the light wooden T onto the matte green T target without lifting it.",
+            "instruction": "Push the light wooden T onto the textured dark gray T target without lifting it.",
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),
