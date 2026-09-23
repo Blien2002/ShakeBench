@@ -12,13 +12,17 @@ class RingStackOracle:
         self.env = env
         self.abort_requested = False
         self.site = env.robots[0].eef_site_id["right"]
-        self.orientation = np.diag([-1.0, 1.0, -1.0])
+        wrist_x = env.sim.data.site_xmat[self.site].reshape(3, 3)[:, 0].copy()
+        wrist_x[2] = 0
+        wrist_x /= np.linalg.norm(wrist_x)
+        tool_z = np.array([0.0, 0.0, -1.0])
+        self.orientation = np.column_stack((wrist_x, np.cross(tool_z, wrist_x), tool_z))
         self._actions = self._run()
 
     def action(self):
         return next(self._actions, np.zeros(7))
 
-    def _move(self, target, grip, steps, *, min_steps=0):
+    def _move(self, target, grip, steps, *, min_steps=0, position_error_scale=0.08):
         settled = 0
         for step in range(steps):
             data = self.env.sim.data
@@ -35,35 +39,43 @@ class RingStackOracle:
             if controller.input_ref_frame == "base":
                 delta = controller.origin_ori.T @ delta
                 rotation = controller.origin_ori.T @ rotation
-            yield np.r_[np.clip(delta / 0.05, -1, 1), np.clip(rotation / 0.5, -1, 1), grip]
+            yield np.r_[np.clip(delta / position_error_scale, -0.4, 0.4), np.clip(rotation / 0.5, -1, 1), grip]
 
     def _run(self):
         env = self.env
         for index, (name, spec) in enumerate(env.get_policy_task_context()["rings"].items()):
             body = env.ring_body_ids[name]
             start = env.sim.data.xpos[body].copy()
-            offset = self.orientation[:, 0] * (spec["outer_radius"] + spec["inner_radius"]) / 2
+            peg = env.sim.data.xpos[env.peg_body_id].copy()
+            ring_from_peg = start[:2] - peg[:2]
+            side = 1.0 if ring_from_peg[np.argmax(np.abs(ring_from_peg))] >= 0 else -1.0
+            offset = side * self.orientation[:, 0] * (spec["outer_radius"] + spec["inner_radius"]) / 2
             offset[2] = 0
             grasp = start + offset
-            peg = env.sim.data.xpos[env.peg_body_id].copy()
             lift = 0.21 if np.linalg.norm(start[:2] - peg[:2]) < 0.1 else 0.12
-            for height, grip, steps, min_steps in (
-                (0.06, -1, 60, 0),
-                (0.003, -1, 55, 0),
-                (0.003, 1, 20, 8),
-                (lift, 1, 65, 0),
+            for height, grip, steps, min_steps, position_error_scale in (
+                (0.06, -1, 100, 0, 0.08),
+                (0.003, -1, 100, 0, 0.15),
+                (0.003, 1, 20, 8, 0.08),
+                (lift, 1, 100, 0, 0.08),
             ):
-                yield from self._move(grasp + [0, 0, height], grip, steps, min_steps=min_steps)
+                yield from self._move(
+                    grasp + [0, 0, height],
+                    grip,
+                    steps,
+                    min_steps=min_steps,
+                    position_error_scale=position_error_scale,
+                )
             if env.sim.data.xpos[body][2] < start[2] + 0.08:
                 self.abort_requested = True
                 return
             offset = env.sim.data.xpos[body].copy() - env.sim.data.site_xpos[self.site]
             peg = env.sim.data.xpos[env.peg_body_id].copy()
             for height, grip, steps, min_steps in (
-                (0.22, 1, 70, 0),
-                (0.177, 1, 40, 0),
+                (0.22, 1, 120, 0),
+                (0.177, 1, 80, 0),
                 (0.177, -1, 12, 4),
-                (0.32, -1, 60, 0),
+                (0.32, -1, 100, 0),
             ):
                 yield from self._move(peg + [0, 0, height] - offset, grip, steps, min_steps=min_steps)
             if env.get_metrics()["success"]["stage"] != index + 1:
