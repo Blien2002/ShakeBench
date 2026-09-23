@@ -56,8 +56,8 @@ def collect_episode(
     rot_sensitivity=1.0,
 ):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
-    ring_oracle = device == "oracle" and task_type(state) == "ring_on_peg"
-    if device == "oracle" and not ring_oracle:
+    specialized_oracle = device == "oracle" and task_type(state) in {"ring_on_peg", "push_t"}
+    if device == "oracle" and not specialized_oracle:
         require_pick_place(state, consumer="oracle collection")
     profile = OracleControllerProfile()
     instruction = task_description(state)["instruction"]
@@ -85,13 +85,18 @@ def collect_episode(
             ShakeBenchOracleController(
                 profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
             )
-            if device == "oracle" and not ring_oracle
+            if device == "oracle" and not specialized_oracle
             else None
         )
-        if ring_oracle:
-            from shakebench.utils.ring_oracle import RingStackOracle
+        if specialized_oracle:
+            if task_type(state) == "ring_on_peg":
+                from shakebench.utils.ring_oracle import RingStackOracle
 
-            controller = RingStackOracle(env)
+                controller = RingStackOracle(env)
+            else:
+                from shakebench.utils.push_t_oracle import PushTOracle
+
+                controller = PushTOracle(env)
         reader = ShakeBenchCameraObservation(
             env, height=height, width=width, main_camera=main_camera, include_imu=False
         )
@@ -100,7 +105,7 @@ def collect_episode(
             sample = program.evaluate(step / dataset.fps)
             if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
                 raise ValueError("gamma=0 must command zero external excitation")
-            if ring_oracle:
+            if specialized_oracle:
                 action = controller.action()
             else:
                 action = np.clip(controller.action(oracle_observation(env), time_s=step / dataset.fps), -1, 1)
@@ -116,8 +121,9 @@ def collect_episode(
             metrics = env.get_metrics()
             cause = resolve_termination_cause(
                 prior_cause=None,
-                task_rule_violation=False,
-                success_latched=bool(metrics["success"]["passed"]),
+                task_rule_violation=bool(metrics.get("task_rule_violation", False)),
+                success_latched=bool(metrics["success"]["passed"])
+                and (task_type(state) != "push_t" or controller.verified),
                 policy_abort=controller.abort_requested if controller is not None else False,
                 horizon_exhausted=step + 1 == horizon,
             )
@@ -142,7 +148,15 @@ def collect_episode(
                 "task_context": env.get_policy_task_context(),
                 "task_metrics": metrics,
                 "controller_profile": (
-                    ({"controller": "ring_stack_oracle"} if ring_oracle else profile.to_dict())
+                    (
+                        {"controller": "ring_stack_oracle"}
+                        if task_type(state) == "ring_on_peg"
+                        else (
+                            {"controller": "push_t_oracle", "pushes": controller.trace}
+                            if task_type(state) == "push_t"
+                            else profile.to_dict()
+                        )
+                    )
                     if controller is not None
                     else None
                 ),
