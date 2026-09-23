@@ -1,6 +1,6 @@
 """Task selection and public task identity, independent of rollout machinery.
 
-The task set is a small set of objects on the bare metal worktable, one
+The task set is a small set of objects on the light-gray phenolic worktable, one
 object per episode.  Every entry records three kinds of number, and they are never
 interchanged:
 
@@ -11,7 +11,7 @@ interchanged:
 
 Masses are per-object design values (a real mug, a real potato), not the
 MuJoCo density-derived compile values.  Friction pairs are experimental
-contact coefficients for the metal tabletop, not measured material data.
+contact coefficients for the phenolic tabletop, not measured material data.
 """
 
 from __future__ import annotations
@@ -133,9 +133,9 @@ OBJECTS = {
 
 DEFAULT_OBJECT_ID = "mug"
 #: The target container is a single fixed crate shared by every variant.
-SURFACES = ("metal",)
+SURFACES = ("phenolic",)
 TASK_SCHEMA_ID = "shakebench.task.v3"
-TASK_VISUAL_REVISION = "three_objects_bare_metal_crate.v1"
+TASK_VISUAL_REVISION = "three_objects_light_phenolic_crate.v2"
 GRASP_OPENING_ALLOWANCE_M = 0.010
 #: Compiled Panda jaw travel (both fingers) in metres.
 PANDA_JAW_LIMIT_M = 0.080
@@ -180,7 +180,7 @@ class TaskSpec:
 
     @property
     def surface_id(self):
-        """Every variant uses the bare metal worktable."""
+        """Every variant uses the light-gray phenolic worktable."""
 
         return SURFACES[0]
 
@@ -273,12 +273,12 @@ class TaskSpec:
                 >= float(grasp.get("com_height_m", entry["com_height_m"])),
             },
             "task_visual_revision": TASK_VISUAL_REVISION,
-            "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+            "table_surface": "light-gray phenolic worktable; the felt mat task was retired",
             "target_container": "single fixed crate shared by every variant",
             "surface_model": "flush rigid layer; fixed total worktable mass and top height",
             "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
             "mass_values_are": "per-object design masses, not density-derived compile values",
-            "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+            "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
             "stability_constraint": (
                 "start pose is the measured free-settled rest pose; upright grasps close at or above "
                 "the centre of mass, while the lying can is cradled below its axis"

@@ -23614,7 +23614,7 @@
   "task_contracts": {
     "pick_place.apple": {
       "finger_object_sliding_mu": 1.0,
-      "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+      "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
       "mass_values_are": "per-object design masses, not density-derived compile values",
       "object_asset": "objects/robocasa/apple/apple_0/model.xml",
@@ -23666,15 +23666,15 @@
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.3,
-      "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+      "table_surface": "light-gray phenolic worktable; the felt mat task was retired",
       "target_container": "single fixed crate shared by every variant",
       "target_object_sliding_mu": 0.3,
       "task_type": "pick_place",
-      "task_visual_revision": "three_objects_bare_metal_crate.v1"
+      "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     },
     "pick_place.can1": {
       "finger_object_sliding_mu": 1.0,
-      "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+      "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
       "mass_values_are": "per-object design masses, not density-derived compile values",
       "object_asset": "robosuite.models.objects.CanObject",
@@ -23726,15 +23726,15 @@
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.2,
-      "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+      "table_surface": "light-gray phenolic worktable; the felt mat task was retired",
       "target_container": "single fixed crate shared by every variant",
       "target_object_sliding_mu": 0.2,
       "task_type": "pick_place",
-      "task_visual_revision": "three_objects_bare_metal_crate.v1"
+      "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     },
     "pick_place.can2": {
       "finger_object_sliding_mu": 1.0,
-      "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+      "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
       "mass_values_are": "per-object design masses, not density-derived compile values",
       "object_asset": "robosuite.models.objects.CanObject",
@@ -23786,15 +23786,15 @@
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.2,
-      "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+      "table_surface": "light-gray phenolic worktable; the felt mat task was retired",
       "target_container": "single fixed crate shared by every variant",
       "target_object_sliding_mu": 0.2,
       "task_type": "pick_place",
-      "task_visual_revision": "three_objects_bare_metal_crate.v1"
+      "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     },
     "pick_place.mug": {
       "finger_object_sliding_mu": 1.0,
-      "friction_values_are": "experimental contact coefficients for the metal tabletop, not measured material data",
+      "friction_values_are": "experimental contact coefficients for the phenolic tabletop, not measured material data",
       "inertia_model": "collision-geometry compile scaled to the design mass; visual and region geoms excluded",
       "mass_values_are": "per-object design masses, not density-derived compile values",
       "object_asset": "objects/robocasa/mug/mug_1/model.xml",
@@ -23846,11 +23846,11 @@
       "success_semantics": "shakebench.task.v3 positional success evaluator",
       "surface_model": "flush rigid layer; fixed total worktable mass and top height",
       "table_object_sliding_mu": 0.25,
-      "table_surface": "bare brushed-steel worktable; the felt mat task was retired",
+      "table_surface": "light-gray phenolic worktable; the felt mat task was retired",
       "target_container": "single fixed crate shared by every variant",
       "target_object_sliding_mu": 0.25,
       "task_type": "pick_place",
-      "task_visual_revision": "three_objects_bare_metal_crate.v1"
+      "task_visual_revision": "three_objects_light_phenolic_crate.v2"
     }
   },
   "task_count": 1,
