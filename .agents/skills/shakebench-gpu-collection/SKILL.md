@@ -1,16 +1,17 @@
 ---
 name: shakebench-gpu-collection
-description: Create and verify local ShakeBench pick-place training datasets with MJWarp CUDA physics and MuJoCo EGL rendering. Use for GPU Oracle collection, resume, success-only LeRobot export, and train/evaluation split checks.
+description: Create ShakeBench GPU Oracle videos or pick-place training datasets with MJWarp CUDA physics and MuJoCo EGL rendering. Use for collection, resume, success-only LeRobot export, and train/evaluation split checks.
 ---
 
-# ShakeBench GPU training data
+# ShakeBench GPU collection
 
 Use this skill from the ShakeBench repository root. Read the current `AGENTS.md` and the entry points named below before running a collection; script arguments and contracts take precedence over these examples.
 
 ## Contract
 
-- `shakebench.scripts.collect_lerobot_gpu` supports `pick_place` states only. It runs the privileged Oracle at `gamma=0` on MJWarp (`cuda:N`); MuJoCo renders synchronized device states on the host through EGL. Do not describe this as MJWarp image rendering. Ring stacking and Push T need their own collectors.
-- Output is a local, non-scoreable LeRobot **v2.1** dataset: 20 Hz, main and wrist RGB images (default 256×256), 8D proprioception, normalized 7D `OSC_POSE` actions, task text, and next-step outcome fields. IL data contains no IMU. `--repo-id` is local metadata; the collector does not upload.
+- `shakebench.scripts.collect_lerobot_gpu` supports `pick_place` and registered `ring_on_peg` states. Pass `--task-module shakebench.environments.ring_on_peg` for ring states. It runs the privileged Oracle at `gamma=0` on MJWarp (`cuda:N`); MuJoCo renders synchronized device states on the host through EGL. Do not describe this as MJWarp image rendering. Push T still needs a task-specific adapter.
+- `--video-only` writes one MP4 per selected state without LeRobot data or a collection manifest. Use a new output directory for each run, and verify frame counts with `ffprobe`. Ring success is checked from synchronized device state with the registered ring task's outcome rule.
+- Without `--video-only`, output is a local, non-scoreable LeRobot **v2.1** dataset: 20 Hz, main and wrist RGB images (default 256×256), 8D proprioception, normalized 7D `OSC_POSE` actions, task text, and next-step outcome fields. IL data contains no IMU. `--repo-id` is local metadata; the collector does not upload.
 - Generate a separate train state pool. Preserve official and knee state assets for held-out evaluation. Choose a new output path for every independent run; never delete or overwrite a dataset to make a retry work.
 
 ## Run
@@ -48,3 +49,5 @@ python -m shakebench.scripts.verify_collection \
 For a resume, repeat the collection command exactly with `--resume`. For multiple shards, use a distinct output directory per shard; the repository has no automatic shard merge in this workflow. Do not claim that separate shard outputs form one LeRobot dataset.
 
 Report the source and exported paths, requested/attempted/successful episode counts from the manifest, the verifier's `passed` result and failed checks, and the actual MJWarp device/EGL status. The exported dataset is the training input; `shakebench.scripts.train_policy` additionally needs an external policy class and checkpoint.
+
+For `--video-only`, report the MP4 directory, state IDs, frame counts, episode outcomes printed by the collector, and actual MJWarp device/EGL status. Do not claim a LeRobot dataset or a success-only export was made.
