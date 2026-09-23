@@ -24,7 +24,7 @@ from shakebench.demos.demo_oracle_video import FFmpegVideoWriter
 from shakebench.utils.calibration import calibrate_gamma, level_scale_for_gamma
 from shakebench.utils.excitation import build_excitation_program
 from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
-from shakebench.utils.tasks import OBJECTS, TaskSpec, make_task_env, task_variants
+from shakebench.utils.tasks import OBJECTS, TaskSpec, make_task_env, task_pose_variants
 
 
 def _camera(env) -> mujoco.MjvCamera:
@@ -51,7 +51,8 @@ def _frame(
     renderer.update_scene(env.sim.data._data, camera=camera, scene_option=option)
     image = renderer.render().copy()
     lines = (
-        f"METAL / {spec.object_id.upper()}     table-object mu={spec.table_sliding_mu:.2f}",
+        f"METAL / {spec.object_id.upper()} / {sample['grasp_region'].upper()}     "
+        f"table-object mu={spec.table_sliding_mu:.2f}",
         f"official Gamma={gamma:.3f}     level scale={level_scale:.6f}     t={sample['time_s']:.2f} s",
         f"surface-relative slip={sample['slip_distance_m'] * 1000:.2f} mm     speed={sample['slip_speed_m_s'] * 1000:.2f} mm/s",
     )
@@ -62,7 +63,7 @@ def _frame(
     return image
 
 
-def _sample(env, spec: TaskSpec) -> dict:
+def _sample(env, spec: TaskSpec, region: str) -> dict:
     report = env.get_metrics(update=True)
     worktable = report["object"]["worktable"]
     # The object z-axis in the worktable frame exposes tipping / rolling, so
@@ -74,8 +75,9 @@ def _sample(env, spec: TaskSpec) -> dict:
     upright_cosine = float(table_rotation[:, 2].dot(body_rotation[:, 2]))
     contacts = report["contacts"]
     return {
-        "variant_id": spec.variant_id,
+        "variant_id": spec.pose_id(region),
         "object_id": spec.object_id,
+        "grasp_region": region,
         "table_object_sliding_mu": spec.table_sliding_mu,
         "time_s": float(report["time_s"]),
         "slip_distance_m": float(report["table_slip_distance_m"]),
@@ -92,6 +94,7 @@ def _sample(env, spec: TaskSpec) -> dict:
 
 def record_variant(
     spec: TaskSpec,
+    region: str,
     *,
     output_dir: Path,
     duration_s: float,
@@ -108,6 +111,7 @@ def record_variant(
     gamma_rollout = calibrate_gamma(program, duration_s=duration_s).gamma_commanded
     env = make_task_env(
         spec,
+        grasp_region=region,
         excitation_program=program,
         physics_profile="official",
         imu_mode="canonical_noisy_v1",
@@ -115,7 +119,7 @@ def record_variant(
         horizon=int(np.ceil(duration_s * 20.0)) + 2,
         seed=seed,
     )
-    output = output_dir / f"{spec.variant_id}.mp4"
+    output = output_dir / f"{spec.pose_id(region)}.mp4"
     records: list[dict] = []
     try:
         env.reset()
@@ -128,7 +132,7 @@ def record_variant(
             try:
                 for _ in range(int(round(duration_s * fps))):
                     env.step(np.zeros(env.action_dim, dtype=float))
-                    sample = _sample(env, spec)
+                    sample = _sample(env, spec, region)
                     records.append(sample)
                     frame = _frame(
                         renderer,
@@ -150,8 +154,9 @@ def record_variant(
     speeds = np.asarray([row["slip_speed_m_s"] for row in records], dtype=float)
     upright = np.asarray([row["object_upright_cosine"] for row in records], dtype=float)
     summary = {
-        "variant_id": spec.variant_id,
+        "variant_id": spec.pose_id(region),
         "object_id": spec.object_id,
+        "grasp_region": region,
         "table_object_sliding_mu": spec.table_sliding_mu,
         "video": str(output),
         "gamma_requested": gamma,
@@ -205,10 +210,15 @@ def main(argv: list[str] | None = None) -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict] = []
     summaries: list[dict] = []
-    specs = task_variants() if args.object_id is None else (TaskSpec(object_id=args.object_id),)
-    for spec in specs:
+    variants = [
+        (spec, region)
+        for spec, region in task_pose_variants()
+        if args.object_id is None or spec.object_id == args.object_id
+    ]
+    for spec, region in variants:
         samples, summary = record_variant(
             spec,
+            region,
             output_dir=args.output_dir,
             duration_s=args.duration_s,
             fps=args.fps,

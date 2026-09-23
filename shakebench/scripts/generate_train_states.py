@@ -26,7 +26,7 @@ def main(argv=None):
         default=None,
         help=(
             "Comma-separated registry object ids to sample; apples sample stable rest poses plus yaw, "
-            "other objects use registered poses, and mugs include upright and lying double-wall poses"
+            "other objects use registered poses; cans and mugs each include standing and side-lying poses"
         ),
     )
     parser.add_argument(

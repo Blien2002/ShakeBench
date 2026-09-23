@@ -83,6 +83,11 @@ class RingStackOracle:
                 (0.32, -1, 100, 0),
             ):
                 yield from self._move(peg + [0, 0, height] - offset, grip, steps, min_steps=min_steps)
+            # The ring may settle after the hand retracts; give the success hold timer time to latch.
+            for _ in range(40):
+                if env.get_metrics()["success"]["stage"] == index + 1:
+                    break
+                yield np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
             if env.get_metrics()["success"]["stage"] != index + 1:
                 self.abort_requested = True
                 return

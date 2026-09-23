@@ -10,7 +10,7 @@ import mujoco
 import numpy as np
 from PIL import Image, ImageDraw
 
-from shakebench.utils.tasks import make_task_env, task_variants
+from shakebench.utils.tasks import make_task_env, task_pose_variants
 
 
 def main(argv=None):
@@ -19,11 +19,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     columns = 3
     width, height, label_height = 640, 480, 36
-    rows = (len(task_variants()) + columns - 1) // columns
+    variants = task_pose_variants()
+    rows = (len(variants) + columns - 1) // columns
     canvas = Image.new("RGB", (width * columns, (height + label_height) * rows), (24, 29, 34))
     draw = ImageDraw.Draw(canvas)
-    for index, spec in enumerate(task_variants()):
-        env = make_task_env(spec, hard_reset=False, seed=17)
+    for index, (spec, region) in enumerate(variants):
+        env = make_task_env(spec, grasp_region=region, hard_reset=False, seed=17)
         try:
             camera = mujoco.MjvCamera()
             camera.type = mujoco.mjtCamera.mjCAMERA_FREE
@@ -39,10 +40,10 @@ def main(argv=None):
             canvas.paste(frame, (x, y + label_height))
             draw.text(
                 (x + 14, y + 10),
-                f"METAL / {spec.object_id.upper()}    sliding mu = {spec.table_sliding_mu:.2f}",
+                f"METAL / {spec.object_id.upper()} / {region.upper()}    sliding mu = {spec.table_sliding_mu:.2f}",
                 fill=(230, 235, 240),
             )
-            print(spec.variant_id, flush=True)
+            print(spec.pose_id(region), flush=True)
         finally:
             env.close()
     args.output.parent.mkdir(parents=True, exist_ok=True)

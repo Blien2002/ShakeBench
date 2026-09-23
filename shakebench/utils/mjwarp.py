@@ -34,16 +34,17 @@ from shakebench.utils.providers import (
     POLICY_FIELD_CONTRACT,
 )
 from shakebench.utils.rotations import wxyz_to_matrix
+from shakebench.utils.task_registry import task_type
 
 wp.set_module_options({"enable_backward": False})
 
-# The official profile pins every can contact to a 4e-4 s hard contact. On the
+# The official profile pins object contacts to a 4e-4 s hard contact. On the
 # float32 device solver that makes grasp and resting support contacts chatter,
-# so the continuous 0.5 s success window never fills. Calibrate the device by
+# so the continuous 0.5 s success window may never fill. Calibrate the device by
 # contact class; CPU physics and success thresholds stay unchanged.
 # ponytail: one setting per contact class; give a pair its own value if a second
 # contact ever needs separate calibration.
-DEVICE_FINGER_CAN_CONTACT_SOLREF = (4.0e-3, 1.0)  # (timeconst_s, damping ratio)
+DEVICE_FINGER_OBJECT_CONTACT_SOLREF = (4.0e-3, 1.0)  # (timeconst_s, damping ratio)
 DEVICE_SUPPORT_CONTACT_SOLREF = (4.0e-3, 4.0)
 
 
@@ -286,6 +287,9 @@ class MJWarpBatch:
         self.programs = list(programs)
         self.nworld = len(envs)
         env = envs[0]
+        self.task_type = task_type(getattr(env, "ring_state", {}))
+        if self.task_type not in {"pick_place", "ring_on_peg"}:
+            raise ValueError(f"MJWarp does not support task {self.task_type!r}")
         self.raw_model = env.sim.model._model
         self.dt = float(self.raw_model.opt.timestep)
         self.steps = env._control_steps
@@ -322,7 +326,12 @@ class MJWarpBatch:
         ):
             raise ValueError("collector requires symmetric normalized OSC action scaling")
         self.initial_observations = [
-            {**oracle_observation(other), **other.table_imu_provider.observation()} for other in envs
+            (
+                {**oracle_observation(other), **other.table_imu_provider.observation()}
+                if self.task_type == "pick_place"
+                else other._get_observations()
+            )
+            for other in envs
         ]
         self.initial_imus = [copy.deepcopy(other.table_imu_provider.imu) for other in envs]
         self.robots = env.robots[0]
@@ -366,14 +375,34 @@ class MJWarpBatch:
                 self.reset()
 
     def _calibrate_contacts(self):
-        """Relax and damp the device-side can contact pairs (see module constants)."""
+        """Damp device contacts while preserving the CPU-authored scene."""
         host = self.raw_model
         env = self.envs[0]
+        if self.task_type == "ring_on_peg":
+            ring_ids = set().union(*env.ring_geom_ids.values())
+            fingers = env.robots[0].gripper["right"].important_geoms
+            finger_ids = {host.geom(name).id for name in fingers["left_fingerpad"] + fingers["right_fingerpad"]}
+            support_ids = {env.table_geom_id} | env.board_geom_ids | env.peg_geom_ids
+            solref = self.model.pair_solref.numpy()
+            view = solref.reshape(-1, host.npair, solref.shape[-1])
+            for index in range(host.npair):
+                pair = {int(host.pair_geom1[index]), int(host.pair_geom2[index])}
+                if not pair & ring_ids:
+                    continue
+                if pair & finger_ids:
+                    view[..., index, :] = DEVICE_FINGER_OBJECT_CONTACT_SOLREF
+                elif pair & support_ids or pair <= ring_ids:
+                    view[..., index, :] = DEVICE_SUPPORT_CONTACT_SOLREF
+            self.model.pair_solref.assign(solref)
+            geom_solref = self.model.geom_solref.numpy()
+            geom_solref[..., list(ring_ids | support_ids), :] = DEVICE_SUPPORT_CONTACT_SOLREF
+            self.model.geom_solref.assign(geom_solref)
+            return
         can_ids = {host.geom(name).id for name in env.can.contact_geoms}
         classes = {
             "finger": (
                 {host.geom(name).id for name in env.finger_pad_geom_names},
-                DEVICE_FINGER_CAN_CONTACT_SOLREF,
+                DEVICE_FINGER_OBJECT_CONTACT_SOLREF,
             ),
             "support": (
                 {
@@ -471,6 +500,39 @@ class MJWarpBatch:
         env = self.envs[0]
         e = Evaluation()
         m = env.sim.model
+        if self.task_type == "ring_on_peg":
+            fingers = env.robots[0].gripper["right"].important_geoms
+            finger_names = fingers["left_fingerpad"] + fingers["right_fingerpad"]
+            e.bodies = self._array(
+                [
+                    m.body_name2id(name)
+                    for name in (
+                        env.robot_base_body_name,
+                        env.gripper_body_name,
+                        env.rings["large"].root_body,
+                        env.worktable_body_name,
+                        env.deck_driver.config.deck_body_name,
+                    )
+                ],
+                int,
+            )
+            e.finger_geoms = self._array([m.geom_name2id(name) for name in finger_names], int)
+            if len(finger_names) != 2:
+                raise ValueError("expected the two Panda finger pads")
+            sensor_types = list(self.raw_model.sensor_type)
+            e.sensor_addresses = self._array(
+                [
+                    self.raw_model.sensor_adr[sensor_types.index(kind)]
+                    for kind in (mujoco.mjtSensor.mjSENS_FORCE, mujoco.mjtSensor.mjSENS_TORQUE)
+                ],
+                int,
+            )
+            e.aggregate = wp.zeros((self.nworld, 4), dtype=float)
+            e.candidate = wp.full(self.nworld, -1, dtype=int)
+            e.latched = wp.zeros(self.nworld, dtype=int)
+            e.invalid = wp.zeros(self.nworld, dtype=int)
+            e.imu = wp.zeros((self.nworld, 10, 6), dtype=float)
+            return e
         e.bodies = self._array(
             [
                 m.body_name2id(name)
@@ -624,7 +686,7 @@ class MJWarpBatch:
 
     def _upload_poses(self):
         times = (self.policy_step * self.steps + np.arange(self.steps + 1)) * self.dt
-        config = self.envs[0].deck_config
+        config = self.envs[0].deck_driver.config
         base = Rotation.from_quat(np.asarray(config.deck_quat_wxyz)[[1, 2, 3, 0]])
         poses = []
         for program in self.programs:
@@ -638,7 +700,9 @@ class MJWarpBatch:
 
     def _substep(self):
         d, m, e = self.data, self.model, self.e
-        mocap = int(self.raw_model.body_mocapid[self.raw_model.body(self.envs[0].deck_config.driver_body_name).id])
+        mocap = int(
+            self.raw_model.body_mocapid[self.raw_model.body(self.envs[0].deck_driver.config.driver_body_name).id]
+        )
         args = [self.poses, d.mocap_pos, d.mocap_quat, d.time, self.tick, mocap, self.steps]
         self._launch(write_mocap, args + [0, self.dt])
         mjw.step1(m, d)
@@ -651,28 +715,29 @@ class MJWarpBatch:
         self._launch(write_mocap, args + [1, self.dt])
         mjw.forward(m, d)
         self._launch(clear_contacts, [e, d.nacon, d.ncollision, d.nefc, d.naconmax, d.njmax])
-        self._launch(
-            reduce_contacts,
-            [
-                self.k,
-                e,
-                int(m.opt.cone),
-                d.nacon,
-                d.contact.worldid,
-                d.contact.geom,
-                d.contact.dist,
-                d.contact.frame,
-                d.contact.friction,
-                d.contact.dim,
-                d.contact.efc_address,
-                d.efc.force,
-                d.njmax,
-            ],
-            d.naconmax,
-        )
-        self._launch(evaluate, [self.k, e, self.tick, self.dt])
-        # Force/torque sensors request post-constraint RNE during forward.
-        self._launch(sample_imu, [self.k, e, self.tick, self.imu_stride, self.steps])
+        if self.task_type == "pick_place":
+            self._launch(
+                reduce_contacts,
+                [
+                    self.k,
+                    e,
+                    int(m.opt.cone),
+                    d.nacon,
+                    d.contact.worldid,
+                    d.contact.geom,
+                    d.contact.dist,
+                    d.contact.frame,
+                    d.contact.friction,
+                    d.contact.dim,
+                    d.contact.efc_address,
+                    d.efc.force,
+                    d.njmax,
+                ],
+                d.naconmax,
+            )
+            self._launch(evaluate, [self.k, e, self.tick, self.dt])
+            # Force/torque sensors request post-constraint RNE during forward.
+            self._launch(sample_imu, [self.k, e, self.tick, self.imu_stride, self.steps])
         self._launch(advance_tick, [self.tick], 1)
 
     def _block(self):
@@ -705,6 +770,22 @@ class MJWarpBatch:
             }
         self.policy_step += 1
         metrics["invalid"] |= ~np.all(np.isfinite(packet), axis=1)
+        if self.task_type == "ring_on_peg":
+            qpos, qvel = self.data.qpos.numpy(), self.data.qvel.numpy()
+            mocap_pos, mocap_quat = self.data.mocap_pos.numpy(), self.data.mocap_quat.numpy()
+            for w, env in enumerate(self.envs):
+                if metrics["invalid"][w]:
+                    continue
+                host = env.sim.data._data
+                host.qpos[:] = qpos[w]
+                host.qvel[:] = qvel[w]
+                host.mocap_pos[:] = mocap_pos[w]
+                host.mocap_quat[:] = mocap_quat[w]
+                mujoco.mj_forward(env.sim.model._model, host)
+                env._record_post_physics_metrics(self.policy_step / 20, policy_step=True)
+                metrics["success"][w] = env.get_metrics()["success"]["passed"]
+            obs = [env._get_observations() for env in self.envs]
+            return obs, metrics
         obs = []
         for w in range(self.nworld):
             if metrics["invalid"][w] or not np.all(np.isfinite(samples[w])):

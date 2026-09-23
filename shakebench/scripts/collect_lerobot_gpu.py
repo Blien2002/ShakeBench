@@ -1,9 +1,10 @@
-"""Collect live gamma=0 oracle demonstrations on MJWarp physics with host rendering.
+"""Collect pick-place or registered ring Oracle episodes on MJWarp physics with host rendering.
 
 Runs with: python -m shakebench.scripts.collect_lerobot_gpu --output out/lerobot_gpu
 
-Same LeRobot v2.1 schema and the same MuJoCo camera path as shakebench_collect_lerobot; only
-the rollout runs on the device. Camera frames are rendered on the host because MJWarp's
+LeRobot mode uses the same v2.1 schema and MuJoCo camera path as shakebench_collect_lerobot;
+--video-only writes MP4 files without a dataset. The rollout runs on the device. Frames use
+host MuJoCo rendering because MJWarp's
 renderer maps textures only onto plane and mesh geoms, which would flatten every textured
 box in this scene. The artifacts stay non-scoreable (see docs/mjwarp_collection.md); the CPU
 collector remains the scoreable path.
@@ -12,6 +13,7 @@ collector remains the scoreable path.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import shutil
 from collections import defaultdict
@@ -21,10 +23,9 @@ import numpy as np
 
 from robosuite.utils import transform_utils as T
 from shakebench import models
-from shakebench.demos.demo_oracle_video import TASK_CLOSE_CAMERA, task_close_camera_pose
+from shakebench.demos.demo_oracle_video import FFmpegVideoWriter, TASK_CLOSE_CAMERA, task_close_camera_pose
 from shakebench.scripts.collect_lerobot import dataset_features
 from shakebench.scripts.export_sft_subset import sft_subset_summary
-from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
@@ -37,6 +38,8 @@ from shakebench.utils.rollout import (
     proprioception_metadata,
     task_description,
 )
+from shakebench.utils.task_registry import task_type
+from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.websocket_policy import modality_metadata
 
 MAIN_CAMERA_HOST = "frontview"  # compiled model camera that carries the main-view pose
@@ -77,8 +80,20 @@ def _frame(observation, action, images):
     }
 
 
-def collect_batch(dataset, states, *, horizon, width, height, device, physics_profile, main_camera, on_saved=None):
-    """Run and save one homogeneous batch; one LeRobot episode is emitted per world.
+def collect_batch(
+    dataset,
+    states,
+    *,
+    horizon,
+    width,
+    height,
+    device,
+    physics_profile,
+    main_camera,
+    on_saved=None,
+    video_output=None,
+):
+    """Run one homogeneous batch and save each world to LeRobot or MP4.
 
     ``on_saved`` receives each episode's metadata immediately after the dataset write, so a
     later world's failure cannot leave earlier saved episodes out of the manifest.
@@ -88,48 +103,80 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
     if not states:
         raise ValueError("at least one state is required")
     profile = OracleControllerProfile()
-    envs, programs, readers = [], [], []
+    envs, programs, readers, writers = [], [], [], []
+    ring = task_type(states[0]) == "ring_on_peg"
+    if any(task_type(state) != task_type(states[0]) for state in states):
+        raise ValueError("one batch must contain one task type")
     try:
         for state in states:
             env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
             envs.append(env)
             programs.append(program)
-        if any(env.control_freq != dataset.fps or env.action_dim != 7 for env in envs):
+        if (dataset is not None and dataset.fps != 20) or any(
+            env.control_freq != 20 or env.action_dim != 7 for env in envs
+        ):
             raise ValueError("dataset must match the current 20 Hz, 7D oracle contract")
         main_names = [resolve_main_camera(env.sim.model._model, main_camera) for env in envs]
         main_name = main_names[0]
-        batch = MJWarpBatch(envs, programs, device=device)
+        batch = MJWarpBatch(envs, programs, device=device, nconmax=512 if ring else 128, njmax=2048 if ring else 512)
         readers.extend(
             ShakeBenchCameraObservation(env, height=height, width=width, main_camera=name, include_imu=False)
             for env, name in zip(envs, main_names)
         )
         observations = batch.reset()
-        controllers = [
-            ShakeBenchOracleController(
-                profile, task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"])
-            )
-            for env in envs
-        ]
+        if ring:
+            from shakebench.utils.ring_oracle import RingStackOracle
+
+            controllers = [RingStackOracle(env) for env in envs]
+        else:
+            controllers = [
+                ShakeBenchOracleController(
+                    profile,
+                    task_context=WorktableTaskContext.from_mapping(env.get_policy_task_context()["task_context"]),
+                )
+                for env in envs
+            ]
+        if video_output is not None:
+            video_output.mkdir(parents=True, exist_ok=True)
+            for state in states:
+                state_id = state["state_id"]
+                if Path(state_id).name != state_id:
+                    raise ValueError("video state_id must be a filename")
+                path = video_output / f"{state_id}.mp4"
+                if path.exists():
+                    raise FileExistsError(path)
+                writers.append(FFmpegVideoWriter(path, width=width, height=height, fps=20))
         causes = [None] * len(states)
         frames = [[] for _ in states]
+        step_counts = [0] * len(states)
         for step in range(horizon):
             active = [world for world, cause in enumerate(causes) if cause is None]
             if not active:
                 break
             actions = np.zeros((len(states), 7), dtype=np.float32)
             for world in active:
-                sample = programs[world].evaluate(step / dataset.fps)
+                sample = programs[world].evaluate(step / 20)
                 if any(np.any(value != 0) for value in (sample.q, sample.qdot, sample.qdd)):
                     raise ValueError("gamma=0 must command zero external excitation")
-                action = np.clip(controllers[world].action(observations[world], time_s=step / dataset.fps), -1, 1)
+                action = (
+                    controllers[world].action()
+                    if ring
+                    else controllers[world].action(observations[world], time_s=step / 20)
+                )
+                action = np.clip(action, -1, 1)
                 if action.shape != (7,) or not np.isfinite(action).all():
                     raise ValueError("oracle produced an invalid action")
                 actions[world] = action
             images = {}
             for world in active:
-                readers[world].sync_device_state(batch.data, world)
+                if not ring:
+                    readers[world].sync_device_state(batch.data, world)
                 images[world] = readers[world].read(observations[world])
-            pre_step_frames = {world: _frame(observations[world], actions[world], images[world]) for world in active}
+            pre_step_frames = (
+                {world: _frame(observations[world], actions[world], images[world]) for world in active}
+                if dataset is not None
+                else {}
+            )
             # Every world advances together; inactive tails receive a zero action and are not recorded.
             observations, metrics = batch.step(actions)
             for world in active:
@@ -144,42 +191,51 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
                         horizon_exhausted=step + 1 == horizon,
                     )
                 )
-                frame = pre_step_frames[world]
-                frame["next.reward"] = np.array([1.0 if cause == "success_latched" else 0.0], dtype=np.float32)
-                frame["next.done"] = np.array([cause is not None], dtype=bool)
-                frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
-                frames[world].append(frame)
+                if dataset is not None:
+                    frame = pre_step_frames[world]
+                    frame["next.reward"] = np.array([1.0 if cause == "success_latched" else 0.0], dtype=np.float32)
+                    frame["next.done"] = np.array([cause is not None], dtype=bool)
+                    frame["next.success"] = np.array([cause == "success_latched"], dtype=bool)
+                    frames[world].append(frame)
+                if video_output is not None:
+                    writers[world].append_data(images[world]["observation.images.main"])
+                step_counts[world] += 1
                 causes[world] = cause
         episodes = []
         for world, (state, env, program) in enumerate(zip(states, envs, programs)):
             cause = causes[world] or "horizon_exhausted"
             instruction = task_description(state)["instruction"]
-            for step, frame in enumerate(frames[world]):
-                dataset.add_frame(frame, task=instruction, timestamp=step / dataset.fps)
-            dataset.save_episode()
-            # PNG bytes are embedded by the official writer; temporary image files are redundant.
-            shutil.rmtree(dataset.root / "images", ignore_errors=True)
+            if dataset is not None:
+                for step, frame in enumerate(frames[world]):
+                    dataset.add_frame(frame, task=instruction, timestamp=step / 20)
+                dataset.save_episode()
+                # PNG bytes are embedded by the official writer; temporary image files are redundant.
+                shutil.rmtree(dataset.root / "images", ignore_errors=True)
             episode = _json_ready(
                 {
-                    "episode_index": dataset.num_episodes - 1,
+                    "episode_index": dataset.num_episodes - 1 if dataset is not None else world,
                     "state": state,
                     "instruction": instruction,
-                    "steps": len(frames[world]),
+                    "steps": step_counts[world],
                     "success": cause == "success_latched",
                     "termination_cause": cause,
                     "vibration": vibration_record(program),
                     "task_context": env.get_policy_task_context(),
-                    "controller_profile": profile.to_dict(),
+                    "controller_profile": {"controller": "ring_stack_oracle"} if ring else profile.to_dict(),
                     "physics_backend": "mujoco_warp",
                     "physics_profile": physics_profile,
                     "main_camera": main_name,
                 }
             )
+            if ring:
+                episode["task_metrics"] = _json_ready(env.get_metrics())
             if on_saved is not None:
                 on_saved(episode)
             episodes.append(episode)
         return episodes
     finally:
+        for writer in writers:
+            writer.close()
         for reader in readers:
             reader.close()
         for env in envs:
@@ -188,7 +244,13 @@ def collect_batch(dataset, states, *, horizon, width, height, device, physics_pr
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--output", type=Path, required=True, help="New local dataset directory; never overwritten")
+    parser.add_argument(
+        "--output", type=Path, required=True, help="New local dataset or video directory; never overwritten"
+    )
+    parser.add_argument("--video-only", action="store_true", help="Write one MP4 per state, without a LeRobot dataset")
+    parser.add_argument(
+        "--task-module", action="append", default=[], help="Import a registered task before loading states"
+    )
     parser.add_argument("--resume", action="store_true", help="Resume an incomplete dataset in --output")
     parser.add_argument("--repo-id", default="shakebench/oracle-gamma-zero-gpu", help="Local dataset ID; no upload")
     parser.add_argument("--states", type=Path, default=Path(models.assets_root, "shakebench_states_dev.json"))
@@ -215,6 +277,10 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    for module in args.task_module:
+        importlib.import_module(module)
+    if args.video_only and args.resume:
+        raise ValueError("--resume is unavailable for video-only collection")
     if (
         min(args.width, args.height, args.horizon_steps, args.num_worlds, args.num_shards) <= 0
         or (args.limit is not None and args.limit <= 0)
@@ -238,6 +304,34 @@ def main(argv=None):
         states = states[: args.limit]
     if not states:
         raise ValueError("no states selected for this shard")
+    if args.video_only:
+        if args.output.exists() and any(args.output.iterdir()):
+            raise FileExistsError(f"refusing to overwrite videos in {args.output}")
+        args.output.mkdir(parents=True, exist_ok=True)
+        grouped = defaultdict(list)
+        for state in states:
+            grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
+        for group in grouped.values():
+            for begin in range(0, len(group), args.num_worlds):
+                episodes = collect_batch(
+                    None,
+                    group[begin : begin + args.num_worlds],
+                    horizon=args.horizon_steps,
+                    width=args.width,
+                    height=args.height,
+                    device=str(args.device),
+                    physics_profile=args.physics_profile,
+                    main_camera=args.main_camera,
+                    video_output=args.output,
+                )
+                for episode in episodes:
+                    print(
+                        f"{episode['state']['state_id']}: {episode['steps']} steps, {episode['termination_cause']}",
+                        flush=True,
+                    )
+                    if "task_metrics" in episode and episode["termination_cause"] != "success_latched":
+                        print(json.dumps(episode["task_metrics"]["success"], sort_keys=True), flush=True)
+        return 0
     manifest_path = args.output / "meta" / "shakebench_collection.json"
     manifest = None
     if args.output.exists():
