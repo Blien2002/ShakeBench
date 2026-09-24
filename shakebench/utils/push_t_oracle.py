@@ -260,7 +260,7 @@ class PushTOracle:
         top, table_rotation = self._table()
         current_xy = (table_rotation.T @ (current - top))[:2]
         best = None
-        best_value = 0.0002
+        best_value = 0.0
         lookahead = 0.008 if baseline < 0.012 else 0.020
         # ponytail: The fixed pressure-center model omits stick/slip; replace only if rollout errors demand it.
         c = 0.055
@@ -350,8 +350,18 @@ class PushTOracle:
                 improvement = (rotation_baseline if rotate_first else baseline) - predicted
                 if skew != 0.0:
                     improvement -= 0.0003
+                improvement -= 0.0005 if self.trace else 0
+                if improvement <= 0.0002:
+                    continue
                 travel = np.linalg.norm(pre - current_xy)
-                value = improvement - 0.0015 * travel - (0.0005 if self.trace else 0)
+                lead = (
+                    NEAR_LEAD_M
+                    if baseline < NEAR_ERROR_M
+                    else FAST_LEAD_M if abs(torque / c**2) < FAST_MAX_YAW_RATE else FAR_LEAD_M
+                )
+                # ponytail: 50 steps approximates contact setup; tune only if measured rollout steps regress.
+                estimated_steps = 50 + 20 * travel / TRANSIT_SPEED_MPS + 20 * push_distance * OSC_LAG_S / lead
+                value = improvement / estimated_steps
                 if value > best_value:
                     best_value = value
                     best = (pre, direction, push_distance, predicted, torque / c**2, standoff)
