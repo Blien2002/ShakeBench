@@ -5,6 +5,10 @@ import numpy as np
 from robosuite.utils.control_utils import orientation_error
 
 
+# Open Panda finger mesh reaches about 0.055 m from the EEF in XY; keep a small clearance.
+OPEN_FINGER_SWEEP_RADIUS_M = 0.06
+
+
 class RingStackOracle:
     """Grasp each ring wall, lift over the peg cap, align and release in order."""
 
@@ -146,7 +150,8 @@ class RingStackOracle:
 
     def _run(self):
         env = self.env
-        for index, (name, spec) in enumerate(env.get_policy_task_context()["rings"].items()):
+        rings = env.get_policy_task_context()["rings"]
+        for index, (name, spec) in enumerate(rings.items()):
             body = env.ring_body_ids[name]
             start = env.sim.data.xpos[body].copy()
             peg = env.sim.data.xpos[env.peg_body_id].copy()
@@ -163,6 +168,14 @@ class RingStackOracle:
             else:
                 radius = (spec["outer_radius"] + spec["inner_radius"]) / 2
                 candidates = [side * radial * radius for side in (-1, 1)]
+                neighbor = env.sim.data.xpos[env.ring_body_ids["small"]]
+                clear = [
+                    candidate
+                    for candidate in candidates
+                    if np.linalg.norm(start[:2] + candidate[:2] - neighbor[:2])
+                    >= rings["small"]["outer_radius"] + OPEN_FINGER_SWEEP_RADIUS_M
+                ]
+                candidates = clear or candidates
             offset = min(candidates, key=lambda candidate: np.linalg.norm(start[:2] + candidate[:2] - eef[:2]))
             grasp = start + offset
             lift = 0.21 if np.linalg.norm(start[:2] - peg[:2]) < 0.1 else 0.12
