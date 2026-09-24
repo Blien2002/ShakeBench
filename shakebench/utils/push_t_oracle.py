@@ -4,7 +4,7 @@ import numpy as np
 
 from robosuite.utils.control_utils import orientation_error
 from shakebench.environments.push_t import PRE_STANDOFF_M, REACH_RADIUS_M
-from shakebench.models.objects.push_t import OUTLINE
+from shakebench.models.objects.push_t import CONTOUR_SAMPLE_SPACING_M, DECAL_RECTANGLES, OUTLINE
 
 # The two non-overlapping collision boxes have uniform density.
 PRESSURE_CENTER = np.array([0.0, (0.0045 * 0.06 - 0.0036 * 0.015) / 0.0081])
@@ -29,6 +29,25 @@ TRANSLATE_MAX_YAW_RAD = np.radians(25.0)
 # Predicted T outline must stay this far inside the tabletop edges.
 TABLE_HALF_XY_M = np.array([0.325, 0.30])
 TABLE_MARGIN_M = 0.010
+# Motion budget (control steps are 50 ms; delta-mode OSC moves ~6.1 x the commanded delta per second).
+TRANSIT_SITE_Z_M = 0.045  # fingertip ~36 mm; a 0.22 m/s transit sags up to ~8 mm (38 mm swept the T on state 6)
+PUSH_SITE_Z_M = 0.016  # fingertip ~7 mm above the table
+TRANSIT_SPEED_MPS = 0.22
+DESCEND_SPEED_MPS = 0.12
+# Descend as close as the finger footprint allows: first standoff (pusher centre to contact) whose footprint
+# clears the T outline by FOOTPRINT_CLEARANCE_M; 20 mm lands on the crossbar next to the stem otherwise.
+DESCEND_STANDOFFS_M = (0.020, 0.026, 0.032)
+FOOTPRINT_CLEARANCE_M = 0.003
+# Closed fingertip footprint: 29.6 mm along the push (two fingers in line) x 17.8 mm across.
+FOOTPRINT_HALF_ALONG_M, FOOTPRINT_HALF_ACROSS_M = 0.0148, PUSHER_HALF_WIDTH
+# Push lead by live error: ~6 mm/s in contact at 1.5 mm (1 mm lost to 0.3 N friction at ~0.6 N/mm).
+FAR_LEAD_M, MID_LEAD_M, NEAR_LEAD_M = 0.0025, 0.0020, 0.0015
+MID_ERROR_M, NEAR_ERROR_M = 0.020, 0.010
+# Low-torque far-field pushes (predicted |yaw rate| below this) run at a longer lead (~20 mm/s).
+FAST_LEAD_M = 0.004
+FAST_MAX_YAW_RATE = 2.0  # rad per metre of object translation
+# Stop a push once the whole T sits inside the decal with this much of its 8 mm margin to spare.
+INSIDE_SPARE_M = 0.002
 # The T has been engaged once it has moved this far along the push in the table frame.
 ENGAGE_MOTION_M = 0.0015
 # Stop decisions use an exponentially smoothed error so table-excitation jitter does not end a push early.
@@ -193,6 +212,42 @@ class PushTOracle:
             return False
         return True
 
+    def _inside_decal(self, position, yaw, spare=0.0):
+        """T outline (sampled every 2 mm, flat) inside the decal rectangles shrunk by `spare`."""
+        goal_rotation = self._rot(self.env.target_yaw_rad)
+        corners = position + OUTLINE @ self._rot(yaw).T
+        points = []
+        for start, end in zip(corners, np.roll(corners, -1, axis=0)):
+            count = max(1, int(np.ceil(np.linalg.norm(end - start) / CONTOUR_SAMPLE_SPACING_M)))
+            points.append(start + np.linspace(0, 1, count, endpoint=False)[:, None] * (end - start))
+        local = (np.vstack(points) - np.asarray(self.env.target_xy_m)) @ goal_rotation
+        inside = np.zeros(len(local), dtype=bool)
+        for center, size in DECAL_RECTANGLES:
+            inside |= np.all(np.abs(local - center) <= np.asarray(size) - spare, axis=1)
+        return bool(inside.all())
+
+    def _footprint_clearance(self, centre, direction, position, yaw):
+        """Smallest distance from the fingertip footprint boundary to the T outline (negative if overlapping)."""
+        across = np.array([-direction[1], direction[0]])
+        a, b = FOOTPRINT_HALF_ALONG_M, FOOTPRINT_HALF_ACROSS_M
+        corners = [centre + direction * sa * a + across * sb * b for sa, sb in ((1, 1), (1, -1), (-1, -1), (-1, 1))]
+        samples = np.vstack([np.linspace(corners[i], corners[(i + 1) % 4], 8, endpoint=False) for i in range(4)])
+        polygon = position + OUTLINE @ self._rot(yaw).T
+        starts, ends = polygon, np.roll(polygon, -1, axis=0)
+        edges = ends - starts
+        rel = samples[:, None, :] - starts[None, :, :]
+        t = np.clip((rel * edges).sum(-1) / (edges**2).sum(-1), 0, 1)
+        distance = np.linalg.norm(rel - t[..., None] * edges, axis=-1).min(axis=1)
+        # even-odd rule: samples inside the T count as overlapping
+        y0, y1 = starts[None, :, 1], ends[None, :, 1]
+        crosses = ((y0 > samples[:, None, 1]) != (y1 > samples[:, None, 1])) & (
+            samples[:, None, 0]
+            < starts[None, :, 0]
+            + (samples[:, None, 1] - y0) * edges[None, :, 0] / np.where(y1 - y0 == 0, 1e-12, y1 - y0)
+        )
+        inside = crosses.sum(axis=1) % 2 == 1
+        return float(np.where(inside, -distance, distance).min())
+
     def _plan(self):
         position, yaw = self._pose()
         rotation = self._rot(yaw)
@@ -281,6 +336,17 @@ class PushTOracle:
                 )
                 if not rotate_first and abs(end_yaw_error) > max(TRANSLATE_MAX_YAW_RAD, abs(yaw_error)):
                     continue
+                standoff = next(
+                    (
+                        d
+                        for d in DESCEND_STANDOFFS_M
+                        if self._footprint_clearance(contact - direction * d, direction, position, yaw)
+                        >= FOOTPRINT_CLEARANCE_M
+                    ),
+                    None,
+                )
+                if standoff is None:
+                    continue
                 improvement = (rotation_baseline if rotate_first else baseline) - predicted
                 if skew != 0.0:
                     improvement -= 0.0003
@@ -288,7 +354,7 @@ class PushTOracle:
                 value = improvement - 0.0015 * travel - (0.0005 if self.trace else 0)
                 if value > best_value:
                     best_value = value
-                    best = (pre, direction, push_distance, predicted, torque / c**2)
+                    best = (pre, direction, push_distance, predicted, torque / c**2, standoff)
         return best
 
     def _run(self):
@@ -310,7 +376,7 @@ class PushTOracle:
             if plan is None:
                 self.abort_requested = True
                 return
-            pre, direction, distance, predicted, yaw_rate = plan
+            pre, direction, distance, predicted, yaw_rate, standoff = plan
             top, table_rotation = self._table()
             direction_world = table_rotation @ np.r_[direction, 0.0]
             down = -table_rotation[:, 2]
@@ -319,10 +385,10 @@ class PushTOracle:
                 reference = self.env.sim.data.site_xmat[self.site].reshape(3, 3)[:, 0]
             closing = direction_world if np.dot(direction_world, reference) >= 0 else -direction_world
             self.orientation = np.column_stack((closing, np.cross(down, closing), down))
-            above = self._world(np.r_[pre - direction * 0.040, 0.045])
-            low = self._world(np.r_[pre, 0.016])
+            above = self._world(np.r_[pre - direction * 0.040, TRANSIT_SITE_Z_M])
+            low = self._world(np.r_[pre + direction * (PRE_STANDOFF_M - standoff), PUSH_SITE_Z_M])
             self.phase = "transit"
-            if not (yield from self._move(above, speed=0.16, timeout=220, rotation_limit=0.5)):
+            if not (yield from self._move(above, speed=TRANSIT_SPEED_MPS, timeout=220, rotation_limit=0.5)):
                 if not (yield from self._give_up_on(pre, above)):
                     return
                 continue
@@ -331,7 +397,7 @@ class PushTOracle:
                 self.abort_requested = True
                 return
             self.phase = "descend"
-            if not (yield from self._move(low, speed=0.06, timeout=100)):
+            if not (yield from self._move(low, speed=DESCEND_SPEED_MPS, timeout=100)):
                 if not (yield from self._give_up_on(pre, above)):
                     return
                 continue
@@ -359,9 +425,11 @@ class PushTOracle:
                         break
                     # Hold the pusher on the planned world line: lateral and height errors are corrected,
                     # progress along the line is limited to `lead` ahead of the current pusher.
-                    lead = 0.001 if score < 0.02 else 0.0025
+                    lead = NEAR_LEAD_M if score < NEAR_ERROR_M else MID_LEAD_M if score < MID_ERROR_M else FAR_LEAD_M
+                    if lead == FAR_LEAD_M and abs(yaw_rate) < FAST_MAX_YAW_RATE:
+                        lead = FAST_LEAD_M
                     progress = np.dot(self._eef() - start_eef, direction_world)
-                    yield self._command(start_eef + direction_world * (progress + lead), limit=0.0025)
+                    yield self._command(start_eef + direction_world * (progress + lead), limit=max(0.0025, lead))
                     position, yaw = self._pose()
                     score = SCORE_SMOOTHING * score + (1 - SCORE_SMOOTHING) * self._score(
                         position, yaw, rotation_only=self.rotating
@@ -373,7 +441,8 @@ class PushTOracle:
                     moved = np.dot(position - before_position, direction)
                     turned = np.arctan2(np.sin(yaw - before_yaw), np.cos(yaw - before_yaw))
                     if (
-                        score > best_score + (0.0003 if best_score < 0.012 else 0.0015)
+                        (not self.rotating and self._inside_decal(position, yaw, INSIDE_SPARE_M))
+                        or score > best_score + (0.0003 if best_score < 0.012 else 0.0015)
                         or stale >= 12
                         or abs(turned - yaw_rate * moved) > 0.05 + 0.5 * abs(yaw_rate * moved)
                     ):
@@ -391,19 +460,13 @@ class PushTOracle:
                     }
                 )
             self.phase = "retreat"
-            if not (yield from self._move(self._eef() - direction_world * 0.004, speed=0.02, timeout=30)):
+            if not (yield from self._move(self._eef() - direction_world * 0.004, speed=0.03, timeout=30)):
                 self.abort_requested = True
                 return
-            retreat = self._eef() - direction_world * 0.021
-            if not (yield from self._move(retreat, speed=0.16, timeout=45)):
+            # Back off and rise to transit height in one move (the T does not coast measurably, so no settle).
+            clear = self._eef() - direction_world * 0.010
+            clear[2] = above[2]
+            if not (yield from self._move(clear, speed=0.16, timeout=60)):
                 self.abort_requested = True
                 return
-            high = self._eef().copy()
-            high[2] = above[2]
-            if not (yield from self._move(high, speed=0.10, timeout=60)):
-                self.abort_requested = True
-                return
-            self.phase = "settle"
-            for _ in range(4):
-                yield self._command(self._eef())
         self.abort_requested = True
