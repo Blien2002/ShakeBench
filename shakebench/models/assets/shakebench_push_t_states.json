@@ -1,6 +1,6 @@
 {
   "schema_id": "shakebench.push_t.states",
-  "schema_version": 3,
+  "schema_version": 4,
   "generator": {
     "seed": 20260923,
     "split": "eval"
@@ -10,16 +10,16 @@
       "state_id": "push-t-s20260923-0000",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        0.014037321538858116,
-        -0.09493218184991856
+        -0.11397535449108455,
+        0.11891221746081833
       ],
-      "object_yaw_rad": -1.5499597563366305,
+      "object_yaw_rad": -1.16470754441097,
       "goal_id": 0,
-      "excitation_seed": 2171077279,
-      "imu_seed": 2814156573,
+      "excitation_seed": 1202817883,
+      "imu_seed": 1150678220,
       "t0_s": 0.0,
       "split": "eval"
     },
@@ -27,16 +27,16 @@
       "state_id": "push-t-s20260923-0001",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.20215395011920356,
-        0.026329764536937278
+        -0.1476092262534823,
+        -0.10872027801225882
       ],
-      "object_yaw_rad": 1.0528978990437636,
-      "goal_id": 0,
-      "excitation_seed": 840823385,
-      "imu_seed": 2271292847,
+      "object_yaw_rad": 2.047781961358438,
+      "goal_id": 1,
+      "excitation_seed": 1409844550,
+      "imu_seed": 3329880068,
       "t0_s": 0.0,
       "split": "eval"
     },
@@ -44,11 +44,11 @@
       "state_id": "push-t-s20260923-0002",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.13024444429584955,
-        0.05596932292329364
+        -0.2119333090819684,
+        0.02070189718366254
       ],
       "object_yaw_rad": -0.713918591636257,
       "goal_id": 0,
@@ -61,11 +61,11 @@
       "state_id": "push-t-s20260923-0003",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.1427345221456796,
-        0.04865981263863316
+        -0.21329557188587622,
+        0.01146661769130794
       ],
       "object_yaw_rad": 0.21798503823317095,
       "goal_id": 0,
@@ -78,11 +78,11 @@
       "state_id": "push-t-s20260923-0004",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.027220538399331765,
-        0.004113106412995851
+        -0.14911106003890914,
+        0.04180143409978744
       ],
       "object_yaw_rad": -1.0134772511367143,
       "goal_id": 0,
@@ -95,11 +95,11 @@
       "state_id": "push-t-s20260923-0005",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.15007630756015974,
-        -0.02140133537034715
+        -0.20003931935645958,
+        0.010858677707917569
       ],
       "object_yaw_rad": 0.11083275186012953,
       "goal_id": 1,
@@ -112,11 +112,11 @@
       "state_id": "push-t-s20260923-0006",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.21229124157931428,
-        -0.06423724698489
+        -0.21321450046664642,
+        -0.07121395665727273
       ],
       "object_yaw_rad": 1.3756902606058188,
       "goal_id": 0,
@@ -129,11 +129,11 @@
       "state_id": "push-t-s20260923-0007",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.056815804175832985,
-        -0.0394298944279074
+        -0.17605342571515314,
+        -0.04293801588851025
       ],
       "object_yaw_rad": 1.7950824864208939,
       "goal_id": 1,
@@ -146,16 +146,16 @@
       "state_id": "push-t-s20260923-0008",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.14213326221501704,
-        -0.097384492374977
+        -0.11478369485269449,
+        0.09229114852071328
       ],
-      "object_yaw_rad": 2.5621823833733877,
-      "goal_id": 1,
-      "excitation_seed": 4192709082,
-      "imu_seed": 3262006518,
+      "object_yaw_rad": -0.3693242590817316,
+      "goal_id": 0,
+      "excitation_seed": 1551458284,
+      "imu_seed": 2048635057,
       "t0_s": 0.0,
       "split": "eval"
     },
@@ -163,11 +163,28 @@
       "state_id": "push-t-s20260923-0009",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.17729547485218536,
-        0.017501252517959892
+        -0.2666657424836919,
+        -0.1458159537863487
+      ],
+      "object_yaw_rad": -0.41314896010476665,
+      "goal_id": 0,
+      "excitation_seed": 821946154,
+      "imu_seed": 1858235344,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "push-t-s20260923-0010",
+      "task": {
+        "task_type": "push_t",
+        "version": 4
+      },
+      "object_xy_m": [
+        -0.21474935588720784,
+        -0.018260019111862237
       ],
       "object_yaw_rad": 0.9221345612357252,
       "goal_id": 0,
@@ -177,14 +194,14 @@
       "split": "eval"
     },
     {
-      "state_id": "push-t-s20260923-0010",
+      "state_id": "push-t-s20260923-0011",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.18295761084607892,
-        -0.0036128074328201226
+        -0.2111349867734309,
+        0.028529848299711127
       ],
       "object_yaw_rad": 0.48633427102960614,
       "goal_id": 1,
@@ -194,31 +211,14 @@
       "split": "eval"
     },
     {
-      "state_id": "push-t-s20260923-0011",
-      "task": {
-        "task_type": "push_t",
-        "version": 3
-      },
-      "object_xy_m": [
-        -0.04457316920892736,
-        -0.15626477107452585
-      ],
-      "object_yaw_rad": 0.6500175812634255,
-      "goal_id": 0,
-      "excitation_seed": 2520173742,
-      "imu_seed": 2985200400,
-      "t0_s": 0.0,
-      "split": "eval"
-    },
-    {
       "state_id": "push-t-s20260923-0012",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.08054310552651059,
-        0.06321681356323748
+        -0.1974918730200356,
+        0.046739543255236174
       ],
       "object_yaw_rad": -0.3435120095841715,
       "goal_id": 0,
@@ -231,11 +231,11 @@
       "state_id": "push-t-s20260923-0013",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.010394841975487637,
-        0.04635581775020788
+        -0.11895978040062341,
+        -0.03464789404093137
       ],
       "object_yaw_rad": 0.8252305381299626,
       "goal_id": 1,
@@ -248,45 +248,11 @@
       "state_id": "push-t-s20260923-0014",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.10621875561904517,
-        -0.11397846031029414
-      ],
-      "object_yaw_rad": 0.35285336881676255,
-      "goal_id": 1,
-      "excitation_seed": 2136841879,
-      "imu_seed": 1828722899,
-      "t0_s": 0.0,
-      "split": "eval"
-    },
-    {
-      "state_id": "push-t-s20260923-0015",
-      "task": {
-        "task_type": "push_t",
-        "version": 3
-      },
-      "object_xy_m": [
-        -0.060813856404485896,
-        0.13649554492888077
-      ],
-      "object_yaw_rad": 0.7023899526678653,
-      "goal_id": 1,
-      "excitation_seed": 1639143090,
-      "imu_seed": 684408700,
-      "t0_s": 0.0,
-      "split": "eval"
-    },
-    {
-      "state_id": "push-t-s20260923-0016",
-      "task": {
-        "task_type": "push_t",
-        "version": 3
-      },
-      "object_xy_m": [
-        -0.042281308671330314,
-        -0.03986999604900679
+        -0.17279929633999935,
+        -0.05274503847839611
       ],
       "object_yaw_rad": 1.3329626749655914,
       "goal_id": 1,
@@ -296,31 +262,14 @@
       "split": "eval"
     },
     {
-      "state_id": "push-t-s20260923-0017",
+      "state_id": "push-t-s20260923-0015",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        0.01135037207601225,
-        0.0868412128153001
-      ],
-      "object_yaw_rad": 1.7176448879300539,
-      "goal_id": 1,
-      "excitation_seed": 1248828434,
-      "imu_seed": 2645050882,
-      "t0_s": 0.0,
-      "split": "eval"
-    },
-    {
-      "state_id": "push-t-s20260923-0018",
-      "task": {
-        "task_type": "push_t",
-        "version": 3
-      },
-      "object_xy_m": [
-        -0.1337804925222048,
-        -0.028466825675741575
+        -0.19598395073906388,
+        0.0013781615808319686
       ],
       "object_yaw_rad": 2.5830581625800555,
       "goal_id": 1,
@@ -330,19 +279,70 @@
       "split": "eval"
     },
     {
-      "state_id": "push-t-s20260923-0019",
+      "state_id": "push-t-s20260923-0016",
       "task": {
         "task_type": "push_t",
-        "version": 3
+        "version": 4
       },
       "object_xy_m": [
-        -0.11304070689684664,
-        0.008073671810694738
+        -0.17377078128870965,
+        -0.009899311655909446
       ],
       "object_yaw_rad": -0.6139468495551138,
       "goal_id": 0,
       "excitation_seed": 2758305161,
       "imu_seed": 3763697914,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "push-t-s20260923-0017",
+      "task": {
+        "task_type": "push_t",
+        "version": 4
+      },
+      "object_xy_m": [
+        -0.09925148921915636,
+        0.052410309128132146
+      ],
+      "object_yaw_rad": -0.46609697934181704,
+      "goal_id": 0,
+      "excitation_seed": 2859289679,
+      "imu_seed": 2696643365,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "push-t-s20260923-0018",
+      "task": {
+        "task_type": "push_t",
+        "version": 4
+      },
+      "object_xy_m": [
+        -0.2435402785015824,
+        0.06426752099258932
+      ],
+      "object_yaw_rad": -0.30846249718244034,
+      "goal_id": 0,
+      "excitation_seed": 1245921781,
+      "imu_seed": 1270303109,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "push-t-s20260923-0019",
+      "task": {
+        "task_type": "push_t",
+        "version": 4
+      },
+      "object_xy_m": [
+        -0.18024166203015168,
+        0.016937307248036063
+      ],
+      "object_yaw_rad": 1.7789516836217665,
+      "goal_id": 1,
+      "excitation_seed": 460621109,
+      "imu_seed": 3057187707,
       "t0_s": 0.0,
       "split": "eval"
     }

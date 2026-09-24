@@ -3,21 +3,9 @@
 import numpy as np
 
 from robosuite.utils.control_utils import orientation_error
-from shakebench.environments.push_t import COVERAGE_THRESHOLD
+from shakebench.environments.push_t import COVERAGE_THRESHOLD, PRE_STANDOFF_M
+from shakebench.models.objects.push_t import OUTLINE
 
-# Counterclockwise outline in the T body's xy frame.
-OUTLINE = np.array(
-    [
-        [-0.015, -0.075],
-        [0.015, -0.075],
-        [0.015, 0.045],
-        [0.075, 0.045],
-        [0.075, 0.075],
-        [-0.075, 0.075],
-        [-0.075, 0.045],
-        [-0.015, 0.045],
-    ]
-)
 # The two non-overlapping collision boxes have uniform density.
 PRESSURE_CENTER = np.array([0.0, (0.0045 * 0.06 - 0.0036 * 0.015) / 0.0081])
 # Closed Panda fingertip with the closing axis along the push: one finger face, 17.8 mm wide (collision mesh).
@@ -171,7 +159,7 @@ class PushTOracle:
             for fraction in fractions:
                 point = start + fraction * tangent
                 contact = position + rotation @ point
-                pre = contact - direction * 0.026
+                pre = contact - direction * PRE_STANDOFF_M
                 push_distance = (
                     0.008
                     if baseline < 0.012

@@ -14,6 +14,19 @@ HALF_HEIGHT_M = 0.01
 RECTANGLES = (((0.0, 0.06), (0.075, 0.015)), ((0.0, -0.015), (0.015, 0.06)))
 TARGET_AREA_M2 = sum(4 * np.prod(size) for _, size in RECTANGLES)
 CORNERS = np.array(list(product((-1, 1), repeat=3)))
+# Counterclockwise outline in the T body's xy frame.
+OUTLINE = np.array(
+    [
+        [-0.015, -0.075],
+        [0.015, -0.075],
+        [0.015, 0.045],
+        [0.075, 0.045],
+        [0.075, 0.075],
+        [-0.075, 0.075],
+        [-0.075, 0.045],
+        [-0.015, 0.045],
+    ]
+)
 
 
 def make_tee():

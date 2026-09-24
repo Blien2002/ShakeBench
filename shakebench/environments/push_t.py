@@ -13,7 +13,7 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
-from shakebench.models.objects.push_t import HALF_HEIGHT_M, RECTANGLES, coverage, make_tee, projected_geometry
+from shakebench.models.objects.push_t import HALF_HEIGHT_M, OUTLINE, RECTANGLES, coverage, make_tee, projected_geometry
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.deck import DeckDriver
 from shakebench.utils.geometry import (
@@ -29,21 +29,41 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 STATE_SCHEMA = "shakebench.push_t.states"
-SCHEMA_VERSION = 3
-TASK_VERSION = 3
+SCHEMA_VERSION = 4
+TASK_VERSION = 4
 COVERAGE_THRESHOLD = 0.90
 SUCCESS_HOLD_S = 0.5
 LIFT_HEIGHT_M = 0.005
 LIFT_DURATION_S = 0.2
 PUSHER_SLIDING_MU = 0.5
-MAX_REACHABLE_X_M = 0.10
+MAX_VISIBLE_X_M = 0.10
 MAX_VISIBLE_ABS_Y_M = 0.25
 MIN_START_GOAL_DISTANCE_M = 0.05
-MAX_START_GOAL_DISTANCE_M = 0.30
+MAX_START_GOAL_DISTANCE_M = 0.25
+TRAIN_MAX_YAW_DELTA_RAD = 2 * np.pi / 3
 EVAL_MIN_DISTANCE_M = 0.08
 EVAL_MAX_DISTANCE_M = 0.20
 EVAL_MAX_YAW_DELTA_RAD = np.pi / 2
+MAX_PUSH_DIRECTION_RAD = float(np.deg2rad(100))
+REACH_RADIUS_M = 0.73
+PRE_STANDOFF_M = 0.026
 FIXED_GOALS = (((-0.12, -0.08), 0.0), ((-0.12, 0.08), np.pi / 2))
+_GEOMETRY = load_geometry_profile(DEFAULT_GEOMETRY_PROFILE)
+BASE_XY_M = np.asarray(_GEOMETRY["robot_base_pos_m"][:2]) - _GEOMETRY["table_top_pos_m"][:2]
+
+
+def start_faces_reachable(xy, yaw):
+    """Each T perimeter face has a low-push pre-contact point inside the base reach circle."""
+    xy = np.asarray(xy)
+    rotation = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
+    for start, end in zip(OUTLINE, np.roll(OUTLINE, -1, axis=0)):
+        tangent = end - start
+        outward = np.array([tangent[1], -tangent[0]]) / np.linalg.norm(tangent)
+        contacts = start + np.linspace(0.2, 0.8, 4)[:, None] * tangent + outward * PRE_STANDOFF_M
+        pre = xy + contacts @ rotation.T
+        if np.min(np.linalg.norm(pre - BASE_XY_M, axis=1)) > REACH_RADIUS_M:
+            return False
+    return True
 
 
 def default_state():
@@ -90,19 +110,25 @@ def validate_state(state):
         points = np.vstack(polygons)
         if (
             np.any(np.abs(points) > [0.325, 0.30])
-            or points[:, 0].max() > MAX_REACHABLE_X_M
+            or points[:, 0].max() > MAX_VISIBLE_X_M
             or np.abs(points[:, 1]).max() > MAX_VISIBLE_ABS_Y_M
         ):
-            raise ValueError("the entire T must lie in the reachable, task_close-visible tabletop region")
+            raise ValueError("the entire T must lie in the task_close-visible tabletop region")
     result["object_xy_m"] = np.asarray(state["object_xy_m"], dtype=float).tolist()
-    if state.get("split") == "eval":
-        distance = np.linalg.norm(np.asarray(goal_xy) - result["object_xy_m"])
+    if not start_faces_reachable(result["object_xy_m"], result["object_yaw_rad"]):
+        raise ValueError("every start T face needs a pre-contact point within the robot-base reach circle")
+    delta = np.asarray(goal_xy) - result["object_xy_m"]
+    distance = np.linalg.norm(delta)
+    if abs(np.arctan2(delta[1], delta[0])) > MAX_PUSH_DIRECTION_RAD + 1e-12:
+        raise ValueError("start-to-goal direction must be within 100 degrees of +x")
+    split = state.get("split")
+    if split in ("train", "eval"):
+        minimum = EVAL_MIN_DISTANCE_M if split == "eval" else MIN_START_GOAL_DISTANCE_M
+        maximum = EVAL_MAX_DISTANCE_M if split == "eval" else MAX_START_GOAL_DISTANCE_M
+        max_yaw = EVAL_MAX_YAW_DELTA_RAD if split == "eval" else TRAIN_MAX_YAW_DELTA_RAD
         yaw_delta = np.arctan2(np.sin(result["object_yaw_rad"] - goal_yaw), np.cos(result["object_yaw_rad"] - goal_yaw))
-        if (
-            not EVAL_MIN_DISTANCE_M - 1e-12 <= distance <= EVAL_MAX_DISTANCE_M + 1e-12
-            or abs(yaw_delta) > EVAL_MAX_YAW_DELTA_RAD + 1e-12
-        ):
-            raise ValueError("eval states require 8--20 cm start distance and at most 90 degrees yaw difference")
+        if not minimum - 1e-12 <= distance <= maximum + 1e-12 or abs(yaw_delta) > max_yaw + 1e-12:
+            raise ValueError(f"{split} state distance or relative yaw is outside its sampling bounds")
     for key in ("excitation_seed", "imu_seed"):
         if type(state[key]) is not int or not 0 <= state[key] < 2**32:
             raise ValueError(f"{key} must be an integer in [0, 2**32)")
@@ -121,13 +147,13 @@ def sample_state(rng, *, split="train", state_id=None):
             EVAL_MIN_DISTANCE_M if split == "eval" else MIN_START_GOAL_DISTANCE_M,
             EVAL_MAX_DISTANCE_M if split == "eval" else MAX_START_GOAL_DISTANCE_M,
         )
-        direction = rng.uniform(-np.pi, np.pi)
+        direction = rng.uniform(-MAX_PUSH_DIRECTION_RAD, MAX_PUSH_DIRECTION_RAD)
         state.update(
             object_xy_m=(np.asarray(goal_xy) - distance * np.array([np.cos(direction), np.sin(direction)])).tolist(),
             object_yaw_rad=float(
                 goal_yaw + rng.uniform(-EVAL_MAX_YAW_DELTA_RAD, EVAL_MAX_YAW_DELTA_RAD)
                 if split == "eval"
-                else rng.uniform(-np.pi, np.pi)
+                else goal_yaw + rng.uniform(-TRAIN_MAX_YAW_DELTA_RAD, TRAIN_MAX_YAW_DELTA_RAD)
             ),
             goal_id=goal_id,
             split=split,
@@ -475,8 +501,13 @@ class PushT(ManipulationEnv):
             "lift_height_m": LIFT_HEIGHT_M,
             "lift_duration_s": LIFT_DURATION_S,
             "pusher_sliding_mu": PUSHER_SLIDING_MU,
-            "max_reachable_x_m": MAX_REACHABLE_X_M,
+            "max_visible_x_m": MAX_VISIBLE_X_M,
+            "start_face_reach_radius_m": REACH_RADIUS_M,
+            "start_face_pre_standoff_m": PRE_STANDOFF_M,
+            "max_push_direction_rad": MAX_PUSH_DIRECTION_RAD,
             "max_visible_abs_y_m": MAX_VISIBLE_ABS_Y_M,
+            "train_start_goal_distance_m": [MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M],
+            "train_max_start_goal_yaw_delta_rad": TRAIN_MAX_YAW_DELTA_RAD,
             "eval_start_goal_distance_m": [EVAL_MIN_DISTANCE_M, EVAL_MAX_DISTANCE_M],
             "eval_max_start_goal_yaw_delta_rad": EVAL_MAX_YAW_DELTA_RAD,
         }
