@@ -13,7 +13,17 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
-from shakebench.models.objects.push_t import HALF_HEIGHT_M, OUTLINE, RECTANGLES, coverage, make_tee, projected_geometry
+from shakebench.models.objects.push_t import (
+    CONTOUR_SAMPLE_SPACING_M,
+    DECAL_MARGIN_M,
+    DECAL_RECTANGLES,
+    HALF_HEIGHT_M,
+    OUTLINE,
+    coverage,
+    inside_decal,
+    make_tee,
+    projected_geometry,
+)
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.deck import DeckDriver
 from shakebench.utils.geometry import (
@@ -29,9 +39,8 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 STATE_SCHEMA = "shakebench.push_t.states"
-SCHEMA_VERSION = 4
-TASK_VERSION = 4
-COVERAGE_THRESHOLD = 0.90
+SCHEMA_VERSION = 5
+TASK_VERSION = 5
 SUCCESS_HOLD_S = 0.5
 LIFT_HEIGHT_M = 0.005
 LIFT_DURATION_S = 0.2
@@ -235,6 +244,8 @@ class PushT(ManipulationEnv):
         self._candidate_since = None
         self._conditions = {}
         self._max_coverage = 0.0
+        self._coverage = 0.0
+        self._last_coverage_sample_s = float("-inf")
         self.use_object_obs = use_object_obs
         eager = kwargs.pop("load_model_on_init", True)
         if kwargs.pop("control_freq", 20) != 20:
@@ -325,7 +336,7 @@ class PushT(ManipulationEnv):
             shininess="0.08",
         )
         # A 0.1 mm visual decal: no collision, no mass, rigidly attached to the table.
-        for index, (center, size) in enumerate(RECTANGLES):
+        for index, (center, size) in enumerate(DECAL_RECTANGLES):
             ET.SubElement(
                 target,
                 "geom",
@@ -385,7 +396,8 @@ class PushT(ManipulationEnv):
         self._success = self._violation = False
         self._candidate_since = self._lift_since = None
         self._conditions = {}
-        self._max_coverage = 0.0
+        self._max_coverage = self._coverage = 0.0
+        self._last_coverage_sample_s = float("-inf")
         self._record_post_physics_metrics(float(self.sim.data.time))
 
     def _settle(self):
@@ -429,8 +441,11 @@ class PushT(ManipulationEnv):
         position = target_rotation.T @ (data.xpos[self.tee_body_id] - data.xpos[self.target_body_id])
         rotation = target_rotation.T @ data.xmat[self.tee_body_id].reshape(3, 3)
         polygons, lowest = projected_geometry(position, rotation)
-        overlap = coverage(polygons)
-        self._max_coverage = max(self._max_coverage, overlap)
+        contained = inside_decal(polygons)
+        if sample_time_s - self._last_coverage_sample_s >= self.control_timestep - 1e-9:
+            self._coverage = coverage(polygons)
+            self._max_coverage = max(self._max_coverage, self._coverage)
+            self._last_coverage_sample_s = sample_time_s
         supported = any(
             c.dist <= 0.001
             and (
@@ -447,7 +462,7 @@ class PushT(ManipulationEnv):
                 self._violation = True
         else:
             self._lift_since = None
-        ready = overlap >= COVERAGE_THRESHOLD and supported and not lifted
+        ready = contained and supported and not lifted
         if ready and not self._violation:
             if self._candidate_since is None:
                 self._candidate_since = sample_time_s
@@ -458,7 +473,8 @@ class PushT(ManipulationEnv):
         if self._violation:
             self._success = False
         self._conditions = {
-            "coverage": overlap,
+            "inside_target": contained,
+            "coverage": self._coverage,
             "lowest_height_m": lowest,
             "supported": bool(supported),
             "lift_elapsed_s": 0.0 if self._lift_since is None else sample_time_s - self._lift_since,
@@ -496,7 +512,8 @@ class PushT(ManipulationEnv):
             "task_type": "push_t",
             "version": TASK_VERSION,
             "scoreable": False,
-            "coverage_threshold": COVERAGE_THRESHOLD,
+            "decal_margin_m": DECAL_MARGIN_M,
+            "containment_sample_spacing_m": CONTOUR_SAMPLE_SPACING_M,
             "success_hold_s": SUCCESS_HOLD_S,
             "lift_height_m": LIFT_HEIGHT_M,
             "lift_duration_s": LIFT_DURATION_S,

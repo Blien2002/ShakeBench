@@ -1,6 +1,6 @@
 {
   "schema_id": "shakebench.push_t.states",
-  "schema_version": 4,
+  "schema_version": 5,
   "generator": {
     "seed": 20260923,
     "split": "eval"
@@ -10,7 +10,7 @@
       "state_id": "push-t-s20260923-0000",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.11397535449108455,
@@ -27,7 +27,7 @@
       "state_id": "push-t-s20260923-0001",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.1476092262534823,
@@ -44,7 +44,7 @@
       "state_id": "push-t-s20260923-0002",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.2119333090819684,
@@ -61,7 +61,7 @@
       "state_id": "push-t-s20260923-0003",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.21329557188587622,
@@ -78,7 +78,7 @@
       "state_id": "push-t-s20260923-0004",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.14911106003890914,
@@ -95,7 +95,7 @@
       "state_id": "push-t-s20260923-0005",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.20003931935645958,
@@ -112,7 +112,7 @@
       "state_id": "push-t-s20260923-0006",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.21321450046664642,
@@ -129,7 +129,7 @@
       "state_id": "push-t-s20260923-0007",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.17605342571515314,
@@ -146,7 +146,7 @@
       "state_id": "push-t-s20260923-0008",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.11478369485269449,
@@ -163,7 +163,7 @@
       "state_id": "push-t-s20260923-0009",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.2666657424836919,
@@ -180,7 +180,7 @@
       "state_id": "push-t-s20260923-0010",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.21474935588720784,
@@ -197,7 +197,7 @@
       "state_id": "push-t-s20260923-0011",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.2111349867734309,
@@ -214,7 +214,7 @@
       "state_id": "push-t-s20260923-0012",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.1974918730200356,
@@ -231,7 +231,7 @@
       "state_id": "push-t-s20260923-0013",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.11895978040062341,
@@ -248,7 +248,7 @@
       "state_id": "push-t-s20260923-0014",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.17279929633999935,
@@ -265,7 +265,7 @@
       "state_id": "push-t-s20260923-0015",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.19598395073906388,
@@ -282,7 +282,7 @@
       "state_id": "push-t-s20260923-0016",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.17377078128870965,
@@ -299,7 +299,7 @@
       "state_id": "push-t-s20260923-0017",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.09925148921915636,
@@ -316,7 +316,7 @@
       "state_id": "push-t-s20260923-0018",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.2435402785015824,
@@ -333,7 +333,7 @@
       "state_id": "push-t-s20260923-0019",
       "task": {
         "task_type": "push_t",
-        "version": 4
+        "version": 5
       },
       "object_xy_m": [
         -0.18024166203015168,

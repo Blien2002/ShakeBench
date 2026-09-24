@@ -3,7 +3,7 @@
 import numpy as np
 
 from robosuite.utils.control_utils import orientation_error
-from shakebench.environments.push_t import COVERAGE_THRESHOLD, PRE_STANDOFF_M, REACH_RADIUS_M
+from shakebench.environments.push_t import PRE_STANDOFF_M, REACH_RADIUS_M
 from shakebench.models.objects.push_t import OUTLINE
 
 # The two non-overlapping collision boxes have uniform density.
@@ -297,12 +297,12 @@ class PushTOracle:
             if env.get_metrics()["task_rule_violation"]:
                 self.abort_requested = True
                 return
-            if env.get_metrics()["coverage"]["final"] >= COVERAGE_THRESHOLD:
+            if env.get_metrics()["inside_target"]:
                 self.phase = "verify"
                 for _ in range(12):
                     yield self._command(self._eef())
                 metrics = env.get_metrics()
-                if metrics["success"]["passed"] and metrics["coverage"]["final"] >= COVERAGE_THRESHOLD:
+                if metrics["success"]["passed"] and metrics["inside_target"]:
                     self.verified = True
                     self.phase = "done"
                     return

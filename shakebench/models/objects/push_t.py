@@ -1,4 +1,4 @@
-"""Two-box wooden T and exact projected-union coverage, in metres."""
+"""Two-box wooden T, expanded decal, and projected geometry, in metres."""
 
 import xml.etree.ElementTree as ET
 from itertools import product
@@ -12,6 +12,9 @@ from shakebench.models import xml_path_completion
 HALF_HEIGHT_M = 0.01
 # Non-overlapping crossbar and stem: 150 x 150 x 20 mm, 30 mm stroke.
 RECTANGLES = (((0.0, 0.06), (0.075, 0.015)), ((0.0, -0.015), (0.015, 0.06)))
+DECAL_MARGIN_M = 0.008
+CONTOUR_SAMPLE_SPACING_M = 0.002
+DECAL_RECTANGLES = tuple((center, tuple(np.asarray(size) + DECAL_MARGIN_M)) for center, size in RECTANGLES)
 TARGET_AREA_M2 = sum(4 * np.prod(size) for _, size in RECTANGLES)
 CORNERS = np.array(list(product((-1, 1), repeat=3)))
 # Counterclockwise outline in the T body's xy frame.
@@ -73,8 +76,7 @@ def make_tee():
 def projected_geometry(position, rotation):
     """Project all 16 box vertices into the target frame; retain the lowest z.
 
-    Convex hulls include the side faces when tilted. Union overlap is removed by
-    inclusion-exclusion in coverage(), so tilt cannot double-count shared area.
+    Convex hulls include the side faces when tilted.
     """
     polygons, lowest = [], float("inf")
     for center, size in RECTANGLES:
@@ -83,6 +85,20 @@ def projected_geometry(position, rotation):
         points = vertices[:, :2]
         polygons.append(points[ConvexHull(points).vertices])
     return polygons, lowest
+
+
+def inside_decal(polygons):
+    """Check the projected block perimeter against the two expanded decal boxes."""
+    for polygon in polygons:
+        for start, end in zip(polygon, np.roll(polygon, -1, axis=0)):
+            count = max(1, int(np.ceil(np.linalg.norm(end - start) / CONTOUR_SAMPLE_SPACING_M)))
+            points = start + np.linspace(0, 1, count + 1)[:, None] * (end - start)
+            inside = np.zeros(len(points), dtype=bool)
+            for center, size in DECAL_RECTANGLES:
+                inside |= np.all(np.abs(points - center) <= np.asarray(size) + 1e-12, axis=1)
+            if not inside.all():
+                return False
+    return True
 
 
 def intersection(subject, clip):
