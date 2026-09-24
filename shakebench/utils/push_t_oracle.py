@@ -20,6 +20,14 @@ OUTLINE = np.array(
 )
 # The two non-overlapping collision boxes have uniform density.
 PRESSURE_CENTER = np.array([0.0, (0.0045 * 0.06 - 0.0036 * 0.015) / 0.0081])
+# Closed Panda fingertip with the closing axis along the push: one finger face, 17.8 mm wide (collision mesh).
+PUSHER_HALF_WIDTH = 0.0089
+# Delta-mode OSC (kp 150, critical damping) tracks a per-step delta d at about d / OSC_LAG_S metres per second.
+OSC_LAG_S = 2.0 / np.sqrt(150.0)
+# The T has been engaged once it has moved this far along the push in the table frame.
+ENGAGE_MOTION_M = 0.0015
+# Stop decisions use an exponentially smoothed error so table-excitation jitter does not end a push early.
+SCORE_SMOOTHING = 0.5
 
 
 class PushTOracle:
@@ -45,6 +53,9 @@ class PushTOracle:
         wrist_x /= np.linalg.norm(wrist_x)
         down = np.array([0.0, 0.0, -1.0])
         self.orientation = np.column_stack((wrist_x, np.cross(down, wrist_x), down))
+        # The closed finger pair is symmetric under a half turn, so every push can keep the tool yaw within
+        # +-90 deg of the start pose; choosing relative to the current pose instead lets the wrist wind up.
+        self.home_closing = wrist_x.copy()
         self._actions = self._run()
 
     def action(self):
@@ -101,10 +112,12 @@ class PushTOracle:
             error = orientation_error(self.orientation, self.env.sim.data.site_xmat[self.site].reshape(3, 3))
             if np.linalg.norm(error) < 0.03:
                 return True
+            if np.linalg.norm(self._eef() - target) > 0.02:
+                return False
             yield self._command(target, rotation_limit=0.5)
         return False
 
-    def _move(self, target, *, speed=0.14, tolerance=0.003, timeout=120):
+    def _move(self, target, *, speed=0.14, tolerance=0.003, timeout=120, rotation_limit=0.08):
         """Move the end effector toward a world point, aborting on stalls."""
         previous = self._eef()
         stalled = 0
@@ -114,8 +127,10 @@ class PushTOracle:
             distance = np.linalg.norm(delta)
             if distance < tolerance:
                 return True
-            step = min(distance, speed / self.env.control_freq)
-            yield self._command(current + delta * step / distance)
+            step = min(distance, speed * OSC_LAG_S)
+            yield self._command(
+                current + delta * step / distance, limit=max(0.008, step), rotation_limit=rotation_limit
+            )
             stalled = stalled + 1 if np.linalg.norm(self._eef() - previous) < 2e-5 else 0
             if stalled >= 25:
                 return False
@@ -152,7 +167,8 @@ class PushTOracle:
             direction = -(rotation @ outward)
             margin = min(0.012, length / 2)
             count = max(1, int((length - 2 * margin) / 0.012) + 1)
-            for fraction in np.linspace(margin / length, 1 - margin / length, count):
+            fractions = [0.5] if count == 1 else np.linspace(margin / length, 1 - margin / length, count)
+            for fraction in fractions:
                 point = start + fraction * tangent
                 contact = position + rotation @ point
                 pre = contact - direction * 0.026
@@ -173,16 +189,35 @@ class PushTOracle:
                     -0.35 <= safe[0] <= 0.14 and abs(safe[1]) <= 0.29
                 ):
                     continue
-                arm = rotation @ (point - PRESSURE_CENTER)
+                # Line contact: the flat finger face carries the resultant at the point of the contact
+                # segment nearest to the line through the pressure centre along the push direction.
+                unit = tangent / length
+                along = np.clip(
+                    np.dot(PRESSURE_CENTER - start, unit),
+                    max(0.0, fraction * length - PUSHER_HALF_WIDTH),
+                    min(length, fraction * length + PUSHER_HALF_WIDTH),
+                )
+                arm = rotation @ (start + along * unit - PRESSURE_CENTER)
                 torque = np.linalg.det(np.stack((arm, direction)))
-                translation = lookahead / (1 + (torque / c) ** 2)
-                predicted = self._score(position + direction * translation, yaw + translation * torque / c**2)
+                lengths = (0.002, 0.004, 0.008) if baseline < 0.012 else (lookahead,)
+                predicted, used = min(
+                    (
+                        self._score(
+                            position + direction * (length_ / (1 + (torque / c) ** 2)),
+                            yaw + length_ / (1 + (torque / c) ** 2) * torque / c**2,
+                        ),
+                        length_,
+                    )
+                    for length_ in lengths
+                )
+                if baseline < 0.012:
+                    push_distance = 2 * used
                 improvement = baseline - predicted
                 travel = np.linalg.norm(pre - current_xy)
                 value = improvement - 0.0015 * travel - (0.0005 if self.trace else 0)
                 if value > best_value:
                     best_value = value
-                    best = (pre, direction, push_distance, predicted)
+                    best = (pre, direction, push_distance, predicted, torque / c**2)
         return best
 
     def _run(self):
@@ -204,61 +239,70 @@ class PushTOracle:
             if plan is None:
                 self.abort_requested = True
                 return
-            pre, direction, distance, predicted = plan
+            pre, direction, distance, predicted, yaw_rate = plan
             top, table_rotation = self._table()
             direction_world = table_rotation @ np.r_[direction, 0.0]
             down = -table_rotation[:, 2]
-            self.orientation = np.column_stack((np.cross(direction_world, down), direction_world, down))
-            above = self._world(np.r_[pre - direction * 0.040, 0.08])
-            low = self._world(np.r_[pre, 0.010])
+            reference = self.home_closing
+            if abs(np.dot(direction_world, reference)) < 0.2:
+                reference = self.env.sim.data.site_xmat[self.site].reshape(3, 3)[:, 0]
+            closing = direction_world if np.dot(direction_world, reference) >= 0 else -direction_world
+            self.orientation = np.column_stack((closing, np.cross(down, closing), down))
+            above = self._world(np.r_[pre - direction * 0.040, 0.045])
+            low = self._world(np.r_[pre, 0.016])
+            self.phase = "transit"
+            if not (yield from self._move(above, speed=0.16, timeout=220, rotation_limit=0.5)):
+                self.abort_requested = True
+                return
             self.phase = "orient"
             if not (yield from self._orient()):
                 self.abort_requested = True
                 return
-            self.phase = "transit"
-            if not (yield from self._move(above, speed=0.16, timeout=220)):
-                self.abort_requested = True
-                return
             self.phase = "descend"
-            if not (yield from self._move(low, speed=0.12, timeout=100)):
+            if not (yield from self._move(low, speed=0.06, timeout=100)):
                 self.abort_requested = True
                 return
             self.phase = "approach"
             pusher_offset = self._pusher() - self._eef()
             reference = low + pusher_offset
-            for _ in range(70):
-                if self._contact():
+            approach_position, _ = self._pose()
+            engaged = False
+            for _ in range(50):
+                position, _ = self._pose()
+                if self._contact() or np.dot(position - approach_position, direction) > ENGAGE_MOTION_M:
+                    engaged = True
                     break
                 reference += direction_world * 0.0005
                 yield self._command(reference - pusher_offset, limit=0.005)
-            if self._contact():
+            if engaged:
                 self.phase = "push"
                 before_position, before_yaw = self._pose()
                 baseline = self._score(before_position, before_yaw)
-                reference = self._pusher()
-                steps = max(1, round(distance * env.control_freq / 0.01))
-                previous_position = before_position
-                side = np.array([direction[1], -direction[0]])
-                side_world = table_rotation @ np.r_[side, 0.0]
-                allowed_side = np.clip(np.dot(np.asarray(env.target_xy_m) - before_position, side), -0.005, 0.005)
-                for index in range(steps):
-                    reference += direction_world * distance / steps
-                    side_error = np.dot(self._pose()[0] - before_position, side) - allowed_side
-                    target = reference - np.clip(1.5 * side_error, -0.004, 0.004) * side_world
-                    target -= self._pusher() - self._eef()
-                    delta = target - self._eef()
-                    if np.linalg.norm(delta) > 0.001:
-                        target = self._eef() + delta / np.linalg.norm(delta) * 0.001
-                    yield self._command(target, limit=0.001)
+                start_pusher = self._pusher()
+                start_eef = self._eef()
+                best_score, stale, score = baseline, 0, baseline
+                for index in range(int(distance / 0.001) + 120):
+                    if np.dot(self._pusher() - start_pusher, direction_world) >= distance:
+                        break
+                    # Hold the pusher on the planned world line: lateral and height errors are corrected,
+                    # progress along the line is limited to `lead` ahead of the current pusher.
+                    lead = 0.001 if score < 0.02 else 0.0025
+                    progress = np.dot(self._eef() - start_eef, direction_world)
+                    yield self._command(start_eef + direction_world * (progress + lead), limit=0.0025)
                     position, yaw = self._pose()
+                    score = SCORE_SMOOTHING * score + (1 - SCORE_SMOOTHING) * self._score(position, yaw)
+                    if score < best_score - 0.0001:
+                        best_score, stale = score, 0
+                    else:
+                        stale += 1
+                    moved = np.dot(position - before_position, direction)
+                    turned = np.arctan2(np.sin(yaw - before_yaw), np.cos(yaw - before_yaw))
                     if (
-                        np.linalg.norm(position - before_position) > distance
-                        or (index > 5 and np.linalg.norm(position - previous_position) > 0.0025)
-                        or self._score(position, yaw) > baseline + 0.005
-                        or env.get_metrics()["coverage"]["final"] >= COVERAGE_THRESHOLD
+                        score > best_score + (0.0003 if best_score < 0.012 else 0.0015)
+                        or stale >= 12
+                        or abs(turned - yaw_rate * moved) > 0.05 + 0.5 * abs(yaw_rate * moved)
                     ):
                         break
-                    previous_position = position
                 after_position, after_yaw = self._pose()
                 self.trace.append(
                     {
@@ -272,7 +316,10 @@ class PushTOracle:
                     }
                 )
             self.phase = "retreat"
-            retreat = self._eef() - direction_world * 0.025
+            if not (yield from self._move(self._eef() - direction_world * 0.004, speed=0.02, timeout=30)):
+                self.abort_requested = True
+                return
+            retreat = self._eef() - direction_world * 0.021
             if not (yield from self._move(retreat, speed=0.16, timeout=45)):
                 self.abort_requested = True
                 return
@@ -282,6 +329,6 @@ class PushTOracle:
                 self.abort_requested = True
                 return
             self.phase = "settle"
-            for _ in range(12):
+            for _ in range(4):
                 yield self._command(self._eef())
         self.abort_requested = True
