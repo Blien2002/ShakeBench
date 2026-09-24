@@ -43,6 +43,12 @@ FOOTPRINT_HALF_ALONG_M, FOOTPRINT_HALF_ACROSS_M = 0.0148, PUSHER_HALF_WIDTH
 # Push lead by live error: ~6 mm/s in contact at 1.5 mm (1 mm lost to 0.3 N friction at ~0.6 N/mm).
 FAR_LEAD_M, MID_LEAD_M, NEAR_LEAD_M = 0.0035, 0.0020, 0.0015
 MID_ERROR_M, NEAR_ERROR_M = 0.020, 0.010
+# Re-contact path: back-off, rise, transit and descent are followed as one path by a pursuit point placed
+# speed * OSC_LAG_S ahead of the end effector; the pursuit point slows toward each corner so corner cuts stay small.
+CORNER_SPEED_MPS = 0.05
+PATH_ACCEL_MPS2 = 1.0
+ORIENT_GATE_RAD = 0.10  # do not start the descent segment until the tool is this close to its push orientation
+APPROACH_FAST_STEP_M, APPROACH_SLOW_ZONE_M = 0.001, 0.003
 # Low-torque far-field pushes (predicted |yaw rate| below this) run at a longer lead (~20 mm/s).
 FAST_LEAD_M = 0.004
 FAST_MAX_YAW_RATE = 2.0  # rad per metre of object translation
@@ -82,6 +88,7 @@ class PushTOracle:
         self.home_closing = wrist_x.copy()
         self.base_world = env.sim.data.xpos[env.sim.model.body_name2id(env.robot_base_body_name)].copy()
         self.excluded = []
+        self._clear = None
         self.rotating = False
         self._actions = self._run()
 
@@ -159,6 +166,56 @@ class PushTOracle:
                 current + delta * step / distance, limit=max(0.008, step), rotation_limit=rotation_limit
             )
             stalled = stalled + 1 if np.linalg.norm(self._eef() - previous) < 2e-5 else 0
+            if stalled >= 25:
+                return False
+            previous = self._eef()
+        return False
+
+    def _follow(self, waypoints, speeds, *, gate_segment=None, tolerance=0.003, timeout=260):
+        """Follow a polyline of world points without stopping at intermediate corners."""
+        points = [self._eef().copy()] + [np.asarray(p, dtype=float) for p in waypoints]
+        lengths = np.array([np.linalg.norm(b - a) for a, b in zip(points, points[1:])])
+        ends = np.cumsum(lengths)
+        total = float(ends[-1]) if len(ends) else 0.0
+
+        def point_at(arc):
+            arc = float(np.clip(arc, 0.0, total))
+            index = int(min(np.searchsorted(ends, arc), len(lengths) - 1))
+            start_arc = ends[index] - lengths[index]
+            fraction = 0.0 if lengths[index] < 1e-9 else (arc - start_arc) / lengths[index]
+            return points[index] + fraction * (points[index + 1] - points[index]), index
+
+        progress, previous, stalled = 0.0, self._eef(), 0
+        for _ in range(timeout):
+            eef = self._eef()
+            # progress of the end effector: nearest point on the remaining path, never moving backwards
+            best = progress
+            best_distance = np.inf
+            for index, (a, b) in enumerate(zip(points, points[1:])):
+                if ends[index] < progress - 1e-9 or lengths[index] < 1e-9:
+                    continue
+                t = float(np.clip(np.dot(eef - a, b - a) / lengths[index] ** 2, 0.0, 1.0))
+                arc = ends[index] - lengths[index] + t * lengths[index]
+                distance = np.linalg.norm(a + t * (b - a) - eef)
+                if arc >= progress - 1e-9 and distance < best_distance:
+                    best, best_distance = arc, distance
+            progress = best
+            _, index = point_at(progress)
+            to_corner = ends[index] - progress
+            speed = min(speeds[index], CORNER_SPEED_MPS + np.sqrt(2 * PATH_ACCEL_MPS2 * max(to_corner, 0.0)))
+            carrot = progress + speed * OSC_LAG_S
+            gated = False
+            if gate_segment is not None and index < gate_segment:
+                error = orientation_error(self.orientation, self.env.sim.data.site_xmat[self.site].reshape(3, 3))
+                if np.linalg.norm(error) > ORIENT_GATE_RAD:
+                    carrot = min(carrot, ends[gate_segment - 1])
+                    gated = True
+            target, _ = point_at(carrot)
+            if carrot >= total and np.linalg.norm(eef - points[-1]) < tolerance:
+                return True
+            yield self._command(target, limit=max(0.008, speed * OSC_LAG_S), rotation_limit=0.5)
+            # waiting at the gate for the wrist to turn is not a stall
+            stalled = 0 if gated else stalled + 1 if np.linalg.norm(self._eef() - previous) < 2e-5 else 0
             if stalled >= 25:
                 return False
             previous = self._eef()
@@ -398,7 +455,11 @@ class PushTOracle:
             above = self._world(np.r_[pre - direction * 0.040, TRANSIT_SITE_Z_M])
             low = self._world(np.r_[pre + direction * (PRE_STANDOFF_M - standoff), PUSH_SITE_Z_M])
             self.phase = "transit"
-            if not (yield from self._move(above, speed=TRANSIT_SPEED_MPS, timeout=220, rotation_limit=0.5)):
+            waypoints, speeds = [above, low], [TRANSIT_SPEED_MPS, DESCEND_SPEED_MPS]
+            if self._clear is not None:
+                waypoints, speeds = [self._clear] + waypoints, [0.16] + speeds
+                self._clear = None
+            if not (yield from self._follow(waypoints, speeds, gate_segment=len(waypoints) - 1)):
                 if not (yield from self._give_up_on(pre, above)):
                     return
                 continue
@@ -406,22 +467,22 @@ class PushTOracle:
             if not (yield from self._orient()):
                 self.abort_requested = True
                 return
-            self.phase = "descend"
-            if not (yield from self._move(low, speed=DESCEND_SPEED_MPS, timeout=100)):
-                if not (yield from self._give_up_on(pre, above)):
-                    return
-                continue
             self.phase = "approach"
             pusher_offset = self._pusher() - self._eef()
             reference = low + pusher_offset
             approach_position, _ = self._pose()
             engaged = False
+            gap = standoff - FOOTPRINT_HALF_ALONG_M  # leading finger face to the contact point at the descent point
+            travelled = 0.0
             for _ in range(50):
                 position, _ = self._pose()
                 if self._contact() or np.dot(position - approach_position, direction) > ENGAGE_MOTION_M:
                     engaged = True
                     break
-                reference += direction_world * 0.0005
+                # 20 mm/s until 3 mm before the expected contact, then 10 mm/s for the impact
+                advance = APPROACH_FAST_STEP_M if travelled < gap - APPROACH_SLOW_ZONE_M else 0.0005
+                reference += direction_world * advance
+                travelled += advance
                 yield self._command(reference - pusher_offset, limit=0.005)
             if engaged:
                 self.phase = "push"
@@ -473,10 +534,8 @@ class PushTOracle:
             if not (yield from self._move(self._eef() - direction_world * 0.004, speed=0.03, timeout=30)):
                 self.abort_requested = True
                 return
-            # Back off and rise to transit height in one move (the T does not coast measurably, so no settle).
+            # The back-off-and-rise point becomes the first waypoint of the next re-contact path.
             clear = self._eef() - direction_world * 0.010
             clear[2] = above[2]
-            if not (yield from self._move(clear, speed=0.16, timeout=60)):
-                self.abort_requested = True
-                return
+            self._clear = clear
         self.abort_requested = True
