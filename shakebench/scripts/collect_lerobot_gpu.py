@@ -267,7 +267,7 @@ def build_parser():
     parser.add_argument("--num-worlds", type=int, default=4, help="States simulated and rendered together per batch")
     parser.add_argument("--num-shards", type=int, default=1, help="Number of independent state-list shards")
     parser.add_argument("--shard-index", type=int, default=0, help="Zero-based shard selected by this process")
-    parser.add_argument("--horizon-steps", type=int, default=1200)
+    parser.add_argument("--horizon-steps", type=int, default=600)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--height", type=int, default=256)
     parser.add_argument("--main-camera", default=TASK_CLOSE_CAMERA, help="task_close preset or a compiled camera")
