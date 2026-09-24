@@ -8,8 +8,8 @@ BOARD_RADIUS_M = 0.062
 BOARD_HEIGHT_M = 0.012
 
 
-def add_ring_board(asset, body, contact_attributes):
-    """Attach one fixed cylinder with its top at z=0; return collision names."""
+def add_ring_board(asset, body, contact_attributes, *, mass_kg=0.0):
+    """Attach one cylinder with its top at z=0; return collision names."""
     ET.SubElement(
         asset,
         "texture",
@@ -37,7 +37,7 @@ def add_ring_board(asset, body, contact_attributes):
             size=f"{BOARD_RADIUS_M} {floor_height / 2}",
             pos=f"0 0 {-floor_height / 2}",
             material="ring_wood",
-            mass="0",
+            mass=str(0.0 if visual else mass_kg),
             group=str(int(visual)),
             contype="0" if visual else "1",
             conaffinity="0" if visual else "1",

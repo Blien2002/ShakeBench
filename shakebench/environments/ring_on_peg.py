@@ -1,7 +1,7 @@
 """Ordered two-ring stacking on the shaken worktable; import to register the task.
 
 The ring uses robosuite's box-built hollow cylinder. Poses in state assets are
-relative to the tabletop; the peg is rigidly attached to that moving table.
+relative to the tabletop; policy evaluation can place the peg freely on it.
 Only explicit CPU development states are supported, never certified scores.
 """
 
@@ -173,6 +173,7 @@ class RingOnPeg(ManipulationEnv):
         robots="Panda",
         *,
         ring_state=None,
+        free_peg=False,
         physics_profile="official",
         geometry_profile=DEFAULT_GEOMETRY_PROFILE,
         vibration=None,
@@ -182,6 +183,7 @@ class RingOnPeg(ManipulationEnv):
         controller_configs=None,
         **kwargs,
     ):
+        self.free_peg = bool(free_peg)
         self._randomize_rings = ring_state is None
         self._placement_rng = np.random.default_rng(kwargs.get("seed"))
         self.ring_state = validate_state(default_state() if ring_state is None else ring_state)
@@ -268,8 +270,14 @@ class RingOnPeg(ManipulationEnv):
         )
         self.arena.worldbody.append(support)
         self.peg_origin = np.array([*self.ring_state["peg_xy_m"], self.arena.table_half_size[2] + BOARD_HEIGHT_M])
-        peg = ET.SubElement(self.arena.worktable_body, "body", name="ring_peg", pos=array_to_string(self.peg_origin))
-        # The fixed board and peg belong to the existing 32 kg table assembly.
+        if self.free_peg:
+            peg_position = self.arena.table_top_abs + [*self.ring_state["peg_xy_m"], BOARD_HEIGHT_M]
+            peg = ET.SubElement(self.arena.worldbody, "body", name="ring_peg", pos=array_to_string(peg_position))
+            ET.SubElement(peg, "freejoint", name="ring_peg_free_joint")
+        else:
+            peg = ET.SubElement(
+                self.arena.worktable_body, "body", name="ring_peg", pos=array_to_string(self.peg_origin)
+            )
         contact = self.physics_profile.pair_attributes(
             float(self.physics_profile.contact["sliding_mu"]["table_object"])
         )
@@ -282,7 +290,9 @@ class RingOnPeg(ManipulationEnv):
             ]
         )
         contact["priority"] = "1"
-        self.board_contact_names = add_ring_board(self.arena.asset, peg, contact)
+        self.board_contact_names = add_ring_board(
+            self.arena.asset, peg, contact, mass_kg=0.09 if self.free_peg else 0.0
+        )
         shaft_height = PEG_HEIGHT_M - PEG_HEAD_RADIUS_M
         # A convex frustum uses the same mesh for collision and appearance.
         # Duplicate the seam positions so the two edges have independent texture coordinates.
@@ -336,6 +346,7 @@ class RingOnPeg(ManipulationEnv):
             ("cap", {"type": "sphere", "size": str(PEG_HEAD_RADIUS_M), "pos": f"0 0 {shaft_height}"}),
         )
         self.peg_contact_names = []
+        peg_masses = {"shaft": 0.04, "cap": 0.005}
         for name, attributes in shapes:
             self.peg_contact_names.append(f"ring_peg_{name}_collision")
             for visual in (False, True):
@@ -347,7 +358,7 @@ class RingOnPeg(ManipulationEnv):
                     group=str(int(visual)),
                     contype="0" if visual else "1",
                     conaffinity="0" if visual else "1",
-                    mass="0",
+                    mass=str(peg_masses[name] if self.free_peg and not visual else 0),
                     material="peg_fine_wood",
                 )
         self.rings = {
@@ -355,6 +366,9 @@ class RingOnPeg(ManipulationEnv):
             for name, spec in RINGS.items()
         }
         self.model = ManipulationTask(self.arena, [robot.robot_model], list(self.rings.values()))
+        if self.free_peg:
+            # The free joint crosses MuJoCo's sparse-auto threshold; MJWarp needs dense inertia.
+            self.model.root.find("option").set("jacobian", "dense")
         configure_scene_rendering(self.model.root, self.arena.scene_config)
         pads = robot.gripper["right"].important_geoms
         finger_names = pads["left_fingerpad"] + pads["right_fingerpad"]
@@ -399,6 +413,11 @@ class RingOnPeg(ManipulationEnv):
     def _reset_internal(self):
         super()._reset_internal()
         if not self.deterministic_reset:
+            if self.free_peg:
+                self.sim.data.set_joint_qpos(
+                    "ring_peg_free_joint",
+                    [*(self.arena.table_top_abs + [*self.ring_state["peg_xy_m"], BOARD_HEIGHT_M]), 1, 0, 0, 0],
+                )
             if self._randomize_rings:
                 self.ring_state = sample_state(self._placement_rng, base_state=self.ring_state)
             for name, ring in self.rings.items():
@@ -599,6 +618,7 @@ class RingOnPeg(ManipulationEnv):
             "peg_base_radius_m": PEG_RADIUS_M,
             "peg_top_radius_m": PEG_TOP_RADIUS_M,
             "peg_height_m": PEG_HEIGHT_M,
+            "peg_free_on_table": self.free_peg,
             "hold_duration_s": HOLD_DURATION_S,
             "hole_penetration_tolerance_m": HOLE_PENETRATION_TOLERANCE_M,
             "geometry_profile": self.geometry_profile["profile_id"],

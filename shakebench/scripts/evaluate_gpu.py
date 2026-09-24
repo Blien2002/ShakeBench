@@ -17,6 +17,7 @@ flatten every textured box in this scene.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import time
 from contextlib import ExitStack
@@ -25,7 +26,7 @@ from pathlib import Path
 import numpy as np
 
 from shakebench import models
-from shakebench.scripts.collect_lerobot_gpu import WRIST_CAMERA, resolve_main_camera, state_vector
+from shakebench.scripts.collect_lerobot_gpu import WRIST_CAMERA, resolve_main_camera
 from shakebench.scripts.evaluate import (
     EVALUATION_SCHEMA_ID,
     EVALUATION_SCHEMA_VERSION,
@@ -36,7 +37,6 @@ from shakebench.scripts.evaluate import (
     requested_state_ids,
     summarize,
 )
-from shakebench.scripts.gpu_batch import make_environment
 from shakebench.scripts.run_oracle import load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.outcomes import resolve_termination_cause
@@ -54,6 +54,8 @@ from shakebench.utils.rollout import (
     proprioception_metadata,
     task_description,
 )
+from shakebench.utils.task_registry import task_type
+from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.train_states import assert_split_disjoint, split_overlap
 
 PHYSICS_PROFILES = ("probe", "official")
@@ -150,7 +152,11 @@ def run_batch(policy, states, *, args, policy_id):
     try:
         for state in states:
             env, program = make_environment(
-                state, gamma=args.gamma, horizon=args.horizon_steps, physics_profile=args.physics_profile
+                state,
+                gamma=args.gamma,
+                horizon=args.horizon_steps,
+                physics_profile=args.physics_profile,
+                free_ring_peg=task_type(state) == "ring_on_peg",
             )
             envs.append(env)
             programs.append(program)
@@ -159,7 +165,10 @@ def run_batch(policy, states, *, args, policy_id):
         main_names = [resolve_main_camera(env.sim.model._model, args.main_camera) for env in envs]
         main_name = main_names[0]
         identity = observation_identity(main_name, args.main_camera, args.width, args.height)
-        batch = MJWarpBatch(envs, programs, device=args.device)
+        ring = task_type(states[0]) == "ring_on_peg"
+        batch = MJWarpBatch(
+            envs, programs, device=args.device, nconmax=512 if ring else 128, njmax=2048 if ring else 512
+        )
         readers.extend(
             ShakeBenchCameraObservation(env, height=args.height, width=args.width, main_camera=name)
             for env, name in zip(envs, main_names)
@@ -222,7 +231,7 @@ def run_batch(policy, states, *, args, policy_id):
                     observation = {
                         "observation.images.main": images[w]["observation.images.main"],
                         "observation.images.wrist": images[w]["observation.images.wrist"],
-                        "observation.state": state_vector(observations[w]),
+                        "observation.state": images[w]["observation.state"],
                         "task": instructions[w],
                     }
                     chunk, elapsed, error_type, message = _predict(policy, observation, args.inference_timeout_s)
@@ -301,6 +310,7 @@ def run_batch(policy, states, *, args, policy_id):
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--task-module", action="append", default=[], help="Import a trusted task registration module")
     parser.add_argument("--policy", required=True, help="module:factory returning a predict()-capable policy")
     parser.add_argument("--policy-arg", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--policy-id", default=None, help="Label recorded with the results; defaults to --policy")
@@ -327,6 +337,8 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    for module_name in args.task_module:
+        importlib.import_module(module_name)
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     if min(args.horizon_steps, args.action_horizon, args.num_worlds) < 1:

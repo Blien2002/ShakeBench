@@ -20,7 +20,7 @@ from robosuite.utils import transform_utils as T
 from shakebench.demos.demo_oracle_video import _task_close_camera
 from shakebench.utils.outcomes import resolve_termination_cause, validate_outcome
 from shakebench.utils.privilege import assert_policy_observation_is_clean
-from shakebench.utils.task_registry import describe_task, prepare_task_state
+from shakebench.utils.task_registry import describe_task, prepare_task_state, task_type
 
 TASK = "Pick up the object from the phenolic table and place it in the target crate."
 CAMERAS = {"observation.images.main": "task_close", "observation.images.wrist": "robot0_eye_in_hand"}
@@ -361,7 +361,12 @@ class ShakeBenchTaskEnv:
         self.close()
         try:
             self.env, _ = make_environment(
-                self.state, gamma=self.gamma, horizon=self.horizon, mode=self.mode, physics_profile=self.physics_profile
+                self.state,
+                gamma=self.gamma,
+                horizon=self.horizon,
+                mode=self.mode,
+                physics_profile=self.physics_profile,
+                free_ring_peg=task_type(self.state) == "ring_on_peg",
             )
             if self.env.control_freq != 20 or self.env.action_dim != 7:
                 raise ValueError("VLA interface requires the 20 Hz, 7D Panda controller")
