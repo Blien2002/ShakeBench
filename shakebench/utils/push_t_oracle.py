@@ -123,8 +123,8 @@ class PushTOracle:
         return False
 
     def _score(self, position, yaw):
-        target = np.asarray(self.env.task_state["target_xy_m"])
-        target_yaw = self.env.task_state["target_yaw_rad"]
+        target = np.asarray(self.env.target_xy_m)
+        target_yaw = self.env.target_yaw_rad
         actual = position + OUTLINE @ self._rot(yaw).T
         desired = target + OUTLINE @ self._rot(target_yaw).T
         return float(np.linalg.norm(actual - desired, axis=1).mean())
@@ -161,7 +161,7 @@ class PushTOracle:
                     if baseline < 0.012
                     else float(
                         np.clip(
-                            1.7 * np.dot(np.asarray(self.env.task_state["target_xy_m"]) - position, direction),
+                            1.7 * np.dot(np.asarray(self.env.target_xy_m) - position, direction),
                             0.02,
                             0.12,
                         )
@@ -240,9 +240,7 @@ class PushTOracle:
                 previous_position = before_position
                 side = np.array([direction[1], -direction[0]])
                 side_world = table_rotation @ np.r_[side, 0.0]
-                allowed_side = np.clip(
-                    np.dot(np.asarray(env.task_state["target_xy_m"]) - before_position, side), -0.005, 0.005
-                )
+                allowed_side = np.clip(np.dot(np.asarray(env.target_xy_m) - before_position, side), -0.005, 0.005)
                 for index in range(steps):
                     reference += direction_world * distance / steps
                     side_error = np.dot(self._pose()[0] - before_position, side) - allowed_side

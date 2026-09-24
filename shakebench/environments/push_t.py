@@ -29,8 +29,8 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 STATE_SCHEMA = "shakebench.push_t.states"
-SCHEMA_VERSION = 2
-TASK_VERSION = 2
+SCHEMA_VERSION = 3
+TASK_VERSION = 3
 COVERAGE_THRESHOLD = 0.90
 SUCCESS_HOLD_S = 0.5
 LIFT_HEIGHT_M = 0.005
@@ -40,6 +40,10 @@ MAX_REACHABLE_X_M = 0.10
 MAX_VISIBLE_ABS_Y_M = 0.25
 MIN_START_GOAL_DISTANCE_M = 0.05
 MAX_START_GOAL_DISTANCE_M = 0.30
+EVAL_MIN_DISTANCE_M = 0.08
+EVAL_MAX_DISTANCE_M = 0.20
+EVAL_MAX_YAW_DELTA_RAD = np.pi / 2
+FIXED_GOALS = (((-0.12, -0.08), 0.0), ((-0.12, 0.08), np.pi / 2))
 
 
 def default_state():
@@ -47,10 +51,9 @@ def default_state():
     return {
         "state_id": "push-t-000",
         "task": {"task_type": "push_t", "version": TASK_VERSION},
-        "object_xy_m": [-0.14, -0.12],
+        "object_xy_m": [-0.20, -0.08],
         "object_yaw_rad": 0.0,
-        "target_xy_m": [0.02, 0.10],
-        "target_yaw_rad": 0.0,
+        "goal_id": 0,
         "excitation_seed": 0,
         "imu_seed": 0,
         "t0_s": 0.0,
@@ -66,22 +69,22 @@ def validate_state(state):
         raise ValueError(f"expected push_t task version {TASK_VERSION}")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be nonempty")
+    if type(state["goal_id"]) is not int or not 0 <= state["goal_id"] < len(FIXED_GOALS):
+        raise ValueError("goal_id must select a fixed goal")
+    if "split" in state and state["split"] not in ("train", "eval"):
+        raise ValueError("split must be train or eval")
     result = deepcopy(dict(state))
-    for key in (
-        "object_yaw_rad",
-        "target_yaw_rad",
-        "t0_s",
-    ):
+    for key in ("object_yaw_rad", "t0_s"):
         if isinstance(state[key], bool) or not isinstance(state[key], (int, float)) or not np.isfinite(state[key]):
             raise ValueError(f"{key} must be finite")
         result[key] = float(state[key])
     if result["t0_s"] < 0:
         raise ValueError("t0_s must be nonnegative")
-    for prefix in ("object", "target"):
-        xy = np.asarray(state[f"{prefix}_xy_m"], dtype=float)
+    goal_xy, goal_yaw = FIXED_GOALS[state["goal_id"]]
+    for xy_value, yaw in ((state["object_xy_m"], result["object_yaw_rad"]), (goal_xy, goal_yaw)):
+        xy = np.asarray(xy_value, dtype=float)
         if xy.shape != (2,) or not np.isfinite(xy).all():
             raise ValueError("positions must be finite 2D coordinates")
-        yaw = result[f"{prefix}_yaw_rad"]
         rotation = np.array([[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]])
         polygons, _ = projected_geometry(np.r_[xy, HALF_HEIGHT_M], rotation)
         points = np.vstack(polygons)
@@ -91,25 +94,43 @@ def validate_state(state):
             or np.abs(points[:, 1]).max() > MAX_VISIBLE_ABS_Y_M
         ):
             raise ValueError("the entire T must lie in the reachable, task_close-visible tabletop region")
-        result[f"{prefix}_xy_m"] = xy.tolist()
+    result["object_xy_m"] = np.asarray(state["object_xy_m"], dtype=float).tolist()
+    if state.get("split") == "eval":
+        distance = np.linalg.norm(np.asarray(goal_xy) - result["object_xy_m"])
+        yaw_delta = np.arctan2(np.sin(result["object_yaw_rad"] - goal_yaw), np.cos(result["object_yaw_rad"] - goal_yaw))
+        if (
+            not EVAL_MIN_DISTANCE_M - 1e-12 <= distance <= EVAL_MAX_DISTANCE_M + 1e-12
+            or abs(yaw_delta) > EVAL_MAX_YAW_DELTA_RAD + 1e-12
+        ):
+            raise ValueError("eval states require 8--20 cm start distance and at most 90 degrees yaw difference")
     for key in ("excitation_seed", "imu_seed"):
         if type(state[key]) is not int or not 0 <= state[key] < 2**32:
             raise ValueError(f"{key} must be an integer in [0, 2**32)")
     return result
 
 
-def sample_state(rng, *, state_id=None):
-    """Sample random push directions and 5--30 cm distances in the shared feasible region."""
+def sample_state(rng, *, split="train", state_id=None):
+    """Sample starts around either fixed goal, with tighter evaluation bounds."""
+    if split not in ("train", "eval"):
+        raise ValueError("split must be train or eval")
     for _ in range(10_000):
         state = default_state()
-        object_xy = rng.uniform([-0.24, -0.175], [0.025, 0.175])
-        distance = rng.uniform(MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M)
+        goal_id = int(rng.integers(len(FIXED_GOALS)))
+        goal_xy, goal_yaw = FIXED_GOALS[goal_id]
+        distance = rng.uniform(
+            EVAL_MIN_DISTANCE_M if split == "eval" else MIN_START_GOAL_DISTANCE_M,
+            EVAL_MAX_DISTANCE_M if split == "eval" else MAX_START_GOAL_DISTANCE_M,
+        )
         direction = rng.uniform(-np.pi, np.pi)
         state.update(
-            object_xy_m=object_xy.tolist(),
-            target_xy_m=(object_xy + distance * np.array([np.cos(direction), np.sin(direction)])).tolist(),
-            object_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
-            target_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
+            object_xy_m=(np.asarray(goal_xy) - distance * np.array([np.cos(direction), np.sin(direction)])).tolist(),
+            object_yaw_rad=float(
+                goal_yaw + rng.uniform(-EVAL_MAX_YAW_DELTA_RAD, EVAL_MAX_YAW_DELTA_RAD)
+                if split == "eval"
+                else rng.uniform(-np.pi, np.pi)
+            ),
+            goal_id=goal_id,
+            split=split,
             excitation_seed=int(rng.integers(2**32)),
             imu_seed=int(rng.integers(2**32)),
         )
@@ -159,6 +180,7 @@ class PushT(ManipulationEnv):
         **kwargs,
     ):
         self.task_state = validate_state(default_state() if task_state is None else task_state)
+        self.target_xy_m, self.target_yaw_rad = FIXED_GOALS[self.task_state["goal_id"]]
         self.physics_profile = resolve_physics_profile(physics_profile)
         self.geometry_profile = load_geometry_profile(geometry_profile)
         self.worktable_mount = worktable_mount(geometry_profile)
@@ -247,10 +269,8 @@ class PushT(ManipulationEnv):
             self.arena.worktable_body,
             "body",
             name="push_t_target",
-            pos=array_to_string([*self.task_state["target_xy_m"], self.arena.table_half_size[2]]),
-            quat=array_to_string(
-                [np.cos(self.task_state["target_yaw_rad"] / 2), 0, 0, np.sin(self.task_state["target_yaw_rad"] / 2)]
-            ),
+            pos=array_to_string([*self.target_xy_m, self.arena.table_half_size[2]]),
+            quat=array_to_string([np.cos(self.target_yaw_rad / 2), 0, 0, np.sin(self.target_yaw_rad / 2)]),
         )
         # Native micro-speckles distinguish the matte decal from the pale laminate.
         ET.SubElement(
@@ -457,7 +477,8 @@ class PushT(ManipulationEnv):
             "pusher_sliding_mu": PUSHER_SLIDING_MU,
             "max_reachable_x_m": MAX_REACHABLE_X_M,
             "max_visible_abs_y_m": MAX_VISIBLE_ABS_Y_M,
-            "start_goal_distance_m": [MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M],
+            "eval_start_goal_distance_m": [EVAL_MIN_DISTANCE_M, EVAL_MAX_DISTANCE_M],
+            "eval_max_start_goal_yaw_delta_rad": EVAL_MAX_YAW_DELTA_RAD,
         }
 
     def get_metrics(self):

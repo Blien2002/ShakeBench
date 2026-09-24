@@ -14,6 +14,7 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--count", type=int, default=20)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--split", choices=("train", "eval"), default="train")
     args = parser.parse_args(argv)
     if args.count <= 0 or not 0 <= args.seed < 2**32:
         parser.error("--count must be positive and --seed must be in [0, 2**32)")
@@ -21,8 +22,10 @@ def main(argv=None):
     payload = {
         "schema_id": STATE_SCHEMA,
         "schema_version": SCHEMA_VERSION,
-        "generator": {"seed": args.seed},
-        "states": [sample_state(rng, state_id=f"push-t-s{args.seed}-{i:04d}") for i in range(args.count)],
+        "generator": {"seed": args.seed, "split": args.split},
+        "states": [
+            sample_state(rng, split=args.split, state_id=f"push-t-s{args.seed}-{i:04d}") for i in range(args.count)
+        ],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + "\n")
