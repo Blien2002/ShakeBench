@@ -41,7 +41,7 @@ FOOTPRINT_CLEARANCE_M = 0.003
 # Closed fingertip footprint: 29.6 mm along the push (two fingers in line) x 17.8 mm across.
 FOOTPRINT_HALF_ALONG_M, FOOTPRINT_HALF_ACROSS_M = 0.0148, PUSHER_HALF_WIDTH
 # Push lead by live error: ~6 mm/s in contact at 1.5 mm (1 mm lost to 0.3 N friction at ~0.6 N/mm).
-FAR_LEAD_M, MID_LEAD_M, NEAR_LEAD_M = 0.0025, 0.0020, 0.0015
+FAR_LEAD_M, MID_LEAD_M, NEAR_LEAD_M = 0.0030, 0.0020, 0.0015
 MID_ERROR_M, NEAR_ERROR_M = 0.020, 0.010
 # Low-torque far-field pushes (predicted |yaw rate| below this) run at a longer lead (~20 mm/s).
 FAST_LEAD_M = 0.004
