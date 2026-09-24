@@ -1,4 +1,4 @@
-"""Collect pick-place or registered ring Oracle episodes on MJWarp physics with host rendering.
+"""Collect pick-place, ring, or Push-T Oracle episodes on MJWarp physics with host rendering.
 
 Runs with: python -m shakebench.scripts.collect_lerobot_gpu --output out/lerobot_gpu
 
@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 
 from shakebench import models
-from shakebench.demos.demo_oracle_video import FFmpegVideoWriter, TASK_CLOSE_CAMERA, task_close_camera_pose
+from shakebench.demos.demo_oracle_video import TASK_CLOSE_CAMERA, FFmpegVideoWriter, task_close_camera_pose
 from shakebench.scripts.collect_lerobot import dataset_features
 from shakebench.scripts.export_sft_subset import sft_subset_summary
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
@@ -78,6 +78,14 @@ def collection_task_description(state, *, legacy_metal_table=False):
     return description
 
 
+def _batch_key(state):
+    """Group states whose compiled task models match."""
+    return json.dumps(
+        (state.get("task"), state.get("goal_id") if task_type(state) == "push_t" else None),
+        sort_keys=True,
+    )
+
+
 def collect_batch(
     dataset,
     states,
@@ -103,9 +111,10 @@ def collect_batch(
         raise ValueError("at least one state is required")
     profile = OracleControllerProfile()
     envs, programs, readers, writers = [], [], [], []
-    ring = task_type(states[0]) == "ring_on_peg"
-    if any(task_type(state) != task_type(states[0]) for state in states):
-        raise ValueError("one batch must contain one task type")
+    task = task_type(states[0])
+    specialized = task in {"ring_on_peg", "push_t"}
+    if any(_batch_key(state) != _batch_key(states[0]) for state in states):
+        raise ValueError("one batch must contain one compiled task model")
     try:
         for state in states:
             env, program = make_environment(state, gamma=0.0, horizon=horizon, physics_profile=physics_profile)
@@ -117,19 +126,30 @@ def collect_batch(
             raise ValueError("dataset must match the current 20 Hz, 7D oracle contract")
         main_names = [resolve_main_camera(env.sim.model._model, main_camera) for env in envs]
         main_name = main_names[0]
-        batch = MJWarpBatch(envs, programs, device=device, nconmax=512 if ring else 128, njmax=2048 if ring else 512)
+        batch = MJWarpBatch(
+            envs,
+            programs,
+            device=device,
+            nconmax=512 if task == "ring_on_peg" else 128,
+            njmax=2048 if task == "ring_on_peg" else 512,
+        )
         readers.extend(
             ShakeBenchCameraObservation(env, height=height, width=width, main_camera=name, include_imu=False)
             for env, name in zip(envs, main_names)
         )
         observations = batch.reset()
-        if ring:
-            # Ring steps refresh host state, but frame zero needs one refresh after reset.
+        if specialized:
+            # Specialized oracles use host state; frame zero needs one refresh after reset.
             for world, reader in enumerate(readers):
                 reader.sync_device_state(batch.data, world)
-            from shakebench.utils.ring_oracle import RingStackOracle
+            if task == "ring_on_peg":
+                from shakebench.utils.ring_oracle import RingStackOracle
 
-            controllers = [RingStackOracle(env) for env in envs]
+                controllers = [RingStackOracle(env) for env in envs]
+            else:
+                from shakebench.utils.push_t_oracle import PushTOracle
+
+                controllers = [PushTOracle(env) for env in envs]
         else:
             controllers = [
                 ShakeBenchOracleController(
@@ -162,7 +182,7 @@ def collect_batch(
                     raise ValueError("gamma=0 must command zero external excitation")
                 action = (
                     controllers[world].action()
-                    if ring
+                    if specialized
                     else controllers[world].action(observations[world], time_s=step / 20)
                 )
                 action = np.clip(action, -1, 1)
@@ -171,13 +191,11 @@ def collect_batch(
                 actions[world] = action
             images = {}
             for world in active:
-                if not ring:
+                if not specialized:
                     readers[world].sync_device_state(batch.data, world)
                 images[world] = readers[world].read(observations[world])
             pre_step_frames = (
-                {world: _frame(actions[world], images[world]) for world in active}
-                if dataset is not None
-                else {}
+                {world: _frame(actions[world], images[world]) for world in active} if dataset is not None else {}
             )
             # Every world advances together; inactive tails receive a zero action and are not recorded.
             observations, metrics = batch.step(actions)
@@ -187,8 +205,9 @@ def collect_batch(
                     if metrics["invalid"][world]
                     else resolve_termination_cause(
                         prior_cause=None,
-                        task_rule_violation=False,
-                        success_latched=bool(metrics["success"][world]),
+                        task_rule_violation=bool(metrics["task_rule_violation"][world]) if task == "push_t" else False,
+                        success_latched=bool(metrics["success"][world])
+                        and (task != "push_t" or controllers[world].verified),
                         policy_abort=controllers[world].abort_requested,
                         horizon_exhausted=step + 1 == horizon,
                     )
@@ -223,13 +242,21 @@ def collect_batch(
                     "termination_cause": cause,
                     "vibration": vibration_record(program),
                     "task_context": env.get_policy_task_context(),
-                    "controller_profile": {"controller": "ring_stack_oracle"} if ring else profile.to_dict(),
+                    "controller_profile": (
+                        {"controller": "ring_stack_oracle"}
+                        if task == "ring_on_peg"
+                        else (
+                            {"controller": "push_t_oracle", "pushes": controllers[world].trace}
+                            if task == "push_t"
+                            else profile.to_dict()
+                        )
+                    ),
                     "physics_backend": "mujoco_warp",
                     "physics_profile": physics_profile,
                     "main_camera": main_name,
                 }
             )
-            if ring:
+            if specialized:
                 episode["task_metrics"] = _json_ready(env.get_metrics())
             if on_saved is not None:
                 on_saved(episode)
@@ -267,7 +294,7 @@ def build_parser():
     parser.add_argument("--num-worlds", type=int, default=4, help="States simulated and rendered together per batch")
     parser.add_argument("--num-shards", type=int, default=1, help="Number of independent state-list shards")
     parser.add_argument("--shard-index", type=int, default=0, help="Zero-based shard selected by this process")
-    parser.add_argument("--horizon-steps", type=int, default=600)
+    parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--height", type=int, default=256)
     parser.add_argument("--main-camera", default=TASK_CLOSE_CAMERA, help="task_close preset or a compiled camera")
@@ -320,7 +347,7 @@ def main(argv=None):
         args.output.mkdir(parents=True, exist_ok=True)
         grouped = defaultdict(list)
         for state in states:
-            grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
+            grouped[_batch_key(state)].append(state)
         for group in grouped.values():
             for begin in range(0, len(group), args.num_worlds):
                 episodes = collect_batch(
@@ -439,7 +466,7 @@ def main(argv=None):
         write_json(manifest_path, manifest)
     grouped = defaultdict(list)
     for state in states:
-        grouped[json.dumps(state.get("task"), sort_keys=True)].append(state)
+        grouped[_batch_key(state)].append(state)
 
     def record_episode(episode):
         manifest["episodes"].append(episode)

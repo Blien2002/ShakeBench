@@ -1,6 +1,6 @@
 ---
 name: shakebench-gpu-collection
-description: Create ShakeBench GPU Oracle videos or pick-place training datasets with MJWarp CUDA physics and MuJoCo EGL rendering. Use for collection, resume, success-only LeRobot export, and train/evaluation split checks.
+description: Create ShakeBench GPU Oracle videos or pick-place, ring, and Push-T datasets with MJWarp CUDA physics and MuJoCo EGL rendering. Use for collection, resume, success-only LeRobot export, and train/evaluation split checks.
 ---
 
 # ShakeBench GPU collection
@@ -9,8 +9,9 @@ Use this skill from the ShakeBench repository root. Read the current `AGENTS.md`
 
 ## Contract
 
-- `shakebench.scripts.collect_lerobot_gpu` supports `pick_place` and registered `ring_on_peg` states. Pass `--task-module shakebench.environments.ring_on_peg` for ring states. It runs the privileged Oracle at `gamma=0` on MJWarp (`cuda:N`); MuJoCo renders synchronized device states on the host through EGL. Do not describe this as MJWarp image rendering. Push T still needs a task-specific adapter.
-- `--video-only` writes one MP4 per selected state without LeRobot data or a collection manifest. Dataset mode can also take `--video-output` to save synchronized rollout MP4s beside LeRobot data. Use a new output directory for each run, and verify frame counts with `ffprobe`. Ring success is checked from synchronized device state with the registered ring task's outcome rule.
+- `shakebench.scripts.collect_lerobot_gpu` supports pick-place, ring-on-peg, and Push-T states. MJWarp runs Oracle physics at `gamma=0` on `cuda:N`; host MuJoCo renders synchronized states through EGL.
+- Load ring states with `--task-module shakebench.environments.ring_on_peg`. Load Push-T with `--task-module shakebench.environments.push_t --states shakebench/models/assets/shakebench_push_t_states.json --horizon-steps 2400`. Push-T states with different `goal_id` values form separate batches.
+- `--video-only` writes one MP4 per selected state without LeRobot data or a collection manifest. Dataset mode can also take `--video-output` to save synchronized rollout MP4s beside LeRobot data. Use a new output directory for each run, and verify frame counts with `ffprobe`. Ring and Push-T success use each task's outcome rule on synchronized device state; Push-T also requires the Oracle's post-retreat verification.
 - Without `--video-only`, output is a local, non-scoreable LeRobot **v2.1** dataset: 20 Hz, main and wrist RGB images (default 256×256), 8D proprioception, normalized 7D `OSC_POSE` actions, task text, and next-step outcome fields. IL data contains no IMU. `--repo-id` is local metadata; the collector does not upload.
 - Generate a separate train state pool. Preserve official and knee state assets for held-out evaluation. Choose a new output path for every independent run; never delete or overwrite a dataset to make a retry work.
 

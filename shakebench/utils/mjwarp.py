@@ -287,8 +287,8 @@ class MJWarpBatch:
         self.programs = list(programs)
         self.nworld = len(envs)
         env = envs[0]
-        self.task_type = task_type(getattr(env, "ring_state", {}))
-        if self.task_type not in {"pick_place", "ring_on_peg"}:
+        self.task_type = task_type(getattr(env, "task_state", getattr(env, "ring_state", {})))
+        if self.task_type not in {"pick_place", "ring_on_peg", "push_t"}:
             raise ValueError(f"MJWarp does not support task {self.task_type!r}")
         self.raw_model = env.sim.model._model
         self.dt = float(self.raw_model.opt.timestep)
@@ -378,6 +378,27 @@ class MJWarpBatch:
         """Damp device contacts while preserving the CPU-authored scene."""
         host = self.raw_model
         env = self.envs[0]
+        if self.task_type == "push_t":
+            pusher_ids = {
+                env.sim.model.geom_name2id(name)
+                for name in env.sim.model.geom_names
+                if name.startswith("gripper0_right_") and name.endswith("_collision")
+            }
+            solref = self.model.pair_solref.numpy()
+            view = solref.reshape(-1, host.npair, solref.shape[-1])
+            for index in range(host.npair):
+                pair = {int(host.pair_geom1[index]), int(host.pair_geom2[index])}
+                if not pair & env.tee_geom_ids:
+                    continue
+                if pair & pusher_ids:
+                    view[..., index, :] = DEVICE_FINGER_OBJECT_CONTACT_SOLREF
+                elif env.table_geom_id in pair:
+                    view[..., index, :] = DEVICE_SUPPORT_CONTACT_SOLREF
+            self.model.pair_solref.assign(solref)
+            geom_solref = self.model.geom_solref.numpy()
+            geom_solref[..., list(env.tee_geom_ids | {env.table_geom_id}), :] = DEVICE_SUPPORT_CONTACT_SOLREF
+            self.model.geom_solref.assign(geom_solref)
+            return
         if self.task_type == "ring_on_peg":
             ring_ids = set().union(*env.ring_geom_ids.values())
             fingers = env.robots[0].gripper["right"].important_geoms
@@ -500,16 +521,17 @@ class MJWarpBatch:
         env = self.envs[0]
         e = Evaluation()
         m = env.sim.model
-        if self.task_type == "ring_on_peg":
+        if self.task_type in {"ring_on_peg", "push_t"}:
             fingers = env.robots[0].gripper["right"].important_geoms
             finger_names = fingers["left_fingerpad"] + fingers["right_fingerpad"]
+            object_name = env.rings["large"].root_body if self.task_type == "ring_on_peg" else env.tee.root_body
             e.bodies = self._array(
                 [
                     m.body_name2id(name)
                     for name in (
                         env.robot_base_body_name,
                         env.gripper_body_name,
-                        env.rings["large"].root_body,
+                        object_name,
                         env.worktable_body_name,
                         env.deck_driver.config.deck_body_name,
                     )
@@ -770,7 +792,9 @@ class MJWarpBatch:
             }
         self.policy_step += 1
         metrics["invalid"] |= ~np.all(np.isfinite(packet), axis=1)
-        if self.task_type == "ring_on_peg":
+        if self.task_type in {"ring_on_peg", "push_t"}:
+            if self.task_type == "push_t":
+                metrics["task_rule_violation"] = np.zeros(self.nworld, dtype=bool)
             qpos, qvel = self.data.qpos.numpy(), self.data.qvel.numpy()
             mocap_pos, mocap_quat = self.data.mocap_pos.numpy(), self.data.mocap_quat.numpy()
             for w, env in enumerate(self.envs):
@@ -783,7 +807,10 @@ class MJWarpBatch:
                 host.mocap_quat[:] = mocap_quat[w]
                 mujoco.mj_forward(env.sim.model._model, host)
                 env._record_post_physics_metrics(self.policy_step / 20, policy_step=True)
-                metrics["success"][w] = env.get_metrics()["success"]["passed"]
+                task_metrics = env.get_metrics()
+                metrics["success"][w] = task_metrics["success"]["passed"]
+                if self.task_type == "push_t":
+                    metrics["task_rule_violation"][w] = task_metrics["task_rule_violation"]
             obs = [env._get_observations() for env in self.envs]
             return obs, metrics
         obs = []
