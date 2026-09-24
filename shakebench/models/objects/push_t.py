@@ -44,9 +44,10 @@ def make_tee():
         texture="push_t_light_wood",
         texrepeat="6.25 12.5",
         texuniform="true",
-        rgba="1 0.97 0.91 1",
+        rgba="0.94 0.98 1 1",
+        emission="0",
         specular="0.08",
-        shininess="0.15",
+        shininess="0.12",
     )
     for geom in tee.get_obj().iter("geom"):
         if geom.get("group") == "1":
