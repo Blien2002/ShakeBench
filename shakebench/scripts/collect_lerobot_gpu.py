@@ -22,7 +22,6 @@ from pathlib import Path
 
 import numpy as np
 
-from robosuite.utils import transform_utils as T
 from shakebench import models
 from shakebench.demos.demo_oracle_video import FFmpegVideoWriter, TASK_CLOSE_CAMERA, task_close_camera_pose
 from shakebench.scripts.collect_lerobot import dataset_features
@@ -48,17 +47,6 @@ WRIST_CAMERA = CAMERAS["observation.images.wrist"]
 PHYSICS_PROFILES = ("probe", "official")
 
 
-def state_vector(observation) -> np.ndarray:
-    """8D base-frame proprio, identical to the CPU collector's observation contract."""
-    return np.concatenate(
-        (
-            observation["robot0_eef_pos_robot_base"],
-            T.quat2axisangle(np.asarray(observation["robot0_eef_quat_robot_base"], dtype=float)),
-            np.asarray(observation["robot0_gripper_state"], dtype=float)[:2],
-        )
-    ).astype(np.float32)
-
-
 def resolve_main_camera(model, requested) -> str:
     """Return the model camera to render, stamping the shared task pose onto a host camera."""
     if requested == TASK_CLOSE_CAMERA:
@@ -71,13 +59,13 @@ def resolve_main_camera(model, requested) -> str:
     return requested
 
 
-def _frame(observation, action, images):
+def _frame(action, images):
     """Build one pre-step frame from this world's host-rendered images."""
     return {
         "action": np.asarray(action, dtype=np.float32).copy(),
         "observation.images.main": np.asarray(images["observation.images.main"]).copy(),
         "observation.images.wrist": np.asarray(images["observation.images.wrist"]).copy(),
-        "observation.state": state_vector(observation),
+        "observation.state": np.asarray(images["observation.state"], dtype=np.float32).copy(),
     }
 
 
@@ -187,7 +175,7 @@ def collect_batch(
                     readers[world].sync_device_state(batch.data, world)
                 images[world] = readers[world].read(observations[world])
             pre_step_frames = (
-                {world: _frame(observations[world], actions[world], images[world]) for world in active}
+                {world: _frame(actions[world], images[world]) for world in active}
                 if dataset is not None
                 else {}
             )
