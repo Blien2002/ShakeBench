@@ -1,4 +1,4 @@
-"""Copy the eight-object task assets from the official RoboCasa instance tree.
+"""Copy selected task assets from the official RoboCasa instance tree.
 
 The new task set reuses the official `objaverse` instance *model.xml* files
 verbatim except for one documented transform: the category scale from
@@ -32,6 +32,7 @@ SOURCE_LICENSE = "CC-BY-4.0"
 INSTANCES = {
     "cereal": ("cereal/cereal_0", (1.0, 1.0, 1.0)),
     "mug": ("mug/mug_1", (0.80, 0.80, 0.80)),
+    "wine_bottle": ("wine/wine_3", (1.6, 1.6, 1.6)),
     "apple": ("apple/apple_0", (0.85, 0.85, 0.85)),
     "spatula": ("spatula/spatula_0", (1.10, 1.10, 1.10)),
     "bar_soap": ("bar_soap/bar_soap_0", (0.95, 0.95, 1.05)),

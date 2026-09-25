@@ -133,6 +133,25 @@
         0.06345148192864503,
         0.13576509587778363
       ]
+    },
+    "wine_bottle": {
+      "applied_scale": [
+        1.6,
+        1.6,
+        1.6
+      ],
+      "generated_sha256": "876b9cf28f0c0514c0e9095dc91083a68416a699180e77e1cf72480dfd84af10",
+      "instance": "wine/wine_3",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/home/miracle04/Documents/Codex/2026-09-18/new-chat-2/work/robocasa-official/robocasa/models/assets/objects/objaverse/wine/wine_3/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "9e79fc8a174b1721cf4071a2505a538e46e9808f17643a0b1fca306814d8a143",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.12800000356146513,
+        0.12800000168994397,
+        0.033946191727014914
+      ]
     }
   },
   "schema_id": "shakebench.pick_place_v2.assets"

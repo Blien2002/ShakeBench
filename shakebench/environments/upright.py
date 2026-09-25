@@ -1,4 +1,4 @@
-"""Stand a side-lying can upright on the moving worktable (CPU MuJoCo)."""
+"""Stand a fallen mug, wine bottle, or cereal box on the moving worktable."""
 
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
@@ -9,7 +9,9 @@ import numpy as np
 
 from robosuite.controllers import load_composite_controller_config
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
+from robosuite.models.objects import MujocoXMLObject
 from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
 from shakebench.utils.calibration import build_vibration_program
@@ -26,30 +28,59 @@ from shakebench.utils.privilege import assert_policy_observation_is_clean
 from shakebench.utils.providers import POLICY_FIELD_CONTRACT, TableIMUProvider
 from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_rendering
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
-from shakebench.utils.tasks import (
-    OBJECTS,
-    UPRIGHT_AXIS_COSINE_MIN,
-    TaskSpec,
-    make_task_object,
-    registered_rest_pose,
-)
+from shakebench.utils.tasks import OBJECTS, UPRIGHT_AXIS_COSINE_MIN, TaskSpec, registered_rest_pose
 
 STATE_SCHEMA = "shakebench.upright.states"
-TASK_VERSION = 1
-SCHEMA_VERSION = 1
+TASK_VERSION = 2
+SCHEMA_VERSION = 2
 UP_COSINE_MIN = UPRIGHT_AXIS_COSINE_MIN
 LINEAR_SPEED_MAX_M_S = 0.05
 ANGULAR_SPEED_MAX_RAD_S = 0.2
 SUCCESS_HOLD_S = 0.5
-START_X_RANGE_M = (-0.20, -0.12)
+START_X_RANGE_M = (-0.16, -0.12)
 START_Y_RANGE_M = (-0.10, 0.10)
+_SIDE_QUAT = (2**-0.5, 0.0, -(2**-0.5), 0.0)
+_MUG_SIDE_QUAT, _MUG_SIDE_LOWER_Z = registered_rest_pose(TaskSpec(object_id="mug"), "side_double_wall")
+OBJECT_IDS = ("mug", "wine_bottle", "cereal_box")
+UPRIGHT_OBJECTS = {
+    "mug": {
+        "asset": OBJECTS["mug"]["asset"],
+        "mass_kg": OBJECTS["mug"]["mass_kg"],
+        "table_mu": OBJECTS["mug"]["table_mu"],
+        "start_quat_wxyz": _MUG_SIDE_QUAT,
+        "start_lower_z_m": _MUG_SIDE_LOWER_Z,
+        "upright_quat_wxyz": OBJECTS["mug"]["start_quat_wxyz"],
+        "upright_lower_z_m": OBJECTS["mug"]["start_pose_support"][0],
+        "instruction": "mug",
+    },
+    "wine_bottle": {
+        "asset": "objects/robocasa/wine/wine_3/model.xml",
+        "mass_kg": 1.1,
+        "table_mu": 0.25,
+        "start_quat_wxyz": _SIDE_QUAT,
+        "start_lower_z_m": -0.033682,
+        "upright_quat_wxyz": (1.0, 0.0, 0.0, 0.0),
+        "upright_lower_z_m": -0.128000,
+        "instruction": "wine bottle",
+    },
+    "cereal_box": {
+        "asset": "objects/robocasa/cereal/cereal_0/model.xml",
+        "mass_kg": 0.35,
+        "table_mu": 0.30,
+        "start_quat_wxyz": _SIDE_QUAT,
+        "start_lower_z_m": -0.018832,
+        "upright_quat_wxyz": (1.0, 0.0, 0.0, 0.0),
+        "upright_lower_z_m": -0.072500,
+        "instruction": "cereal box",
+    },
+}
 
 
 def default_state():
-    """One explicit, side-lying can start on the bare worktable."""
+    """One explicit, side-lying mug start on the bare worktable."""
     return {
-        "state_id": "upright-can-000",
-        "task": {"task_type": "upright", "version": TASK_VERSION, "object_id": "can"},
+        "state_id": "upright-mug-000",
+        "task": {"task_type": "upright", "version": TASK_VERSION, "object_id": "mug"},
         "object_xy_m": [-0.16, 0.0],
         "object_yaw_rad": 0.0,
         "excitation_seed": 0,
@@ -62,13 +93,16 @@ def validate_state(state):
     """Accept only reproducible starts in the Panda-visible tabletop region."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("upright state fields must match version 1")
+        raise ValueError("upright state fields must match version 2")
     if (
-        state["task"] != default_state()["task"]
-        or not isinstance(state["task"], Mapping)
+        not isinstance(state["task"], Mapping)
+        or set(state["task"]) != {"task_type", "version", "object_id"}
+        or state["task"]["task_type"] != "upright"
         or type(state["task"].get("version")) is not int
+        or state["task"]["version"] != TASK_VERSION
+        or state["task"]["object_id"] not in UPRIGHT_OBJECTS
     ):
-        raise ValueError("upright version 1 supports the side-lying can")
+        raise ValueError("upright version 2 supports only mug, wine_bottle, and cereal_box")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be nonempty")
     if "split" in state and state["split"] not in ("train", "eval"):
@@ -100,13 +134,14 @@ def validate_state(state):
     return result
 
 
-def sample_state(rng, *, split="train", state_id=None):
+def sample_state(rng, *, object_id="mug", split="train", state_id=None):
     """Sample a recorded XY and yaw without changing the object or task goal."""
-    if split not in ("train", "eval"):
-        raise ValueError("split must be train or eval")
+    if split not in ("train", "eval") or object_id not in UPRIGHT_OBJECTS:
+        raise ValueError("split or upright object_id is unsupported")
     state = default_state()
+    state["task"]["object_id"] = object_id
     state.update(
-        state_id=state["state_id"] if state_id is None else state_id,
+        state_id=f"upright-{object_id}-000" if state_id is None else state_id,
         split=split,
         object_xy_m=[float(rng.uniform(*START_X_RANGE_M)), float(rng.uniform(*START_Y_RANGE_M))],
         object_yaw_rad=float(rng.uniform(-np.pi, np.pi)),
@@ -142,8 +177,9 @@ def load_states(payload):
     expected = [
         sample_state(
             rng,
+            object_id=OBJECT_IDS[index % len(OBJECT_IDS)],
             split=generator["split"],
-            state_id=f"upright-can-s{generator['seed']}-{index:04d}",
+            state_id=f"upright-{OBJECT_IDS[index % len(OBJECT_IDS)]}-s{generator['seed']}-{index:04d}",
         )
         for index in range(len(states))
     ]
@@ -153,7 +189,7 @@ def load_states(payload):
 
 
 class Upright(ManipulationEnv):
-    """Use the existing can asset, Panda, deck, table and camera scene."""
+    """Use the existing Panda, deck, table, camera scene and RoboCasa assets."""
 
     def __init__(
         self,
@@ -250,31 +286,64 @@ class Upright(ManipulationEnv):
             .find("./worldbody/body[@name='robot_support']")
         )
         self.arena.worldbody.append(support)
-        self.can = make_task_object(TaskSpec(object_id="can"), name="upright_can")
-        for name in self.can.contact_geoms:
-            geom = self.can.get_obj().find(f".//geom[@name='{name}']")
+        spec = UPRIGHT_OBJECTS[self.task_state["task"]["object_id"]]
+        self.object = MujocoXMLObject(
+            xml_path_completion(spec["asset"]),
+            name=f"upright_{self.task_state['task']['object_id']}",
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=False,
+        )
+        self._set_object_inertial(spec["mass_kg"])
+        for name in self.object.contact_geoms:
+            geom = self.object.get_obj().find(f".//geom[@name='{name}']")
             geom.set("contype", "2")
             geom.set("conaffinity", "0")
-            geom.attrib.pop("density", None)
-            geom.set("mass", str(OBJECTS["can"]["mass_kg"]))
-        self.model = ManipulationTask(self.arena, [robot.robot_model], [self.can])
+        self.model = ManipulationTask(self.arena, [robot.robot_model], [self.object])
         configure_scene_rendering(self.model.root, self.arena.scene_config)
-        table_mu = OBJECTS["can"]["table_mu"]
-        for name in self.can.contact_geoms:
+        for name in self.object.contact_geoms:
             for partner in ["table_collision", *robot.gripper["right"].contact_geoms]:
                 geom = self.model.worldbody.find(f".//geom[@name='{partner}']")
                 geom.set("conaffinity", "2")
                 attributes = self.physics_profile.pair_attributes(
-                    table_mu if partner == "table_collision" else 1.0,
+                    spec["table_mu"] if partner == "table_collision" else 1.0,
                     finger_contact=partner != "table_collision",
                 )
                 ET.SubElement(self.model.contact, "pair", geom1=name, geom2=partner, **attributes)
 
+    def _set_object_inertial(self, mass_kg):
+        """Scale collision-only inertia; visual and region geoms carry no task mass."""
+        body = deepcopy(self.object.get_obj())
+        names = set(self.object.contact_geoms)
+        for parent in body.iter():
+            for geom in list(parent.findall("geom")):
+                if geom.get("name") not in names:
+                    parent.remove(geom)
+        probe = ET.Element("mujoco", model="upright_object_probe")
+        probe.append(deepcopy(self.object.asset))
+        ET.SubElement(probe, "worldbody").append(body)
+        model = mujoco.MjModel.from_xml_string(ET.tostring(probe, encoding="unicode"))
+        body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, self.object.root_body)
+        if model.body_mass[body_id] <= 0:
+            raise ValueError("upright object has no collision-derived mass")
+        self.object.get_obj().insert(
+            0,
+            ET.Element(
+                "inertial",
+                {
+                    "pos": array_to_string(model.body_ipos[body_id]),
+                    "quat": array_to_string(model.body_iquat[body_id]),
+                    "mass": str(mass_kg),
+                    "diaginertia": array_to_string(model.body_inertia[body_id] * (mass_kg / model.body_mass[body_id])),
+                },
+            ),
+        )
+
     def _setup_references(self):
         super()._setup_references()
-        self.can_body_id = self.sim.model.body_name2id(self.can.root_body)
+        self.object_body_id = self.sim.model.body_name2id(self.object.root_body)
         self.table_body_id = self.sim.model.body_name2id(self.arena.worktable_body_name)
-        self.can_geom_ids = {self.sim.model.geom_name2id(name) for name in self.can.contact_geoms}
+        self.object_geom_ids = {self.sim.model.geom_name2id(name) for name in self.object.contact_geoms}
         self.table_geom_id = self.sim.model.geom_name2id("table_collision")
         self.gripper_geom_ids = {
             self.sim.model.geom_name2id(name) for name in self.robots[0].gripper["right"].contact_geoms
@@ -283,14 +352,17 @@ class Upright(ManipulationEnv):
     def _reset_internal(self):
         super()._reset_internal()
         if not self.deterministic_reset:
-            registered_quat, lower = registered_rest_pose(TaskSpec(object_id="can"), "side")
+            spec = UPRIGHT_OBJECTS[self.task_state["task"]["object_id"]]
             yaw = self.task_state["object_yaw_rad"]
             yaw_quat = np.array([np.cos(yaw / 2), 0, 0, np.sin(yaw / 2)])
             quat = np.zeros(4)
-            mujoco.mju_mulQuat(quat, yaw_quat, np.asarray(registered_quat))
+            mujoco.mju_mulQuat(quat, yaw_quat, np.asarray(spec["start_quat_wxyz"]))
             self.sim.data.set_joint_qpos(
-                self.can.joints[0],
-                [*(self.arena.table_top_abs + [*self.task_state["object_xy_m"], -lower + 0.001]), *quat],
+                self.object.joints[0],
+                [
+                    *(self.arena.table_top_abs + [*self.task_state["object_xy_m"], -spec["start_lower_z_m"] + 0.001]),
+                    *quat,
+                ],
             )
             self._settle()
         self.sim.forward()
@@ -302,7 +374,7 @@ class Upright(ManipulationEnv):
         self._record_post_physics_metrics(float(self.sim.data.time))
 
     def _settle(self):
-        """Settle the can with the Panda fixed before the episode clock starts."""
+        """Settle the object with the Panda fixed before the episode clock starts."""
         model, data = self.sim.model._model, self.sim.data._data
         robot = self.robots[0]
         qpos_ids = [*robot._ref_joint_pos_indexes, *robot._ref_gripper_joint_pos_indexes["right"]]
@@ -319,14 +391,14 @@ class Upright(ManipulationEnv):
     def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
         data = self.sim.data._data
         table_rotation = data.xmat[self.table_body_id].reshape(3, 3)
-        can_rotation = data.xmat[self.can_body_id].reshape(3, 3)
-        up_cosine = float(np.dot(table_rotation[:, 2], can_rotation[:, 2]))
-        relative = pose_twist_in_frame(self.sim, self.can.root_body, self.arena.worktable_body_name)
+        object_rotation = data.xmat[self.object_body_id].reshape(3, 3)
+        up_cosine = float(np.dot(table_rotation[:, 2], object_rotation[:, 2]))
+        relative = pose_twist_in_frame(self.sim, self.object.root_body, self.arena.worktable_body_name)
         touching_table = False
         touching_gripper = False
         for contact in data.contact[: data.ncon]:
             pair = {contact.geom1, contact.geom2}
-            if pair & self.can_geom_ids:
+            if pair & self.object_geom_ids:
                 touching_table |= self.table_geom_id in pair and contact.dist <= 0.001
                 touching_gripper |= bool(pair & self.gripper_geom_ids) and contact.dist <= 0.001
         on_table = abs(relative.position_m[0]) < 0.28 and abs(relative.position_m[1]) < 0.25
@@ -378,11 +450,12 @@ class Upright(ManipulationEnv):
         }
 
     def get_policy_task_context(self):
+        object_id = self.task_state["task"]["object_id"]
         return {
             "task_type": "upright",
             "version": TASK_VERSION,
-            "object_id": "can",
-            "object_asset": OBJECTS["can"]["asset"],
+            "object_id": object_id,
+            "object_asset": UPRIGHT_OBJECTS[object_id]["asset"],
             "scoreable": False,
             "up_cosine_min": UP_COSINE_MIN,
             "success_hold_s": SUCCESS_HOLD_S,
@@ -404,7 +477,10 @@ register_task(
         env_factory=Upright,
         normalize_state=validate_state,
         env_kwargs=lambda state: {"task_state": state},
-        describe=lambda state: {"task_id": "upright.can", "instruction": "Stand the fallen can upright on the table."},
+        describe=lambda state: {
+            "task_id": f"upright.{state['task']['object_id']}",
+            "instruction": f"Stand the fallen {UPRIGHT_OBJECTS[state['task']['object_id']]['instruction']} upright on the table.",
+        },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),
 )
