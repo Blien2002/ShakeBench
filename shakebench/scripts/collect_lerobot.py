@@ -31,6 +31,11 @@ from shakebench.utils.task_registry import require_pick_place, task_type
 from shakebench.utils.task_runtime import make_environment
 from shakebench.utils.websocket_policy import modality_metadata
 
+# Tasks whose Oracle is a task-specific privileged controller rather than the pick-place expert.
+SPECIALIZED_ORACLE_TASKS = ("ring_on_peg", "push_t", "upright")
+# Specialized Oracles whose episode only succeeds once the controller has verified its own withdrawal.
+VERIFIED_ORACLE_TASKS = ("push_t", "upright")
+
 
 def dataset_features(height, width, *, include_imu=False):
     return {
@@ -56,7 +61,7 @@ def collect_episode(
     rot_sensitivity=1.0,
 ):
     """Store (observation_t, applied_action_t, outcome_t+1), with no padded frames."""
-    specialized_oracle = device == "oracle" and task_type(state) in {"ring_on_peg", "push_t"}
+    specialized_oracle = device == "oracle" and task_type(state) in SPECIALIZED_ORACLE_TASKS
     if device == "oracle" and not specialized_oracle:
         require_pick_place(state, consumer="oracle collection")
     profile = OracleControllerProfile()
@@ -93,10 +98,14 @@ def collect_episode(
                 from shakebench.utils.ring_oracle import RingStackOracle
 
                 controller = RingStackOracle(env)
-            else:
+            elif task_type(state) == "push_t":
                 from shakebench.utils.push_t_oracle import PushTOracle
 
                 controller = PushTOracle(env)
+            else:
+                from shakebench.utils.upright_oracle import UprightOracle
+
+                controller = UprightOracle(env)
         reader = ShakeBenchCameraObservation(
             env, height=height, width=width, main_camera=main_camera, include_imu=False
         )
@@ -123,7 +132,7 @@ def collect_episode(
                 prior_cause=None,
                 task_rule_violation=bool(metrics.get("task_rule_violation", False)),
                 success_latched=bool(metrics["success"]["passed"])
-                and (task_type(state) != "push_t" or controller.verified),
+                and (task_type(state) not in VERIFIED_ORACLE_TASKS or controller.verified),
                 policy_abort=controller.abort_requested if controller is not None else False,
                 horizon_exhausted=step + 1 == horizon,
             )
@@ -154,7 +163,15 @@ def collect_episode(
                         else (
                             {"controller": "push_t_oracle", "pushes": controller.trace}
                             if task_type(state) == "push_t"
-                            else profile.to_dict()
+                            else (
+                                {
+                                    "controller": "upright_oracle",
+                                    "failure_reason": controller.failure_reason,
+                                    "trace": controller.trace,
+                                }
+                                if task_type(state) == "upright"
+                                else profile.to_dict()
+                            )
                         )
                     )
                     if controller is not None
@@ -301,7 +318,7 @@ def main(argv=None):
         raise ValueError(f"selected states do not belong to --task {args.task}")
     if args.device == "oracle":
         for state in states:
-            if task_type(state) != "ring_on_peg":
+            if task_type(state) not in SPECIALIZED_ORACLE_TASKS:
                 require_pick_place(state, consumer="oracle collection")
     selected_states = states
     if args.output.exists():
@@ -311,6 +328,8 @@ def main(argv=None):
     if CODEBASE_VERSION != "v2.1":
         raise RuntimeError("LeRobot v2.1 writer required: install requirements-collection.txt")
     physics_profile = args.physics_profile or ("teleop" if args.device == "spacemouse" else "official")
+    if args.task == "upright" and physics_profile != "official":
+        raise ValueError("upright oracle collection requires the official physics profile")
     instructions = list(dict.fromkeys(task_description(state)["instruction"] for state in selected_states))
     repo_id = args.repo_id or f"shakebench/{args.device}-gamma-zero"
     dataset = LeRobotDataset.create(
