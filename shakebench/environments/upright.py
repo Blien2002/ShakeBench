@@ -41,6 +41,7 @@ START_X_RANGE_M = (-0.16, -0.12)
 START_Y_RANGE_M = (-0.10, 0.10)
 _SIDE_QUAT = (2**-0.5, 0.0, -(2**-0.5), 0.0)
 _MUG_SIDE_QUAT, _MUG_SIDE_LOWER_Z = registered_rest_pose(TaskSpec(object_id="mug"), "side_double_wall")
+CEREAL_SCALE = 0.8
 OBJECT_IDS = ("mug", "wine_bottle", "cereal_box")
 UPRIGHT_OBJECTS = {
     "mug": {
@@ -65,12 +66,13 @@ UPRIGHT_OBJECTS = {
     },
     "cereal_box": {
         "asset": "objects/robocasa/cereal/cereal_0/model.xml",
+        "scale": CEREAL_SCALE,
         "mass_kg": 0.35,
         "table_mu": 0.30,
         "start_quat_wxyz": _SIDE_QUAT,
-        "start_lower_z_m": -0.018832,
+        "start_lower_z_m": -0.018832 * CEREAL_SCALE,
         "upright_quat_wxyz": (1.0, 0.0, 0.0, 0.0),
-        "upright_lower_z_m": -0.072500,
+        "upright_lower_z_m": -0.072500 * CEREAL_SCALE,
         "instruction": "cereal box",
     },
 }
@@ -293,6 +295,7 @@ class Upright(ManipulationEnv):
             joints=[dict(type="free", damping="0.0005")],
             obj_type="all",
             duplicate_collision_geoms=False,
+            scale=spec.get("scale"),
         )
         self._set_object_inertial(spec["mass_kg"])
         for name in self.object.contact_geoms:
