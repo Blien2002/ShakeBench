@@ -8,8 +8,10 @@ pinch then transmits at most about 0.1-0.2 N*m about its closing axis, which spl
   low-friction table; once past its tipping point the bottle is released onto its base. (A pivot about the
   base rim does not work here: with table friction 0.25, millimetre tracking errors of the stiff OSC already
   push the base away.)
-* ``mug``, ``boxed_drink``, and ``power_drill``: the pinch holds them rigidly, so they are lifted, turned about the closing
-  axis (plus a yaw that keeps the final side approach inside the Panda workspace) and set down upright.
+* ``mug``, ``boxed_drink`` and ``power_drill``: the pinch holds them rigidly, so they are lifted, turned about the
+  closing axis (plus a yaw that keeps the final side approach inside the Panda workspace) and set down upright.
+  The drill is held only by its grip, pinched front to back at the grip's top where the lever to the centre of
+  mass (in the motor) is shortest; see ``RIGID_GRASPS``.
 
 Every plan is checked against the arm's joint limits with inverse kinematics on scratch data before it
 runs. ``verified`` is set only after the gripper has released and withdrawn and the environment's
@@ -32,10 +34,14 @@ TRANSIT_SPEED_MPS = 0.30
 DESCEND_SPEED_MPS = 0.10
 CARRY_SPEED_MPS = 0.12
 RETREAT_SPEED_MPS = 0.15
+RETREAT_TIMEOUT_STEPS = 60
 # The finger targets ramp from open to closed in 10 steps; the pinch has its full force only after that.
 CLOSE_STEPS = 10
 OPEN_STEPS = 10
 OPEN_CLEARANCE_M = 0.008  # retreat once the fingers are this much wider than the pinch
+SETTLE_STEPS = 10  # at most, above the grasp before descending
+SETTLE_SPEED_MPS = 0.02
+SETTLE_TOLERANCE_M = 0.003
 GRIP_SETTLE_STEPS = 3  # extra steps allowed for both pad contacts to appear after closing
 FINGERS_ON_AIR_M = 0.005  # finger opening below which the pinch holds nothing (narrowest pinch: 25 mm neck)
 GRIP_DRIFT_MAX_M = 0.015  # the recorded pinch point may drift this far from the pad centre
@@ -82,8 +88,20 @@ BOTTLE_BACK_OFF_M = 0.05
 RIGID_GRASPS = {
     "mug": {"point": (0.0, 0.0144, 0.012), "site_rise_m": 0.005, "early_close_m": 0.0},
     "boxed_drink": {"point": (0.0, 0.0, 0.020), "site_rise_m": 0.0, "early_close_m": 0.012},
-    "power_drill": {"point": (0.007, -0.027, -0.013), "site_rise_m": 0.005, "early_close_m": 0.0},
+    "power_drill": {
+        "point": (0.007, -0.027, 0.020),
+        "site_rise_m": 0.005,
+        "early_close_m": 0.012,
+        "slide_out_m": 0.055,
+    },
 }
+# Power drill (0.895 kg, object z from battery to motor, x front-back, y side to side): its centre of mass sits in
+# the motor, at z = 0.041 above the whole grip. The upright turn is about the pinch's closing axis (x), where the
+# pinch passes only its ~0.16 N*m torsional friction (plus the box contacts' spread), so the pinch sits at the top
+# of the grip, 6.5 mm below the motor: the lying drill then loads it with 0.18 N*m instead of the 0.47 N*m of a
+# grip-centre pinch, which lets the drill swing battery-first into the palm. The table cannot take that torque
+# instead: every grip point lies between the battery-edge pivot and the centre of mass. The motor overhangs the
+# grip on the palm side, so the open fingers slide out horizontally (slide_out_m) before rising.
 # early_close_m: start closing this far above the grasp point. The fingers need ~7 steps to travel from fully
 # open to the 34 mm box, longer than the last centimetre of the descent takes; the box's flat faces do not care
 # where the pads land. Round pinches (neck, mug body) close only at the grasp point, on their equator.
@@ -314,24 +332,48 @@ class UprightOracle:
         return self.pads <= self._touched()
 
     def _object_points(self):
-        """Object collision-mesh vertices in the object body frame."""
+        """Points on the object's collision geometry, in the object body frame.
+
+        Mesh geoms contribute their vertices; box, capsule, cylinder and sphere geoms (the drill's primitives)
+        contribute their corners or points sampled around their end caps. Only when the object has no collision
+        geoms of these types does the body's visual mesh stand in.
+        """
         model, data = self.env.sim.model._model, self.env.sim.data._data
         body = self.env.object_body_id
         rotation, origin = data.xmat[body].reshape(3, 3), data.xpos[body]
-        points = []
-        geoms = sorted(self.env.object_geom_ids)
-        if not any(model.geom_type[geom] == mujoco.mjtGeom.mjGEOM_MESH for geom in geoms):
+        types = mujoco.mjtGeom
+        sampled = (
+            types.mjGEOM_MESH,
+            types.mjGEOM_BOX,
+            types.mjGEOM_CAPSULE,
+            types.mjGEOM_CYLINDER,
+            types.mjGEOM_SPHERE,
+        )
+        geoms = [geom for geom in sorted(self.env.object_geom_ids) if model.geom_type[geom] in sampled]
+        if not geoms:
             geoms = [
                 geom
                 for geom in range(model.ngeom)
-                if model.geom_bodyid[geom] == body and model.geom_type[geom] == mujoco.mjtGeom.mjGEOM_MESH
+                if model.geom_bodyid[geom] == body and model.geom_type[geom] == types.mjGEOM_MESH
             ]
+        ring = np.array([[np.cos(a), np.sin(a), 0.0] for a in np.linspace(0.0, 2.0 * np.pi, 12, endpoint=False)])
+        points = []
         for geom in geoms:
-            if model.geom_type[geom] != mujoco.mjtGeom.mjGEOM_MESH:
-                continue
-            mesh = model.geom_dataid[geom]
-            start, count = model.mesh_vertadr[mesh], model.mesh_vertnum[mesh]
-            world = model.mesh_vert[start : start + count] @ data.geom_xmat[geom].reshape(3, 3).T + data.geom_xpos[geom]
+            kind, size = model.geom_type[geom], model.geom_size[geom]
+            if kind == types.mjGEOM_MESH:
+                mesh = model.geom_dataid[geom]
+                start, count = model.mesh_vertadr[mesh], model.mesh_vertnum[mesh]
+                local = model.mesh_vert[start : start + count]
+            elif kind == types.mjGEOM_BOX:
+                local = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)]) * size
+            elif kind == types.mjGEOM_SPHERE:
+                local = np.vstack((ring, ring[:, [2, 0, 1]], ring[:, [1, 2, 0]])) * size[0]
+            else:  # capsule or cylinder along the geom z axis, half-length size[1]
+                caps = [ring * size[0] + [0.0, 0.0, end * size[1]] for end in (-1.0, 1.0)]
+                if kind == types.mjGEOM_CAPSULE:
+                    caps += [[0.0, 0.0, end * (size[1] + size[0])] for end in (-1.0, 1.0)]
+                local = np.vstack(caps)
+            world = local @ data.geom_xmat[geom].reshape(3, 3).T + data.geom_xpos[geom]
             points.append((world - origin) @ rotation)
         return np.vstack(points)
 
@@ -444,6 +486,15 @@ class UprightOracle:
         ):
             self._stop("approach_stalled")
             return False
+        # The approach ends inside a loose tolerance while still moving; settle before descending so the residual
+        # speed does not carry the fingers sideways onto a neighbouring part (the drill's motor is 6.5 mm away).
+        previous = self._eef()
+        for _ in range(SETTLE_STEPS):
+            yield self._command(pre_grasp, limit=0.01)
+            speed = np.linalg.norm(self._eef() - previous) / self.control_dt
+            previous = self._eef()
+            if speed < SETTLE_SPEED_MPS and np.linalg.norm(self._eef() - pre_grasp) < SETTLE_TOLERANCE_M:
+                break
         self.phase = "descend"
         if not (yield from self._move(site, speed=DESCEND_SPEED_MPS, tolerance=0.002, close_within=early_close)):
             self._stop("descend_blocked")
@@ -460,6 +511,25 @@ class UprightOracle:
         self._stop("grasp_missed")
         return False
 
+    def _retreat_leg(self, displacement):
+        """Withdraw by a world displacement; legs may end a little short at the workspace boundary."""
+        start, goal = self._eef(), self._eef() + displacement
+        length2 = float(np.dot(displacement, displacement))
+        previous, slow = self._eef(), 0
+        for _ in range(RETREAT_TIMEOUT_STEPS):
+            current = self._eef()
+            delta = goal - current
+            distance = np.linalg.norm(delta)
+            travelled = float(np.dot(current - start, displacement)) / length2
+            slow = slow + 1 if np.linalg.norm(current - previous) / self.control_dt < 0.01 else 0
+            if distance < 0.005 or (travelled >= 0.7 and slow >= 3):
+                break
+            previous = current
+            step = min(distance, RETREAT_SPEED_MPS * OSC_LAG_S)
+            yield self._command(current + delta * step / distance, limit=max(0.004, step))
+        travelled = float(np.dot(self._eef() - start, displacement)) / length2
+        return travelled >= 0.7 and not self._touched()
+
     def _release(self, retreat):
         """Open, withdraw along the given world displacements, and wait for the success latch."""
         self.phase = "release"
@@ -471,13 +541,11 @@ class UprightOracle:
             yield self._command(hold)
         self.phase = "retreat"
         for displacement in retreat:
-            start = self._eef()
-            if not (yield from self._move(start + displacement, speed=RETREAT_SPEED_MPS, tolerance=0.005, timeout=80)):
-                # Clearance legs may end a few millimetres short at the workspace boundary.
-                travelled = np.dot(self._eef() - start, displacement) / np.dot(displacement, displacement)
-                if travelled < 0.7 or self._touched():
-                    self._stop("retreat_stalled")
-                    return
+            if not (yield from self._retreat_leg(displacement)):
+                self._stop("retreat_stalled")
+                return
+            if self.env.get_metrics()["success"]["passed"]:
+                break  # already released, still and upright: the remaining clearance legs add nothing
         self.phase = "verify"
         hold = self._eef()
         for _ in range(VERIFY_STEPS):
@@ -674,10 +742,11 @@ class UprightOracle:
             bump = self._transfer_bump(site, start, end, lift, above, top, up)
             if bump is None:
                 continue
-            retreat = -RETREAT_M * approach + RISE_M * up
+            slide = grasp.get("slide_out_m")
+            retreat = [-slide * approach, RISE_M * up] if slide else [-RETREAT_M * approach + RISE_M * up]
             poses = [(site - PRE_GRASP_M * start[:, 2], start), (site, start), (lift, start)]
             poses += [self._transfer_pose(lift, above, start, end, bump, f, up) for f in (0.25, 0.5, 0.75, 1.0)]
-            poses += [(final, end), (final + retreat, end)]
+            poses += [(final, end)] + [(final + sum(retreat[: index + 1]), end) for index in range(len(retreat))]
             margin = kinematics.path_margin(poses)
             if margin >= IK_MARGIN_MIN_RAD:
                 plan = {
@@ -748,7 +817,7 @@ class UprightOracle:
             self._stop("place_timeout")
             return
         self._log("placed", up_cosine=self._up_cosine())
-        yield from self._release([plan["retreat"]])
+        yield from self._release(plan["retreat"])
 
     def _bottom_gap(self, top, up):
         centre, rotation = self._object()
