@@ -8,7 +8,7 @@ pinch then transmits at most about 0.1-0.2 N*m about its closing axis, which spl
   low-friction table; once past its tipping point the bottle is released onto its base. (A pivot about the
   base rim does not work here: with table friction 0.25, millimetre tracking errors of the stiff OSC already
   push the base away.)
-* ``mug``, ``boxed_drink``, and ``pot``: the pinch holds them rigidly, so they are lifted, turned about the closing
+* ``mug``, ``boxed_drink``, and ``power_drill``: the pinch holds them rigidly, so they are lifted, turned about the closing
   axis (plus a yaw that keeps the final side approach inside the Panda workspace) and set down upright.
 
 Every plan is checked against the arm's joint limits with inverse kinematics on scratch data before it
@@ -28,8 +28,6 @@ OPEN, CLOSE = -1.0, 1.0
 # Grip-site frame (z = approach): pad centres sit 3.6 mm behind the site, the palm 31 mm behind it.
 PAD_CENTRE_BEHIND_SITE_M = 0.0036
 PRE_GRASP_M = 0.05
-POT_PRE_GRASP_M = 0.22
-POT_CLEARANCE_RISE_M = 0.14
 TRANSIT_SPEED_MPS = 0.30
 DESCEND_SPEED_MPS = 0.10
 CARRY_SPEED_MPS = 0.12
@@ -84,7 +82,7 @@ BOTTLE_BACK_OFF_M = 0.05
 RIGID_GRASPS = {
     "mug": {"point": (0.0, 0.0144, 0.012), "site_rise_m": 0.005, "early_close_m": 0.0},
     "boxed_drink": {"point": (0.0, 0.0, 0.020), "site_rise_m": 0.0, "early_close_m": 0.012},
-    "pot": {"point": (0.105, 0.0, 0.070), "site_rise_m": 0.0, "early_close_m": 0.0},
+    "power_drill": {"point": (0.007, -0.027, -0.013), "site_rise_m": 0.005, "early_close_m": 0.0},
 }
 # early_close_m: start closing this far above the grasp point. The fingers need ~7 steps to travel from fully
 # open to the 34 mm box, longer than the last centimetre of the descent takes; the box's flat faces do not care
@@ -321,7 +319,14 @@ class UprightOracle:
         body = self.env.object_body_id
         rotation, origin = data.xmat[body].reshape(3, 3), data.xpos[body]
         points = []
-        for geom in sorted(self.env.object_geom_ids):
+        geoms = sorted(self.env.object_geom_ids)
+        if not any(model.geom_type[geom] == mujoco.mjtGeom.mjGEOM_MESH for geom in geoms):
+            geoms = [
+                geom
+                for geom in range(model.ngeom)
+                if model.geom_bodyid[geom] == body and model.geom_type[geom] == mujoco.mjtGeom.mjGEOM_MESH
+            ]
+        for geom in geoms:
             if model.geom_type[geom] != mujoco.mjtGeom.mjGEOM_MESH:
                 continue
             mesh = model.geom_dataid[geom]
@@ -429,29 +434,17 @@ class UprightOracle:
 
     # --- shared grasp, release and verification ------------------------------------------------------------
 
-    def _pot_handle_site(self):
-        centre, rotation = self._object()
-        return centre + rotation @ np.asarray(RIGID_GRASPS["pot"]["point"])
-
-    def _grasp(self, site, early_close=0.0, pre_grasp_m=PRE_GRASP_M):
+    def _grasp(self, site, early_close=0.0):
         """Approach along the planned approach axis, descend with open fingers and pinch."""
         approach = self.orientation[:, 2]
         self.phase = "approach"
-        if self.object_id == "pot":
-            up = self._table()[1][:, 2]
-            if not (yield from self._move(self._eef() + POT_CLEARANCE_RISE_M * up, speed=TRANSIT_SPEED_MPS)):
-                self._stop("approach_clearance_stalled")
-                return False
-            site = self._pot_handle_site()
-        pre_grasp = site - pre_grasp_m * approach
+        pre_grasp = site - PRE_GRASP_M * approach
         if not (
             yield from self._move(pre_grasp, speed=TRANSIT_SPEED_MPS, tolerance=0.006, timeout=250, rotation_limit=0.6)
         ):
             self._stop("approach_stalled")
             return False
         self.phase = "descend"
-        if self.object_id == "pot":
-            site = self._pot_handle_site()
         if not (yield from self._move(site, speed=DESCEND_SPEED_MPS, tolerance=0.002, close_within=early_close)):
             self._stop("descend_blocked")
             return False
@@ -473,7 +466,7 @@ class UprightOracle:
         self.grip = OPEN
         hold = self._eef()
         for _ in range(OPEN_STEPS):
-            if self.object_id != "pot" and self._finger_opening() >= self._grip_width + OPEN_CLEARANCE_M:
+            if self._finger_opening() >= self._grip_width + OPEN_CLEARANCE_M:
                 break
             yield self._command(hold)
         self.phase = "retreat"
@@ -660,8 +653,7 @@ class UprightOracle:
         lift = site + TRANSFER_LIFT_M * up
         candidates = []
         for sign in (1.0, -1.0):
-            closing = axis if self.object_id == "pot" else turn
-            start = _frame(sign * closing, -up)
+            start = _frame(sign * turn, -up)
             for yaw in APPROACH_YAWS_RAD:
                 approach = table @ [np.cos(yaw), np.sin(yaw), 0.0]
                 twist = np.arctan2(np.dot(np.cross(axis, approach), up), np.dot(axis, approach))
@@ -678,16 +670,12 @@ class UprightOracle:
         for cost, angle, start, end, final, approach in candidates:
             if feasible and (cost > feasible[0][1] + 0.5 or len(feasible) >= 3):
                 break
-            above = final + (0.05 if self.object_id == "pot" else PLACE_ABOVE_M) * up
+            above = final + PLACE_ABOVE_M * up
             bump = self._transfer_bump(site, start, end, lift, above, top, up)
             if bump is None:
                 continue
             retreat = -RETREAT_M * approach + RISE_M * up
-            if self.object_id == "pot":
-                handle_out = motion @ rotation[:, 0]
-                retreat = 0.12 * _unit(handle_out - up * np.dot(handle_out, up)) + 0.10 * up
-            pre_grasp_m = POT_PRE_GRASP_M if self.object_id == "pot" else PRE_GRASP_M
-            poses = [(site - pre_grasp_m * start[:, 2], start), (site, start), (lift, start)]
+            poses = [(site - PRE_GRASP_M * start[:, 2], start), (site, start), (lift, start)]
             poses += [self._transfer_pose(lift, above, start, end, bump, f, up) for f in (0.25, 0.5, 0.75, 1.0)]
             poses += [(final, end), (final + retreat, end)]
             margin = kinematics.path_margin(poses)
@@ -719,8 +707,7 @@ class UprightOracle:
             margin_rad=plan["margin_rad"],
         )
         self.orientation = plan["start"]
-        pre_grasp_m = POT_PRE_GRASP_M if self.object_id == "pot" else PRE_GRASP_M
-        if not (yield from self._grasp(plan["site"], RIGID_GRASPS[self.object_id]["early_close_m"], pre_grasp_m)):
+        if not (yield from self._grasp(plan["site"], RIGID_GRASPS[self.object_id]["early_close_m"])):
             return
         self.phase = "lift"
         if not (yield from self._move(plan["lift"], speed=CARRY_SPEED_MPS, tolerance=0.008, timeout=60)):
@@ -752,7 +739,7 @@ class UprightOracle:
         top, _ = self._table()
         for _ in range(80):
             gap = self._bottom_gap(top, up)
-            if gap <= (0.015 if self.object_id == "pot" else PLACE_GAP_M) or self.env.get_metrics()["touching_table"]:
+            if gap <= PLACE_GAP_M or self.env.get_metrics()["touching_table"]:
                 break
             self._level()
             speed = PLACE_SPEED_MPS if gap > PLACE_SLOW_GAP_M else PLACE_SLOW_SPEED_MPS

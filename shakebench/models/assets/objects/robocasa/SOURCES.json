@@ -171,21 +171,6 @@
         0.12800000168994397,
         0.033946191727014914
       ]
-    },
-    "pot": {
-      "instance": "pot/pot_061",
-      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-Robotics-Manipulation-Objects-Kitchen-MJCF/blob/main/objects_lightwheel/pot.zip",
-      "source_revision": "NVIDIA objects_lightwheel/pot.zip (SHA-256 418748fd6f68822a7c083ea4a070830319aee52aff5746137cb03f857cd9d57b)",
-      "source_license": "CC-BY-4.0",
-      "source_sha256": "dbffcf584f6dc0b457055cf87f7c5ffc6c82a68cb391ebfc508dfc3898ea67dc",
-      "generated_sha256": "dbffcf584f6dc0b457055cf87f7c5ffc6c82a68cb391ebfc508dfc3898ea67dc",
-      "runtime_scale": [
-        0.62,
-        0.62,
-        0.62
-      ],
-      "support_lower_upright_m": -0.00133815,
-      "support_lower_side_m": -0.08641002
     }
   },
   "schema_id": "shakebench.pick_place_v2.assets"
