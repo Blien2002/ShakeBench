@@ -796,6 +796,9 @@ class UprightOracle:
                 return
         # Converge above the placement while levelling out residual in-hand rotation.
         for _ in range(LEVEL_STEPS):
+            # Real grasp drift can land the base before the planned above pose; do not lift it again.
+            if self._up_cosine() >= 0.995 and self.env.get_metrics()["touching_table"]:
+                break
             settled = np.linalg.norm(self._eef() - plan["above"]) < 0.006 and self._orientation_error() < 0.04
             if settled and self._up_cosine() > 0.9995:
                 break
