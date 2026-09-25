@@ -1,4 +1,4 @@
-"""Generate reproducible starts for all three upright object variants."""
+"""Generate reproducible starts for all four upright object variants."""
 
 import argparse
 import json

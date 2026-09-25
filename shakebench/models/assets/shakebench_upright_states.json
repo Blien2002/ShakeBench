@@ -1,6 +1,6 @@
 {
   "schema_id": "shakebench.upright.states",
-  "schema_version": 3,
+  "schema_version": 4,
   "generator": {
     "seed": 0,
     "split": "train"
@@ -10,7 +10,7 @@
       "state_id": "upright-mug-s0-0000",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "mug"
       },
       "object_xy_m": [
@@ -27,7 +27,7 @@
       "state_id": "upright-wine_bottle-s0-0001",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "wine_bottle"
       },
       "object_xy_m": [
@@ -44,7 +44,7 @@
       "state_id": "upright-boxed_drink-s0-0002",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "boxed_drink"
       },
       "object_xy_m": [
@@ -58,11 +58,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-mug-s0-0003",
+      "state_id": "upright-pot-s0-0003",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "mug"
+        "version": 4,
+        "object_id": "pot"
       },
       "object_xy_m": [
         -0.12570382893649723,
@@ -75,11 +75,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-wine_bottle-s0-0004",
+      "state_id": "upright-mug-s0-0004",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "wine_bottle"
+        "version": 4,
+        "object_id": "mug"
       },
       "object_xy_m": [
         -0.12547284310600454,
@@ -92,11 +92,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-boxed_drink-s0-0005",
+      "state_id": "upright-wine_bottle-s0-0005",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "boxed_drink"
+        "version": 4,
+        "object_id": "wine_bottle"
       },
       "object_xy_m": [
         -0.15886721315418148,
@@ -109,11 +109,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-mug-s0-0006",
+      "state_id": "upright-boxed_drink-s0-0006",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "mug"
+        "version": 4,
+        "object_id": "boxed_drink"
       },
       "object_xy_m": [
         -0.13538459554074983,
@@ -126,11 +126,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-wine_bottle-s0-0007",
+      "state_id": "upright-pot-s0-0007",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "wine_bottle"
+        "version": 4,
+        "object_id": "pot"
       },
       "object_xy_m": [
         -0.1325783206207722,
@@ -143,11 +143,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-boxed_drink-s0-0008",
+      "state_id": "upright-mug-s0-0008",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "boxed_drink"
+        "version": 4,
+        "object_id": "mug"
       },
       "object_xy_m": [
         -0.15459613979910355,
@@ -160,11 +160,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-mug-s0-0009",
+      "state_id": "upright-wine_bottle-s0-0009",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "mug"
+        "version": 4,
+        "object_id": "wine_bottle"
       },
       "object_xy_m": [
         -0.14056658564672844,
@@ -177,11 +177,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-wine_bottle-s0-0010",
+      "state_id": "upright-boxed_drink-s0-0010",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "wine_bottle"
+        "version": 4,
+        "object_id": "boxed_drink"
       },
       "object_xy_m": [
         -0.13713880677080956,
@@ -194,11 +194,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-boxed_drink-s0-0011",
+      "state_id": "upright-pot-s0-0011",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "boxed_drink"
+        "version": 4,
+        "object_id": "pot"
       },
       "object_xy_m": [
         -0.14433523997887354,
@@ -214,7 +214,7 @@
       "state_id": "upright-mug-s0-0012",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "mug"
       },
       "object_xy_m": [
@@ -231,7 +231,7 @@
       "state_id": "upright-wine_bottle-s0-0013",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "wine_bottle"
       },
       "object_xy_m": [
@@ -248,7 +248,7 @@
       "state_id": "upright-boxed_drink-s0-0014",
       "task": {
         "task_type": "upright",
-        "version": 3,
+        "version": 4,
         "object_id": "boxed_drink"
       },
       "object_xy_m": [
@@ -262,11 +262,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-mug-s0-0015",
+      "state_id": "upright-pot-s0-0015",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "mug"
+        "version": 4,
+        "object_id": "pot"
       },
       "object_xy_m": [
         -0.14381792640713886,
@@ -279,11 +279,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-wine_bottle-s0-0016",
+      "state_id": "upright-mug-s0-0016",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "wine_bottle"
+        "version": 4,
+        "object_id": "mug"
       },
       "object_xy_m": [
         -0.1480521546872431,
@@ -296,11 +296,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-boxed_drink-s0-0017",
+      "state_id": "upright-wine_bottle-s0-0017",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "boxed_drink"
+        "version": 4,
+        "object_id": "wine_bottle"
       },
       "object_xy_m": [
         -0.14539559327020685,
@@ -313,11 +313,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-mug-s0-0018",
+      "state_id": "upright-boxed_drink-s0-0018",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "mug"
+        "version": 4,
+        "object_id": "boxed_drink"
       },
       "object_xy_m": [
         -0.14238491381136864,
@@ -330,11 +330,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-wine_bottle-s0-0019",
+      "state_id": "upright-pot-s0-0019",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "wine_bottle"
+        "version": 4,
+        "object_id": "pot"
       },
       "object_xy_m": [
         -0.1351914619193849,
@@ -347,11 +347,11 @@
       "split": "train"
     },
     {
-      "state_id": "upright-boxed_drink-s0-0020",
+      "state_id": "upright-mug-s0-0020",
       "task": {
         "task_type": "upright",
-        "version": 3,
-        "object_id": "boxed_drink"
+        "version": 4,
+        "object_id": "mug"
       },
       "object_xy_m": [
         -0.12969084618766835,
@@ -360,6 +360,125 @@
       "object_yaw_rad": 0.18417373427004202,
       "excitation_seed": 988905426,
       "imu_seed": 3374923886,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-wine_bottle-s0-0021",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "wine_bottle"
+      },
+      "object_xy_m": [
+        -0.14341376602577316,
+        0.04689671435774587
+      ],
+      "object_yaw_rad": 1.3266498287008082,
+      "excitation_seed": 3970562665,
+      "imu_seed": 4003165871,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-boxed_drink-s0-0022",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "boxed_drink"
+      },
+      "object_xy_m": [
+        -0.1554026946687638,
+        0.04580302341526188
+      ],
+      "object_yaw_rad": 2.685583748270811,
+      "excitation_seed": 2870073559,
+      "imu_seed": 4157211330,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-pot-s0-0023",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "pot"
+      },
+      "object_xy_m": [
+        -0.15941174780138523,
+        0.07272801804911516
+      ],
+      "object_yaw_rad": 3.0234376056325463,
+      "excitation_seed": 3553548099,
+      "imu_seed": 4111186416,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-mug-s0-0024",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "mug"
+      },
+      "object_xy_m": [
+        -0.15404943951070008,
+        0.09452576276459099
+      ],
+      "object_yaw_rad": 2.4500373544500818,
+      "excitation_seed": 1648545589,
+      "imu_seed": 3532068694,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-wine_bottle-s0-0025",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "wine_bottle"
+      },
+      "object_xy_m": [
+        -0.14080048304768672,
+        -0.05352541607213923
+      ],
+      "object_yaw_rad": 1.8967716167257427,
+      "excitation_seed": 599818473,
+      "imu_seed": 3966531833,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-boxed_drink-s0-0026",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "boxed_drink"
+      },
+      "object_xy_m": [
+        -0.1493547891083083,
+        0.007786881524437378
+      ],
+      "object_yaw_rad": -0.35969458386482067,
+      "excitation_seed": 638915061,
+      "imu_seed": 3998688924,
+      "t0_s": 0.0,
+      "split": "train"
+    },
+    {
+      "state_id": "upright-pot-s0-0027",
+      "task": {
+        "task_type": "upright",
+        "version": 4,
+        "object_id": "pot"
+      },
+      "object_xy_m": [
+        -0.15837957155246263,
+        0.046401239131312166
+      ],
+      "object_yaw_rad": 0.718628304764358,
+      "excitation_seed": 2154667672,
+      "imu_seed": 121828315,
       "t0_s": 0.0,
       "split": "train"
     }

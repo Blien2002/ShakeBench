@@ -1,0 +1,115 @@
+<mujoco model="model">
+  <compiler angle="radian"/>
+  <asset>
+    <mesh file="visual/Pot061.obj" name="Pot061_vis"/>
+    <texture file="visual/T_Pot061_BC001.png" name="Pot061_material" type="2d"/>
+    <material name="Pot061_material" rgba="1 1 1 1.0" texture="Pot061_material" shininess="0.4472135901451111" specular="0.3103448502657381"/>
+    <mesh file="collision/Pot061_collision_8_0.obj" name="Pot061_collision_8_0"/>
+    <mesh file="collision/Pot061_collision_9_0.obj" name="Pot061_collision_9_0"/>
+    <mesh file="collision/Pot061_collision_23_0.obj" name="Pot061_collision_23_0"/>
+    <mesh file="collision/Pot061_collision_22_0.obj" name="Pot061_collision_22_0"/>
+    <mesh file="collision/Pot061_collision_20_0.obj" name="Pot061_collision_20_0"/>
+    <mesh file="collision/Pot061_collision_21_0.obj" name="Pot061_collision_21_0"/>
+    <mesh file="collision/Pot061_collision_19_0.obj" name="Pot061_collision_19_0"/>
+    <mesh file="collision/Pot061_collision_25_0.obj" name="Pot061_collision_25_0"/>
+    <mesh file="collision/Pot061_collision_24_0.obj" name="Pot061_collision_24_0"/>
+    <mesh file="collision/Pot061_collision_18_0.obj" name="Pot061_collision_18_0"/>
+    <mesh file="collision/Pot061_collision_26_0.obj" name="Pot061_collision_26_0"/>
+    <mesh file="collision/Pot061_collision_27_0.obj" name="Pot061_collision_27_0"/>
+    <mesh file="collision/Pot061_collision_16_0.obj" name="Pot061_collision_16_0"/>
+    <mesh file="collision/Pot061_collision_17_0.obj" name="Pot061_collision_17_0"/>
+    <mesh file="collision/Pot061_collision_15_0.obj" name="Pot061_collision_15_0"/>
+    <mesh file="collision/Pot061_collision_29_0.obj" name="Pot061_collision_29_0"/>
+    <mesh file="collision/Pot061_collision_28_0.obj" name="Pot061_collision_28_0"/>
+    <mesh file="collision/Pot061_collision_28_1.obj" name="Pot061_collision_28_1"/>
+    <mesh file="collision/Pot061_collision_14_0.obj" name="Pot061_collision_14_0"/>
+    <mesh file="collision/Pot061_collision_14_1.obj" name="Pot061_collision_14_1"/>
+    <mesh file="collision/Pot061_collision_10_0.obj" name="Pot061_collision_10_0"/>
+    <mesh file="collision/Pot061_collision_11_0.obj" name="Pot061_collision_11_0"/>
+    <mesh file="collision/Pot061_collision_13_0.obj" name="Pot061_collision_13_0"/>
+    <mesh file="collision/Pot061_collision_12_0.obj" name="Pot061_collision_12_0"/>
+    <mesh file="collision/Pot061_collision_7_0.obj" name="Pot061_collision_7_0"/>
+    <mesh file="collision/Pot061_collision_6_0.obj" name="Pot061_collision_6_0"/>
+    <mesh file="collision/Pot061_collision_4_0.obj" name="Pot061_collision_4_0"/>
+    <mesh file="collision/Pot061_collision_5_0.obj" name="Pot061_collision_5_0"/>
+    <mesh file="collision/Pot061_collision_1_0.obj" name="Pot061_collision_1_0"/>
+    <mesh file="collision/Pot061_collision_1_1.obj" name="Pot061_collision_1_1"/>
+    <mesh file="collision/Pot061_collision_0_0.obj" name="Pot061_collision_0_0"/>
+    <mesh file="collision/Pot061_collision_0_1.obj" name="Pot061_collision_0_1"/>
+    <mesh file="collision/Pot061_collision_0_2.obj" name="Pot061_collision_0_2"/>
+    <mesh file="collision/Pot061_collision_0_3.obj" name="Pot061_collision_0_3"/>
+    <mesh file="collision/Pot061_collision_0_4.obj" name="Pot061_collision_0_4"/>
+    <mesh file="collision/Pot061_collision_0_5.obj" name="Pot061_collision_0_5"/>
+    <mesh file="collision/Pot061_collision_0_6.obj" name="Pot061_collision_0_6"/>
+    <mesh file="collision/Pot061_collision_0_7.obj" name="Pot061_collision_0_7"/>
+    <mesh file="collision/Pot061_collision_0_8.obj" name="Pot061_collision_0_8"/>
+    <mesh file="collision/Pot061_collision_2_0.obj" name="Pot061_collision_2_0"/>
+    <mesh file="collision/Pot061_collision_3_0.obj" name="Pot061_collision_3_0"/>
+  </asset>
+  <default>
+    <default class="visual">
+      <geom conaffinity="0" contype="0" group="1" type="mesh" density="100"/>
+    </default>
+    <default class="collision">
+      <geom group="0" type="mesh" density="100" solimp="0.95 0.98 0.001" solref="0.004 1" rgba="1 1 1 0.25"/>
+    </default>
+    <default class="spawn">
+      <geom group="0" rgba="1 1 1 0.5" contype="0" conaffinity="0"/>
+      <site group="0" rgba="1 1 1 0.5"/>
+    </default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0"/>
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom mesh="Pot061_vis" type="mesh" class="visual" material="Pot061_material"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_8_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_9_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_23_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_22_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_20_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_21_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_19_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_25_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_24_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_18_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_26_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_27_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_16_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_17_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_15_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_29_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_28_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_28_1"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_14_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_14_1"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_10_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_11_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_13_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_12_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_7_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_6_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_4_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_5_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_1_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_1_1"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_1"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_2"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_3"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_4"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_5"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_6"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_7"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_0_8"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_2_0"/>
+        <geom class="collision" type="mesh" mesh="Pot061_collision_3_0"/>
+        <geom class="region" name="reg_bbox" type="box" pos="-1.4500000000000624e-05 -1.000000000001e-06 0.07039035" size="0.1998515 0.13937 0.07254865"/>
+        <geom class="region" name="liquid" type="cylinder" rgba="0 0 0 0" size="0.13 0.001" pos="0.000007 0.000001 0.10"/>
+        <geom class="region" name="reg_int" type="cylinder" rgba="0 0 0 0" size="0.10 0.065" pos="0.000007 0.000001 0.07"/>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
