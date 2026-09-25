@@ -1,4 +1,4 @@
-"""Stand a fallen mug, wine bottle, or cereal box on the moving worktable."""
+"""Stand a fallen mug, wine bottle, or boxed drink on the moving worktable."""
 
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
@@ -31,8 +31,8 @@ from shakebench.utils.task_registry import TaskDefinition, register_state_loader
 from shakebench.utils.tasks import OBJECTS, UPRIGHT_AXIS_COSINE_MIN, TaskSpec, registered_rest_pose
 
 STATE_SCHEMA = "shakebench.upright.states"
-TASK_VERSION = 2
-SCHEMA_VERSION = 2
+TASK_VERSION = 3
+SCHEMA_VERSION = 3
 UP_COSINE_MIN = UPRIGHT_AXIS_COSINE_MIN
 LINEAR_SPEED_MAX_M_S = 0.05
 ANGULAR_SPEED_MAX_RAD_S = 0.2
@@ -41,8 +41,7 @@ START_X_RANGE_M = (-0.16, -0.12)
 START_Y_RANGE_M = (-0.10, 0.10)
 _SIDE_QUAT = (2**-0.5, 0.0, -(2**-0.5), 0.0)
 _MUG_SIDE_QUAT, _MUG_SIDE_LOWER_Z = registered_rest_pose(TaskSpec(object_id="mug"), "side_double_wall")
-CEREAL_SCALE = 0.8
-OBJECT_IDS = ("mug", "wine_bottle", "cereal_box")
+OBJECT_IDS = ("mug", "wine_bottle", "boxed_drink")
 UPRIGHT_OBJECTS = {
     "mug": {
         "asset": OBJECTS["mug"]["asset"],
@@ -64,16 +63,15 @@ UPRIGHT_OBJECTS = {
         "upright_lower_z_m": -0.128000,
         "instruction": "wine bottle",
     },
-    "cereal_box": {
-        "asset": "objects/robocasa/cereal/cereal_0/model.xml",
-        "scale": CEREAL_SCALE,
-        "mass_kg": 0.35,
+    "boxed_drink": {
+        "asset": "objects/robocasa/boxed_drink/boxed_drink_0/model.xml",
+        "mass_kg": 0.20,
         "table_mu": 0.30,
         "start_quat_wxyz": _SIDE_QUAT,
-        "start_lower_z_m": -0.018832 * CEREAL_SCALE,
+        "start_lower_z_m": -0.02610909,
         "upright_quat_wxyz": (1.0, 0.0, 0.0, 0.0),
-        "upright_lower_z_m": -0.072500 * CEREAL_SCALE,
-        "instruction": "cereal box",
+        "upright_lower_z_m": -0.04245595,
+        "instruction": "boxed drink",
     },
 }
 
@@ -95,7 +93,7 @@ def validate_state(state):
     """Accept only reproducible starts in the Panda-visible tabletop region."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("upright state fields must match version 2")
+        raise ValueError("upright state fields must match version 3")
     if (
         not isinstance(state["task"], Mapping)
         or set(state["task"]) != {"task_type", "version", "object_id"}
@@ -104,7 +102,7 @@ def validate_state(state):
         or state["task"]["version"] != TASK_VERSION
         or state["task"]["object_id"] not in UPRIGHT_OBJECTS
     ):
-        raise ValueError("upright version 2 supports only mug, wine_bottle, and cereal_box")
+        raise ValueError("upright version 3 supports only mug, wine_bottle, and boxed_drink")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be nonempty")
     if "split" in state and state["split"] not in ("train", "eval"):

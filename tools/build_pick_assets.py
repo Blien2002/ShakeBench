@@ -30,6 +30,7 @@ SOURCE_LICENSE = "CC-BY-4.0"
 #: compiled Panda jaw opens to 80 mm, so the task keeps at least 10 mm of
 #: allowance around the closed pads instead of pinching at the jaw limit.
 INSTANCES = {
+    "boxed_drink": ("boxed_drink/boxed_drink_0", (0.8, 0.8, 0.8)),
     "cereal": ("cereal/cereal_0", (1.0, 1.0, 1.0)),
     "mug": ("mug/mug_1", (0.80, 0.80, 0.80)),
     "wine_bottle": ("wine/wine_3", (1.6, 1.6, 1.6)),

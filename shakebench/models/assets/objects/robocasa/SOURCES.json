@@ -39,6 +39,25 @@
         0.05350078120928855
       ]
     },
+    "boxed_drink": {
+      "applied_scale": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "generated_sha256": "e6441dcc58d76d7ee103f152a3fb08fca87273babc324e013b380a18703a2f6c",
+      "instance": "boxed_drink/boxed_drink_0",
+      "source_license": "CC-BY-4.0",
+      "source_model_xml": "/home/miracle04/Documents/Codex/2026-09-18/new-chat-2/work/robocasa-official/robocasa/models/assets/objects/objaverse/boxed_drink/boxed_drink_0/model.xml",
+      "source_revision": "objaverse.zip downloaded 2026-09-18 (RoboCasa `main` 4f8a2980def75a55dff96b990745b83540425f09)",
+      "source_sha256": "8d4d22819b69b375fbff657df62b7529a20a38ed962841339ec8ebe802772ff3",
+      "source_url": "https://huggingface.co/datasets/robocasa/robocasa-assets",
+      "support_lower_upper_radius_m": [
+        -0.042455948763379235,
+        0.04245500207115078,
+        0.02698896744340692
+      ]
+    },
     "cereal": {
       "applied_scale": [
         1.0,
