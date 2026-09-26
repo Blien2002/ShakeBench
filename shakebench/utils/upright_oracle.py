@@ -26,6 +26,8 @@ from shakebench.environments.upright import UPRIGHT_OBJECTS
 
 # Delta-mode OSC (kp 150, critical damping) tracks a per-step delta d at about d / OSC_LAG_S metres per second.
 OSC_LAG_S = 2.0 / np.sqrt(150.0)
+LINEAR_ACCEL_MPS2 = 0.5
+ANGULAR_ACCEL_RAD_S2 = 3.0
 OPEN, CLOSE = -1.0, 1.0
 # Grip-site frame (z = approach): pad centres sit 3.6 mm behind the site, the palm 31 mm behind it.
 PAD_CENTRE_BEHIND_SITE_M = 0.0036
@@ -57,7 +59,7 @@ BOTTLE_BASE_RADIUS_M = 0.0339
 # Stand-up lift: the base slides under the pinch (table mu 0.25) while the bottle turns inside it.
 # Hand off to straightening at 80 deg, before OSC lag and the final fast rotation lift the base off the table.
 LIFT_RATE_M = 0.004
-LIFT_SLOW_RATE_M = 0.002  # above LIFT_SLOW_ELEVATION_RAD, so the base keeps sliding instead of lifting off
+LIFT_SLOW_RATE_M = 0.002  # taper further toward vertical to stop the neck lift without reversing it
 LIFT_SLOW_ELEVATION_RAD = np.radians(40.0)
 LIFT_OVERSHOOT_M = 0.03  # allowance for the OSC sag under the bottle's weight
 STAND_ELEVATION_RAD = np.radians(80.0)
@@ -123,9 +125,7 @@ PLACE_SPEED_MPS = 0.04
 # Touch down slowly: a 4 cm/s contact can leave the light box rocking on its base for seconds.
 PLACE_SLOW_GAP_M = 0.008
 PLACE_SLOW_SPEED_MPS = 0.015
-PLACE_GAP_M = 0.002  # release once the upright bottom face is this close to the table
 LEVEL_STEP_RAD = 0.02  # per-step correction of the grip target toward the measured object axis
-LEVEL_STEPS = 40
 RETREAT_M = 0.05
 RISE_M = 0.04
 # Final side approaches, measured from the table x axis (horizontal), and the minimum joint margin to accept.
@@ -283,6 +283,8 @@ class UprightOracle:
         self._closed_at = 0
         self._points = self._object_points()
         self._hold_target = self._eef()
+        self._linear_delta = np.zeros(3)
+        self._angular_delta = np.zeros(3)
         self._actions = self._run()
 
     def action(self):
@@ -415,14 +417,27 @@ class UprightOracle:
         if self.controller.input_ref_frame == "base":
             delta = self.controller.origin_ori.T @ delta
             rotation = self.controller.origin_ori.T @ rotation
-        return np.r_[
-            np.clip(delta / self.controller.output_max[:3], -1, 1),
-            np.clip(rotation / self.controller.output_max[3:], -rotation_limit, rotation_limit),
-            self.grip,
-        ]
+        linear_scale, angular_scale = self.controller.output_max[:3], self.controller.output_max[3:]
+        delta = np.clip(delta / linear_scale, -1, 1) * linear_scale
+        rotation = np.clip(rotation / angular_scale, -rotation_limit, rotation_limit) * angular_scale
+        # Delta OSC commands velocity through its tracking lag. Ramp that velocity across every phase boundary.
+        for desired, previous, acceleration in (
+            (delta, self._linear_delta, LINEAR_ACCEL_MPS2),
+            (rotation, self._angular_delta, ANGULAR_ACCEL_RAD_S2),
+        ):
+            change = desired - previous
+            maximum = acceleration * OSC_LAG_S * self.control_dt
+            previous += change * min(1.0, maximum / max(np.linalg.norm(change), 1e-9))
+        return np.r_[self._linear_delta / linear_scale, self._angular_delta / angular_scale, self.grip]
 
     def _orientation_error(self):
         return _turn_angle(self._eef_rotation(), self.orientation)
+
+    def _travel_step(self, distance, speed):
+        """Brake before the goal, allowing for acceleration and OSC tracking lag."""
+        lag_speed = LINEAR_ACCEL_MPS2 * OSC_LAG_S
+        braking_speed = np.sqrt(lag_speed**2 + 2.0 * LINEAR_ACCEL_MPS2 * distance) - lag_speed
+        return min(distance, min(speed, braking_speed) * OSC_LAG_S)
 
     def _move(self, target, *, speed, tolerance=0.003, timeout=200, rotation_limit=0.3, close_within=0.0):
         """Move the site toward a world point at a bounded speed; False on a stall or timeout.
@@ -439,7 +454,7 @@ class UprightOracle:
                 return True
             if distance < close_within:
                 self._close()
-            step = min(distance, speed * OSC_LAG_S)
+            step = self._travel_step(distance, speed)
             waypoint = current + (delta * step / distance if distance > 1e-9 else 0.0)
             yield self._command(waypoint, limit=max(0.004, step), rotation_limit=rotation_limit)
             stalled = stalled + 1 if np.linalg.norm(self._eef() - previous) < 5e-5 else 0
@@ -453,14 +468,22 @@ class UprightOracle:
             yield self._command(target)
 
     def _level(self):
-        """Tilt the grip target so the held object's measured axis points up (undo in-hand rotation)."""
+        """Correct measured tilt while preserving the held object's lowest collision point."""
         up = self._table()[1][:, 2]
-        axis = self._object()[1][:, 2]
+        centre, rotation = self._object()
+        axis = rotation[:, 2]
         correction = np.cross(axis, up)
         norm = np.linalg.norm(correction)
+        turn = np.eye(3)
         if norm > 1e-6:
             angle = min(np.arctan2(norm, np.dot(axis, up)), LEVEL_STEP_RAD)
-            self.orientation = _rotation(correction / norm, angle) @ self.orientation
+            turn = _rotation(correction / norm, angle)
+        # Rebase on the actual wrist: adding to the previous target winds up while the OSC is still tracking it.
+        self.orientation = turn @ self._eef_rotation()
+        eef = self._eef()
+        points = centre + self._points @ rotation.T
+        turned = eef + (points - eef) @ turn.T
+        return eef + (np.min(points @ up) - np.min(turned @ up)) * up
 
     def _stop(self, reason):
         self.failure_reason = reason
@@ -524,7 +547,7 @@ class UprightOracle:
             if distance < 0.005 or (travelled >= 0.7 and slow >= 3):
                 break
             previous = current
-            step = min(distance, RETREAT_SPEED_MPS * OSC_LAG_S)
+            step = self._travel_step(distance, RETREAT_SPEED_MPS)
             yield self._command(current + delta * step / distance, limit=max(0.004, step))
         travelled = float(np.dot(self._eef() - start, displacement)) / length2
         return travelled >= 0.7 and not self._touched()
@@ -534,6 +557,7 @@ class UprightOracle:
         self.phase = "release"
         self.grip = OPEN
         hold = self._eef()
+        self.orientation = self._eef_rotation()
         for _ in range(OPEN_STEPS):
             if self._finger_opening() >= self._grip_width + OPEN_CLEARANCE_M:
                 break
@@ -652,7 +676,9 @@ class UprightOracle:
                 # The base left the table before the bottle turned upright: set it back down to slide on.
                 height = min(height, float(np.dot(self._eef() - top, up))) - (gap - BASE_LIFTOFF_M)
             else:
-                rate = LIFT_RATE_M if elevation < LIFT_SLOW_ELEVATION_RAD else LIFT_SLOW_RATE_M
+                rate = LIFT_RATE_M
+                if elevation >= LIFT_SLOW_ELEVATION_RAD:
+                    rate = LIFT_SLOW_RATE_M * np.cos(elevation) / np.cos(LIFT_SLOW_ELEVATION_RAD)
                 height = min(height + rate, stand_height + LIFT_OVERSHOOT_M)
             fraction = np.clip((height - start_height) / (stand_height - start_height), 0.0, 1.0)
             target = start + fraction * horizontal + (height - start_height) * up
@@ -665,7 +691,7 @@ class UprightOracle:
             self._stop("lift_timeout")
             return
         self.phase = "settle"
-        standing = abs(BOTTLE_BASE_Z_M) + BOTTLE_GRASP_Z_M - PAD_CENTRE_BEHIND_SITE_M
+        standing = min(stand_height, float(np.dot(self._eef() - top, up)))
         for _ in range(STRAIGHT_STEPS):
             centre, rotation = self._object()
             spin = np.linalg.norm(self.env.sim.data._data.cvel[self.env.object_body_id][:3])
@@ -673,6 +699,15 @@ class UprightOracle:
                 break
             base = centre + BOTTLE_BASE_Z_M * rotation[:, 2]
             base = base - up * np.dot(base - top, up)
+            # Above the neck/base support-height maximum, straightening must lower the pinch. Holding a
+            # nominal standing height instead lifts the base as the bottle turns through its final degrees.
+            correction = np.cross(rotation[:, 2], up)
+            norm = np.linalg.norm(correction)
+            turn = np.eye(3) if norm < 1e-6 else _rotation(correction / norm, np.arctan2(norm, self._up_cosine()))
+            eef = self._eef()
+            points = centre + self._points @ rotation.T
+            straight_gap = float(np.min((eef + (points - eef) @ turn.T - top) @ up))
+            standing = min(standing, float(np.dot(eef - top, up)) - straight_gap)
             yield self._command(base + standing * up, limit=0.01)
         centre, rotation = self._object()
         self._log(
@@ -786,25 +821,20 @@ class UprightOracle:
         path = [plan["lift"], plan["above"], plan["start"], plan["end"], plan["bump"]]
         samples = [self._transfer_pose(*path, f, up)[0] for f in np.linspace(0.0, 1.0, TRANSFER_SAMPLES)]
         length = float(np.sum(np.linalg.norm(np.diff(samples, axis=0), axis=1)))
-        count = int(np.ceil(max(length / (CARRY_SPEED_MPS * self.control_dt), plan["turn_rad"] / TRANSFER_RATE_RAD)))
+        # Quintic timing has zero endpoint velocity / acceleration and a maximum slope of 1.875.
+        count = int(
+            np.ceil(1.875 * max(length / (CARRY_SPEED_MPS * self.control_dt), plan["turn_rad"] / TRANSFER_RATE_RAD))
+        )
         for index in range(1, count + 1):
-            position, self.orientation = self._transfer_pose(*path, index / count, up)
+            time = index / count
+            fraction = time**3 * (10.0 + time * (-15.0 + 6.0 * time))
+            position, self.orientation = self._transfer_pose(*path, fraction, up)
             yield self._command(position, limit=0.03, rotation_limit=0.5)
             if not self._holding():
                 self._stop("object_slipped_in_transfer")
                 return
-        # Finish horizontal tracking while levelling out residual in-hand rotation.
-        for _ in range(LEVEL_STEPS):
-            # Real grasp drift can land the base before the planned above pose; do not lift it again.
-            if self._up_cosine() >= 0.995 and self.env.get_metrics()["touching_table"]:
-                break
-            # Level at the measured height instead of pulling an upright object back up to the planned hover.
-            target = plan["above"] + min(0.0, np.dot(self._eef() - plan["above"], up)) * up
-            settled = np.linalg.norm(self._eef() - target) < 0.006 and self._orientation_error() < 0.04
-            if settled and self._up_cosine() > 0.9995:
-                break
-            self._level()
-            yield self._command(target, limit=0.03, rotation_limit=0.5)
+            if self._up_cosine() >= 0.97:
+                break  # finish the remaining tilt in the support-preserving descent, never chase a stale hover
         if not self._holding() or self._up_cosine() < 0.97:
             self._stop("object_slipped_in_turn")
             return
@@ -812,11 +842,12 @@ class UprightOracle:
         top, _ = self._table()
         for _ in range(80):
             gap = self._bottom_gap(top, up)
-            if gap <= PLACE_GAP_M or self.env.get_metrics()["touching_table"]:
+            if self.env.get_metrics()["touching_table"] and self._up_cosine() > 0.9995:
                 break
-            self._level()
+            target = self._level()
             speed = PLACE_SPEED_MPS if gap > PLACE_SLOW_GAP_M else PLACE_SLOW_SPEED_MPS
-            yield self._command(self._eef() - speed * OSC_LAG_S * up, limit=0.008)
+            descent = min(speed * OSC_LAG_S, max(gap - 0.0001, 0.0))
+            yield self._command(target - descent * up, limit=0.008)
         else:
             self._stop("place_timeout")
             return
@@ -825,7 +856,7 @@ class UprightOracle:
 
     def _bottom_gap(self, top, up):
         centre, rotation = self._object()
-        return float(np.dot(centre + self.spec["upright_lower_z_m"] * rotation[:, 2] - top, up))
+        return float(np.min((centre + self._points @ rotation.T - top) @ up))
 
     # --- episode ---------------------------------------------------------------------------------------------
 
