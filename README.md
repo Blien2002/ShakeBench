@@ -84,11 +84,13 @@ python -m shakebench.scripts.collect_lerobot \
 
 ## 葡萄酒入架任务（CPU 开发版）
 
-`PlaceWineAtRackLocation` 参考 [RLBench / PerAct 的原任务](https://github.com/MohitShridhar/RLBench/blob/peract/rlbench/tasks/place_wine_at_rack_location.py)，保留 `middle / left / right` 三个变体及到达目标后松手的语义。酒瓶初始竖立在桌面，机械臂需要将其横放进指定槽位。MuJoCo 酒架由三个开放式木质槽位组成，固定在移动工作台上；酒瓶复用仓库已有的 RoboCasa `wine_3` 网格及许可。此版本适配 ShakeBench 场景，不逐尺寸复刻 CoppeliaSim 的原模型。
+`PlaceWineAtRackLocation` 参考 [RLBench / PerAct 的原任务](https://github.com/MohitShridhar/RLBench/blob/peract/rlbench/tasks/place_wine_at_rack_location.py)，保留 `middle / left / right` 三个变体及到达目标后松手的语义。酒瓶初始竖立在桌面，机械臂需要将其横放进指定槽位。MuJoCo 酒架由前后两根弧形托梁和两根低矮侧脚组成，固定在移动工作台上；酒瓶复用仓库已有的 RoboCasa `wine_3` 网格及许可。此版本适配 ShakeBench 场景，不逐尺寸复刻 CoppeliaSim 的原模型。
 
-酒架外观参考 [IKEA HUTTEN](https://www.ikea.com/nl/en/p/hutten-9-bottle-wine-rack-solid-wood-70032451/) 的实木拼装细节和 [Classico](https://www.classico.co.nz/products/wooden-modular-wine-rack?variant=42478967324854) 的木材饰面，采用胡桃木色隔板、浅橡木色拼板底座、倒角边缘及齐平连接件。使用现有 CC0 木纹贴图，来源记录在 `shakebench/models/assets/wine_rack_visual_sources.json`；碰撞形状与成功规则保持原版本。
+酒架造型参考 [Classico 实木酒架](https://www.classico.co.nz/products/wooden-modular-wine-rack?variant=42478967324854) 的开放骨架与弧形承托结构，分别为瓶身和瓶颈设置托槽，配合圆润边缘、木榫及沿构件方向铺设的自然橡木纹。使用 [ambientCG Wood049](https://ambientcg.com/view?id=Wood049) 的 2K CC0 贴图；来源和许可记录在 `shakebench/models/assets/wine_rack_visual_sources.json`。
 
-成功要求酒瓶的完整碰撞几何进入指定槽位、由该槽底板承重、与机械臂脱离接触，并连续保持 0.5 秒。错误槽位、悬空、竖放及越界均不算成功；成功在 episode 内锁存。所有位置检查在移动酒架坐标系中进行。环境复用 Panda、20 Hz、7D OSC 动作、振动、IMU 和公共 CPU rollout；开发状态不具备认证评分资格。
+成功要求酒瓶的完整碰撞几何进入指定位置、瓶颈朝酒架 +x 方向且瓶轴偏差不超过 15°、前后两根托梁同时承重、与机械臂脱离接触，并连续保持 0.5 秒。错误槽位、悬空、竖放、反向及越界均不算成功；成功在 episode 内锁存。碰撞托槽与可视曲线一致，采用分段凸网格近似，木架与酒瓶接触的两个切向摩擦系数均为 0.30。所有位置检查在移动酒架坐标系中进行。环境复用 Panda、20 Hz、7D OSC 动作、振动、IMU 和公共 CPU rollout；开发状态不具备认证评分资格。
+
+当前任务与状态格式均为版本 2，随附状态已重新生成；旧版箱式酒架状态会被拒绝，避免混用不同物理任务。
 
 ```python
 import shakebench

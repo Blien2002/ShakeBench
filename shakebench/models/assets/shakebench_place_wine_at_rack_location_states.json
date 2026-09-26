@@ -1,6 +1,6 @@
 {
   "schema_id": "shakebench.place_wine_at_rack_location.states",
-  "schema_version": 1,
+  "schema_version": 2,
   "generator": {
     "seed": 42,
     "split": "eval"
@@ -10,7 +10,7 @@
       "state_id": "wine-rack-s42-0000",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -27,7 +27,7 @@
       "state_id": "wine-rack-s42-0001",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -44,7 +44,7 @@
       "state_id": "wine-rack-s42-0002",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -61,7 +61,7 @@
       "state_id": "wine-rack-s42-0003",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -78,7 +78,7 @@
       "state_id": "wine-rack-s42-0004",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -95,7 +95,7 @@
       "state_id": "wine-rack-s42-0005",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -112,7 +112,7 @@
       "state_id": "wine-rack-s42-0006",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -129,7 +129,7 @@
       "state_id": "wine-rack-s42-0007",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -146,7 +146,7 @@
       "state_id": "wine-rack-s42-0008",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -163,7 +163,7 @@
       "state_id": "wine-rack-s42-0009",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -180,7 +180,7 @@
       "state_id": "wine-rack-s42-0010",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -197,7 +197,7 @@
       "state_id": "wine-rack-s42-0011",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -214,7 +214,7 @@
       "state_id": "wine-rack-s42-0012",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -231,7 +231,7 @@
       "state_id": "wine-rack-s42-0013",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -248,7 +248,7 @@
       "state_id": "wine-rack-s42-0014",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -265,7 +265,7 @@
       "state_id": "wine-rack-s42-0015",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -282,7 +282,7 @@
       "state_id": "wine-rack-s42-0016",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -299,7 +299,7 @@
       "state_id": "wine-rack-s42-0017",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -316,7 +316,7 @@
       "state_id": "wine-rack-s42-0018",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -333,7 +333,7 @@
       "state_id": "wine-rack-s42-0019",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -350,7 +350,7 @@
       "state_id": "wine-rack-s42-0020",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -367,7 +367,7 @@
       "state_id": "wine-rack-s42-0021",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -384,7 +384,7 @@
       "state_id": "wine-rack-s42-0022",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -401,7 +401,7 @@
       "state_id": "wine-rack-s42-0023",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -418,7 +418,7 @@
       "state_id": "wine-rack-s42-0024",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -435,7 +435,7 @@
       "state_id": "wine-rack-s42-0025",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -452,7 +452,7 @@
       "state_id": "wine-rack-s42-0026",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [
@@ -469,7 +469,7 @@
       "state_id": "wine-rack-s42-0027",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "middle",
       "object_xy_m": [
@@ -486,7 +486,7 @@
       "state_id": "wine-rack-s42-0028",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "left",
       "object_xy_m": [
@@ -503,7 +503,7 @@
       "state_id": "wine-rack-s42-0029",
       "task": {
         "task_type": "place_wine_at_rack_location",
-        "version": 1
+        "version": 2
       },
       "location": "right",
       "object_xy_m": [

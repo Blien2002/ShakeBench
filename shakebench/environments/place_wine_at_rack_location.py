@@ -19,7 +19,7 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
-from shakebench.models.objects.wine_rack import VISUAL_REVISION, add_rack_visuals
+from shakebench.models.objects.wine_rack import BOTTLE_AXIS_HEIGHT_M, SLOT_Y_M, VISUAL_REVISION, add_wine_rack
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.deck import DeckDriver
 from shakebench.utils.geometry import (
@@ -36,24 +36,20 @@ from shakebench.utils.scene import DECK_VISUAL_BODY_NAME, configure_scene_render
 from shakebench.utils.task_registry import TaskDefinition, register_state_loader, register_task
 
 TASK_TYPE = "place_wine_at_rack_location"
-TASK_VERSION = 1
+TASK_VERSION = 2
 STATE_SCHEMA = "shakebench.place_wine_at_rack_location.states"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SOURCE_URL = "https://github.com/MohitShridhar/RLBench/blob/peract/rlbench/tasks/place_wine_at_rack_location.py"
 # Match RLBench's variation indices. Left is +y when facing the rack from the Panda base.
 LOCATIONS = ("middle", "left", "right")
-SLOT_Y_M = {"middle": 0.0, "left": 0.10, "right": -0.10}
 RACK_XY_M = (0.045, 0.0)
 RACK_HALF_DEPTH_M = 0.15
-RACK_HALF_WIDTH_M = 0.153
-RACK_FLOOR_HEIGHT_M = 0.012
-RACK_HEIGHT_M = 0.112
-WALL_HALF_THICKNESS_M = 0.003
-SLOT_HALF_WIDTH_M = 0.05 - WALL_HALF_THICKNESS_M
+RACK_MIN_BOTTLE_Z_M = 0.020
+RACK_HEIGHT_M = 0.125
+SLOT_HALF_WIDTH_M = 0.047
 CONTAINMENT_TOLERANCE_M = 0.001
 SUCCESS_HOLD_S = 0.5
 BOTTLE_MASS_KG = 1.1
-BOTTLE_RADIUS_M = 0.034
 START_X_RANGE_M = (-0.25, -0.17)
 # Keep tall bottle starts clear of the default Panda wrist.
 START_ABS_Y_RANGE_M = (0.15, 0.22)
@@ -145,7 +141,7 @@ def load_states(payload):
 
 
 class PlaceWineAtRackLocation(ManipulationEnv):
-    """Lay the wine bottle in the instructed rack bay and release it."""
+    """Lay the wine bottle across the instructed body/neck cradles and release it."""
 
     def __init__(
         self,
@@ -285,61 +281,31 @@ class PlaceWineAtRackLocation(ManipulationEnv):
                     float(self.physics_profile.contact["sliding_mu"]["finger_object" if finger else "table_object"]),
                     finger_contact=finger,
                 )
+                if partner in self.rack_geom_names:
+                    # MuJoCo pairs have two sliding axes; both timber directions use mu=0.30.
+                    friction = attributes["friction"].split()
+                    friction[1] = friction[0]
+                    attributes["friction"] = " ".join(friction)
                 ET.SubElement(self.model.contact, "pair", geom1=geom, geom2=partner, **attributes)
 
     def _add_rack(self):
-        """Three open-front wooden bays rigidly attached to the moving table."""
+        """Attach the open oak frame and its three pairs of curved bottle cradles."""
         rack = ET.SubElement(
             self.arena.worktable_body,
             "body",
             name="wine_rack",
             pos=array_to_string([*RACK_XY_M, self.arena.table_half_size[2]]),
         )
-        boxes = []
-        self.slot_floor_names = {}
+        self.rack_geom_names, self.slot_support_names = add_wine_rack(self.arena.asset, rack)
         for location, y in SLOT_Y_M.items():
-            name = f"wine_rack_{location}_floor"
-            self.slot_floor_names[location] = name
-            boxes.append((name, [0, y, RACK_FLOOR_HEIGHT_M / 2], [RACK_HALF_DEPTH_M, 0.05, RACK_FLOOR_HEIGHT_M / 2]))
             ET.SubElement(
                 rack,
                 "site",
                 name=f"wine_rack_{location}_target",
-                pos=array_to_string([0, y, RACK_FLOOR_HEIGHT_M + BOTTLE_RADIUS_M]),
+                pos=array_to_string([0, y, BOTTLE_AXIS_HEIGHT_M]),
                 size="0.005",
                 rgba="0 0 0 0",
             )
-        for index, y in enumerate((-0.15, -0.05, 0.05, 0.15)):
-            boxes.append(
-                (
-                    f"wine_rack_divider_{index}",
-                    [0, y, RACK_HEIGHT_M / 2],
-                    [RACK_HALF_DEPTH_M, WALL_HALF_THICKNESS_M, RACK_HEIGHT_M / 2],
-                )
-            )
-        boxes.append(
-            (
-                "wine_rack_back",
-                [RACK_HALF_DEPTH_M - WALL_HALF_THICKNESS_M, 0, RACK_HEIGHT_M / 2],
-                [WALL_HALF_THICKNESS_M, RACK_HALF_WIDTH_M, RACK_HEIGHT_M / 2],
-            )
-        )
-        self.rack_geom_names = []
-        for name, pos, size in boxes:
-            self.rack_geom_names.append(name)
-            ET.SubElement(
-                rack,
-                "geom",
-                name=name,
-                type="box",
-                pos=array_to_string(pos),
-                size=array_to_string(size),
-                group="0",
-                contype="1",
-                conaffinity="1",
-                mass="0",
-            )
-        add_rack_visuals(self.arena.asset, rack, boxes)
 
     def _setup_references(self):
         super()._setup_references()
@@ -347,7 +313,10 @@ class PlaceWineAtRackLocation(ManipulationEnv):
         self.bottle_body_id = model.body_name2id(self.bottle.root_body)
         self.rack_body_id = model.body_name2id("wine_rack")
         self.bottle_geom_ids = {model.geom_name2id(name) for name in self.bottle.contact_geoms}
-        self.slot_floor_ids = {location: model.geom_name2id(name) for location, name in self.slot_floor_names.items()}
+        self.slot_support_ids = {
+            location: {rail: {model.geom_name2id(name) for name in names} for rail, names in rails.items()}
+            for location, rails in self.slot_support_names.items()
+        }
         self.robot_geom_ids = {
             model.geom_name2id(name) for name in model.geom_names if name.startswith(("robot0_", "gripper0_"))
         }
@@ -406,12 +375,12 @@ class PlaceWineAtRackLocation(ManipulationEnv):
         ) @ rack_rotation
         location = self.task_state["location"]
         points[:, 1] -= SLOT_Y_M[location]
-        lower = np.array([-RACK_HALF_DEPTH_M, -SLOT_HALF_WIDTH_M, RACK_FLOOR_HEIGHT_M])
-        upper = np.array([RACK_HALF_DEPTH_M - 2 * WALL_HALF_THICKNESS_M, SLOT_HALF_WIDTH_M, RACK_HEIGHT_M])
+        lower = np.array([-RACK_HALF_DEPTH_M, -SLOT_HALF_WIDTH_M, RACK_MIN_BOTTLE_Z_M])
+        upper = np.array([RACK_HALF_DEPTH_M, SLOT_HALF_WIDTH_M, RACK_HEIGHT_M])
         contained = bool(
             np.all(points >= lower - CONTAINMENT_TOLERANCE_M) and np.all(points <= upper + CONTAINMENT_TOLERANCE_M)
         )
-        support_force, released = 0.0, True
+        support_forces, released = {"body": 0.0, "neck": 0.0}, True
         force = np.zeros(6)
         for index, contact in enumerate(data.contact[: data.ncon]):
             if contact.geom1 in self.bottle_geom_ids:
@@ -422,10 +391,17 @@ class PlaceWineAtRackLocation(ManipulationEnv):
                 continue
             if other in self.robot_geom_ids and contact.dist <= 0.001:
                 released = False
-            if other == self.slot_floor_ids[location]:
-                mujoco.mj_contactForce(model, data, index, force)
-                support_force += max(0.0, float(force[0]))
-        self._conditions = {"inside_selected_slot": contained, "supported": support_force > 0.1, "released": released}
+            for rail, ids in self.slot_support_ids[location].items():
+                if other in ids:
+                    mujoco.mj_contactForce(model, data, index, force)
+                    support_forces[rail] += max(0.0, float(force[0]))
+        axis = rack_rotation.T @ bottle_rotation[:, 2]
+        self._conditions = {
+            "inside_selected_slot": contained,
+            "aligned": bool(axis[0] >= np.cos(np.deg2rad(15))),
+            "supported": all(force > 0.05 for force in support_forces.values()),
+            "released": released,
+        }
         if all(self._conditions.values()):
             if self._candidate_since is None:
                 self._candidate_since = sample_time_s
@@ -482,9 +458,14 @@ class PlaceWineAtRackLocation(ManipulationEnv):
             "scoreable": False,
             "location": self.task_state["location"],
             "variation_index": LOCATIONS.index(self.task_state["location"]),
-            "instruction": f"Place the wine bottle in the {self.task_state['location']} slot of the rack.",
+            "instruction": (
+                f"Place the wine bottle in the {self.task_state['location']} slot of the rack, "
+                "with its neck pointing away from the robot base."
+            ),
             "rack_xy_m": list(RACK_XY_M),
             "slot_y_m": dict(SLOT_Y_M),
+            "bottle_axis_height_m": BOTTLE_AXIS_HEIGHT_M,
+            "neck_direction_rack": "+x",
             "success_hold_s": SUCCESS_HOLD_S,
             "containment_tolerance_m": CONTAINMENT_TOLERANCE_M,
             "reference": SOURCE_URL,
@@ -512,7 +493,10 @@ register_task(
         env_kwargs=lambda state: {"task_state": state},
         describe=lambda state: {
             "task_id": f"{TASK_TYPE}.{state['location']}",
-            "instruction": f"Place the wine bottle in the {state['location']} slot of the rack.",
+            "instruction": (
+                f"Place the wine bottle in the {state['location']} slot of the rack, "
+                "with its neck pointing away from the robot base."
+            ),
         },
         fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
     ),
