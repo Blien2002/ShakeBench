@@ -1,4 +1,4 @@
-"""Collect pick-place, ring, or Push-T Oracle episodes on MJWarp physics with host rendering.
+"""Collect pick-place, ring, Push-T, or Upright Oracle episodes on MJWarp physics with host rendering.
 
 Runs with: python -m shakebench.scripts.collect_lerobot_gpu --output out/lerobot_gpu
 
@@ -112,7 +112,7 @@ def collect_batch(
     profile = OracleControllerProfile()
     envs, programs, readers, writers = [], [], [], []
     task = task_type(states[0])
-    specialized = task in {"ring_on_peg", "push_t"}
+    specialized = task in {"ring_on_peg", "push_t", "upright"}
     if any(_batch_key(state) != _batch_key(states[0]) for state in states):
         raise ValueError("one batch must contain one compiled task model")
     try:
@@ -146,10 +146,14 @@ def collect_batch(
                 from shakebench.utils.ring_oracle import RingStackOracle
 
                 controllers = [RingStackOracle(env) for env in envs]
-            else:
+            elif task == "push_t":
                 from shakebench.utils.push_t_oracle import PushTOracle
 
                 controllers = [PushTOracle(env) for env in envs]
+            else:
+                from shakebench.utils.upright_oracle import UprightOracle
+
+                controllers = [UprightOracle(env) for env in envs]
         else:
             controllers = [
                 ShakeBenchOracleController(
@@ -207,7 +211,7 @@ def collect_batch(
                         prior_cause=None,
                         task_rule_violation=bool(metrics["task_rule_violation"][world]) if task == "push_t" else False,
                         success_latched=bool(metrics["success"][world])
-                        and (task != "push_t" or controllers[world].verified),
+                        and (task not in {"push_t", "upright"} or controllers[world].verified),
                         policy_abort=controllers[world].abort_requested,
                         horizon_exhausted=step + 1 == horizon,
                     )
@@ -248,7 +252,15 @@ def collect_batch(
                         else (
                             {"controller": "push_t_oracle", "pushes": controllers[world].trace}
                             if task == "push_t"
-                            else profile.to_dict()
+                            else (
+                                {
+                                    "controller": "upright_oracle",
+                                    "failure_reason": controllers[world].failure_reason,
+                                    "trace": controllers[world].trace,
+                                }
+                                if task == "upright"
+                                else profile.to_dict()
+                            )
                         )
                     ),
                     "physics_backend": "mujoco_warp",

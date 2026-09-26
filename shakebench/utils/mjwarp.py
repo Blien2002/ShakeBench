@@ -288,7 +288,7 @@ class MJWarpBatch:
         self.nworld = len(envs)
         env = envs[0]
         self.task_type = task_type(getattr(env, "task_state", getattr(env, "ring_state", {})))
-        if self.task_type not in {"pick_place", "ring_on_peg", "push_t"}:
+        if self.task_type not in {"pick_place", "ring_on_peg", "push_t", "upright"}:
             raise ValueError(f"MJWarp does not support task {self.task_type!r}")
         self.raw_model = env.sim.model._model
         self.dt = float(self.raw_model.opt.timestep)
@@ -378,6 +378,34 @@ class MJWarpBatch:
         """Damp device contacts while preserving the CPU-authored scene."""
         host = self.raw_model
         env = self.envs[0]
+        if self.task_type == "upright":
+            object_ids = set(env.object_geom_ids)
+            finger_ids = set(env.gripper_geom_ids)
+            table_id = env.table_geom_id
+            solref = self.model.pair_solref.numpy()
+            view = solref.reshape(-1, host.npair, solref.shape[-1])
+            matched_table, matched_fingers = set(), set()
+            for index in range(host.npair):
+                pair = {int(host.pair_geom1[index]), int(host.pair_geom2[index])}
+                object_pair = pair & object_ids
+                partners = pair - object_ids
+                if len(object_pair) != 1 or len(partners) != 1:
+                    continue
+                object_id, partner_id = next(iter(object_pair)), next(iter(partners))
+                if partner_id == table_id:
+                    view[..., index, :] = DEVICE_SUPPORT_CONTACT_SOLREF
+                    matched_table.add(object_id)
+                elif partner_id in finger_ids:
+                    view[..., index, :] = DEVICE_FINGER_OBJECT_CONTACT_SOLREF
+                    matched_fingers.add((object_id, partner_id))
+            expected_fingers = {(object_id, finger_id) for object_id in object_ids for finger_id in finger_ids}
+            if matched_table != object_ids or matched_fingers != expected_fingers:
+                raise ValueError("missing Upright object/table or object/gripper contact pairs")
+            self.model.pair_solref.assign(solref)
+            geom_solref = self.model.geom_solref.numpy()
+            geom_solref[..., sorted(object_ids | {table_id}), :] = DEVICE_SUPPORT_CONTACT_SOLREF
+            self.model.geom_solref.assign(geom_solref)
+            return
         if self.task_type == "push_t":
             pusher_ids = {
                 env.sim.model.geom_name2id(name)
@@ -554,6 +582,42 @@ class MJWarpBatch:
             e.latched = wp.zeros(self.nworld, dtype=int)
             e.invalid = wp.zeros(self.nworld, dtype=int)
             e.imu = wp.zeros((self.nworld, 10, 6), dtype=float)
+            return e
+        if self.task_type == "upright":
+            fingers = env.robots[0].gripper["right"].important_geoms
+            finger_names = fingers["left_fingerpad"] + fingers["right_fingerpad"]
+            e.bodies = self._array(
+                [
+                    m.body_name2id(name)
+                    for name in (
+                        env.robots[0].robot_model.root_body,
+                        env.gripper_body_name,
+                        env.object.root_body,
+                        env.worktable_body_name,
+                        env.deck_driver.config.deck_body_name,
+                    )
+                ],
+                int,
+            )
+            e.finger_geoms = self._array([m.geom_name2id(name) for name in finger_names], int)
+            sensor_types = list(self.raw_model.sensor_type)
+            e.sensor_addresses = self._array(
+                [
+                    self.raw_model.sensor_adr[sensor_types.index(kind)]
+                    for kind in (mujoco.mjtSensor.mjSENS_FORCE, mujoco.mjtSensor.mjSENS_TORQUE)
+                ],
+                int,
+            )
+            e.aggregate = wp.zeros((self.nworld, 4), dtype=float)
+            e.candidate = wp.full(self.nworld, -1, dtype=int)
+            e.latched = wp.zeros(self.nworld, dtype=int)
+            e.invalid = wp.zeros(self.nworld, dtype=int)
+            e.imu = wp.zeros((self.nworld, 10, 6), dtype=float)
+            mount = env.table_imu_provider.audit_compiled_mount(env.sim)
+            site = m.site_name2id(mount["sensor_site_name"])
+            e.imu_body = int(self.raw_model.site_bodyid[site])
+            e.imu_position = wp.vec3(*self.raw_model.site_pos[site])
+            e.imu_rotation = wp.mat33(wxyz_to_matrix(self.raw_model.site_quat[site]).flatten())
             return e
         e.bodies = self._array(
             [
@@ -792,7 +856,7 @@ class MJWarpBatch:
             }
         self.policy_step += 1
         metrics["invalid"] |= ~np.all(np.isfinite(packet), axis=1)
-        if self.task_type in {"ring_on_peg", "push_t"}:
+        if self.task_type in {"ring_on_peg", "push_t", "upright"}:
             if self.task_type == "push_t":
                 metrics["task_rule_violation"] = np.zeros(self.nworld, dtype=bool)
             qpos, qvel = self.data.qpos.numpy(), self.data.qvel.numpy()
