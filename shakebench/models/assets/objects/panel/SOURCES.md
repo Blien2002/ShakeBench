@@ -34,7 +34,7 @@ A thin rounded faceplate replaces the rectangular side rails and rear cap;
 the shell and faceplate collision meshes follow the new silhouette. The shell
 base mounts 1 mm above the tabletop. The main assembly camera is unchanged.
 
-Display-only annular washers, rounded button cap, screw slots, spindle sleeve
+Display-only annular washers, screw slots, spindle sleeve
 and lamp rims refine the console. Materials distinguish powder coating, satin
 metal, rubber and glossy plastic. All visual geoms have zero mass and disabled
 collision. Moving-control masses and joint resistance are retained; inertia is
@@ -43,11 +43,16 @@ to keep limit deflection below 0.001 rad at the demo effort with the reduced
 inertia. The lever still travels +/-30 degrees and the button retains its
 4 mm spring-return travel.
 
-The console uses neutral mid-gray finishes, with modest lightness and specular
-variation for metal, rubber and plastic. Nameplates and their collision proxies
-are removed. The faceplate is untextured: no lettering, graduations or labels.
-The obsolete markings texture and its generator are removed. Indicator lenses
-are gray and have no task-state or success behavior.
+The console uses dark neutral-gray powder coating, an off-white rotary knob,
+a red rounded-square button, and a polished silver lever. The button cap,
+collar and bezel share a rounded-square outline; a square box contact proxy
+follows the moving button. The lever base is 45% shorter above its lower seat
+and 15% narrower. Its pivot and handle assembly are lowered together, and the
+base collision uses the same reshaped mesh as the visual.
+
+Nameplates and their collision proxies are removed. The faceplate is
+untextured: no lettering, graduations or labels. Indicator lenses are gray
+and have no task-state or success behavior.
 
 ## Attribution and terms
 
