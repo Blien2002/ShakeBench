@@ -121,9 +121,9 @@ class PanelOperation(ManipulationEnv):
         self.worktable_body_name = self.arena.worktable_body_name
         support = ET.parse(xml_path_completion(self.geometry_profile["robot_support_mjcf"])).getroot()
         self.arena.worldbody.append(support.find("./worldbody/body[@name='robot_support']"))
-        # Include the edge cheeks when checking the rotated case footprint.
+        # Check the compact case footprint with clearance around the rounded faceplate.
         c, s = np.cos(self.panel_yaw_rad), np.sin(self.panel_yaw_rad)
-        half_extent = np.abs([[c, -s], [s, c]]) @ [0.105, 0.160]
+        half_extent = np.abs([[c, -s], [s, c]]) @ [0.078, 0.112]
         if np.any(np.abs(self.panel_xy_m) + half_extent > self.arena.table_half_size[:2]):
             raise ValueError("panel footprint must fit on the worktable")
         fixture = ET.parse(xml_path_completion("objects/panel/panel.xml")).getroot()
@@ -131,7 +131,7 @@ class PanelOperation(ManipulationEnv):
             resource.set("file", xml_path_completion("objects/panel/" + resource.get("file")))
         self.arena.asset.extend(fixture.find("asset"))
         panel = fixture.find("./worldbody/body[@name='panel']")
-        panel.set("pos", array_to_string([*self.panel_xy_m, self.arena.table_half_size[2] + 0.090]))
+        panel.set("pos", array_to_string([*self.panel_xy_m, self.arena.table_half_size[2] + 0.001]))
         panel.set("euler", array_to_string([0, 0, self.panel_yaw_rad]))
         self.arena.worktable_body.append(panel)
         self.model = ManipulationTask(self.arena, [robot.robot_model], [])

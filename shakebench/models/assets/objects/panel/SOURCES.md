@@ -17,26 +17,36 @@ All shipped meshes now have outward winding.
 (50,944 triangles), replacing the earlier 1,624-triangle runtime LOD. Source
 millimetres are mapped as `-X * tangent + (Y - minY) * normal - Z * lateral`,
 scaled by 0.001, then offset 19 mm along the normal. Triangle order is reversed
-and facet normals recomputed. The geometry envelope and independent physical
-cylinder are retained.
+and facet normals recomputed. The XML applies the same 0.7 scale to this mesh
+and its independent physical cylinder.
 
 The switch base (472 triangles) and handle (574 triangles) remain inline MJCF
-runtime meshes. The switch pivot remains 31.0949356 mm above its mounting
-surface. The copied switch source notice describes an earlier LOD; the counts
-here describe the shipped meshes.
+runtime meshes. The source switch pivot is 31.0949356 mm above its mounting
+surface before the compact adaptation below. The copied switch source notice
+describes an earlier LOD; the counts here describe the shipped meshes.
 
-The display housing has a 1.2 mm edge chamfer; its original 16-triangle physical
-hull is retained separately. Display-only annular washers, rounded button cap,
-screw slots, spindle sleeve, lamp rims and rear vents refine the console.
-Materials distinguish powder coating, satin metal, rubber and glossy plastic.
-All visual geoms have zero mass and disabled collision. Joint ranges, physical
-proxies, spring, damping and inertia are unchanged by visual refinement.
+The compact adaptation scales the controls and their contact proxies to 70% of
+those source dimensions, then rotates their mounting surface from 37.15 degrees
+to 12 degrees above horizontal. The shell is rebuilt as one rounded wedge,
+224 mm wide and 152 mm deep, with 9 mm corner radii and 2.5 mm rolled edges.
+A thin rounded faceplate replaces the rectangular side rails and rear cap;
+the shell and faceplate collision meshes follow the new silhouette. The shell
+base mounts 1 mm above the tabletop. The main assembly camera is unchanged.
+
+Display-only annular washers, rounded button cap, screw slots, spindle sleeve
+and lamp rims refine the console. Materials distinguish powder coating, satin
+metal, rubber and glossy plastic. All visual geoms have zero mass and disabled
+collision. Moving-control masses and joint resistance are retained; inertia is
+recomputed from the smaller contact proxies. Lever stop impedance is tightened
+to keep limit deflection below 0.001 rad at the demo effort with the reduced
+inertia. The lever still travels +/-30 degrees and the button retains its
+4 mm spring-return travel.
 
 `panel_markings.png` is original procedural artwork: face lettering, rotary
 graduations and three nameplates. Rebuild it with
 `python -m shakebench.scripts.build_panel_markings` using Pillow and DejaVu Sans
 fonts. The PNG is packaged; fonts are not required at runtime. The inset label
-surfaces sit 0.15 mm above the metal plaques to avoid coplanar flicker. The
+surfaces sit 0.105 mm above the metal plaques to avoid coplanar flicker. The
 colored indicator lenses have no task-state or success behavior.
 
 ## Attribution and terms
