@@ -153,13 +153,13 @@ def merge_shards(
             },
             "requested_states": list(ordered_state_ids),
             "excluded_source_state_ids": excluded_state_ids,
-            "state_authority": {
+            "state_authority": first_manifest.get("state_authority", {
                 "kind": "train",
                 "split": "train",
                 "scoreable": False,
                 "pool_manifest": str(pool_manifest_path) if pool_manifest is not None else None,
                 "pools": pool_manifest.get("pools", []) if pool_manifest is not None else [],
-            },
+            }),
             "shards": [
                 {
                     "path": source["path"],
