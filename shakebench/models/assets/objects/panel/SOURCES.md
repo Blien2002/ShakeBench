@@ -2,29 +2,54 @@
 
 Source: [wyl03291211/ShakeBench](https://github.com/wyl03291211/ShakeBench),
 commit `22f526a7e73cea8e0b9f8c09a597602484a814a0` (the detailed inclined console,
-before the flat-panel replacement). The console, bezels, fasteners, plaques,
-indicator lamps and red button follow that version's `visual_assets.py` and
+before the flat-panel replacement). The console layout, bezels, fasteners,
+indicator lamps and controls follow that version's `visual_assets.py` and
 `panel_controls.py`. Demo code is MIT licensed; see `DEMO_CODE_LICENSE.txt`.
 
-`panel.xml` contains the transformed runtime STL triangle meshes as inline MJCF
-vertices/faces. Millimetres were converted to metres and the original panel
-tangent/lateral/normal mapping retained. Mesh triangle counts: housing 16,
-Apollo knob 1,624, switch base 472, switch handle 574. The verbatim switch
-notice describes an earlier LOD; these are the counts in this MJCF. MuJoCo hinge/slide joints, contact
-proxies, inertias, resistance and a close camera were added here. The switch
-handle pivot is retained at 31.0949356 mm above its mounting surface. Moving
-collision proxies are separate from visual meshes; the fixed switch base uses
-the convex hull of its visual mesh. All visual geoms have zero mass.
+## Adaptation
 
-Mesh attribution and terms are independent of the repository's code license:
+The source-to-panel axis mapping has negative determinant. Its reflected
+triangle winding must be reversed for MuJoCo's single-sided rendering; otherwise
+all four imported meshes expose their interiors through culled outer faces.
+All shipped meshes now have outward winding.
+
+`apollo_knob_visual.stl` uses the original full-resolution Apollo source STL
+(50,944 triangles), replacing the earlier 1,624-triangle runtime LOD. Source
+millimetres are mapped as `-X * tangent + (Y - minY) * normal - Z * lateral`,
+scaled by 0.001, then offset 19 mm along the normal. Triangle order is reversed
+and facet normals recomputed. The geometry envelope and independent physical
+cylinder are retained.
+
+The switch base (472 triangles) and handle (574 triangles) remain inline MJCF
+runtime meshes. The switch pivot remains 31.0949356 mm above its mounting
+surface. The copied switch source notice describes an earlier LOD; the counts
+here describe the shipped meshes.
+
+The display housing has a 1.2 mm edge chamfer; its original 16-triangle physical
+hull is retained separately. Display-only annular washers, rounded button cap,
+screw slots, spindle sleeve, lamp rims and rear vents refine the console.
+Materials distinguish powder coating, satin metal, rubber and glossy plastic.
+All visual geoms have zero mass and disabled collision. Joint ranges, physical
+proxies, spring, damping and inertia are unchanged by visual refinement.
+
+`panel_markings.png` is original procedural artwork: face lettering, rotary
+graduations and three nameplates. Rebuild it with
+`python -m shakebench.scripts.build_panel_markings` using Pillow and DejaVu Sans
+fonts. The PNG is packaged; fonts are not required at runtime. The inset label
+surfaces sit 0.15 mm above the metal plaques to avoid coplanar flicker. The
+colored indicator lenses have no task-state or success behavior.
+
+## Attribution and terms
+
+Mesh terms are independent of the repository's code license:
 
 - Apollo knob: James / Jamesteam, Smithsonian source data, **CC BY-NC 4.0**.
   See `apollo_command_module_control_panel_knob.LICENSE.txt`, copied verbatim
   from the demo. The listing also carries a **NoAI** restriction.
-- Switch base and handle: demo runtime meshes from the user-provided
+- Switch base and handle: demo meshes from the user-provided
   `source/Interruptor.fbx`; source author and license are unspecified. See
   `switch_control.SOURCE.txt`, copied verbatim. Reuse here was requested by the
   user; this notice does not grant downstream redistribution rights.
 
-This is an interactive visualization and physics scene, without Oracle,
-collection/export integration, a task sequence, success rules or scoring.
+This remains an interactive visualization and physics scene without Oracle,
+collection/export integration, task sequence, success rules or scoring.

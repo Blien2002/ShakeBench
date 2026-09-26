@@ -127,6 +127,8 @@ class PanelOperation(ManipulationEnv):
         if np.any(np.abs(self.panel_xy_m) + half_extent > self.arena.table_half_size[:2]):
             raise ValueError("panel footprint must fit on the worktable")
         fixture = ET.parse(xml_path_completion("objects/panel/panel.xml")).getroot()
+        for resource in fixture.findall("./asset/*[@file]"):
+            resource.set("file", xml_path_completion("objects/panel/" + resource.get("file")))
         self.arena.asset.extend(fixture.find("asset"))
         panel = fixture.find("./worldbody/body[@name='panel']")
         panel.set("pos", array_to_string([*self.panel_xy_m, self.arena.table_half_size[2] + 0.090]))

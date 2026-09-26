@@ -44,7 +44,8 @@ def main(argv=None):
         option.geomgroup[:] = 0
         option.geomgroup[1] = 1
         if args.output is not None:
-            with mujoco.Renderer(model, height=720, width=960) as renderer:
+            model.vis.global_.offwidth, model.vis.global_.offheight = 1280, 960
+            with mujoco.Renderer(model, height=960, width=1280) as renderer:
                 renderer.update_scene(data, camera=args.camera, scene_option=option)
                 frame = renderer.render()
                 args.output.parent.mkdir(parents=True, exist_ok=True)
