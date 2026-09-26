@@ -54,14 +54,13 @@ GRIP_DRIFT_MAX_M = 0.015  # the recorded pinch point may drift this far from the
 BOTTLE_GRASP_Z_M = 0.114
 BOTTLE_BASE_Z_M = -0.128
 BOTTLE_BASE_RADIUS_M = 0.0339
-# Stand-up lift: raise the pinch 2 mm per step (4 cm/s). The base slides under the pinch (table mu 0.25) while
-# the bottle turns inside it; stop once the bottle is past its 70 deg tipping point toward standing, or if the
-# base starts to leave the table.
+# Stand-up lift: the base slides under the pinch (table mu 0.25) while the bottle turns inside it.
+# Hand off to straightening at 80 deg, before OSC lag and the final fast rotation lift the base off the table.
 LIFT_RATE_M = 0.004
 LIFT_SLOW_RATE_M = 0.002  # above LIFT_SLOW_ELEVATION_RAD, so the base keeps sliding instead of lifting off
 LIFT_SLOW_ELEVATION_RAD = np.radians(40.0)
 LIFT_OVERSHOOT_M = 0.03  # allowance for the OSC sag under the bottle's weight
-STAND_ELEVATION_RAD = np.radians(86.0)
+STAND_ELEVATION_RAD = np.radians(80.0)
 STAND_MIN_ELEVATION_RAD = np.radians(78.0)
 BASE_LIFTOFF_M = 0.003
 # Straighten before letting go: hold the pinch above the base centre until the bottle is this close to vertical
@@ -794,16 +793,18 @@ class UprightOracle:
             if not self._holding():
                 self._stop("object_slipped_in_transfer")
                 return
-        # Converge above the placement while levelling out residual in-hand rotation.
+        # Finish horizontal tracking while levelling out residual in-hand rotation.
         for _ in range(LEVEL_STEPS):
             # Real grasp drift can land the base before the planned above pose; do not lift it again.
             if self._up_cosine() >= 0.995 and self.env.get_metrics()["touching_table"]:
                 break
-            settled = np.linalg.norm(self._eef() - plan["above"]) < 0.006 and self._orientation_error() < 0.04
+            # Level at the measured height instead of pulling an upright object back up to the planned hover.
+            target = plan["above"] + min(0.0, np.dot(self._eef() - plan["above"], up)) * up
+            settled = np.linalg.norm(self._eef() - target) < 0.006 and self._orientation_error() < 0.04
             if settled and self._up_cosine() > 0.9995:
                 break
             self._level()
-            yield self._command(plan["above"], limit=0.03, rotation_limit=0.5)
+            yield self._command(target, limit=0.03, rotation_limit=0.5)
         if not self._holding() or self._up_cosine() < 0.97:
             self._stop("object_slipped_in_turn")
             return
