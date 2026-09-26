@@ -52,6 +52,15 @@ EXCITATION_SCHEMA_ID = "shakebench.excitation"
 EXCITATION_SCHEMA_VERSION = 2
 PROGRAM_SCHEMA_ID = "shakebench.excitation.program"
 VIBRATION_MODES = ("multisine_v1", "single_sine_v1", "custom_multisine_v1")
+SWAY_V1 = {
+    "mode": "custom_multisine_v1",
+    "mode_params": {
+        "bands": {
+            "tx": {"center_hz": 1.25, "relative_accel_rms": 0.20},
+            "ty": {"center_hz": 1.6, "relative_accel_rms": 0.14},
+        }
+    },
+}
 VIBRATION_MODE_VERSION = 1
 AUTHORED_PROFILE_ID = "shakebench.authored_v0_candidate"
 AUTHORED_SPECTRUM_VERSION = "candidate-2026-08-30"

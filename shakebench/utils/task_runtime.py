@@ -5,7 +5,9 @@ from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.task_registry import get_task_definition, prepare_task_state, task_type
 
 
-def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_profile="official", free_ring_peg=False):
+def make_environment(
+    state, *, gamma, horizon, mode="multisine_v1", mode_params=None, physics_profile="official", free_ring_peg=False
+):
     """Build/reset a registered task and return (environment, excitation program).
 
     Task adapters own task arguments; the runtime owns controller, timing,
@@ -29,7 +31,13 @@ def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_prof
         physics_profile=physics_profile,
         geometry_profile=DEFAULT_GEOMETRY_PROFILE,
         imu_mode="canonical_noisy_v1",
-        vibration={"mode": mode, "gamma": gamma, "seed": seed, "t0_s": float(state.get("t0_s", 0.0))},
+        vibration={
+            "mode": mode,
+            "mode_params": {} if mode_params is None else mode_params,
+            "gamma": gamma,
+            "seed": seed,
+            "t0_s": float(state.get("t0_s", 0.0)),
+        },
         **task_kwargs,
         imu_seed=int(state.get("imu_seed", seed)),
         horizon=horizon,

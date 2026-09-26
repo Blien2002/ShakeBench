@@ -21,6 +21,7 @@ import numpy as np
 from shakebench.scripts.run_oracle import _json_ready, load_state_asset
 from shakebench.utils.artifacts import write_json
 from shakebench.utils.calibration import vibration_record
+from shakebench.utils.excitation import SWAY_V1, VIBRATION_MODES
 from shakebench.utils.geometry import DEFAULT_GEOMETRY_PROFILE
 from shakebench.utils.oracle import (
     OracleControllerProfile,
@@ -32,13 +33,15 @@ from shakebench.utils.outcomes import resolve_termination_cause, validate_outcom
 from shakebench.utils.providers import TABLE_IMU_POLICY_KEYS
 
 
-def make_environment(state, *, gamma, horizon, mode="multisine_v1", physics_profile="official"):
+def make_environment(state, *, gamma, horizon, mode="multisine_v1", mode_params=None, physics_profile="official"):
     """Compatibility entry for pick-place GPU/oracle collection callers."""
     from shakebench.utils.task_registry import require_pick_place
     from shakebench.utils.task_runtime import make_environment as build_environment
 
     require_pick_place(state, consumer="GPU/oracle collection")
-    return build_environment(state, gamma=gamma, horizon=horizon, mode=mode, physics_profile=physics_profile)
+    return build_environment(
+        state, gamma=gamma, horizon=horizon, mode=mode, mode_params=mode_params, physics_profile=physics_profile
+    )
 
 
 def _write_npz(path, arrays):
@@ -143,7 +146,9 @@ def collect_batch(batch, states, *, horizon, profile=None, frame_writer=None):
         record["score_outcome"] = (
             None
             if record["episode_validity"] == "invalid"
-            else "success" if record["termination_cause"] == "success_latched" else "unsuccessful"
+            else "success"
+            if record["termination_cause"] == "success_latched"
+            else "unsuccessful"
         )
         record["controller_events"] = controller.executive.controller_events
         validate_outcome(**{key: record[key] for key in ("episode_validity", "score_outcome", "termination_cause")})
@@ -170,7 +175,7 @@ def main(argv=None):
     gamma_args = parser.add_mutually_exclusive_group()
     gamma_args.add_argument("--gamma", type=float, help="one Gamma (default: 0)")
     gamma_args.add_argument("--gammas", type=float, nargs="+", help="Gamma sweep, e.g. 0 0.15 0.3 0.6")
-    parser.add_argument("--mode", default="multisine_v1", choices=("multisine_v1", "single_sine_v1"))
+    parser.add_argument("--mode", default="multisine_v1", choices=VIBRATION_MODES)
     parser.add_argument(
         "--physics-profile",
         choices=("official", "probe"),
@@ -188,7 +193,13 @@ def main(argv=None):
     parser.add_argument("--render-camera", action="append", help="Model camera to render on the GPU; repeatable")
     parser.add_argument("--render-output", type=Path, help="MP4 path for the GPU render of world 0")
     parser.add_argument("--render-size", type=_positive, default=256, help="Square render resolution in pixels")
+    parser.add_argument("--mode-params", type=json.loads, default={}, help="JSON excitation parameters")
+    parser.add_argument("--sway-v1", action="store_true", help="Use low-frequency SWAY_V1")
     args = parser.parse_args(argv)
+    if args.sway_v1:
+        if args.mode_params or args.mode != "multisine_v1":
+            raise ValueError("--sway-v1 cannot be combined with --mode or --mode-params")
+        args.mode, args.mode_params = SWAY_V1["mode"], SWAY_V1["mode_params"]
     gammas = list(dict.fromkeys(args.gammas or [0.0 if args.gamma is None else args.gamma]))
     if any(not np.isfinite(gamma) or gamma < 0 for gamma in gammas):
         parser.error("Gamma values must be finite and non-negative")
@@ -241,6 +252,7 @@ def main(argv=None):
         "geometry_profile": DEFAULT_GEOMETRY_PROFILE,
         "gammas": gammas,
         "mode": args.mode,
+        "mode_params": args.mode_params,
         "state_authority": asset["authority"],
         "physics_profile": args.physics_profile,
         "horizon_steps": args.horizon_steps,
@@ -267,6 +279,7 @@ def main(argv=None):
                         state,
                         gamma=gamma,
                         mode=args.mode,
+                        mode_params=args.mode_params,
                         horizon=args.horizon_steps,
                         physics_profile=args.physics_profile,
                     )

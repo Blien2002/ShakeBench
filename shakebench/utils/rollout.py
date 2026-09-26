@@ -260,6 +260,7 @@ class ShakeBenchTaskEnv:
         width=256,
         main_camera="task_close",
         mode="multisine_v1",
+        mode_params=None,
         physics_profile="official",
         observation_source="cameras",
     ):
@@ -285,6 +286,7 @@ class ShakeBenchTaskEnv:
         self.description = task_description(self.state)
         self.gamma, self.horizon = float(gamma), horizon
         self.mode, self.physics_profile = mode, physics_profile
+        self.mode_params = deepcopy({} if mode_params is None else mode_params)
         self.observation_source = observation_source
         self.camera_options = {"height": height, "width": width, "main_camera": main_camera}
         self.env = self.reader = None
@@ -365,6 +367,7 @@ class ShakeBenchTaskEnv:
                 gamma=self.gamma,
                 horizon=self.horizon,
                 mode=self.mode,
+                mode_params=self.mode_params,
                 physics_profile=self.physics_profile,
                 free_ring_peg=task_type(self.state) == "ring_on_peg",
             )

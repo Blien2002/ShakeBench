@@ -34,6 +34,12 @@ def main(argv=None):
     parser.add_argument("--time-scale", type=float, default=1.0)
     parser.add_argument("--startup-timeout-s", type=float, default=300.0)
     args = parser.parse_args(argv)
+    if args.sway_v1:
+        from shakebench.utils.excitation import SWAY_V1
+
+        if args.mode_params or args.mode != "multisine_v1":
+            raise ValueError("--sway-v1 cannot be combined with --mode or --mode-params")
+        args.mode, args.mode_params = SWAY_V1["mode"], SWAY_V1["mode_params"]
     if args.output is not None and args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     if args.horizon_steps < 1 or args.action_horizon != 1:
@@ -78,6 +84,8 @@ def main(argv=None):
             "run_contract": {
                 "timing": "asynchronous_continuous_chunks",
                 "gamma": args.gamma,
+                "mode": args.mode,
+                "mode_params": args.mode_params,
                 "horizon_steps": args.horizon_steps,
                 "action_horizon": 1,
                 "control_frequency_hz": 20,
@@ -117,6 +125,8 @@ def main(argv=None):
                     ShakeBenchTaskEnv(
                         state,
                         gamma=args.gamma,
+                        mode=args.mode,
+                        mode_params=args.mode_params,
                         horizon=args.horizon_steps,
                         observation_source=args.observation_source,
                         **cameras,

@@ -24,12 +24,8 @@ from shakebench import models
 from shakebench.scripts.export_sft_subset import SUBSET_PROVENANCE_FILENAME
 from shakebench.scripts.run_oracle import load_state_asset
 from shakebench.utils.artifacts import write_json
-from shakebench.utils.rollout import (
-    OBSERVATION_SOURCES,
-    ShakeBenchTaskEnv,
-    invalid_episode_result,
-    rollout_policy,
-)
+from shakebench.utils.excitation import SWAY_V1, VIBRATION_MODES
+from shakebench.utils.rollout import OBSERVATION_SOURCES, ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
 from shakebench.utils.task_registry import assert_split_disjoint, split_overlap
 
 EVALUATION_SCHEMA_ID = "shakebench.policy_evaluation"
@@ -137,6 +133,9 @@ def build_parser():
     parser.add_argument("--state-ids", action="append", help="Comma-separated or repeated exact state IDs")
     parser.add_argument("--dataset", type=Path, help="Collected dataset or manifest used for training")
     parser.add_argument("--gamma", type=float, default=0.0)
+    parser.add_argument("--mode", choices=VIBRATION_MODES, default="multisine_v1")
+    parser.add_argument("--mode-params", type=json.loads, default={}, help="JSON excitation parameters")
+    parser.add_argument("--sway-v1", action="store_true", help="Use the low-frequency SWAY_V1 preset")
     parser.add_argument("--horizon-steps", type=int, default=1200)
     parser.add_argument("--action-horizon", type=int, default=1)
     parser.add_argument("--inference-timeout-s", type=float, default=None)
@@ -172,6 +171,10 @@ def summarize(episodes):
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    if args.sway_v1:
+        if args.mode_params or args.mode != "multisine_v1":
+            raise ValueError("--sway-v1 cannot be combined with --mode or --mode-params")
+        args.mode, args.mode_params = SWAY_V1["mode"], SWAY_V1["mode_params"]
     for module_name in args.task_module:
         importlib.import_module(module_name)
     if args.output is not None and args.output.exists():
@@ -226,6 +229,8 @@ def main(argv=None):
             },
             "run_contract": {
                 "gamma": args.gamma,
+                "mode": args.mode,
+                "mode_params": args.mode_params,
                 "horizon_steps": args.horizon_steps,
                 "action_horizon": args.action_horizon,
                 "inference_timeout_s": args.inference_timeout_s,
@@ -259,6 +264,8 @@ def main(argv=None):
                 task = ShakeBenchTaskEnv(
                     state,
                     gamma=args.gamma,
+                    mode=args.mode,
+                    mode_params=args.mode_params,
                     horizon=args.horizon_steps,
                     observation_source=args.observation_source,
                     **camera_config,

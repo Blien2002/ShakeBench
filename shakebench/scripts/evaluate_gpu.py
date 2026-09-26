@@ -39,13 +39,9 @@ from shakebench.scripts.evaluate import (
 )
 from shakebench.scripts.run_oracle import load_state_asset
 from shakebench.utils.artifacts import write_json
+from shakebench.utils.excitation import SWAY_V1, VIBRATION_MODES
 from shakebench.utils.outcomes import resolve_termination_cause
-from shakebench.utils.rollout import (
-    ERROR_TAXONOMY,
-    PolicyOutputError,
-    PolicyTimeoutError,
-    ShakeBenchCameraObservation,
-)
+from shakebench.utils.rollout import ERROR_TAXONOMY, PolicyOutputError, PolicyTimeoutError, ShakeBenchCameraObservation
 from shakebench.utils.rollout import _predict as predict_actions
 from shakebench.utils.rollout import (
     action_evidence,
@@ -154,6 +150,8 @@ def run_batch(policy, states, *, args, policy_id):
             env, program = make_environment(
                 state,
                 gamma=args.gamma,
+                mode=args.mode,
+                mode_params=args.mode_params,
                 horizon=args.horizon_steps,
                 physics_profile=args.physics_profile,
                 free_ring_peg=task_type(state) == "ring_on_peg",
@@ -321,6 +319,9 @@ def build_parser():
         "--allow-train-states", action="store_true", help="Permit evaluating states that trained the policy"
     )
     parser.add_argument("--gamma", type=float, default=0.0)
+    parser.add_argument("--mode", default="multisine_v1", choices=VIBRATION_MODES)
+    parser.add_argument("--mode-params", type=json.loads, default={}, help="JSON excitation parameters")
+    parser.add_argument("--sway-v1", action="store_true", help="Use low-frequency SWAY_V1")
     parser.add_argument("--horizon-steps", type=int, default=600)
     parser.add_argument("--action-horizon", type=int, default=8)
     parser.add_argument("--inference-timeout-s", type=float, default=None)
@@ -337,6 +338,10 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    if args.sway_v1:
+        if args.mode_params or args.mode != "multisine_v1":
+            raise ValueError("--sway-v1 cannot be combined with --mode or --mode-params")
+        args.mode, args.mode_params = SWAY_V1["mode"], SWAY_V1["mode_params"]
     for module_name in args.task_module:
         importlib.import_module(module_name)
     if args.output.exists():
@@ -396,6 +401,8 @@ def main(argv=None):
             },
             "run_contract": {
                 "gamma": args.gamma,
+                "mode": args.mode,
+                "mode_params": args.mode_params,
                 "horizon_steps": args.horizon_steps,
                 "action_horizon": args.action_horizon,
                 "inference_timeout_s": args.inference_timeout_s,
