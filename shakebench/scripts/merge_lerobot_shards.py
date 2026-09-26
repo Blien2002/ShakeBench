@@ -11,7 +11,9 @@ from pathlib import Path
 from shakebench.scripts.export_sft_subset import _counter_stats, _read_jsonl, _write_jsonl, sft_subset_summary
 
 
-def merge_shards(shards, *, output: Path, ordered_state_ids, video_dir: Path):
+def merge_shards(
+    shards, *, output: Path, ordered_state_ids, video_dir: Path, repo_id="shakebench_pickplace_300"
+):
     """Merge source episodes in requested state order; videos remain in a shared sidecar directory."""
     if not shards or not ordered_state_ids or output.exists():
         raise ValueError("sources and ordered states are required, and output must be new")
@@ -141,23 +143,23 @@ def merge_shards(shards, *, output: Path, ordered_state_ids, video_dir: Path):
                 if key not in {"episodes", "requested_states", "tasks", "sft_subset", "shards", "device"}
             },
             "complete": True,
-            "repo_id": "shakebench_pickplace_300",
+            "repo_id": repo_id,
             "device": "multi_gpu",
             "devices": [source["manifest"].get("device") for source in sources],
             "video_output": str(video_dir),
-            "legacy_task_instructions": True,
+            "legacy_task_instructions": first_manifest.get("legacy_task_instructions", False),
             "tasks": {
                 state_id: episode["instruction"] for state_id, (_, episode) in zip(ordered_state_ids, state_rows)
             },
             "requested_states": list(ordered_state_ids),
             "excluded_source_state_ids": excluded_state_ids,
-            "state_authority": {
+            "state_authority": first_manifest.get("state_authority", {
                 "kind": "train",
                 "split": "train",
                 "scoreable": False,
                 "pool_manifest": str(pool_manifest_path) if pool_manifest is not None else None,
                 "pools": pool_manifest.get("pools", []) if pool_manifest is not None else [],
-            },
+            }),
             "shards": [
                 {
                     "path": source["path"],
@@ -198,10 +200,15 @@ def main(argv=None):
     parser.add_argument("--order-file", type=Path, required=True, help="JSON file with ordered state_ids")
     parser.add_argument("--output", type=Path, required=True, help="New merged LeRobot v2.1 root")
     parser.add_argument("--video-dir", type=Path, required=True, help="Directory with per-state MP4 files")
+    parser.add_argument("--repo-id", default="shakebench_pickplace_300", help="Dataset identifier in the manifest")
     args = parser.parse_args(argv)
     order = json.loads(args.order_file.read_text())
     result = merge_shards(
-        args.source, output=args.output, ordered_state_ids=order["state_ids"], video_dir=args.video_dir
+        args.source,
+        output=args.output,
+        ordered_state_ids=order["state_ids"],
+        video_dir=args.video_dir,
+        repo_id=args.repo_id,
     )
     print(json.dumps(result, sort_keys=True))
     return 0
