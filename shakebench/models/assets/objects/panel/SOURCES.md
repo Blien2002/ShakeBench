@@ -59,6 +59,10 @@ base is about 5.46 mm tall. The handle alone is subsequently enlarged by 15%
 about its pivot, to about 20.89 mm long, with a matching contact proxy. The
 base dimensions and +/-30 degree range are retained. The base collision uses the same mesh as the visual.
 
+The knob and button assemblies are shifted 15 mm down the faceplate along
+its slope, including fixed bezels and contact proxies. Their mounting centers
+remain 50.45 mm above the lever mounting center along the faceplate.
+
 Nameplates and their collision proxies are removed. The faceplate is
 untextured: no lettering, graduations or labels. Indicator lenses are gray
 and have no task-state or success behavior.
