@@ -41,7 +41,11 @@ collision. Moving-control masses and joint resistance are retained; inertia is
 recomputed from the smaller contact proxies. Lever stop impedance is tightened
 to keep limit deflection below 0.001 rad at the demo effort with the reduced
 inertia. The lever still travels +/-30 degrees and the button retains its
-4 mm spring-return travel.
+4 mm travel. Pressing past 3 mm activates a joint equality constraint that
+holds the button at -4 mm after contact or manual effort is removed. Scene
+reset disables the latch; the cap switches from red to an emissive brighter
+red while latched. The latch follows physics integration without assigning
+joint positions.
 
 Static contact geoms use `contype=3, conaffinity=0`; the three moving controls
 use `contype=5, conaffinity=0`. Both accept Panda finger meshes, finger pads
@@ -74,7 +78,8 @@ visual feedback from current joint positions, ordered by source lamp index:
 
 Each lens switches between dim and emissive materials after physics integration
 and before camera observations. Reset recomputes the lights from restored joint
-positions. These lights do not latch and do not define success or reward.
+positions. The lenses follow current joint positions and do not define success or
+reward; the button lamp stays on while the button is physically latched.
 
 ## Attribution and terms
 

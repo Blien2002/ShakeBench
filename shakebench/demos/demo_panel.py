@@ -10,7 +10,8 @@ button; X release all; R reset. Mouse perturbation and camera navigation remain
 available in the native MuJoCo viewer. Robot control uses the normal 7D env.step
 API; these keys only apply manual forces to the panel controls.
 The three indicator lamps show knob displacement (green), positive lever tilt
-(amber), and button depression (red); R resets their joint-driven feedback.
+(amber), and button depression (red). Pressing the button past 3 mm latches it
+at 4 mm travel and lights the cap; R releases the latch and resets the lights.
 """
 
 import argparse

@@ -34,6 +34,7 @@
     <material name="panel_lens_0_on" rgba="0.08 0.9 0.18 1" specular="0.85" shininess="0.65" emission=".65" />
     <material name="panel_lens_1_on" rgba="1 0.55 0.03 1" specular="0.85" shininess="0.65" emission=".65" />
     <material name="panel_lens_2_on" rgba="1 0.04 0.025 1" specular="0.85" shininess="0.65" emission=".65" />
+    <material name="panel_button_lit" rgba=".98 .055 .025 1" specular=".65" shininess=".55" emission=".45" />
   </asset>
   <worldbody>
     <body name="panel">
@@ -108,4 +109,7 @@
       <geom name="panel_operator_face_collision" type="mesh" mesh="panel_face_rim_mesh" mass="0" group="0" contype="3" conaffinity="0" rgba=".5 .5 .5 0" />
     </body>
   </worldbody>
+  <equality>
+    <joint name="panel_button_latch" joint1="panel_button_joint" polycoef="-.004 0 0 0 0" active="false" solref=".004 1" solimp=".99 .99 .001" />
+  </equality>
 </mujoco>

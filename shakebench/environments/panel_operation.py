@@ -1,8 +1,9 @@
 """Interactive control panel on the shaken worktable, with no task goals or Oracle.
 
 The knob rotates freely, the lever has +/-30 degree stops, and the button has
-4 mm of spring-return travel. Joint resistance and contact proxies are in the
-packaged panel.xml; observations use radians for hinges and metres for the slide.
+4 mm of travel with press-to-latch retention until scene reset. Joint resistance
+and contact proxies are in panel.xml; observations use radians for hinges and
+metres for the slide.
 Green, amber and red indicators show knob displacement, positive lever tilt
 and button depression respectively; these are visual feedback, not task goals.
 """
@@ -137,6 +138,7 @@ class PanelOperation(ManipulationEnv):
         panel.set("pos", array_to_string([*self.panel_xy_m, self.arena.table_half_size[2] + 0.001]))
         panel.set("euler", array_to_string([0, 0, self.panel_yaw_rad]))
         self.arena.worktable_body.append(panel)
+        self.arena.equality.extend(fixture.find("equality"))
         self.model = ManipulationTask(self.arena, [robot.robot_model], [])
         configure_scene_rendering(self.model.root, self.arena.scene_config)
         pads = robot.gripper["right"].important_geoms
@@ -163,22 +165,34 @@ class PanelOperation(ManipulationEnv):
             [[model.mat(f"panel_lens_{i}{suffix}").id for suffix in ("", "_on")] for i in range(3)]
         )
 
+        self.panel_button_latch_id = model.eq("panel_button_latch").id
+        self.panel_button_cap_geom_id = model.geom("panel_cap_visual").id
+        self.panel_button_cap_material_ids = [
+            model.mat(name).id for name in ("panel_button_finish", "panel_button_lit")
+        ]
+
     def _reset_internal(self):
         super()._reset_internal()
         if not self.deterministic_reset:
             self.sim.data.qpos[self.panel_qpos_indexes] = 0.0
             self.sim.data.qvel[self.panel_qvel_indexes] = 0.0
         self.sim.data.qfrc_applied[self.panel_qvel_indexes] = 0.0
+        self.sim.data._data.eq_active[self.panel_button_latch_id] = False
         self.sim.forward()
         self.deck_driver.reset_trace()
         self.table_imu_provider.reset(self.sim, timestamp_s=float(self.sim.data.time))
 
     def update_state(self, sample_time_s=None, policy_step=False):
-        """Show control feedback after integration, before camera observations."""
-        knob, lever, button = self.sim.data.qpos[self.panel_qpos_indexes]
+        """Update the latch and visual feedback before camera observations."""
+        model, data = self.sim.model._model, self.sim.data._data
+        knob, lever, button = data.qpos[self.panel_qpos_indexes]
+        data.eq_active[self.panel_button_latch_id] |= button < -0.003
+        model.geom_matid[self.panel_button_cap_geom_id] = self.panel_button_cap_material_ids[
+            int(data.eq_active[self.panel_button_latch_id])
+        ]
         knob = (knob + np.pi) % (2 * np.pi) - np.pi
         active = np.array([abs(knob) > np.deg2rad(10), lever > np.deg2rad(5), button < -0.002])
-        self.sim.model._model.geom_matid[self.panel_indicator_geom_ids] = self.panel_indicator_material_ids[
+        model.geom_matid[self.panel_indicator_geom_ids] = self.panel_indicator_material_ids[
             np.arange(3), active.astype(int)
         ]
 
