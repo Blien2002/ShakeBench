@@ -50,40 +50,40 @@
         <geom name="panel_lever_pivot_cap_visual" contype="0" conaffinity="0" group="1" type="cylinder" size="0.004165" fromto="-0.027881317165 0 -0.0173898937 -0.028599907815 0 -0.016441354045" mass="0" material="panel_rubber" />
         <geom name="panel_button_bezel_visual" contype="0" conaffinity="0" group="1" type="mesh" mass="0" mesh="panel_button_bezel_mesh" material="panel_brushed_metal" />
         <geom name="panel_button_collar_visual" contype="0" conaffinity="0" group="1" type="mesh" mass="0" mesh="panel_button_collar_mesh" material="panel_rubber" />
-        <geom name="panel_fastener0_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.0026775" fromto="-0.0400973582 -0.08449 -0.02589800698 -0.04153453949 -0.08449 -0.02400092767" mass="0" />
-        <geom name="panel_fastener1_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.0026775" fromto="-0.0400973582 0.08449 -0.02589800698 -0.04153453949 0.08449 -0.02400092767" mass="0" />
-        <geom name="panel_fastener2_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.0026775" fromto="0.03578581431 -0.08449 0.03158924492 0.03434863301 -0.08449 0.03348632423" mass="0" />
-        <geom name="panel_fastener3_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.0026775" fromto="0.03578581431 0.08449 0.03158924492 0.03434863301 0.08449 0.03348632423" mass="0" />
-        <geom name="panel_annunciator_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="box" size="0.00238 0.01785 0.007735" pos="0.02890171589 0 0.02786694536" euler="0.0 -2.2191283158821573 0.0" mass="0" />
-        <geom name="panel_annunciator_lamp0_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 -0.01071 0.03071256433 0.02530876265 -0.01071 0.03260964364" mass="0" />
-        <geom name="panel_annunciator_lamp1_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 0 0.03071256433 0.02530876265 0 0.03260964364" mass="0" />
-        <geom name="panel_annunciator_lamp2_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 0.01071 0.03071256433 0.02530876265 0.01071 0.03260964364" mass="0" />
-        <geom name="panel_knob_outer_bezel_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.02142" fromto="0.02428836393 -0.050575 0.02213259198 0.02249188731 -0.050575 0.02450394112" mass="0" />
-        <geom name="panel_knob_inner_bezel_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.01785" fromto="0.02249188731 -0.050575 0.02450394112 0.02069541068 -0.050575 0.02687529026" mass="0" />
-        <geom name="panel_lever_bezel_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.0086275" fromto="-0.026983078855 0 -0.01857556827 -0.027881317165 0 -0.0173898937" mass="0" />
-        <geom name="panel_lever_pivot_cap_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="cylinder" size="0.004165" fromto="-0.027881317165 0 -0.0173898937 -0.028599907815 0 -0.016441354045" mass="0" />
-        <geom name="panel_button_bezel_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="box" size="0.01904 0.01904 0.0020825" mass="0" pos="0.02303083028 0.050575 0.02379253638" zaxis="-0.603857688 0 0.7970921482" />
-        <geom name="panel_button_collar_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="box" size="0.01428 0.01428 0.002975" mass="0" pos="0.02033611535 0.050575 0.02734956009" zaxis="-0.603857688 0 0.7970921482" />
+        <geom name="panel_fastener0_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.0026775" fromto="-0.0400973582 -0.08449 -0.02589800698 -0.04153453949 -0.08449 -0.02400092767" mass="0" />
+        <geom name="panel_fastener1_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.0026775" fromto="-0.0400973582 0.08449 -0.02589800698 -0.04153453949 0.08449 -0.02400092767" mass="0" />
+        <geom name="panel_fastener2_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.0026775" fromto="0.03578581431 -0.08449 0.03158924492 0.03434863301 -0.08449 0.03348632423" mass="0" />
+        <geom name="panel_fastener3_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.0026775" fromto="0.03578581431 0.08449 0.03158924492 0.03434863301 0.08449 0.03348632423" mass="0" />
+        <geom name="panel_annunciator_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="box" size="0.00238 0.01785 0.007735" pos="0.02890171589 0 0.02786694536" euler="0.0 -2.2191283158821573 0.0" mass="0" />
+        <geom name="panel_annunciator_lamp0_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 -0.01071 0.03071256433 0.02530876265 -0.01071 0.03260964364" mass="0" />
+        <geom name="panel_annunciator_lamp1_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 0 0.03071256433 0.02530876265 0 0.03260964364" mass="0" />
+        <geom name="panel_annunciator_lamp2_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.002499" fromto="0.02674594395 0.01071 0.03071256433 0.02530876265 0.01071 0.03260964364" mass="0" />
+        <geom name="panel_knob_outer_bezel_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.02142" fromto="0.02428836393 -0.050575 0.02213259198 0.02249188731 -0.050575 0.02450394112" mass="0" />
+        <geom name="panel_knob_inner_bezel_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.01785" fromto="0.02249188731 -0.050575 0.02450394112 0.02069541068 -0.050575 0.02687529026" mass="0" />
+        <geom name="panel_lever_bezel_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.0086275" fromto="-0.026983078855 0 -0.01857556827 -0.027881317165 0 -0.0173898937" mass="0" />
+        <geom name="panel_lever_pivot_cap_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="cylinder" size="0.004165" fromto="-0.027881317165 0 -0.0173898937 -0.028599907815 0 -0.016441354045" mass="0" />
+        <geom name="panel_button_bezel_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="box" size="0.01904 0.01904 0.0020825" mass="0" pos="0.02303083028 0.050575 0.02379253638" zaxis="-0.603857688 0 0.7970921482" />
+        <geom name="panel_button_collar_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="box" size="0.01428 0.01428 0.002975" mass="0" pos="0.02033611535 0.050575 0.02734956009" zaxis="-0.603857688 0 0.7970921482" />
         <!-- ponytail: primitive moving proxies; split knob into lobes if silhouette contact is needed. -->
         <body name="panel_knob" pos="0.02608484054 -0.050575 0.01976124284">
           <geom name="panel_apollo_knob_visual" contype="0" conaffinity="0" group="1" type="mesh" mesh="panel_knob_mesh" mass="0" material="panel_knob_finish" />
           <joint name="panel_knob_joint" type="hinge" axis="-0.60385768799546236 0 0.7970921481540103" limited="false" damping=".004" frictionloss=".012" armature=".00002" solreffriction=".004 1" solimpfriction=".9999 .9999 .001" />
-          <geom name="panel_knob_collision" type="cylinder" size="0.01547" fromto="-0.006826611162 0 0.009011126735 -0.01437181297 0 0.01897079313" mass="0.045" contype="4" conaffinity="1" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" />
+          <geom name="panel_knob_collision" type="cylinder" size="0.01547" fromto="-0.006826611162 0 0.009011126735 -0.01437181297 0 0.01897079313" mass="0.045" contype="5" conaffinity="0" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" />
         </body>
         <body name="panel_lever_base" pos="-0.02608484054 0 -0.01976124284">
           <geom name="panel_switch_base_visual" contype="0" conaffinity="0" group="1" type="mesh" mesh="panel_switch_base_mesh" mass="0" material="panel_brushed_metal" />
-          <geom name="panel_switch_base_collision" rgba=".5 .5 .5 0" contype="2" conaffinity="1" group="0" type="mesh" mesh="panel_switch_base_mesh" mass="0" />
+          <geom name="panel_switch_base_collision" rgba=".5 .5 .5 0" contype="3" conaffinity="0" group="0" type="mesh" mesh="panel_switch_base_mesh" mass="0" />
           <body name="panel_lever" pos="-0.0043658360385 0 0.005762903565">
             <joint name="panel_lever_joint" type="hinge" axis="0 1 0" limited="true" range="-0.52359877559829882 0.52359877559829882" damping=".005" frictionloss=".018" armature=".00002" solreflimit=".004 1" solreffriction=".004 1" solimpfriction=".9999 .9999 .001" solimplimit=".99 .99 .001" />
             <geom name="panel_switch_handle_visual" contype="0" conaffinity="0" group="1" type="mesh" mesh="panel_switch_handle_mesh" mass="0" pos="0.0064240523635 -0 -0.008479749112" material="panel_lever_silver" />
-            <geom name="panel_lever_collision" type="capsule" size="0.0039344375" fromto="-0.0024791377379 0 0.0032724618138 -0.010240714402 0 0.013517743011" mass="0.025" contype="4" conaffinity="1" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" />
+            <geom name="panel_lever_collision" type="capsule" size="0.0039344375" fromto="-0.0024791377379 0 0.0032724618138 -0.010240714402 0 0.013517743011" mass="0.025" contype="5" conaffinity="0" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" />
           </body>
         </body>
         <body name="panel_button" pos="0.02608484054 0.050575 0.01976124284">
           <geom name="panel_witness_band_visual" contype="0" conaffinity="0" group="1" type="mesh" mass="0" material="panel_button_band" mesh="panel_button_band_mesh" />
           <geom name="panel_cap_visual" contype="0" conaffinity="0" group="1" type="mesh" mass="0" material="panel_button_finish" mesh="panel_button_cap_mesh" />
           <joint name="panel_button_joint" type="slide" axis="-0.60385768799546236 0 0.7970921481540103" limited="true" range="-.004 0" stiffness="900" springref=".0005" damping="4" armature=".005" solreflimit=".004 1" />
-          <geom name="panel_button_collision" type="box" size=".0119 .0119 .00595" mass="0.02" contype="4" conaffinity="1" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" pos="-0.01113815506 0 0.01470236467" zaxis="-0.603857688 0 0.7970921482" />
+          <geom name="panel_button_collision" type="box" size=".0119 .0119 .00595" mass="0.02" contype="5" conaffinity="0" group="0" rgba=".5 .5 .5 0" friction=".8 .005 .0001" condim="4" pos="-0.01113815506 0 0.01470236467" zaxis="-0.603857688 0 0.7970921482" />
         </body>
         <geom name="panel_lamp_rim_0_visual" material="panel_brushed_metal" contype="0" conaffinity="0" group="1" mass="0" type="mesh" mesh="panel_lamp_rim_0_mesh" pos="0.0074375 0 -0.0163625" />
         <geom name="panel_lamp_rim_1_visual" material="panel_brushed_metal" contype="0" conaffinity="0" group="1" mass="0" type="mesh" mesh="panel_lamp_rim_1_mesh" pos="0.0074375 0 -0.0163625" />
@@ -99,10 +99,10 @@
         <geom name="panel_knob_spindle_visual" material="panel_dark_metal" contype="0" conaffinity="0" group="1" mass="0" type="cylinder" size="0.00714" fromto="0.02177329666 -0.050575 0.02545248077 0.01818034341 -0.050575 0.03019517906" />
       </body>
       <geom name="panel_console_housing_visual" type="mesh" mesh="panel_housing_mesh" mass="0" group="1" material="panel_powder_coat" contype="0" conaffinity="0" />
-      <geom name="panel_console_housing_collision" type="mesh" mesh="panel_housing_mesh" mass="0" group="0" rgba=".5 .5 .5 0" contype="2" conaffinity="1" />
+      <geom name="panel_console_housing_collision" type="mesh" mesh="panel_housing_mesh" mass="0" group="0" rgba=".5 .5 .5 0" contype="3" conaffinity="0" />
       <geom name="panel_face_rim_visual" type="mesh" mesh="panel_face_rim_mesh" mass="0" group="1" contype="0" conaffinity="0" material="panel_dark_metal" />
       <geom name="panel_operator_face_visual" type="mesh" mesh="panel_faceplate_mesh" mass="0" group="1" contype="0" conaffinity="0" material="panel_powder_coat" />
-      <geom name="panel_operator_face_collision" type="mesh" mesh="panel_face_rim_mesh" mass="0" group="0" contype="2" conaffinity="1" rgba=".5 .5 .5 0" />
+      <geom name="panel_operator_face_collision" type="mesh" mesh="panel_face_rim_mesh" mass="0" group="0" contype="3" conaffinity="0" rgba=".5 .5 .5 0" />
     </body>
   </worldbody>
 </mujoco>

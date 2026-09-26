@@ -43,6 +43,12 @@ to keep limit deflection below 0.001 rad at the demo effort with the reduced
 inertia. The lever still travels +/-30 degrees and the button retains its
 4 mm spring-return travel.
 
+Static contact geoms use `contype=3, conaffinity=0`; the three moving controls
+use `contype=5, conaffinity=0`. Both accept Panda finger meshes, finger pads
+and palm contact, including finger meshes with `contype=0, conaffinity=1`.
+Panel geoms do not collide with each other. The explicit moving-control /
+finger-pad pairs retain the physics profile's contact parameters.
+
 The console uses dark neutral-gray powder coating, an off-white rotary knob,
 a red rounded-square button, and a polished silver lever. The button cap,
 collar and bezel share a rounded-square outline; a square box contact proxy
