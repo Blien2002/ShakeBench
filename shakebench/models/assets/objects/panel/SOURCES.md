@@ -49,9 +49,9 @@ collar and bezel share a rounded-square outline; a square box contact proxy
 follows the moving button. The lever base is first shortened by 45% above its lower seat and narrowed by
 15%. The complete lever assembly is then uniformly halved about its mounting
 point: handle length and diameter, base, bezel and pivot cap. The resulting
-base is about 5.46 mm tall; the lever handle is about 18.17 mm long. Joint
-placement and all contact proxies follow the same scale, retaining the
-+/-30 degree range. The base collision uses the same mesh as the visual.
+base is about 5.46 mm tall. The handle alone is subsequently enlarged by 15%
+about its pivot, to about 20.89 mm long, with a matching contact proxy. The
+base dimensions and +/-30 degree range are retained. The base collision uses the same mesh as the visual.
 
 Nameplates and their collision proxies are removed. The faceplate is
 untextured: no lettering, graduations or labels. Indicator lenses are gray
