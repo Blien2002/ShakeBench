@@ -123,7 +123,7 @@ class PanelOperation(ManipulationEnv):
         self.arena.worldbody.append(support.find("./worldbody/body[@name='robot_support']"))
         # Check the compact case footprint with clearance around the rounded faceplate.
         c, s = np.cos(self.panel_yaw_rad), np.sin(self.panel_yaw_rad)
-        half_extent = np.abs([[c, -s], [s, c]]) @ [0.078, 0.112]
+        half_extent = np.abs([[c, -s], [s, c]]) @ [0.0663, 0.0952]
         if np.any(np.abs(self.panel_xy_m) + half_extent > self.arena.table_half_size[:2]):
             raise ValueError("panel footprint must fit on the worktable")
         fixture = ET.parse(xml_path_completion("objects/panel/panel.xml")).getroot()

@@ -17,7 +17,7 @@ All shipped meshes now have outward winding.
 (50,944 triangles), replacing the earlier 1,624-triangle runtime LOD. Source
 millimetres are mapped as `-X * tangent + (Y - minY) * normal - Z * lateral`,
 scaled by 0.001, then offset 19 mm along the normal. Triangle order is reversed
-and facet normals recomputed. The XML applies the same 0.7 scale to this mesh
+and facet normals recomputed. The XML applies the same 0.595 scale to this mesh
 and its independent physical cylinder.
 
 The switch base (472 triangles) and handle (574 triangles) remain inline MJCF
@@ -25,10 +25,11 @@ runtime meshes. The source switch pivot is 31.0949356 mm above its mounting
 surface before the compact adaptation below. The copied switch source notice
 describes an earlier LOD; the counts here describe the shipped meshes.
 
-The compact adaptation scales the controls and their contact proxies to 70% of
+The compact adaptation scales the controls and their contact proxies to 59.5% of
 those source dimensions, then rotates their mounting surface from 37.15 degrees
 to 12 degrees above horizontal. The shell is rebuilt as one rounded wedge,
-224 mm wide and 152 mm deep, with 9 mm corner radii and 2.5 mm rolled edges.
+190.4 mm wide and 129.2 mm deep, with 7.65 mm corner radii and 2.125 mm rolled
+edges (a further 15% linear reduction from the first compact version).
 A thin rounded faceplate replaces the rectangular side rails and rear cap;
 the shell and faceplate collision meshes follow the new silhouette. The shell
 base mounts 1 mm above the tabletop. The main assembly camera is unchanged.
@@ -42,12 +43,11 @@ to keep limit deflection below 0.001 rad at the demo effort with the reduced
 inertia. The lever still travels +/-30 degrees and the button retains its
 4 mm spring-return travel.
 
-`panel_markings.png` is original procedural artwork: face lettering, rotary
-graduations and three nameplates. Rebuild it with
-`python -m shakebench.scripts.build_panel_markings` using Pillow and DejaVu Sans
-fonts. The PNG is packaged; fonts are not required at runtime. The inset label
-surfaces sit 0.105 mm above the metal plaques to avoid coplanar flicker. The
-colored indicator lenses have no task-state or success behavior.
+The console uses neutral mid-gray finishes, with modest lightness and specular
+variation for metal, rubber and plastic. Nameplates and their collision proxies
+are removed. The faceplate is untextured: no lettering, graduations or labels.
+The obsolete markings texture and its generator are removed. Indicator lenses
+are gray and have no task-state or success behavior.
 
 ## Attribution and terms
 
