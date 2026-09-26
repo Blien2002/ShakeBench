@@ -31,14 +31,17 @@ from shakebench.utils.task_registry import TaskDefinition, register_state_loader
 from shakebench.utils.tasks import OBJECTS, UPRIGHT_AXIS_COSINE_MIN, TaskSpec, registered_rest_pose
 
 STATE_SCHEMA = "shakebench.upright.states"
-TASK_VERSION = 5
-SCHEMA_VERSION = 5
+TASK_VERSION = 6
+SCHEMA_VERSION = 6
 UP_COSINE_MIN = UPRIGHT_AXIS_COSINE_MIN
 LINEAR_SPEED_MAX_M_S = 0.05
 ANGULAR_SPEED_MAX_RAD_S = 0.2
 SUCCESS_HOLD_S = 0.5
-START_X_RANGE_M = (-0.16, -0.12)
-START_Y_RANGE_M = (-0.10, 0.10)
+# The fallen drill has a measured horizontal radius below 0.159 m, including its visual mesh.
+# This box leaves at least 26 mm to either table edge for every yaw. Official gamma=0 plans
+# also pass a 10 mm expansion around the box; retain that reach margin when changing it.
+START_X_RANGE_M = (-0.14, -0.09)
+START_Y_RANGE_M = (-0.115, 0.115)
 _SIDE_QUAT = (2**-0.5, 0.0, -(2**-0.5), 0.0)
 _MUG_SIDE_QUAT, _MUG_SIDE_LOWER_Z = registered_rest_pose(TaskSpec(object_id="mug"), "side_double_wall")
 OBJECT_IDS = ("mug", "wine_bottle", "boxed_drink", "power_drill")
@@ -91,7 +94,7 @@ def default_state():
     return {
         "state_id": "upright-mug-000",
         "task": {"task_type": "upright", "version": TASK_VERSION, "object_id": "mug"},
-        "object_xy_m": [-0.16, 0.0],
+        "object_xy_m": [-0.115, 0.0],
         "object_yaw_rad": 0.0,
         "excitation_seed": 0,
         "imu_seed": 0,
@@ -103,7 +106,7 @@ def validate_state(state):
     """Accept only reproducible starts in the Panda-visible tabletop region."""
     required = set(default_state())
     if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
-        raise ValueError("upright state fields must match version 5")
+        raise ValueError(f"upright state fields must match version {TASK_VERSION}")
     if (
         not isinstance(state["task"], Mapping)
         or set(state["task"]) != {"task_type", "version", "object_id"}
@@ -112,7 +115,7 @@ def validate_state(state):
         or state["task"]["version"] != TASK_VERSION
         or state["task"]["object_id"] not in UPRIGHT_OBJECTS
     ):
-        raise ValueError("upright version 5 supports only mug, wine_bottle, boxed_drink, and power_drill")
+        raise ValueError(f"upright version {TASK_VERSION} supports only mug, wine_bottle, boxed_drink, and power_drill")
     if not isinstance(state["state_id"], str) or not state["state_id"].strip():
         raise ValueError("state_id must be nonempty")
     if "split" in state and state["split"] not in ("train", "eval"):
