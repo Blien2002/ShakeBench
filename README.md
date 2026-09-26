@@ -82,6 +82,42 @@ python -m shakebench.scripts.collect_lerobot \
 
 所有 IL 训练数据（CPU/GPU Oracle、SpaceMouse、SFT 子集）不包含 IMU 观测、统计或安装审计。底层 IMU 传感器、仿真接口和非 IL 实验能力保留，供后续阶段使用。
 
+## 葡萄酒入架任务（CPU 开发版）
+
+`PlaceWineAtRackLocation` 参考 [RLBench / PerAct 的原任务](https://github.com/MohitShridhar/RLBench/blob/peract/rlbench/tasks/place_wine_at_rack_location.py)，保留 `middle / left / right` 三个变体及到达目标后松手的语义。酒瓶初始竖立在桌面，机械臂需要将其横放进指定槽位。MuJoCo 酒架由三个开放式木质槽位组成，固定在移动工作台上；酒瓶复用仓库已有的 RoboCasa `wine_3` 网格及许可。此版本适配 ShakeBench 场景，不逐尺寸复刻 CoppeliaSim 的原模型。
+
+成功要求酒瓶的完整碰撞几何进入指定槽位、由该槽底板承重、与机械臂脱离接触，并连续保持 0.5 秒。错误槽位、悬空、竖放及越界均不算成功；成功在 episode 内锁存。所有位置检查在移动酒架坐标系中进行。环境复用 Panda、20 Hz、7D OSC 动作、振动、IMU 和公共 CPU rollout；开发状态不具备认证评分资格。
+
+```python
+import shakebench
+from shakebench.environments.place_wine_at_rack_location import default_state
+
+env = shakebench.make("PlaceWineAtRackLocation", task_state=default_state("left"))
+try:
+    observation = env.reset()
+finally:
+    env.close()
+```
+
+随附 30 条确定性状态，三个位置各 10 条。公共评测和 SpaceMouse 采集入口：
+
+```bash
+python -m shakebench.scripts.evaluate \
+  --task-module shakebench.environments.place_wine_at_rack_location \
+  --states shakebench/models/assets/shakebench_place_wine_at_rack_location_states.json \
+  --policy my_policy:make_policy --observation-source contract
+
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
+python -m shakebench.scripts.collect_lerobot_spacemouse \
+  --device spacemouse --task place_wine_at_rack_location \
+  --output out/spacemouse_wine_rack --limit 30
+
+python -m shakebench.scripts.generate_wine_rack_states \
+  --output out/wine_rack_train_states.json --count 300 --seed 43 --split train
+```
+
+手动采集默认 2400 步，平移/旋转灵敏度 0.2/0.3，256×256 双相机。该任务尚未提供专用 Oracle 或 MJWarp 采集适配。
+
 # robosuite
 
 ![gallery of_environments](docs/images/gallery.png)

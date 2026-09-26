@@ -1,0 +1,520 @@
+{
+  "schema_id": "shakebench.place_wine_at_rack_location.states",
+  "schema_version": 1,
+  "generator": {
+    "seed": 42,
+    "split": "eval"
+  },
+  "states": [
+    {
+      "state_id": "wine-rack-s42-0000",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.18808351611552293,
+        0.21010185439379678
+      ],
+      "object_yaw_rad": 1.2400999002927886,
+      "excitation_seed": 1884968545,
+      "imu_seed": 865305067,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0001",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.17195021186905954,
+        -0.2032797791393247
+      ],
+      "object_yaw_rad": 1.7973950398246918,
+      "excitation_seed": 2204291347,
+      "imu_seed": 550243862,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0002",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.21396912496835463,
+        0.21487354921940213
+      ],
+      "object_yaw_rad": 0.9039312087064584,
+      "excitation_seed": 1592565387,
+      "imu_seed": 1728356534,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0003",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.21452686409381352,
+        0.1659067105249344
+      ],
+      "object_yaw_rad": 0.3429663317734204,
+      "excitation_seed": 3813457839,
+      "imu_seed": 274093027,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0004",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.18378950624059343,
+        -0.20306614180597615
+      ],
+      "object_yaw_rad": -0.9140402996225858,
+      "excitation_seed": 2712977936,
+      "imu_seed": 291714185,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0005",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.1785503102942242,
+        0.20448684479516333
+      ],
+      "object_yaw_rad": -1.9186415842058906,
+      "excitation_seed": 1562964503,
+      "imu_seed": 2004551447,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0006",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.2464956987370217,
+        0.19781342672697183
+      ],
+      "object_yaw_rad": 1.537885981753596,
+      "excitation_seed": 662668322,
+      "imu_seed": 1574718219,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0007",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.22393397134894785,
+        0.17593217942244083
+      ],
+      "object_yaw_rad": -0.19128647928084597,
+      "excitation_seed": 3417419472,
+      "imu_seed": 813773290,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0008",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.23960627957316227,
+        0.16588365443356187
+      ],
+      "object_yaw_rad": 1.066972796342621,
+      "excitation_seed": 2043137100,
+      "imu_seed": 4038583930,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0009",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.18338574431537302,
+        -0.19901855714015743
+      ],
+      "object_yaw_rad": -1.1789351620051178,
+      "excitation_seed": 3297864501,
+      "imu_seed": 3574528628,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0010",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.18561885140025586,
+        0.1701829672751171
+      ],
+      "object_yaw_rad": 1.1466530692019,
+      "excitation_seed": 1664206965,
+      "imu_seed": 2734871217,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0011",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.23400734380199134,
+        -0.1505153588825704
+      ],
+      "object_yaw_rad": 1.802799032993085,
+      "excitation_seed": 3351639227,
+      "imu_seed": 2855512685,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0012",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.1935867697098932,
+        -0.1821241042876838
+      ],
+      "object_yaw_rad": 0.4319136724091748,
+      "excitation_seed": 3353205655,
+      "imu_seed": 160040411,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0013",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.24083759411712213,
+        -0.19678820732533303
+      ],
+      "object_yaw_rad": -0.18160789288321721,
+      "excitation_seed": 3672540668,
+      "imu_seed": 2427670591,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0014",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.18880009140671797,
+        0.1887505580460597
+      ],
+      "object_yaw_rad": 0.3720095624754025,
+      "excitation_seed": 2726094426,
+      "imu_seed": 3414123690,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0015",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.24753457323456485,
+        -0.18057021724626537
+      ],
+      "object_yaw_rad": -1.7933173901841886,
+      "excitation_seed": 1187766038,
+      "imu_seed": 1754617164,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0016",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.18172775413854672,
+        -0.1540811919182346
+      ],
+      "object_yaw_rad": -1.3736055175601773,
+      "excitation_seed": 1004762441,
+      "imu_seed": 3941285893,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0017",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.1970466788218484,
+        -0.18899225066388947
+      ],
+      "object_yaw_rad": 1.7837850561920154,
+      "excitation_seed": 4278246588,
+      "imu_seed": 2853204929,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0018",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.21748905108479435,
+        -0.16168810439353926
+      ],
+      "object_yaw_rad": -2.998888489379533,
+      "excitation_seed": 3496190930,
+      "imu_seed": 455878922,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0019",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.192211251952284,
+        -0.18233140611759713
+      ],
+      "object_yaw_rad": -2.1282921811031534,
+      "excitation_seed": 3868140666,
+      "imu_seed": 2151970922,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0020",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.23781503178294652,
+        -0.18123093929018214
+      ],
+      "object_yaw_rad": -0.7475656840568234,
+      "excitation_seed": 2990673238,
+      "imu_seed": 1025493303,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0021",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.19957739255048892,
+        -0.17532688273873734
+      ],
+      "object_yaw_rad": -2.590871968367391,
+      "excitation_seed": 1471416172,
+      "imu_seed": 506831490,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0022",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.17304818683603884,
+        -0.19897949936675247
+      ],
+      "object_yaw_rad": -1.4710824181269369,
+      "excitation_seed": 3902324352,
+      "imu_seed": 3282340507,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0023",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.18769992768273644,
+        0.2001823132411297
+      ],
+      "object_yaw_rad": -0.3181710657077921,
+      "excitation_seed": 3165045576,
+      "imu_seed": 1169268604,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0024",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.24228872302772006,
+        -0.18190434028835278
+      ],
+      "object_yaw_rad": -1.8701061331969793,
+      "excitation_seed": 3876647774,
+      "imu_seed": 3099318832,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0025",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.20366243448464832,
+        -0.16237409480574622
+      ],
+      "object_yaw_rad": 2.2406736301395807,
+      "excitation_seed": 83854907,
+      "imu_seed": 3257816574,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0026",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.19244296352392506,
+        0.19391161884917102
+      ],
+      "object_yaw_rad": 0.5284031226361456,
+      "excitation_seed": 1855825474,
+      "imu_seed": 406710607,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0027",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "middle",
+      "object_xy_m": [
+        -0.24324445430880887,
+        0.17910651815194267
+      ],
+      "object_yaw_rad": -2.8801230878103334,
+      "excitation_seed": 770759792,
+      "imu_seed": 2121674413,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0028",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "left",
+      "object_xy_m": [
+        -0.22361110301337717,
+        0.15723820774057862
+      ],
+      "object_yaw_rad": 0.5506870881610411,
+      "excitation_seed": 620726664,
+      "imu_seed": 3407984543,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0029",
+      "task": {
+        "task_type": "place_wine_at_rack_location",
+        "version": 1
+      },
+      "location": "right",
+      "object_xy_m": [
+        -0.17599039052985624,
+        -0.19067427977902765
+      ],
+      "object_yaw_rad": -0.96214539423225,
+      "excitation_seed": 2630460965,
+      "imu_seed": 2537962710,
+      "t0_s": 0.0,
+      "split": "eval"
+    }
+  ]
+}

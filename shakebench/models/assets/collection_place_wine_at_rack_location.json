@@ -1,0 +1,10 @@
+{
+  "task_module": ["shakebench.environments.place_wine_at_rack_location"],
+  "states": "shakebench_place_wine_at_rack_location_states.json",
+  "horizon_steps": 2400,
+  "pos_sensitivity": 0.2,
+  "rot_sensitivity": 0.3,
+  "width": 256,
+  "height": 256,
+  "main_camera": "task_close"
+}
