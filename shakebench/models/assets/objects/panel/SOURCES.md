@@ -64,8 +64,17 @@ its slope, including fixed bezels and contact proxies. Their mounting centers
 remain 50.45 mm above the lever mounting center along the faceplate.
 
 Nameplates and their collision proxies are removed. The faceplate is
-untextured: no lettering, graduations or labels. Indicator lenses are gray
-and have no task-state or success behavior.
+untextured: no lettering, graduations or labels. The three indicators provide
+visual feedback from current joint positions, ordered by source lamp index:
+
+- Lamp 0, green: knob orientation differs from zero by more than 10 degrees,
+  using the shortest wrapped angle (a full turn returns to the off state).
+- Lamp 1, amber: lever angle is greater than +5 degrees.
+- Lamp 2, red: button is depressed more than 2 mm.
+
+Each lens switches between dim and emissive materials after physics integration
+and before camera observations. Reset recomputes the lights from restored joint
+positions. These lights do not latch and do not define success or reward.
 
 ## Attribution and terms
 

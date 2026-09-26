@@ -9,6 +9,8 @@ Viewer keys toggle physical effort: Q/A knob +/-; W/S lever +/-; B press/release
 button; X release all; R reset. Mouse perturbation and camera navigation remain
 available in the native MuJoCo viewer. Robot control uses the normal 7D env.step
 API; these keys only apply manual forces to the panel controls.
+The three indicator lamps show knob displacement (green), positive lever tilt
+(amber), and button depression (red); R resets their joint-driven feedback.
 """
 
 import argparse

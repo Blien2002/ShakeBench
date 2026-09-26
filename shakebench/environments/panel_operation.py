@@ -3,6 +3,8 @@
 The knob rotates freely, the lever has +/-30 degree stops, and the button has
 4 mm of spring-return travel. Joint resistance and contact proxies are in the
 packaged panel.xml; observations use radians for hinges and metres for the slide.
+Green, amber and red indicators show knob displacement, positive lever tilt
+and button depression respectively; these are visual feedback, not task goals.
 """
 
 import xml.etree.ElementTree as ET
@@ -94,6 +96,7 @@ class PanelOperation(ManipulationEnv):
         )
         self.set_xml_processor(self.physics_profile.process_xml)
         self.deck_driver.install(self)
+        self.add_post_integration_refresh_hook(self.update_state)
         self.add_post_physics_step_hook(self._sample_imu)
         self.load_model_on_init = eager
         if eager:
@@ -155,6 +158,10 @@ class PanelOperation(ManipulationEnv):
         joint_ids = [self.sim.model.joint_name2id(name) for name in self.panel_joint_names]
         self.panel_qpos_indexes = model.jnt_qposadr[joint_ids].copy()
         self.panel_qvel_indexes = model.jnt_dofadr[joint_ids].copy()
+        self.panel_indicator_geom_ids = np.array([model.geom(f"panel_annunciator_lamp{i}_visual").id for i in range(3)])
+        self.panel_indicator_material_ids = np.array(
+            [[model.mat(f"panel_lens_{i}{suffix}").id for suffix in ("", "_on")] for i in range(3)]
+        )
 
     def _reset_internal(self):
         super()._reset_internal()
@@ -165,6 +172,15 @@ class PanelOperation(ManipulationEnv):
         self.sim.forward()
         self.deck_driver.reset_trace()
         self.table_imu_provider.reset(self.sim, timestamp_s=float(self.sim.data.time))
+
+    def update_state(self, sample_time_s=None, policy_step=False):
+        """Show control feedback after integration, before camera observations."""
+        knob, lever, button = self.sim.data.qpos[self.panel_qpos_indexes]
+        knob = (knob + np.pi) % (2 * np.pi) - np.pi
+        active = np.array([abs(knob) > np.deg2rad(10), lever > np.deg2rad(5), button < -0.002])
+        self.sim.model._model.geom_matid[self.panel_indicator_geom_ids] = self.panel_indicator_material_ids[
+            np.arange(3), active.astype(int)
+        ]
 
     def _sample_imu(self, sample_time_s, policy_step=False):
         self.table_imu_provider.on_physics_sample(self.sim, sample_time_s, policy_step=policy_step)
