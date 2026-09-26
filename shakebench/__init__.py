@@ -11,7 +11,8 @@ they load inside the entry point that needs them.
 
 from robosuite.environments.base import make
 
+from shakebench.environments.panel_operation import PanelOperation
 from shakebench.environments.vibration_pick_place import VibrationPickPlace
 from shakebench.models.arenas import ShakeBenchArena
 
-__all__ = ["ShakeBenchArena", "VibrationPickPlace", "make"]
+__all__ = ["PanelOperation", "ShakeBenchArena", "VibrationPickPlace", "make"]

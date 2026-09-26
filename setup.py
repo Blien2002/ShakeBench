@@ -57,6 +57,7 @@ setup(
             "models/assets/*.yaml",
             "models/assets/arenas/*.xml",
             "models/assets/objects/*.xml",
+            "models/assets/objects/panel/*",
             "models/assets/objects/robocasa/*/*/*",
             "models/assets/objects/robocasa/SOURCES.json",
             "models/assets/objects/robocasa/LICENSE.md",
