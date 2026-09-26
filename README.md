@@ -86,6 +86,8 @@ python -m shakebench.scripts.collect_lerobot \
 
 `PlaceWineAtRackLocation` 参考 [RLBench / PerAct 的原任务](https://github.com/MohitShridhar/RLBench/blob/peract/rlbench/tasks/place_wine_at_rack_location.py)，保留 `middle / left / right` 三个变体及到达目标后松手的语义。酒瓶初始竖立在桌面，机械臂需要将其横放进指定槽位。MuJoCo 酒架由三个开放式木质槽位组成，固定在移动工作台上；酒瓶复用仓库已有的 RoboCasa `wine_3` 网格及许可。此版本适配 ShakeBench 场景，不逐尺寸复刻 CoppeliaSim 的原模型。
 
+酒架外观参考 [IKEA HUTTEN](https://www.ikea.com/nl/en/p/hutten-9-bottle-wine-rack-solid-wood-70032451/) 的实木拼装细节和 [Classico](https://www.classico.co.nz/products/wooden-modular-wine-rack?variant=42478967324854) 的木材饰面，采用胡桃木色隔板、浅橡木色拼板底座、倒角边缘及齐平连接件。使用现有 CC0 木纹贴图，来源记录在 `shakebench/models/assets/wine_rack_visual_sources.json`；碰撞形状与成功规则保持原版本。
+
 成功要求酒瓶的完整碰撞几何进入指定槽位、由该槽底板承重、与机械臂脱离接触，并连续保持 0.5 秒。错误槽位、悬空、竖放及越界均不算成功；成功在 episode 内锁存。所有位置检查在移动酒架坐标系中进行。环境复用 Panda、20 Hz、7D OSC 动作、振动、IMU 和公共 CPU rollout；开发状态不具备认证评分资格。
 
 ```python

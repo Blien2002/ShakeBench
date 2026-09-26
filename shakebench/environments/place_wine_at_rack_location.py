@@ -19,6 +19,7 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import array_to_string
 from shakebench.models import xml_path_completion
 from shakebench.models.arenas import ShakeBenchArena
+from shakebench.models.objects.wine_rack import VISUAL_REVISION, add_rack_visuals
 from shakebench.utils.calibration import build_vibration_program
 from shakebench.utils.deck import DeckDriver
 from shakebench.utils.geometry import (
@@ -294,23 +295,6 @@ class PlaceWineAtRackLocation(ManipulationEnv):
             name="wine_rack",
             pos=array_to_string([*RACK_XY_M, self.arena.table_half_size[2]]),
         )
-        ET.SubElement(
-            self.arena.asset,
-            "texture",
-            name="wine_rack_wood",
-            type="2d",
-            file=xml_path_completion("textures/ambientcg_wood095_color_1k.png"),
-        )
-        ET.SubElement(
-            self.arena.asset,
-            "material",
-            name="wine_rack_wood",
-            texture="wine_rack_wood",
-            texrepeat="6.25 6.25",
-            texuniform="true",
-            specular="0.08",
-            shininess="0.12",
-        )
         boxes = []
         self.slot_floor_names = {}
         for location, y in SLOT_Y_M.items():
@@ -343,20 +327,19 @@ class PlaceWineAtRackLocation(ManipulationEnv):
         self.rack_geom_names = []
         for name, pos, size in boxes:
             self.rack_geom_names.append(name)
-            for visual in (False, True):
-                ET.SubElement(
-                    rack,
-                    "geom",
-                    name=f"{name}_visual" if visual else name,
-                    type="box",
-                    pos=array_to_string(pos),
-                    size=array_to_string(size),
-                    group=str(int(visual)),
-                    contype="0" if visual else "1",
-                    conaffinity="0" if visual else "1",
-                    mass="0",
-                    material="wine_rack_wood",
-                )
+            ET.SubElement(
+                rack,
+                "geom",
+                name=name,
+                type="box",
+                pos=array_to_string(pos),
+                size=array_to_string(size),
+                group="0",
+                contype="1",
+                conaffinity="1",
+                mass="0",
+            )
+        add_rack_visuals(self.arena.asset, rack, boxes)
 
     def _setup_references(self):
         super()._setup_references()
@@ -505,6 +488,7 @@ class PlaceWineAtRackLocation(ManipulationEnv):
             "success_hold_s": SUCCESS_HOLD_S,
             "containment_tolerance_m": CONTAINMENT_TOLERANCE_M,
             "reference": SOURCE_URL,
+            "visual_revision": VISUAL_REVISION,
         }
 
     def get_metrics(self):

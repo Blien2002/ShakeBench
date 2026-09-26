@@ -1,0 +1,24 @@
+{
+  "visual_revision": "beveled_walnut_oak_v1",
+  "reviewed_on": "2026-09-27",
+  "references": [
+    {
+      "name": "IKEA HUTTEN solid wood wine rack",
+      "url": "https://www.ikea.com/nl/en/p/hutten-9-bottle-wine-rack-solid-wood-70032451/",
+      "use": "Visual reference for finished timber members and visible assembly fasteners. No product imagery is redistributed."
+    },
+    {
+      "name": "Classico Solid Wood Modular Wine Rack",
+      "url": "https://www.classico.co.nz/products/wooden-modular-wine-rack?variant=42478967324854",
+      "use": "Visual reference for natural and stained timber finishes. No product imagery is redistributed."
+    }
+  ],
+  "texture": {
+    "asset": "textures/ambientcg_wood095_color_1k.png",
+    "source": "https://ambientcg.com/view?id=Wood095",
+    "license": "CC0-1.0",
+    "provenance": "textures/ambientcg_wood095_color_1k.json",
+    "use": "Existing color map, with per-board UV coordinates and material tints."
+  },
+  "geometry": "Original procedural chamfered boards, plank seams and flush fasteners; visual-only geoms have zero mass and no contacts."
+}
