@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+.idea/
+.vscode/
+.DS_Store
+MUJOCO_LOG.TXT
+
+# Evaluation results, videos and other local outputs
+out/
+*.mp4
+
+# Agent-local configuration
+.codex/

@@ -1,0 +1,13 @@
+{
+  "source_repository": "https://github.com/vikashplus/YCB_sim",
+  "source_revision": "57546b87f4724c947eadd4241a7892473febb88d",
+  "model_license": "Apache-2.0",
+  "underlying_ycb_data_license": "CC-BY-4.0",
+  "adaptation": "Rotate visual to battery-down frame and replace single convex mesh collision with four primitive contacts.",
+  "source_files": {
+    "meshes/035_power_drill.msh": "e731d0d27f5e521316e7c9828161b5985630111da979b4efc5696eec9889dc4b",
+    "textures/035_power_drill.png": "3bfad6bbbbf328340e472d8d6fbe99ae2f9de5df68cd6171e187a6a297bc8a0c",
+    "includes/assets_035_power_drill.xml": "00054f2e4cc7c22287ad76b126c6dc7c178c009e098bfb000d2a6e12c4dd7a57",
+    "includes/body_035_power_drill.xml": "404839d4b68cf8428b94e679f0f524e09833623a6a945aee6bc0030d0c26e492"
+  }
+}

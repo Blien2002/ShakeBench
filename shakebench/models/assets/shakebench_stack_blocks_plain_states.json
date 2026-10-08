@@ -1,0 +1,649 @@
+{
+  "schema_id": "shakebench.stack_blocks.states",
+  "schema_version": 1,
+  "generator": {
+    "seed": 0,
+    "blue_xy_bounds_m": [
+      [
+        -0.14,
+        -0.21
+      ],
+      [
+        0.02,
+        -0.09
+      ]
+    ],
+    "movable_xy_bounds_m": [
+      [
+        -0.24,
+        0.04
+      ],
+      [
+        0.02,
+        0.22
+      ]
+    ]
+  },
+  "states": [
+    {
+      "state_id": "stack-plain-dev-000",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.038086130028567325,
+        -0.17762559434833555
+      ],
+      "blue_block_yaw_rad": 0.16750308488001042,
+      "green_block_xy_m": [
+        -0.22934688377658938,
+        0.042974974395135236
+      ],
+      "green_block_yaw_rad": 0.36049235500572574,
+      "yellow_block_xy_m": [
+        -0.02854973780792916,
+        0.20429600390998992
+      ],
+      "yellow_block_yaw_rad": 0.06852597635034496,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 2404827117,
+      "imu_seed": 4016105479,
+      "t0_s": 0.8158535541215322
+    },
+    {
+      "state_id": "stack-plain-dev-001",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.13956183997277632,
+        -0.10711148680949167
+      ],
+      "blue_block_yaw_rad": -0.1214426289570244,
+      "green_block_xy_m": [
+        -0.23126775042057926,
+        0.17133798035738992
+      ],
+      "green_block_yaw_rad": -0.7409137279861157,
+      "yellow_block_xy_m": [
+        -0.09922008273523614,
+        0.09394814029672927
+      ],
+      "yellow_block_yaw_rad": -0.5901744491898988,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 35580840,
+      "imu_seed": 2880309929,
+      "t0_s": 0.6471895115742501
+    },
+    {
+      "state_id": "stack-plain-dev-002",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.04153838216299939,
+        -0.16395869348857398
+      ],
+      "blue_block_yaw_rad": -0.5731890695454165,
+      "green_block_xy_m": [
+        0.01927458330519488,
+        0.2165503609797214
+      ],
+      "green_block_yaw_rad": 0.347913071204762,
+      "yellow_block_xy_m": [
+        -0.061003850051555564,
+        0.11000585631623869
+      ],
+      "yellow_block_yaw_rad": 0.03982647661324357,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 1612402200,
+      "imu_seed": 1332478709,
+      "t0_s": 0.4858353588317891
+    },
+    {
+      "state_id": "stack-plain-dev-003",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.0023180534958400223,
+        -0.09791477808525004
+      ],
+      "blue_block_yaw_rad": 0.1935019143811869,
+      "green_block_xy_m": [
+        -0.14697324885564172,
+        0.14287536953135696
+      ],
+      "green_block_yaw_rad": -0.653427170303827,
+      "yellow_block_xy_m": [
+        -0.00852866847875397,
+        0.08088836683600835
+      ],
+      "yellow_block_yaw_rad": 0.5225162052637764,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 1721626191,
+      "imu_seed": 3380561489,
+      "t0_s": 0.23936944299295215
+    },
+    {
+      "state_id": "stack-plain-dev-004",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.00023747692971259893,
+        -0.20297183582337666
+      ],
+      "blue_block_yaw_rad": -0.42310622870620895,
+      "green_block_xy_m": [
+        -0.15260956425812827,
+        0.06705030404107103
+      ],
+      "green_block_yaw_rad": -0.7036832947703822,
+      "yellow_block_xy_m": [
+        -0.12291176467118538,
+        0.18333836865171296
+      ],
+      "yellow_block_yaw_rad": -0.14992961940767446,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 4280554940,
+      "imu_seed": 852607033,
+      "t0_s": 0.0907530456191219
+    },
+    {
+      "state_id": "stack-plain-dev-005",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.0471468182421039,
+        -0.17415646406172927
+      ],
+      "blue_block_yaw_rad": 0.6709728029327218,
+      "green_block_xy_m": [
+        -0.06528133173134654,
+        0.07591277991427839
+      ],
+      "green_block_yaw_rad": -0.09365534636550699,
+      "yellow_block_xy_m": [
+        -0.2125712273117403,
+        0.15323946727714766
+      ],
+      "yellow_block_yaw_rad": 0.7140690776852887,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 840753715,
+      "imu_seed": 2147036171,
+      "t0_s": 0.42522862484907553
+    },
+    {
+      "state_id": "stack-plain-dev-006",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.04076584767753956,
+        -0.0905884193717611
+      ],
+      "blue_block_yaw_rad": -0.13405827834554263,
+      "green_block_xy_m": [
+        0.006725355483819001,
+        0.12280812507563729
+      ],
+      "green_block_yaw_rad": 0.3683259332594835,
+      "yellow_block_xy_m": [
+        -0.10237883834883968,
+        0.18144142612848535
+      ],
+      "yellow_block_yaw_rad": 0.33166245717520204,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3970562665,
+      "imu_seed": 4003165871,
+      "t0_s": 0.1149326332809052
+    },
+    {
+      "state_id": "stack-plain-dev-007",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.023357581267790514,
+        -0.0987091285650528
+      ],
+      "blue_block_yaw_rad": 0.7181840707061364,
+      "green_block_xy_m": [
+        0.011660809380408088,
+        0.042647134893766474
+      ],
+      "green_block_yaw_rad": -0.5517201994233695,
+      "yellow_block_xy_m": [
+        -0.015453576536150287,
+        0.21661510721194197
+      ],
+      "yellow_block_yaw_rad": 0.7424036046905267,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 1577207396,
+      "imu_seed": 3822244107,
+      "t0_s": 0.8223738275430704
+    },
+    {
+      "state_id": "stack-plain-dev-008",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.06320193219074687,
+        -0.18211524964328352
+      ],
+      "blue_block_yaw_rad": -0.08992364596620517,
+      "green_block_xy_m": [
+        -0.03151104953323994,
+        0.20623542876102452
+      ],
+      "green_block_yaw_rad": 0.6770404167281936,
+      "yellow_block_xy_m": [
+        -0.1708061292040039,
+        0.13700819337199363
+      ],
+      "yellow_block_yaw_rad": -0.7217640870668063,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3497417239,
+      "imu_seed": 3143942670,
+      "t0_s": 0.6143732469489966
+    },
+    {
+      "state_id": "stack-plain-dev-009",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.13546154158183665,
+        -0.12369362726079115
+      ],
+      "blue_block_yaw_rad": -0.681596020277836,
+      "green_block_xy_m": [
+        -0.2358421503238713,
+        0.17643118042415706
+      ],
+      "green_block_yaw_rad": 0.5361399290867581,
+      "yellow_block_xy_m": [
+        -0.1066827319518597,
+        0.20723875974346112
+      ],
+      "yellow_block_yaw_rad": -0.6806417425921659,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 2792463427,
+      "imu_seed": 1478800098,
+      "t0_s": 0.4302987319478333
+    },
+    {
+      "state_id": "stack-plain-dev-010",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.014569932925451223,
+        -0.14253217893258516
+      ],
+      "blue_block_yaw_rad": -0.5897480889863661,
+      "green_block_xy_m": [
+        -0.1726952057755576,
+        0.08350162853698209
+      ],
+      "green_block_yaw_rad": -0.33248926938795353,
+      "yellow_block_xy_m": [
+        -0.009089236628613218,
+        0.08065649711511838
+      ],
+      "yellow_block_yaw_rad": 0.13528179386015948,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3686810463,
+      "imu_seed": 2379800585,
+      "t0_s": 0.8097107759127777
+    },
+    {
+      "state_id": "stack-plain-dev-011",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.05032384767901028,
+        -0.17538945426825472
+      ],
+      "blue_block_yaw_rad": 0.5069058395427479,
+      "green_block_xy_m": [
+        -0.13264695090296788,
+        0.18726177477476388
+      ],
+      "green_block_yaw_rad": -0.1329144432854945,
+      "yellow_block_xy_m": [
+        -0.0034106699678027874,
+        0.04775203994227675
+      ],
+      "yellow_block_yaw_rad": 0.5180548886371619,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 486889319,
+      "imu_seed": 42754513,
+      "t0_s": 0.36504615775827065
+    },
+    {
+      "state_id": "stack-plain-dev-012",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.12741919405349764,
+        -0.1316862508396034
+      ],
+      "blue_block_yaw_rad": 0.5729924065100396,
+      "green_block_xy_m": [
+        -0.16879923436411512,
+        0.16647737271876153
+      ],
+      "green_block_yaw_rad": -0.6919920924876617,
+      "yellow_block_xy_m": [
+        0.005388371004943632,
+        0.06282707840702459
+      ],
+      "yellow_block_yaw_rad": -0.1872852475908775,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 1851517936,
+      "imu_seed": 1845865537,
+      "t0_s": 0.48884954683346427
+    },
+    {
+      "state_id": "stack-plain-dev-013",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.016233971509767103,
+        -0.1169170574277806
+      ],
+      "blue_block_yaw_rad": 0.016817739580767155,
+      "green_block_xy_m": [
+        -0.15969708569299212,
+        0.08857062139014402
+      ],
+      "green_block_yaw_rad": -0.2445796938706638,
+      "yellow_block_xy_m": [
+        -0.015588746910777357,
+        0.1986352910927842
+      ],
+      "yellow_block_yaw_rad": 0.7774143525582407,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3163522717,
+      "imu_seed": 1356967194,
+      "t0_s": 0.18271237892656245
+    },
+    {
+      "state_id": "stack-plain-dev-014",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.0008156994086511438,
+        -0.11251975222664952
+      ],
+      "blue_block_yaw_rad": -0.5635285906448815,
+      "green_block_xy_m": [
+        -0.06634875455144867,
+        0.21251445372003133
+      ],
+      "green_block_yaw_rad": 0.26713252823184863,
+      "yellow_block_xy_m": [
+        -0.016217633517603774,
+        0.08448641325797934
+      ],
+      "yellow_block_yaw_rad": 0.3371220090393814,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3525636776,
+      "imu_seed": 717486865,
+      "t0_s": 0.395557273104876
+    },
+    {
+      "state_id": "stack-plain-dev-015",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.005640922594568748,
+        -0.14263190789397323
+      ],
+      "blue_block_yaw_rad": 0.11214794694524655,
+      "green_block_xy_m": [
+        -0.0896326621191691,
+        0.07494335912034285
+      ],
+      "green_block_yaw_rad": -0.7753311140494904,
+      "yellow_block_xy_m": [
+        -0.21687673353596928,
+        0.21674968476280712
+      ],
+      "yellow_block_yaw_rad": 0.42827636378840306,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 3184806588,
+      "imu_seed": 4201619247,
+      "t0_s": 0.5898700283209505
+    },
+    {
+      "state_id": "stack-plain-dev-016",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.0888509381947736,
+        -0.1874990741126658
+      ],
+      "blue_block_yaw_rad": -0.6866021454524452,
+      "green_block_xy_m": [
+        -0.06514307518161397,
+        0.0751193317222249
+      ],
+      "green_block_yaw_rad": 0.3548128311122485,
+      "yellow_block_xy_m": [
+        -0.1939210474765887,
+        0.10985201172121345
+      ],
+      "yellow_block_yaw_rad": -0.647532689265096,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 1366833186,
+      "imu_seed": 1696905966,
+      "t0_s": 0.8735226311207321
+    },
+    {
+      "state_id": "stack-plain-dev-017",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.06443194611999817,
+        -0.10048536796309372
+      ],
+      "blue_block_yaw_rad": -0.6749299426136741,
+      "green_block_xy_m": [
+        -0.04086154938789316,
+        0.20475831282011786
+      ],
+      "green_block_yaw_rad": 0.5793949706832928,
+      "yellow_block_xy_m": [
+        -0.20687521764728434,
+        0.05324132295951377
+      ],
+      "yellow_block_yaw_rad": 0.21059663109243154,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 4232260549,
+      "imu_seed": 2132759184,
+      "t0_s": 0.16354341619648027
+    },
+    {
+      "state_id": "stack-plain-dev-018",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        -0.032202649963636226,
+        -0.17183791345850424
+      ],
+      "blue_block_yaw_rad": -0.47558223266951294,
+      "green_block_xy_m": [
+        -0.05517123555085432,
+        0.12286395919611845
+      ],
+      "green_block_yaw_rad": 0.4840200778992636,
+      "yellow_block_xy_m": [
+        -0.215886176363921,
+        0.14417653059823046
+      ],
+      "yellow_block_yaw_rad": -0.01752060547736145,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 2244564329,
+      "imu_seed": 4246414122,
+      "t0_s": 0.18294332467571872
+    },
+    {
+      "state_id": "stack-plain-dev-019",
+      "task": {
+        "task_type": "stack_blocks",
+        "version": 1
+      },
+      "joint": "plain",
+      "blue_block_xy_m": [
+        0.014083062419882747,
+        -0.11388995560696691
+      ],
+      "blue_block_yaw_rad": 0.5261982402974752,
+      "green_block_xy_m": [
+        -0.11487227089043014,
+        0.18643613155233438
+      ],
+      "green_block_yaw_rad": -0.18564490951047874,
+      "yellow_block_xy_m": [
+        -0.00244040169607887,
+        0.05174867495403245
+      ],
+      "yellow_block_yaw_rad": -0.2740323054222802,
+      "order": [
+        "blue",
+        "green",
+        "yellow"
+      ],
+      "excitation_seed": 2986536175,
+      "imu_seed": 4269312473,
+      "t0_s": 0.7811905020763782
+    }
+  ]
+}

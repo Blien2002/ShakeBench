@@ -1,0 +1,489 @@
+{
+  "schema_id": "shakebench.ring_on_peg.states",
+  "schema_version": 5,
+  "generator": {
+    "seed": 0
+  },
+  "states": [
+    {
+      "state_id": "ring-stack-s0-0000",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.1893468837765894,
+        0.042479145329279364
+      ],
+      "small_ring_xy_m": [
+        0.01145026219207082,
+        0.17691333659165825
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05726076625357091,
+        -0.15460426572472258
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0001",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.05865750221899005,
+        0.18026086356816523
+      ],
+      "small_ring_xy_m": [
+        0.012121924071598345,
+        0.04041077502552221
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.0578672844846564,
+        -0.14541006878032003
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0002",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.010289583928214552,
+        0.06634834309038386
+      ],
+      "small_ring_xy_m": [
+        -0.12207490846027996,
+        0.10340308317964877
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05285191446824861,
+        -0.15932828849389072
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0003",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.025637652179656134,
+        0.13707842673613752
+      ],
+      "small_ring_xy_m": [
+        -0.1648749086941731,
+        0.14822325102911224
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06943360657709075,
+        -0.1575143344700087
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0004",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.07368280670373484,
+        0.17342317515235003
+      ],
+      "small_ring_xy_m": [
+        0.04285131414862492,
+        0.09366927950636053
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05949291355048548,
+        -0.15379516248882089
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0005",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.045481992148078826,
+        0.09068668382606998
+      ],
+      "small_ring_xy_m": [
+        -0.14093902568132127,
+        0.13347807170290635
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05856940338540478,
+        -0.15356261217848116
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0006",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        0.004645559947057676,
+        0.07590541644894283
+      ],
+      "small_ring_xy_m": [
+        -0.1126095642581283,
+        0.06254192003422586
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.0683196931283523,
+        -0.14334711704693204
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0007",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.14003302566162568,
+        0.047803195159661444
+      ],
+      "small_ring_xy_m": [
+        -0.14812598456826453,
+        0.18131696657597468
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.060993212667014254,
+        -0.1440735145942541
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0008",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.036431880599675615,
+        0.17907318296018013
+      ],
+      "small_ring_xy_m": [
+        0.04672535548381898,
+        0.1090067708963644
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06269779663510343,
+        -0.15789009440859542
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0009",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.0623788383488397,
+        0.15786785510707113
+      ],
+      "small_ring_xy_m": [
+        -0.17011751534696465,
+        0.1493522675614464
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05484542309383417,
+        -0.15005154609024762
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0010",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.196176360709004,
+        0.16954601353683638
+      ],
+      "small_ring_xy_m": [
+        0.05511071041724952,
+        0.18358152694164454
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.0514515214275088,
+        -0.14064147620150708
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0011",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        0.03138324448733537,
+        0.16335607413146055
+      ],
+      "small_ring_xy_m": [
+        -0.07520313980996364,
+        0.07485593794589557
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06702471975535004,
+        -0.1405474237235409
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0012",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.13080612920400392,
+        0.12084016114332805
+      ],
+      "small_ring_xy_m": [
+        -0.04026295579326089,
+        0.04425480476702816
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05396238842563384,
+        -0.1415293968043306
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0013",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.0029327393873286867,
+        0.11691380848931171
+      ],
+      "small_ring_xy_m": [
+        -0.11047940551092747,
+        0.10454480979217498
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05561560454346519,
+        -0.15968016540952856
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0014",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.13269520577555763,
+        0.07625135711415174
+      ],
+      "small_ring_xy_m": [
+        0.030910763371386762,
+        0.07388041426259866
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.050678758384318595,
+        -0.14875536315543086
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0015",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.04760800314868949,
+        0.12311357532599018
+      ],
+      "small_ring_xy_m": [
+        0.04936018710133497,
+        0.09541066166375213
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06750890588329433,
+        -0.15423338485984844
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0016",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        0.02055571415151561,
+        0.06182103072797976
+      ],
+      "small_ring_xy_m": [
+        -0.09430731244548708,
+        0.17649384424934456
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05894776978957425,
+        -0.14812151596773662
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0017",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.0920001502834816,
+        0.1644705977917154
+      ],
+      "small_ring_xy_m": [
+        -0.1974118141901041,
+        0.0947569236637406
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.06913866222863592,
+        -0.14354587439636995
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0018",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.12879923436411514,
+        0.14539781059896795
+      ],
+      "small_ring_xy_m": [
+        0.04538837100494361,
+        0.059022565339187164
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.0684273992566872,
+        -0.1469477084732672
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    },
+    {
+      "state_id": "ring-stack-s0-0019",
+      "task": {
+        "task_type": "ring_on_peg",
+        "version": 5
+      },
+      "large_ring_xy_m": [
+        -0.10099966783916875,
+        0.1044661091767865
+      ],
+      "small_ring_xy_m": [
+        0.001679708906475369,
+        0.08632860440788914
+      ],
+      "large_ring_yaw_rad": 0.0,
+      "small_ring_yaw_rad": 0.0,
+      "peg_xy_m": [
+        -0.05270443409198452,
+        -0.15881071696799323
+      ],
+      "excitation_seed": 0,
+      "imu_seed": 0,
+      "t0_s": 0.0
+    }
+  ]
+}

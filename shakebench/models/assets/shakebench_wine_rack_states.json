@@ -1,0 +1,700 @@
+{
+  "schema_id": "shakebench.wine_rack.states",
+  "schema_version": 10,
+  "generator": {
+    "seed": 42,
+    "split": "eval"
+  },
+  "states": [
+    {
+      "state_id": "wine-rack-s42-0000",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.18808351611552293,
+        0.21010185439379678
+      ],
+      "rack_xy_m": [
+        0.1047368029059364,
+        -0.06493162433797607
+      ],
+      "rack_yaw_rad": 0.16602352064279266,
+      "object_yaw_rad": 1.6407891386670412,
+      "excitation_seed": 1884968545,
+      "imu_seed": 3081541440,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0001",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.23975090938595633,
+        0.1815270156526897
+      ],
+      "rack_xy_m": [
+        0.07207980242325812,
+        0.0682823982157763
+      ],
+      "rack_yaw_rad": 0.05021840048369214,
+      "object_yaw_rad": 2.0279710262248587,
+      "excitation_seed": 2342600227,
+      "imu_seed": 1904449482,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0002",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.23182090225721785,
+        -0.15446720792729227
+      ],
+      "rack_xy_m": [
+        0.11776311719925822,
+        0.021066303859530372
+      ],
+      "rack_yaw_rad": 0.09008961647042249,
+      "object_yaw_rad": -0.9140402996225858,
+      "excitation_seed": 2381923523,
+      "imu_seed": 291714185,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0003",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.1785503102942242,
+        0.20448684479516333
+      ],
+      "rack_xy_m": [
+        0.054463870785196766,
+        -0.00532463940367453
+      ],
+      "rack_yaw_rad": -0.1592425264442412,
+      "object_yaw_rad": -2.172163183978775,
+      "excitation_seed": 3192775211,
+      "imu_seed": 2933672915,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0004",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.19041902752737463,
+        -0.17280777506967063
+      ],
+      "rack_xy_m": [
+        0.07204597060348689,
+        -0.0048710701958707275
+      ],
+      "rack_yaw_rad": -0.10839494411444787,
+      "object_yaw_rad": -2.3252717601793034,
+      "excitation_seed": 4155422659,
+      "imu_seed": 2948401465,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0005",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.23184725207592927,
+        -0.19688697962777574
+      ],
+      "rack_xy_m": [
+        0.07871519188723308,
+        0.05322851136925398
+      ],
+      "rack_yaw_rad": 0.06990570813563071,
+      "object_yaw_rad": -1.1789351620051178,
+      "excitation_seed": 3297864501,
+      "imu_seed": 3574528628,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0006",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.18561885140025586,
+        0.1701829672751171
+      ],
+      "rack_xy_m": [
+        0.10324955039749756,
+        -0.05763960262251043
+      ],
+      "rack_yaw_rad": -0.10475179850075059,
+      "object_yaw_rad": -3.0953341484627828,
+      "excitation_seed": 1664206965,
+      "imu_seed": 3422412849,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0007",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.19681193147263742,
+        0.19936157650384345
+      ],
+      "rack_xy_m": [
+        0.1130729031021968,
+        -0.0065734759138656035
+      ],
+      "rack_yaw_rad": 0.02399520402273192,
+      "object_yaw_rad": -2.2632222089662837,
+      "excitation_seed": 1054333582,
+      "imu_seed": 491902920,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0008",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.19652776305676228,
+        0.18956652745368321
+      ],
+      "rack_xy_m": [
+        0.11149988574160256,
+        0.021554931200094524
+      ],
+      "rack_yaw_rad": 0.018702739054544865,
+      "object_yaw_rad": 0.3720095624754025,
+      "excitation_seed": 2023342798,
+      "imu_seed": 3414123690,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0009",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.24753457323456485,
+        -0.18057021724626537
+      ],
+      "rack_xy_m": [
+        0.056458467281952925,
+        -0.01463541700405821
+      ],
+      "rack_yaw_rad": 0.12336094430392511,
+      "object_yaw_rad": -1.6717075132315375,
+      "excitation_seed": 3529064890,
+      "imu_seed": 250408368,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0010",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.22748928863824028,
+        0.19633415603088267
+      ],
+      "rack_xy_m": [
+        0.09070321523412783,
+        0.04542371345702616
+      ],
+      "rack_yaw_rad": 0.05735624568642789,
+      "object_yaw_rad": -0.5881886967587158,
+      "excitation_seed": 1260975587,
+      "imu_seed": 1795119143,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0011",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.2366421664073837,
+        0.15158984511937024
+      ],
+      "rack_xy_m": [
+        0.04400478607756418,
+        0.03557749609543205
+      ],
+      "rack_yaw_rad": -0.013307357041859619,
+      "object_yaw_rad": -2.1282921811031534,
+      "excitation_seed": 3868140666,
+      "imu_seed": 2151970922,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0012",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.23781503178294652,
+        -0.18123093929018214
+      ],
+      "rack_xy_m": [
+        0.07310212260964825,
+        -0.031758065736339755
+      ],
+      "rack_yaw_rad": 0.045477204159214246,
+      "object_yaw_rad": -0.8682569750084408,
+      "excitation_seed": 2990673238,
+      "imu_seed": 4121848260,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0013",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.24055952783035878,
+        -0.21733283651846602
+      ],
+      "rack_xy_m": [
+        0.12585806907076072,
+        0.03195314140971993
+      ],
+      "rack_yaw_rad": -0.08172680100705204,
+      "object_yaw_rad": 2.9479221206269637,
+      "excitation_seed": 1131830658,
+      "imu_seed": 3344709664,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0014",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.19264878486728038,
+        0.16905690932916112
+      ],
+      "rack_xy_m": [
+        0.044639096215349935,
+        0.06441638344701466
+      ],
+      "rack_yaw_rad": -0.015436986997023533,
+      "object_yaw_rad": -1.8701061331969793,
+      "excitation_seed": 1929992955,
+      "imu_seed": 3099318832,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0015",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.20366243448464832,
+        -0.16237409480574622
+      ],
+      "rack_xy_m": [
+        0.12066142840923756,
+        0.04136312477363362
+      ],
+      "rack_yaw_rad": 0.07660702335006261,
+      "object_yaw_rad": -0.4266720147402969,
+      "excitation_seed": 1325715532,
+      "imu_seed": 2694270955,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0016",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.20327216248698116,
+        -0.15591110247979223
+      ],
+      "rack_xy_m": [
+        0.07658074021706096,
+        -0.0733417321820972
+      ],
+      "rack_yaw_rad": -0.0020975997906124977,
+      "object_yaw_rad": -1.0690135308519908,
+      "excitation_seed": 2791069901,
+      "imu_seed": 2837251288,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0017",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.24172776258219586,
+        -0.19113512005243985
+      ],
+      "rack_xy_m": [
+        0.05205929685368861,
+        0.06801921894028755
+      ],
+      "rack_yaw_rad": 0.02829567566381963,
+      "object_yaw_rad": -0.96214539423225,
+      "excitation_seed": 2630460965,
+      "imu_seed": 2537962710,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0018",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.2481756903176242,
+        -0.18376124058600302
+      ],
+      "rack_xy_m": [
+        0.11327352272502864,
+        -0.06676320001240983
+      ],
+      "rack_yaw_rad": -0.00465712109171787,
+      "object_yaw_rad": -0.05838967653121108,
+      "excitation_seed": 4116980472,
+      "imu_seed": 1894802464,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0019",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.204261755809914,
+        0.18314425807398677
+      ],
+      "rack_xy_m": [
+        0.061697566309189364,
+        -0.026948960425191654
+      ],
+      "rack_yaw_rad": 0.007216029748514957,
+      "object_yaw_rad": -0.38383061504838745,
+      "excitation_seed": 1222171423,
+      "imu_seed": 92823176,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0020",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.18389664606445139,
+        -0.15981743622990274
+      ],
+      "rack_xy_m": [
+        0.09040361435390495,
+        -0.06262788141832903
+      ],
+      "rack_yaw_rad": 0.06012313454972165,
+      "object_yaw_rad": -1.3745486750900162,
+      "excitation_seed": 3848981207,
+      "imu_seed": 1047427638,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0021",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.1918404308570494,
+        0.203805324434236
+      ],
+      "rack_xy_m": [
+        0.04577409459558966,
+        0.06656189522201726
+      ],
+      "rack_yaw_rad": -0.0941730826939946,
+      "object_yaw_rad": -2.9065226303195892,
+      "excitation_seed": 606716305,
+      "imu_seed": 2383073210,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0022",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.2203262172910049,
+        -0.20657760304450112
+      ],
+      "rack_xy_m": [
+        0.06671388928227154,
+        0.07246390321115918
+      ],
+      "rack_yaw_rad": -0.07298344263285282,
+      "object_yaw_rad": 0.09460673315701307,
+      "excitation_seed": 3563919809,
+      "imu_seed": 3889231139,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0023",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.17511651439608295,
+        -0.16152254723074128
+      ],
+      "rack_xy_m": [
+        0.0394910619392329,
+        -0.010384470399513929
+      ],
+      "rack_yaw_rad": 0.17187149498277202,
+      "object_yaw_rad": 2.460980844489142,
+      "excitation_seed": 390536329,
+      "imu_seed": 3215246961,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0024",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.17873660072971803,
+        -0.18632008522705143
+      ],
+      "rack_xy_m": [
+        0.06659290518307931,
+        0.04352198913775808
+      ],
+      "rack_yaw_rad": 0.056430426304209386,
+      "object_yaw_rad": -0.7938319016164046,
+      "excitation_seed": 3837324098,
+      "imu_seed": 3806611980,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0025",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.19025683109207792,
+        -0.16837223611460053
+      ],
+      "rack_xy_m": [
+        0.12868131505337793,
+        -0.04144470799909044
+      ],
+      "rack_yaw_rad": -0.13168232312901107,
+      "object_yaw_rad": 2.080442276516182,
+      "excitation_seed": 3830730525,
+      "imu_seed": 658351126,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0026",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.23565853534738088,
+        -0.2112193428586225
+      ],
+      "rack_xy_m": [
+        0.05464346657145733,
+        -0.030348212335984837
+      ],
+      "rack_yaw_rad": 0.09683255576541647,
+      "object_yaw_rad": 2.964572867765326,
+      "excitation_seed": 2574329487,
+      "imu_seed": 2144507172,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0027",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "middle",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.23848819979589994,
+        0.1509755401395741
+      ],
+      "rack_xy_m": [
+        0.05796560299988553,
+        -0.058908445154156636
+      ],
+      "rack_yaw_rad": 0.06201457598540666,
+      "object_yaw_rad": -2.3760964505709175,
+      "excitation_seed": 1273609007,
+      "imu_seed": 2174670497,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0028",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "left",
+      "bottle_variant": "wine_3",
+      "object_xy_m": [
+        -0.1944590051485691,
+        0.16398429561620403
+      ],
+      "rack_xy_m": [
+        0.11541245261822627,
+        0.03446514073852827
+      ],
+      "rack_yaw_rad": 0.08342115455850449,
+      "object_yaw_rad": -2.31813251461289,
+      "excitation_seed": 2495876831,
+      "imu_seed": 1863310851,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "wine-rack-s42-0029",
+      "task": {
+        "task_type": "wine_rack",
+        "version": 10
+      },
+      "location": "right",
+      "bottle_variant": "bottled_water_16",
+      "object_xy_m": [
+        -0.1757949959194794,
+        -0.17783047356774584
+      ],
+      "rack_xy_m": [
+        0.06509486917809398,
+        -0.0018265527437546641
+      ],
+      "rack_yaw_rad": 0.056850334927861734,
+      "object_yaw_rad": 2.8627653542868297,
+      "excitation_seed": 2237775626,
+      "imu_seed": 1230277176,
+      "t0_s": 0.0,
+      "split": "eval"
+    }
+  ]
+}

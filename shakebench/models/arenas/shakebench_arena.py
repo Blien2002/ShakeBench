@@ -1,0 +1,468 @@
+"""Industrial ShakeBench arena and canonical isolated worktable model."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable, Mapping
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from robosuite.models.arenas.arena import Arena
+from robosuite.utils.mjcf_utils import new_geom, string_to_array
+
+from shakebench import models
+from shakebench.models import xml_path_completion
+from shakebench.physics.isolator import (
+    AXES,
+    CANONICAL_WORKTABLE_DIMENSIONS_M,
+    DEFAULT_ISOLATOR_CONFIG,
+    IsolatorConfig,
+    IsolatorParameters,
+    derive_isolator_parameters,
+)
+from shakebench.scene.config import (
+    SceneVisualConfig,
+    _fmt,
+    _set_scene_visual_alpha,
+    augment_scene_mjcf,
+    load_scene_visual_config,
+)
+
+WORKTABLE_BODY_NAME = "worktable"
+WORKTABLE_COLLISION_GEOM_NAME = "table_collision"
+WORKTABLE_VISUAL_GEOM_NAME = "table_visual"
+WORKTABLE_TOP_SITE_NAME = "table_top"
+TABLE_IMU_SITE_NAME = "table_imu_site"
+ISOLATOR_JOINT_NAMES = {axis: f"isolator_{axis}" for axis in AXES}
+#: Arena textures owned by the upstream robosuite package, not by ShakeBench.
+SHARED_TEXTURE_FILES = frozenset({"steel-brushed.png"})
+
+#: One bin is shared by every task variant.  These are the retired bin's
+#: dimensions, restored once the variant set dropped to mug/apple/can: the
+#: widest in-plane footprint is the mug at 92.0 x 62.9 mm, so the 164 x 144 mm
+#: inner rectangle keeps at least 72 mm on the tighter axis.  The 35 mm wall
+#: still blocks the rolling escape of a mug or an apple lying on its side
+#: (rolling radius ~32 mm) while staying shallow enough that a
+#: vibration-induced escape stays possible.  Objects taller than the wall
+#: (mug 72 mm, can 80 mm) rest on the bin floor and protrude: "inside" means
+#: the inner footprint plus floor support.
+TARGET_CONTAINER_CENTER_XY_M = (-0.10, 0.17)
+TARGET_CONTAINER_INNER_XY_M = (0.164, 0.144)
+TARGET_CONTAINER_WALL_THICKNESS_M = 0.008
+TARGET_CONTAINER_OUTER_XY_M = (0.18, 0.16)
+TARGET_CONTAINER_WALL_HEIGHT_M = 0.035
+TARGET_CONTAINER_BOTTOM_THICKNESS_M = 0.012
+
+
+class ShakeBenchArenaError(ValueError):
+    """Raised when a ShakeBench arena cannot satisfy its explicit contract."""
+
+
+def _vector(name: str, value: Iterable[float], length: int, *, nonnegative: bool = False) -> tuple[float, ...]:
+    if isinstance(value, (str, bytes)):
+        raise ShakeBenchArenaError(f"{name} must contain {length} finite values")
+    try:
+        array = np.asarray(value, dtype=float).reshape(-1)
+    except (TypeError, ValueError) as exc:
+        raise ShakeBenchArenaError(f"{name} must contain {length} finite values") from exc
+    if array.size != length or not np.all(np.isfinite(array)):
+        raise ShakeBenchArenaError(f"{name} must contain {length} finite values")
+    if nonnegative and np.any(array < 0.0):
+        raise ShakeBenchArenaError(f"{name} must contain non-negative values")
+    return tuple(float(item) for item in array)
+
+
+class ShakeBenchArena(Arena):
+    """Industrial arena with an explicit canonical worktable.
+
+    The worktable body origin is simultaneously its COM, principal-inertia
+    frame, and (isolated mount) isolator elastic centre.  The body is a direct
+    world child in the source XML so :class:`ShakeBenchDeckXMLProcessor` can
+    move it under a generated dynamic deck by the explicit
+    ``isolated_worktable`` role.
+
+    Args:
+        table_full_size: Canonical tabletop dimensions.  Non-canonical sizes
+            are rejected so visual resizing cannot silently change the Phase 03
+            inertial contract.
+        table_friction: MuJoCo friction triple for the tabletop collision
+            geometry.  This is kept as an arena input for later contact
+            probes; it does not affect the explicit inertial.
+        table_offset: World position of the tabletop centre's top surface.
+        isolator_config: Candidate six-axis natural frequencies, damping
+            ratios, reference mass/inertia, and strict limits.
+        worktable_mount: ``isolated`` keeps the six compliant isolator
+            coordinates and applies the derived k/c/springref to them;
+            ``rigid`` removes them so the worktable is welded to the driven
+            deck.  Both mounts keep the tabletop drive, contact geometry,
+            explicit inertial and under-table IMU site.
+        visual: Whether the industrial display layer starts visible.  The
+            geoms remain in the compiled model either way, so this switch
+            cannot alter physics topology or traces.
+        include_target_container: If true, add the Phase 04 target geometry
+            to the isolated worktable.  It is false by default in Phase 03;
+            :meth:`add_target_container` is the explicit task-assembly seam.
+        xml: Arena asset path relative to the shakebench models assets root.
+    """
+
+    def __init__(
+        self,
+        table_full_size=CANONICAL_WORKTABLE_DIMENSIONS_M,
+        table_friction=(1.0, 0.005, 0.0001),
+        table_offset=(0.0, 0.0, 0.8),
+        isolator_config=None,
+        visual=True,
+        include_target_container=False,
+        xml="arenas/shakebench_arena.xml",
+        *,
+        worktable_mount="isolated",
+        scene_config=None,
+    ):
+        if worktable_mount not in ("isolated", "rigid"):
+            raise ShakeBenchArenaError("worktable_mount must be 'isolated' or 'rigid'")
+        if not isinstance(visual, (bool, np.bool_)):
+            raise ShakeBenchArenaError("visual must be boolean")
+
+        dimensions = np.asarray(_vector("table_full_size", table_full_size, 3), dtype=float)
+        canonical_dimensions = np.asarray(CANONICAL_WORKTABLE_DIMENSIONS_M, dtype=float)
+        if not np.allclose(dimensions, canonical_dimensions, rtol=0.0, atol=1e-12):
+            raise ShakeBenchArenaError(
+                "ShakeBenchArena requires canonical table_full_size "
+                f"{CANONICAL_WORKTABLE_DIMENSIONS_M}, got {tuple(dimensions)}"
+            )
+        self.table_full_size = dimensions
+        self.table_half_size = dimensions / 2.0
+        self.table_friction = _vector("table_friction", table_friction, 3, nonnegative=True)
+        self.table_offset = _vector("table_offset", table_offset, 3)
+        self.center_pos = np.asarray(self.table_offset, dtype=float) - np.asarray([0.0, 0.0, self.table_half_size[2]])
+        self.worktable_mount = worktable_mount
+        self.isolator_config = self._coerce_isolator_config(isolator_config)
+        self.isolator_parameters = derive_isolator_parameters(self.isolator_config)
+        self.visual_layer_enabled = bool(visual)
+        self._visual_rgba = {}
+        self._visual_geom_names = []
+        self._target_container_added = False
+        self.target_container_geom_names = {}
+        self.scene_config: SceneVisualConfig = (
+            scene_config if isinstance(scene_config, SceneVisualConfig) else load_scene_visual_config(scene_config)
+        )
+
+        super().__init__(xml_path_completion(xml))
+        self._resolve_shared_textures()
+
+        self.table_body = self.worldbody.find(f"./body[@name='{WORKTABLE_BODY_NAME}']")
+        if self.table_body is None:
+            raise ShakeBenchArenaError(f"arena XML is missing body {WORKTABLE_BODY_NAME!r}")
+        self.worktable_body = self.table_body
+        self.worktable_body_name = WORKTABLE_BODY_NAME
+        self.table_collision = self.table_body.find(f"./geom[@name='{WORKTABLE_COLLISION_GEOM_NAME}']")
+        self.table_visual = self.table_body.find(f"./geom[@name='{WORKTABLE_VISUAL_GEOM_NAME}']")
+        self.table_top = self.table_body.find(f"./site[@name='{WORKTABLE_TOP_SITE_NAME}']")
+        self.table_imu_site = self.table_body.find(f"./site[@name='{TABLE_IMU_SITE_NAME}']")
+        if (
+            self.table_collision is None
+            or self.table_visual is None
+            or self.table_top is None
+            or self.table_imu_site is None
+        ):
+            raise ShakeBenchArenaError("arena XML is missing the canonical tabletop collision/visual/site handles")
+        self.isolator_joints = {}
+        for axis, joint_name in ISOLATOR_JOINT_NAMES.items():
+            joint = self.table_body.find(f"./joint[@name='{joint_name}']")
+            if joint is None:
+                raise ShakeBenchArenaError(f"arena XML is missing isolator joint {joint_name!r}")
+            self.isolator_joints[axis] = joint
+        if self.worktable_mount == "rigid":
+            # Removing the six compliant coordinates welds the worktable to
+            # the driven deck.  No other table fact changes.
+            for joint in self.isolator_joints.values():
+                self.table_body.remove(joint)
+            self.isolator_joints = {}
+
+        self._refresh_visual_geom_names()
+        self.configure_location()
+        self.configure_isolator(self.isolator_config)
+        self.scene_inventory = augment_scene_mjcf(self, self.scene_config)
+        self._refresh_visual_geom_names()
+        if include_target_container:
+            self.add_target_container()
+        self.set_visual_layer(self.visual_layer_enabled)
+
+    @staticmethod
+    def _coerce_isolator_config(config) -> IsolatorConfig:
+        if config is None:
+            return DEFAULT_ISOLATOR_CONFIG
+        if isinstance(config, IsolatorConfig):
+            return config
+        if isinstance(config, Mapping):
+            payload = dict(config)
+            payload.pop("axis_order", None)
+            payload.pop("axes", None)
+            return IsolatorConfig(**payload)
+        raise ShakeBenchArenaError("isolator_config must be an IsolatorConfig or mapping")
+
+    def _resolve_shared_textures(self) -> None:
+        """Repoint the arena's upstream-owned textures at the robosuite package.
+
+        The arena XML keeps its authoring-relative ../textures/... references so
+        the published asset bytes and hash stay stable.  Only the named shared
+        files are remapped; any other missing texture is an error, never a
+        silent search of another directory.
+        """
+
+        shared_root = Path(models.robosuite_assets_root) / "textures"
+        for node in self.asset.findall("./texture[@file]"):
+            path = Path(node.get("file"))
+            if path.is_file():
+                continue
+            if path.name not in SHARED_TEXTURE_FILES:
+                raise ShakeBenchArenaError(f"arena XML references a missing texture: {path}")
+            node.set("file", str(shared_root / path.name))
+
+    def _refresh_visual_geom_names(self) -> None:
+        self._visual_geom_names = [
+            geom.get("name")
+            for geom in self.table_body.findall("./geom")
+            if geom.get("group") == "1" and geom.get("name") is not None
+        ]
+
+    def configure_location(self) -> None:
+        """Place the floor, COM-origin worktable and tabletop site."""
+
+        self.floor.set("pos", _fmt(self.bottom_pos))
+        self.table_body.set("pos", _fmt(self.center_pos))
+        self.table_collision.set("size", _fmt(self.table_half_size))
+        self.table_collision.set("friction", _fmt(self.table_friction))
+        self.table_visual.set("size", _fmt(self.table_half_size))
+        self.table_top.set("pos", _fmt((0.0, 0.0, self.table_half_size[2])))
+        self.table_imu_site.set("pos", _fmt((0.0, 0.0, -self.table_half_size[2])))
+
+    def configure_isolator(self, config=None) -> IsolatorParameters:
+        """Apply the explicit inertial and, when isolated, the derived ``k/c/springref``."""
+
+        self.isolator_config = self._coerce_isolator_config(config)
+        parameters = derive_isolator_parameters(self.isolator_config)
+        self.isolator_parameters = parameters
+        inertial = self.table_body.find("./inertial")
+        if inertial is None or len(self.table_body.findall("./inertial")) != 1:
+            raise ShakeBenchArenaError("worktable must have exactly one explicit direct inertial")
+        inertial.set("pos", "0 0 0")
+        inertial.set("mass", format(parameters.mass_kg, ".17g"))
+        inertial.set("diaginertia", _fmt(parameters.inertia_kg_m2))
+        limits = self.isolator_config.limits
+        for index, axis in enumerate(AXES):
+            joint = self.isolator_joints.get(axis)
+            if joint is None:
+                continue
+            joint.set("pos", "0 0 0")
+            joint.set("axis", _fmt(np.eye(3)[index % 3]))
+            joint.set("stiffness", format(parameters.stiffness[index], ".17g"))
+            joint.set("damping", format(parameters.damping[index], ".17g"))
+            joint.set("springref", format(parameters.springref[index], ".17g"))
+            joint.set("limited", "true")
+            joint.set("range", _fmt((-limits[index], limits[index])))
+            expected_type = "slide" if index < 3 else "hinge"
+            if joint.get("type") != expected_type:
+                raise ShakeBenchArenaError(f"isolator joint {joint.get('name')!r} must be type {expected_type!r}")
+        return parameters
+
+    @property
+    def table_top_abs(self) -> np.ndarray:
+        """Absolute world position of the tabletop surface site."""
+
+        return np.asarray(self.bottom_pos, dtype=float) + np.asarray(self.table_offset, dtype=float)
+
+    @property
+    def target_container_spec(self) -> dict[str, Any]:
+        """Return the frozen Phase 04 target-container geometry contract."""
+
+        return {
+            "center_xy_m": list(TARGET_CONTAINER_CENTER_XY_M),
+            "outer_xy_m": list(TARGET_CONTAINER_OUTER_XY_M),
+            "wall_thickness_m": TARGET_CONTAINER_WALL_THICKNESS_M,
+            "inner_xy_m": list(TARGET_CONTAINER_INNER_XY_M),
+            "wall_height_m": TARGET_CONTAINER_WALL_HEIGHT_M,
+            "bottom_thickness_m": TARGET_CONTAINER_BOTTOM_THICKNESS_M,
+            "body_name": self.worktable_body_name,
+            "rigid_assembly": "isolated_worktable",
+        }
+
+    def add_target_container(
+        self,
+        center_xy_m: Iterable[float] = TARGET_CONTAINER_CENTER_XY_M,
+        *,
+        friction=(0.30, 0.005, 0.0001),
+        add_visual=True,
+        visual_style="bin",
+    ) -> dict[str, str]:
+        """Add the optional bottom and four walls to the isolated assembly.
+
+        The geoms are direct children of the explicit-inertial worktable
+        body.  Consequently they add no free joint and no hidden mass.  This
+        is an assembly seam for Phase 04, not a task success evaluator.
+        """
+
+        if visual_style not in {"tray", "bin"}:
+            raise ShakeBenchArenaError("target visual_style must be tray or bin")
+        if self._target_container_added:
+            raise ShakeBenchArenaError("target container has already been added")
+        center = _vector("center_xy_m", center_xy_m, 2)
+        friction = _vector("friction", friction, 3, nonnegative=True)
+        outer_x, outer_y = TARGET_CONTAINER_OUTER_XY_M
+        inner_x, inner_y = TARGET_CONTAINER_INNER_XY_M
+        wall = TARGET_CONTAINER_WALL_THICKNESS_M
+        wall_height = TARGET_CONTAINER_WALL_HEIGHT_M
+        bottom_thickness = TARGET_CONTAINER_BOTTOM_THICKNESS_M
+        table_top_z = float(self.table_half_size[2])
+        bottom_z = table_top_z + bottom_thickness / 2.0
+        wall_z = table_top_z + bottom_thickness + wall_height / 2.0
+        x_half = outer_x / 2.0
+        y_half = outer_y / 2.0
+        wall_half = wall / 2.0
+        x_wall_offset = x_half - wall_half
+        y_wall_offset = y_half - wall_half
+        elements = {
+            "bottom": new_geom(
+                name="target_container_bottom",
+                type="box",
+                size=(x_half, y_half, bottom_thickness / 2.0),
+                pos=(center[0], center[1], bottom_z),
+                group=0,
+                friction=friction,
+            ),
+            "wall_xneg": new_geom(
+                name="target_container_wall_xneg",
+                type="box",
+                size=(wall_half, y_half, wall_height / 2.0),
+                pos=(center[0] - x_wall_offset, center[1], wall_z),
+                group=0,
+                friction=friction,
+            ),
+            "wall_xpos": new_geom(
+                name="target_container_wall_xpos",
+                type="box",
+                size=(wall_half, y_half, wall_height / 2.0),
+                pos=(center[0] + x_wall_offset, center[1], wall_z),
+                group=0,
+                friction=friction,
+            ),
+            "wall_yneg": new_geom(
+                name="target_container_wall_yneg",
+                type="box",
+                size=(inner_x / 2.0, wall_half, wall_height / 2.0),
+                pos=(center[0], center[1] - y_wall_offset, wall_z),
+                group=0,
+                friction=friction,
+            ),
+            "wall_ypos": new_geom(
+                name="target_container_wall_ypos",
+                type="box",
+                size=(inner_x / 2.0, wall_half, wall_height / 2.0),
+                pos=(center[0], center[1] + y_wall_offset, wall_z),
+                group=0,
+                friction=friction,
+            ),
+        }
+        for element in elements.values():
+            self.table_body.append(element)
+        self.target_container_geom_names = {key: element.get("name") for key, element in elements.items()}
+        if add_visual and visual_style == "bin":
+            self._add_bin_visuals(elements)
+        elif add_visual:
+            for key, element in elements.items():
+                visual_name = f"{element.get('name')}_visual"
+                visual = new_geom(
+                    name=visual_name,
+                    type="box",
+                    size=string_to_array(element.get("size")),
+                    pos=string_to_array(element.get("pos")),
+                    group=1,
+                    conaffinity=0,
+                    contype=0,
+                    rgba=(0.12, 0.14, 0.16, 0.78),
+                )
+                self.table_body.append(visual)
+                self.target_container_geom_names[f"{key}_visual"] = visual_name
+        self._target_container_added = True
+        self._refresh_visual_geom_names()
+        self.set_visual_layer(self.visual_layer_enabled)
+        return dict(self.target_container_geom_names)
+
+    def _add_bin_visuals(self, elements) -> None:
+        """Fit robosuite's wooden Bin panels to the five collision surfaces.
+
+        Import only its visuals and material; its free body is not needed.
+        Matching each panel avoids overlapping corners and preserves physics.
+        """
+        from robosuite.models.objects import Bin
+
+        container = Bin(
+            name="target_bin",
+            bin_size=(*TARGET_CONTAINER_OUTER_XY_M, TARGET_CONTAINER_WALL_HEIGHT_M),
+            wall_thickness=TARGET_CONTAINER_WALL_THICKNESS_M,
+            transparent_walls=False,
+        )
+        self.merge_assets(container)
+        parts = {
+            "base": "bottom",
+            "wall0": "wall_yneg",
+            "wall1": "wall_xneg",
+            "wall2": "wall_ypos",
+            "wall3": "wall_xpos",
+        }
+        for part, role in parts.items():
+            name = f"target_bin_{part}_visual"
+            visual = deepcopy(container.get_obj().find(f"./geom[@name='target_bin_{part}_vis']"))
+            visual.set("name", name)
+            visual.set("mass", "0")
+            visual.set("quat", "1 0 0 0")
+            for attribute in ("size", "pos"):
+                visual.set(attribute, elements[role].get(attribute))
+            self.table_body.append(visual)
+            self.target_container_geom_names[name] = name
+
+    def set_visual_layer(self, enabled: bool) -> None:
+        """Toggle display alpha while retaining the exact physics model."""
+
+        if not isinstance(enabled, (bool, np.bool_)):
+            raise ShakeBenchArenaError("enabled must be boolean")
+        for name in self._visual_geom_names:
+            geom = self.table_body.find(f"./geom[@name='{name}']")
+            if geom is None:
+                continue
+            if name not in self._visual_rgba:
+                self._visual_rgba[name] = geom.get("rgba")
+            original = self._visual_rgba[name]
+            if enabled:
+                if original is None:
+                    geom.attrib.pop("rgba", None)
+                else:
+                    geom.set("rgba", original)
+            else:
+                geom.set("rgba", "1 1 1 0")
+        self.visual_layer_enabled = bool(enabled)
+        _set_scene_visual_alpha(self, bool(enabled))
+
+    @property
+    def visual_geom_names(self) -> tuple[str, ...]:
+        """Names of all display-only worktable geoms."""
+
+        return tuple(self._visual_geom_names)
+
+
+__all__ = [
+    "WORKTABLE_BODY_NAME",
+    "WORKTABLE_COLLISION_GEOM_NAME",
+    "WORKTABLE_VISUAL_GEOM_NAME",
+    "WORKTABLE_TOP_SITE_NAME",
+    "ISOLATOR_JOINT_NAMES",
+    "TARGET_CONTAINER_CENTER_XY_M",
+    "TARGET_CONTAINER_OUTER_XY_M",
+    "TARGET_CONTAINER_WALL_THICKNESS_M",
+    "TARGET_CONTAINER_INNER_XY_M",
+    "TARGET_CONTAINER_WALL_HEIGHT_M",
+    "TARGET_CONTAINER_BOTTOM_THICKNESS_M",
+    "ShakeBenchArenaError",
+    "ShakeBenchArena",
+]

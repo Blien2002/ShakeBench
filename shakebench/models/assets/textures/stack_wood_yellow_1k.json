@@ -1,0 +1,40 @@
+{
+  "asset": "stack_wood_yellow_1k",
+  "source": "repository-generated",
+  "generator": "shakebench/scripts/generate_stack_textures.py",
+  "license": "same as the ShakeBench repository",
+  "ai_generated": false,
+  "method": "solid procedural wood baked into the stack_parts atlas with stain and finish",
+  "atlas_layout": "shakebench.models.objects.stack_parts.PART_RECTS['yellow']",
+  "px_per_mm": 5.0,
+  "joint_geometry_version": 3,
+  "parameters": {
+    "seed": 23,
+    "pith_mm": [
+      58.0,
+      -72.0
+    ],
+    "runout_deg": [
+      -1.2,
+      1.5
+    ],
+    "ring_mm": 2.0,
+    "warp_mm": 0.35,
+    "early": [
+      0.87,
+      0.72,
+      0.54
+    ],
+    "late": [
+      0.67,
+      0.48,
+      0.32
+    ],
+    "stain": [
+      0.99,
+      0.79,
+      0.14
+    ]
+  },
+  "sha256": "70c90abfd9e83966dd80cd0301bd1cbf813fed8db92daa5ffe57354b7eda468d"
+}

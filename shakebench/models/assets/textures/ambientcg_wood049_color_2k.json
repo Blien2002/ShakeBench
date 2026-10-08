@@ -1,0 +1,15 @@
+{
+  "asset": "Wood049",
+  "source": "https://ambientcg.com/view?id=Wood049",
+  "download": "https://ambientcg.com/get?file=Wood049_2K-JPG.zip",
+  "archive_member": "Wood049_2K-JPG_Color.jpg",
+  "license": "CC0-1.0",
+  "license_url": "https://docs.ambientcg.com/license/",
+  "physical_size_m": [
+    0.8,
+    0.8
+  ],
+  "modifications": "Decoded original JPG color map to lossless PNG for MuJoCo; no color adjustments.",
+  "source_color_sha256": "447ca1455fa88d37465319638f1c99107f02f50fcf491d3c15314658d21e4d5e",
+  "sha256": "1f2690f40f94ba675651d4ed8329a2fee948a9c4c592825cabda09bf6aba58f7"
+}

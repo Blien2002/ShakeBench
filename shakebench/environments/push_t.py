@@ -1,0 +1,492 @@
+"""Three-dimensional, non-grasping Push-T on the moving worktable (CPU)."""
+
+import xml.etree.ElementTree as ET
+from collections.abc import Mapping
+from copy import deepcopy
+
+import mujoco
+import numpy as np
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.mjcf_utils import array_to_string
+
+from shakebench.environments.base import ShakeBenchTask
+from shakebench.models import xml_path_completion
+from shakebench.models.arenas import ShakeBenchArena
+from shakebench.models.objects.push_t import (
+    CONTOUR_SAMPLE_SPACING_M,
+    DECAL_MARGIN_M,
+    DECAL_RECTANGLES,
+    HALF_HEIGHT_M,
+    OUTLINE,
+    coverage,
+    inside_decal,
+    make_tee,
+    projected_geometry,
+)
+from shakebench.scene.config import configure_scene_rendering
+from shakebench.scene.geometry import DEFAULT_GEOMETRY_PROFILE, load_geometry_profile
+from shakebench.sensors.providers import POLICY_FIELD_CONTRACT
+from shakebench.tasks.privilege import assert_policy_observation_is_clean
+from shakebench.tasks.registry import TaskDefinition, register_state_loader, register_task
+
+STATE_SCHEMA = "shakebench.push_t.states"
+SCHEMA_VERSION = 5
+TASK_VERSION = 5
+SUCCESS_HOLD_S = 0.5
+LIFT_HEIGHT_M = 0.005
+LIFT_DURATION_S = 0.2
+PUSHER_SLIDING_MU = 0.5
+PUSH_T_TABLE_SLIDING_MU = 0.50
+PUSH_T_CONTACT_REVISION = "push_t_contact_v2"
+MAX_VISIBLE_X_M = 0.10
+MAX_VISIBLE_ABS_Y_M = 0.25
+MIN_START_GOAL_DISTANCE_M = 0.05
+MAX_START_GOAL_DISTANCE_M = 0.25
+TRAIN_MAX_YAW_DELTA_RAD = 2 * np.pi / 3
+EVAL_MIN_DISTANCE_M = 0.08
+EVAL_MAX_DISTANCE_M = 0.20
+EVAL_MAX_YAW_DELTA_RAD = np.pi / 2
+MAX_PUSH_DIRECTION_RAD = float(np.deg2rad(100))
+REACH_RADIUS_M = 0.73
+PRE_STANDOFF_M = 0.026
+FIXED_GOALS = (((-0.12, -0.08), 0.0), ((-0.12, 0.08), np.pi / 2))
+_GEOMETRY = load_geometry_profile(DEFAULT_GEOMETRY_PROFILE)
+BASE_XY_M = np.asarray(_GEOMETRY["robot_base_pos_m"][:2]) - _GEOMETRY["table_top_pos_m"][:2]
+
+
+def start_faces_reachable(xy, yaw):
+    """Each T perimeter face has a low-push pre-contact point inside the base reach circle."""
+    xy = np.asarray(xy)
+    rotation = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
+    for start, end in zip(OUTLINE, np.roll(OUTLINE, -1, axis=0)):
+        tangent = end - start
+        outward = np.array([tangent[1], -tangent[0]]) / np.linalg.norm(tangent)
+        contacts = start + np.linspace(0.2, 0.8, 4)[:, None] * tangent + outward * PRE_STANDOFF_M
+        pre = xy + contacts @ rotation.T
+        if np.min(np.linalg.norm(pre - BASE_XY_M, axis=1)) > REACH_RADIUS_M:
+            return False
+    return True
+
+
+def default_state():
+    """Explicit stationary start, in metres relative to the tabletop."""
+    return {
+        "state_id": "push-t-000",
+        "task": {"task_type": "push_t", "version": TASK_VERSION},
+        "object_xy_m": [-0.20, -0.08],
+        "object_yaw_rad": 0.0,
+        "goal_id": 0,
+        "excitation_seed": 0,
+        "imu_seed": 0,
+        "t0_s": 0.0,
+    }
+
+
+def validate_state(state):
+    """Reject hidden fields, invalid geometry, thresholds and random seeds."""
+    required = set(default_state())
+    if not isinstance(state, Mapping) or not required <= set(state) or set(state) - required - {"split"}:
+        raise ValueError(f"push_t state fields must match version {TASK_VERSION}")
+    if state["task"] != {"task_type": "push_t", "version": TASK_VERSION} or type(state["task"]["version"]) is not int:
+        raise ValueError(f"expected push_t task version {TASK_VERSION}")
+    if not isinstance(state["state_id"], str) or not state["state_id"].strip():
+        raise ValueError("state_id must be nonempty")
+    if type(state["goal_id"]) is not int or not 0 <= state["goal_id"] < len(FIXED_GOALS):
+        raise ValueError("goal_id must select a fixed goal")
+    if "split" in state and state["split"] not in ("train", "eval"):
+        raise ValueError("split must be train or eval")
+    result = deepcopy(dict(state))
+    for key in ("object_yaw_rad", "t0_s"):
+        if isinstance(state[key], bool) or not isinstance(state[key], (int, float)) or not np.isfinite(state[key]):
+            raise ValueError(f"{key} must be finite")
+        result[key] = float(state[key])
+    if result["t0_s"] < 0:
+        raise ValueError("t0_s must be nonnegative")
+    goal_xy, goal_yaw = FIXED_GOALS[state["goal_id"]]
+    for xy_value, yaw in ((state["object_xy_m"], result["object_yaw_rad"]), (goal_xy, goal_yaw)):
+        xy = np.asarray(xy_value, dtype=float)
+        if xy.shape != (2,) or not np.isfinite(xy).all():
+            raise ValueError("positions must be finite 2D coordinates")
+        rotation = np.array([[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]])
+        polygons, _ = projected_geometry(np.r_[xy, HALF_HEIGHT_M], rotation)
+        points = np.vstack(polygons)
+        if (
+            np.any(np.abs(points) > [0.325, 0.30])
+            or points[:, 0].max() > MAX_VISIBLE_X_M
+            or np.abs(points[:, 1]).max() > MAX_VISIBLE_ABS_Y_M
+        ):
+            raise ValueError("the entire T must lie in the task_close-visible tabletop region")
+    result["object_xy_m"] = np.asarray(state["object_xy_m"], dtype=float).tolist()
+    if not start_faces_reachable(result["object_xy_m"], result["object_yaw_rad"]):
+        raise ValueError("every start T face needs a pre-contact point within the robot-base reach circle")
+    delta = np.asarray(goal_xy) - result["object_xy_m"]
+    distance = np.linalg.norm(delta)
+    if abs(np.arctan2(delta[1], delta[0])) > MAX_PUSH_DIRECTION_RAD + 1e-12:
+        raise ValueError("start-to-goal direction must be within 100 degrees of +x")
+    split = state.get("split")
+    if split in ("train", "eval"):
+        minimum = EVAL_MIN_DISTANCE_M if split == "eval" else MIN_START_GOAL_DISTANCE_M
+        maximum = EVAL_MAX_DISTANCE_M if split == "eval" else MAX_START_GOAL_DISTANCE_M
+        max_yaw = EVAL_MAX_YAW_DELTA_RAD if split == "eval" else TRAIN_MAX_YAW_DELTA_RAD
+        yaw_delta = np.arctan2(np.sin(result["object_yaw_rad"] - goal_yaw), np.cos(result["object_yaw_rad"] - goal_yaw))
+        if not minimum - 1e-12 <= distance <= maximum + 1e-12 or abs(yaw_delta) > max_yaw + 1e-12:
+            raise ValueError(f"{split} state distance or relative yaw is outside its sampling bounds")
+    for key in ("excitation_seed", "imu_seed"):
+        if type(state[key]) is not int or not 0 <= state[key] < 2**32:
+            raise ValueError(f"{key} must be an integer in [0, 2**32)")
+    return result
+
+
+def sample_state(rng, *, split="train", state_id=None):
+    """Sample starts around either fixed goal, with tighter evaluation bounds."""
+    if split not in ("train", "eval"):
+        raise ValueError("split must be train or eval")
+    for _ in range(10_000):
+        state = default_state()
+        goal_id = int(rng.integers(len(FIXED_GOALS)))
+        goal_xy, goal_yaw = FIXED_GOALS[goal_id]
+        distance = rng.uniform(
+            EVAL_MIN_DISTANCE_M if split == "eval" else MIN_START_GOAL_DISTANCE_M,
+            EVAL_MAX_DISTANCE_M if split == "eval" else MAX_START_GOAL_DISTANCE_M,
+        )
+        direction = rng.uniform(-MAX_PUSH_DIRECTION_RAD, MAX_PUSH_DIRECTION_RAD)
+        state.update(
+            object_xy_m=(np.asarray(goal_xy) - distance * np.array([np.cos(direction), np.sin(direction)])).tolist(),
+            object_yaw_rad=float(
+                goal_yaw + rng.uniform(-EVAL_MAX_YAW_DELTA_RAD, EVAL_MAX_YAW_DELTA_RAD)
+                if split == "eval"
+                else goal_yaw + rng.uniform(-TRAIN_MAX_YAW_DELTA_RAD, TRAIN_MAX_YAW_DELTA_RAD)
+            ),
+            goal_id=goal_id,
+            split=split,
+            excitation_seed=int(rng.integers(2**32)),
+            imu_seed=int(rng.integers(2**32)),
+        )
+        try:
+            state = validate_state(state)
+        except ValueError:
+            continue
+        break
+    else:
+        raise ValueError("could not sample a reachable and task_close-visible Push-T state")
+    if state_id is not None:
+        state["state_id"] = state_id
+    return validate_state(state)
+
+
+def load_states(payload):
+    """Validate an explicit development state asset."""
+    if (
+        payload.get("schema_id") != STATE_SCHEMA
+        or type(payload.get("schema_version")) is not int
+        or payload["schema_version"] != SCHEMA_VERSION
+    ):
+        raise ValueError("unsupported push_t schema/version")
+    if not isinstance(payload.get("states"), list) or not payload["states"]:
+        raise ValueError("states must be a nonempty list")
+    states = [validate_state(s) for s in payload["states"]]
+    if len({s["state_id"] for s in states}) != len(states):
+        raise ValueError("duplicate state_id")
+    return {"states": states}
+
+
+class PushT(ShakeBenchTask):
+    """Push the wooden T onto the textured dark gray tabletop target without lifting."""
+
+    def __init__(
+        self,
+        robots="Panda",
+        *,
+        task_state=None,
+        physics_profile="official",
+        geometry_profile=DEFAULT_GEOMETRY_PROFILE,
+        vibration=None,
+        imu_mode="canonical_noisy_v1",
+        imu_seed=None,
+        use_object_obs=True,
+        controller_configs=None,
+        **kwargs,
+    ):
+        self.task_state = validate_state(default_state() if task_state is None else task_state)
+        self.target_xy_m, self.target_yaw_rad = FIXED_GOALS[self.task_state["goal_id"]]
+        self._init_worktable(self.task_state, physics_profile, geometry_profile, vibration, imu_mode, imu_seed)
+        self._success = False
+        self._violation = False
+        self._lift_since = None
+        self._candidate_since = None
+        self._conditions = {}
+        self._max_coverage = 0.0
+        self._coverage = 0.0
+        self._last_coverage_sample_s = float("-inf")
+        self.use_object_obs = use_object_obs
+        self._init_robosuite(robots, controller_configs, self.task_state, kwargs)
+
+    def _load_model(self):
+        super()._load_model()
+        robot = self.robots[0]
+        robot.init_qpos = np.asarray(self.geometry_profile["initial_joint_qpos_rad"])
+        robot.robot_model.set_base_xpos(self.geometry_profile["robot_base_pos_m"])
+        self.robot_base_body_name = robot.robot_model.root_body
+        self.gripper_body_name = robot.robot_model.eef_name["right"]
+        if type(robot.gripper["right"]).__name__ != "PandaGripper":
+            raise ValueError("PushT requires PandaGripper")
+        self.arena = ShakeBenchArena(
+            table_offset=self.geometry_profile["table_top_pos_m"],
+            isolator_config=self.physics_profile.isolator_config(),
+            worktable_mount=self.worktable_mount,
+            scene_config=self.scene_path,
+        )
+        self.worktable_body_name = self.arena.worktable_body_name
+        support = (
+            ET.parse(xml_path_completion(self.geometry_profile["robot_support_mjcf"]))
+            .getroot()
+            .find("./worldbody/body[@name='robot_support']")
+        )
+        self.arena.worldbody.append(support)
+        target = ET.SubElement(
+            self.arena.worktable_body,
+            "body",
+            name="push_t_target",
+            pos=array_to_string([*self.target_xy_m, self.arena.table_half_size[2]]),
+            quat=array_to_string([np.cos(self.target_yaw_rad / 2), 0, 0, np.sin(self.target_yaw_rad / 2)]),
+        )
+        # Native micro-speckles distinguish the matte decal from the pale laminate.
+        ET.SubElement(
+            self.arena.asset,
+            "texture",
+            name="push_t_decal_grain",
+            type="2d",
+            builtin="flat",
+            width="128",
+            height="128",
+            rgb1="0.24 0.25 0.26",
+            mark="random",
+            markrgb="0.31 0.32 0.33",
+            random="0.2",
+        )
+        ET.SubElement(
+            self.arena.asset,
+            "material",
+            name="push_t_decal",
+            texture="push_t_decal_grain",
+            texrepeat="8 8",
+            texuniform="true",
+            rgba="1 1 1 1",
+            emission="0",
+            specular="0.04",
+            shininess="0.08",
+        )
+        # A 0.1 mm visual decal: no collision, no mass, rigidly attached to the table.
+        for index, (center, size) in enumerate(DECAL_RECTANGLES):
+            ET.SubElement(
+                target,
+                "geom",
+                name=f"push_t_target_{index}",
+                type="box",
+                pos=array_to_string([*center, 0.00005]),
+                size=array_to_string([*size, 0.00005]),
+                material="push_t_decal",
+                group="1",
+                contype="0",
+                conaffinity="0",
+                mass="0",
+            )
+        self.tee = make_tee()
+        self.model = ManipulationTask(self.arena, [robot.robot_model], [self.tee])
+        configure_scene_rendering(self.model.root, self.arena.scene_config)
+        gripper = robot.gripper["right"]
+        pads = gripper.important_geoms
+        pusher_names = [
+            f"{gripper.naming_prefix}hand_collision",
+            *dict.fromkeys(pads["left_finger"] + pads["right_finger"]),
+        ]
+        for geom in self.tee.contact_geoms:
+            for partner in ["table_collision", *pusher_names]:
+                pusher = partner in pusher_names
+                attributes = self.physics_profile.pair_attributes(
+                    PUSHER_SLIDING_MU if pusher else PUSH_T_TABLE_SLIDING_MU,
+                    finger_contact=pusher,
+                )
+                ET.SubElement(self.model.contact, "pair", geom1=geom, geom2=partner, **attributes)
+
+    def _setup_references(self):
+        super()._setup_references()
+        self.tee_body_id = self.sim.model.body_name2id(self.tee.root_body)
+        self.target_body_id = self.sim.model.body_name2id("push_t_target")
+        self.tee_geom_ids = {self.sim.model.geom_name2id(name) for name in self.tee.contact_geoms}
+        self.table_geom_id = self.sim.model.geom_name2id("table_collision")
+
+    def _reset_internal(self):
+        super()._reset_internal()
+        if not self.deterministic_reset:
+            yaw = self.task_state["object_yaw_rad"]
+            self.sim.data.set_joint_qpos(
+                self.tee.joints[0],
+                [
+                    *(self.arena.table_top_abs + [*self.task_state["object_xy_m"], HALF_HEIGHT_M + 0.001]),
+                    np.cos(yaw / 2),
+                    0,
+                    0,
+                    np.sin(yaw / 2),
+                ],
+            )
+            self._settle()
+        self.sim.forward()
+        self.deck_driver.reset_trace()
+        self.table_imu_provider.reset(self.sim, timestamp_s=float(self.sim.data.time))
+        self._success = self._violation = False
+        self._candidate_since = self._lift_since = None
+        self._conditions = {}
+        self._max_coverage = self._coverage = 0.0
+        self._last_coverage_sample_s = float("-inf")
+        self._record_post_physics_metrics(float(self.sim.data.time))
+
+    def _settle(self):
+        """Settle the support and T block with robot joints fixed, before the clock starts."""
+        model, data = self.sim.model._model, self.sim.data._data
+        robot = self.robots[0]
+        qpos_ids = [*robot._ref_joint_pos_indexes, *robot._ref_gripper_joint_pos_indexes["right"]]
+        qvel_ids = [*robot._ref_joint_vel_indexes, *robot._ref_gripper_joint_vel_indexes["right"]]
+        fixed_pose = data.qpos[qpos_ids].copy()
+        # Distinguish translational drift (m/s) from rotational drift (rad/s).
+        velocity_limits = np.full(model.nv, 0.001)
+        adr = model.jnt_dofadr[self.sim.model.joint_name2id(self.tee.joints[0])]
+        velocity_limits[adr + 3 : adr + 6] = 0.01
+        quiet = 0
+        stride = max(1, round(0.1 / model.opt.timestep))
+        previous_pose = data.qpos.copy()
+        mean_velocity = np.zeros(model.nv)
+        for step in range(round(5 / model.opt.timestep)):
+            mujoco.mj_step(model, data)
+            data.qpos[qpos_ids], data.qvel[qvel_ids] = fixed_pose, 0
+            if (step + 1) % stride:
+                continue
+            if not np.isfinite(data.qpos).all() or not np.isfinite(data.qvel).all():
+                raise RuntimeError("non-finite T block reset")
+            # Use pose drift over 100 ms, not instantaneous soft-contact jitter.
+            mujoco.mj_differentiatePos(model, mean_velocity, stride * model.opt.timestep, previous_pose, data.qpos)
+            previous_pose[:] = data.qpos
+            quiet = quiet + stride if np.all(np.abs(mean_velocity) < velocity_limits) else 0
+            if quiet * model.opt.timestep >= 0.2:
+                break
+        else:
+            raise RuntimeError("T block reset did not settle within 5 simulation seconds")
+        data.qvel[:], data.qacc_warmstart[:], data.time = 0, 0, 0
+
+    def _record_post_physics_metrics(self, sample_time_s, policy_step=False):
+        data = self.sim.data._data
+        target_rotation = data.xmat[self.target_body_id].reshape(3, 3)
+        position = target_rotation.T @ (data.xpos[self.tee_body_id] - data.xpos[self.target_body_id])
+        rotation = target_rotation.T @ data.xmat[self.tee_body_id].reshape(3, 3)
+        polygons, lowest = projected_geometry(position, rotation)
+        contained = inside_decal(polygons)
+        if sample_time_s - self._last_coverage_sample_s >= self.control_timestep - 1e-9:
+            self._coverage = coverage(polygons)
+            self._max_coverage = max(self._max_coverage, self._coverage)
+            self._last_coverage_sample_s = sample_time_s
+        supported = any(
+            c.dist <= 0.001
+            and (
+                (c.geom1 in self.tee_geom_ids and c.geom2 == self.table_geom_id)
+                or (c.geom2 in self.tee_geom_ids and c.geom1 == self.table_geom_id)
+            )
+            for c in data.contact[: data.ncon]
+        )
+        lifted = lowest > LIFT_HEIGHT_M
+        if lifted:
+            if self._lift_since is None:
+                self._lift_since = sample_time_s
+            if sample_time_s - self._lift_since >= LIFT_DURATION_S - 1e-12:
+                self._violation = True
+        else:
+            self._lift_since = None
+        ready = contained and supported and not lifted
+        if ready and not self._violation:
+            if self._candidate_since is None:
+                self._candidate_since = sample_time_s
+            if sample_time_s - self._candidate_since >= SUCCESS_HOLD_S - 1e-12:
+                self._success = True
+        else:
+            self._candidate_since = None
+        if self._violation:
+            self._success = False
+        self._conditions = {
+            "inside_target": contained,
+            "coverage": self._coverage,
+            "lowest_height_m": lowest,
+            "supported": bool(supported),
+            "lift_elapsed_s": 0.0 if self._lift_since is None else sample_time_s - self._lift_since,
+        }
+
+    def _get_observations(self, force_update=False):
+        obs = super()._get_observations(force_update=force_update)
+        obs.update(self.table_imu_provider.observation(self.sim))
+        assert_policy_observation_is_clean(obs)
+        return obs
+
+    def observation_contract(self):
+        contract = {key: dict(POLICY_FIELD_CONTRACT[key]) for key in self.table_imu_provider.policy_keys}
+        for key, shape, units, frame in (
+            ("robot0_joint_pos", (7,), "rad", "robot_base"),
+            ("robot0_joint_vel", (7,), "rad/s", "robot_base"),
+            ("robot0_gripper_qpos", (2,), "m", "gripper"),
+            ("robot0_gripper_qvel", (2,), "m/s", "gripper"),
+        ):
+            contract[key] = {"shape": shape, "dtype": "float64", "units": units, "frame": frame}
+        return {
+            key: {
+                **value,
+                "time": "delayed acquisition window" if key.startswith("table_imu") else "current control step",
+            }
+            for key, value in contract.items()
+        }
+
+    def get_policy_task_context(self):
+        return {
+            "task_type": "push_t",
+            "version": TASK_VERSION,
+            "scoreable": False,
+            "decal_margin_m": DECAL_MARGIN_M,
+            "containment_sample_spacing_m": CONTOUR_SAMPLE_SPACING_M,
+            "success_hold_s": SUCCESS_HOLD_S,
+            "lift_height_m": LIFT_HEIGHT_M,
+            "lift_duration_s": LIFT_DURATION_S,
+            "pusher_sliding_mu": PUSHER_SLIDING_MU,
+            "table_sliding_mu": PUSH_T_TABLE_SLIDING_MU,
+            "contact_physics_revision": PUSH_T_CONTACT_REVISION,
+            "max_visible_x_m": MAX_VISIBLE_X_M,
+            "start_face_reach_radius_m": REACH_RADIUS_M,
+            "start_face_pre_standoff_m": PRE_STANDOFF_M,
+            "max_push_direction_rad": MAX_PUSH_DIRECTION_RAD,
+            "max_visible_abs_y_m": MAX_VISIBLE_ABS_Y_M,
+            "train_start_goal_distance_m": [MIN_START_GOAL_DISTANCE_M, MAX_START_GOAL_DISTANCE_M],
+            "train_max_start_goal_yaw_delta_rad": TRAIN_MAX_YAW_DELTA_RAD,
+            "eval_start_goal_distance_m": [EVAL_MIN_DISTANCE_M, EVAL_MAX_DISTANCE_M],
+            "eval_max_start_goal_yaw_delta_rad": EVAL_MAX_YAW_DELTA_RAD,
+        }
+
+    def get_metrics(self):
+        conditions = deepcopy(self._conditions)
+        final_coverage = float(conditions.pop("coverage", 0.0))
+        return {
+            "success": {"passed": bool(self._success)},
+            "task_rule_violation": bool(self._violation),
+            "coverage": {"final": final_coverage, "maximum": float(self._max_coverage)},
+            **conditions,
+        }
+
+
+register_task(
+    "push_t",
+    TaskDefinition(
+        env_factory=PushT,
+        normalize_state=validate_state,
+        env_kwargs=lambda state: {"task_state": state},
+        describe=lambda state: {
+            "task_id": "push_t",
+            "instruction": "Push the light wooden T onto the textured dark gray T target without lifting it.",
+        },
+        fingerprint=lambda state: {key: value for key, value in state.items() if key not in {"state_id", "split"}},
+    ),
+)
+register_state_loader(STATE_SCHEMA, load_states)

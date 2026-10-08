@@ -1,0 +1,19 @@
+{
+  "visual_revision": "open_scalloped_oak_divided_v6",
+  "reviewed_on": "2026-09-27",
+  "references": [
+    {
+      "name": "Classico Solid Wood Modular Wine Rack",
+      "url": "https://www.classico.co.nz/products/wooden-modular-wine-rack?variant=42478967324854",
+      "use": "Structural reference for open timber framing and scalloped support rails. No product imagery is redistributed."
+    }
+  ],
+  "texture": {
+    "asset": "textures/ambientcg_wood049_color_2k.png",
+    "source": "https://ambientcg.com/view?id=Wood049",
+    "license": "CC0-1.0",
+    "provenance": "textures/ambientcg_wood049_color_2k.json",
+    "use": "Natural oak color map, with grain oriented along each timber member at the source physical scale."
+  },
+  "geometry": "Original rounded rails with separate body and neck cradles, low side runners and wooden dowels. Four 8 mm oak boards, including two inner dividers and two matching outer sides, have asymmetric arched tops joining the 65 mm body rail to the 75 mm neck rail, with matching convex collision hulls. Piecewise convex collision strips follow the cradle profiles; visual geoms have zero mass and no contacts. The outer 10 mm of each divider end has a 10 mm top chamfer, clear of both support rails."
+}

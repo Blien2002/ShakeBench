@@ -1,0 +1,2199 @@
+{
+  "schema_id": "shakebench.panel_operation.states",
+  "schema_version": 1,
+  "generator": {
+    "seed": 1
+  },
+  "states": [
+    {
+      "state_id": "panel-chain-2-000",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.02614489898386249,
+        -0.08248843769462601
+      ],
+      "panel_yaw_rad": 0.2122541834943335,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_down",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.010494659891103734,
+        -0.3699305031970613,
+        -0.01563830278804079,
+        -2.193400174073384,
+        0.02201239823549074,
+        1.9696757498299096,
+        0.7728838053561291
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2018891905,
+      "imu_seed": 81019803,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-001",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.06705496332979075,
+        0.08752205090494547
+      ],
+      "panel_yaw_rad": 0.33417440999528253,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.07213212282231496,
+        0.23852280761518202,
+        0.05213791023592085,
+        -1.5661562246421226,
+        0.0351665446001169,
+        2.0093708387586506,
+        0.7281801360427221
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 22985665,
+      "imu_seed": 2609402760,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-002",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.02990300706668201,
+        -0.003069786151345663
+      ],
+      "panel_yaw_rad": -0.02188622734162482,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.04625645327221005,
+        -0.3626260668835833,
+        -0.030995548058192657,
+        -2.1708792357842066,
+        0.03186935943045729,
+        1.9855398248926928,
+        0.815216843994926
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3046717682,
+      "imu_seed": 2585292021,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-003",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0006147588665614614,
+        0.053955035691552855
+      ],
+      "panel_yaw_rad": -0.2917775898385842,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.03845440751319276,
+        -0.40539677044095357,
+        0.002733191113614376,
+        -2.1942658070667576,
+        -0.023421079208230673,
+        1.9721345364797067,
+        0.8032233719545837
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1416470786,
+      "imu_seed": 2159664327,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-004",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.04268526509238052,
+        0.048300423571312395
+      ],
+      "panel_yaw_rad": -0.3398147686875061,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_down",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.02946771969531811,
+        -0.40754998285535016,
+        0.00600293311971879,
+        -2.2183743578887576,
+        -0.06448514035705806,
+        1.9521370844373707,
+        0.7284111337466056
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3101478058,
+      "imu_seed": 1788346430,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-005",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.07789943697264483,
+        0.0901152166970064
+      ],
+      "panel_yaw_rad": -0.22618241931544253,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.07615602643208637,
+        0.5067797661505345,
+        0.21226555723208915,
+        -1.1676638648607702,
+        -0.20665872369536162,
+        1.848049469730166,
+        1.242932075065905
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 532044689,
+      "imu_seed": 121145208,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-006",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.052808042564321006,
+        0.023179311142137116
+      ],
+      "panel_yaw_rad": 0.18091330133680678,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.05323588667732931,
+        0.14478942702841374,
+        -0.031119069814799352,
+        -1.6992877486493465,
+        0.04222727703679082,
+        2.050989368336904,
+        0.5229259539477826
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 1544746980,
+      "imu_seed": 1325762046,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-007",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.08090343891444936,
+        0.03019234933580986
+      ],
+      "panel_yaw_rad": -0.10850530917079054,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.050682516021365594,
+        0.6006426072311106,
+        0.09003261047868628,
+        -0.9976472419261231,
+        -0.10062453556988282,
+        1.80046083164848,
+        0.970528817070246
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 4145305133,
+      "imu_seed": 2517227617,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-008",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.029994607736959944,
+        0.10561822337723167
+      ],
+      "panel_yaw_rad": 0.11329011601837746,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.02645663320872054,
+        -0.3907640908491957,
+        0.03821122750603231,
+        -2.2201180474391076,
+        -0.005753742347271896,
+        1.8983885223037986,
+        0.7427762821743403
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1692924512,
+      "imu_seed": 3413509262,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-009",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.03792978609110516,
+        -0.02955430292095683
+      ],
+      "panel_yaw_rad": 0.15250530855923955,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.021762603285014216,
+        -0.3942752726106737,
+        0.036347775496678496,
+        -2.1777514752796674,
+        -0.014266814555360864,
+        1.9369790027105733,
+        0.7971633278181134
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1504822272,
+      "imu_seed": 3212164797,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-010",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.0055846893301505635,
+        -0.0837664909293738
+      ],
+      "panel_yaw_rad": -0.022724365164748017,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.030820847970620797,
+        -0.43717734719071943,
+        -0.028287030794134804,
+        -2.170973400254129,
+        -0.06994951260052133,
+        1.9567990424640818,
+        0.7926238237861547
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1933459161,
+      "imu_seed": 4108795541,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-011",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.005095248632879051,
+        -0.08833069560158303
+      ],
+      "panel_yaw_rad": -0.051427357057229006,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.013308295522113808,
+        0.23384250178970628,
+        -0.027593060344227042,
+        -1.5566392983804984,
+        0.004504940484389627,
+        2.000300685480943,
+        0.74346565065514
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 1177749226,
+      "imu_seed": 1323859971,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-012",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.05323394596731683,
+        0.0712985872083916
+      ],
+      "panel_yaw_rad": 0.15957572091129751,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.08560121157823772,
+        0.3059983258867659,
+        0.12175960228163149,
+        -1.4595450393673828,
+        -0.00901265541785052,
+        1.9715037700169105,
+        1.7163054462406524
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 3519990270,
+      "imu_seed": 3822987573,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-013",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.01881858627741019,
+        -0.04195399116937633
+      ],
+      "panel_yaw_rad": -0.3117729761407807,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.029461025547159778,
+        -0.41953858992634196,
+        0.03429016477382436,
+        -2.163394669214044,
+        -0.005435842182563331,
+        1.904533274871093,
+        0.7813231818315503
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2186014040,
+      "imu_seed": 3910452858,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-014",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.08139826897349027,
+        0.055924590541270996
+      ],
+      "panel_yaw_rad": -0.10120944866014941,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.08710733358914714,
+        0.6419478772087006,
+        0.14058274786460695,
+        -0.9268697733339467,
+        -0.14677391767579323,
+        1.7645305232374984,
+        1.0926416996639312
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 1615241185,
+      "imu_seed": 4017396144,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-015",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.021551534048766467,
+        0.08055996288131939
+      ],
+      "panel_yaw_rad": -0.13898365380917052,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.009013451626360514,
+        0.20330073626341869,
+        0.2193001494619875,
+        -1.598846635415233,
+        -0.12441887925230301,
+        1.9932495091069993,
+        1.3018084269396428
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 1349998920,
+      "imu_seed": 3451910301,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-016",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.013862717657382367,
+        -0.06552629603798307
+      ],
+      "panel_yaw_rad": -0.3199881887314179,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_down",
+        "turn_off"
+      ],
+      "arm_qpos_rad": [
+        0.0017078579047821781,
+        -0.37869441396895376,
+        0.023364942052614034,
+        -2.183594604916431,
+        -0.04461833732848443,
+        1.9063919786636,
+        0.8080783038499565
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2796192280,
+      "imu_seed": 244661100,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-017",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.04546872804265194,
+        0.03974772681130012
+      ],
+      "panel_yaw_rad": 0.05460484930151199,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.005141201804261364,
+        0.1432984793495538,
+        0.057955311823321386,
+        -1.6989678749133659,
+        -0.010810866090750444,
+        2.0518992569792935,
+        0.9624323075676038
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 3363702527,
+      "imu_seed": 1191887504,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-018",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.014226366133203702,
+        0.020485870947632545
+      ],
+      "panel_yaw_rad": -0.31067645247820874,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.042143804674423156,
+        -0.3932263069441806,
+        -0.0003445506351428322,
+        -2.115586197717204,
+        0.07986077380985294,
+        1.8932483299977751,
+        0.850893778360573
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2316209261,
+      "imu_seed": 370496768,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-019",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.0022971907304009595,
+        -0.04068920018436889
+      ],
+      "panel_yaw_rad": 0.1923904405477595,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.013273324530814246,
+        -0.35345862993871663,
+        0.0624589554764556,
+        -2.2155685216098076,
+        0.042696407101457,
+        1.9398828367214564,
+        0.7917932708515265
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 541689774,
+      "imu_seed": 1980823834,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-020",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.03550072692289433,
+        -0.06919004920405486
+      ],
+      "panel_yaw_rad": -0.18955038706136698,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.017966467022933315,
+        -0.3754457086253926,
+        0.02740549507666176,
+        -2.2194858848159194,
+        -0.016807561179535486,
+        2.0137204452282598,
+        0.8121245526559098
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1589616860,
+      "imu_seed": 3398102627,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-021",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.04068178121570662,
+        -0.06018941409604717
+      ],
+      "panel_yaw_rad": -0.31873895506310945,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.026427452589161075,
+        0.33686464848236075,
+        0.06300978980108637,
+        -1.4209553295180608,
+        -0.09932370690420055,
+        1.9532807373004308,
+        1.026917048820105
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 3275988724,
+      "imu_seed": 3545651102,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-022",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0012316764290190435,
+        0.03940349466534976
+      ],
+      "panel_yaw_rad": 0.23731801349406273,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.04797340514189977,
+        -0.37718194828836665,
+        -0.013017998522434664,
+        -2.178682995221237,
+        -0.0231546665973715,
+        1.9214324366682276,
+        0.802216374975746
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 449071899,
+      "imu_seed": 3293449840,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-023",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.014360285448596868,
+        0.016039830792499404
+      ],
+      "panel_yaw_rad": 0.17838990400772808,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.022716390857160044,
+        -0.36634791628489516,
+        0.028848553411363588,
+        -2.2004861925170363,
+        -0.036556190915109525,
+        1.944710781705484,
+        0.7851545659779183
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 767777783,
+      "imu_seed": 3724316470,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-024",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.025588835986189357,
+        0.05060797437514725
+      ],
+      "panel_yaw_rad": -0.26820996304082834,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.012044247441274695,
+        -0.38661660683965815,
+        0.012639662069781355,
+        -2.20978743353673,
+        -0.026694782604286153,
+        1.9689623938583016,
+        0.7787345069069387
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 12890514,
+      "imu_seed": 2746685209,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-025",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0020774565109663717,
+        0.039057962581085764
+      ],
+      "panel_yaw_rad": -0.2505332302388654,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_down",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.09880888103592751,
+        0.16918154337419145,
+        0.11013610882828424,
+        -1.630298731364037,
+        -0.07856391816581045,
+        2.0008599207593876,
+        1.979129864769464
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 2820728144,
+      "imu_seed": 1849053110,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-026",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.04836588263498039,
+        -0.003464750307856132
+      ],
+      "panel_yaw_rad": -0.047877227779815124,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.030890052363045768,
+        -0.3645591441676879,
+        -0.05353415134526595,
+        -2.1900805106753864,
+        0.020885951580189896,
+        1.9705377478166854,
+        0.7752186579693786
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2523671311,
+      "imu_seed": 928793447,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-027",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.011480951995005442,
+        -0.08800966491675846
+      ],
+      "panel_yaw_rad": -0.27584768156239675,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_up",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.0396792509823261,
+        -0.41939915968114966,
+        -0.009279811569120253,
+        -2.192377241992515,
+        0.011676446786511575,
+        1.9336342186993676,
+        0.7921042630464084
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1747603961,
+      "imu_seed": 2510443601,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-028",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.01521861172189895,
+        -0.10632228611979479
+      ],
+      "panel_yaw_rad": 0.07444810148788372,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.04172740907299885,
+        -0.42223950308498714,
+        0.0018271828525588763,
+        -2.221161830005256,
+        0.006233394373252816,
+        2.0051037728568692,
+        0.7940751027167201
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3284914257,
+      "imu_seed": 4041813258,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-2-029",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0013441754573611311,
+        0.05427603217233426
+      ],
+      "panel_yaw_rad": -0.1585440780110802,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.026538848075160906,
+        0.04306897665564157,
+        0.16353213937560235,
+        -1.8228201576290453,
+        -0.07722436683560084,
+        2.0650634186720582,
+        1.2191577862181868
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 2670219750,
+      "imu_seed": 4063182850,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-000",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.08884711534475721,
+        0.013602884606568055
+      ],
+      "panel_yaw_rad": -0.3327810172508689,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "turn_off",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.0009569213639382394,
+        -0.3268177002030026,
+        0.03862666242636833,
+        -2.168687861036536,
+        -0.0029211927673684496,
+        1.9311613279114306,
+        0.8069575913748162
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 643969865,
+      "imu_seed": 1248242001,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-001",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.011433999682039654,
+        0.026535979887982397
+      ],
+      "panel_yaw_rad": 0.09175616762016542,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "press",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.04927500444744227,
+        -0.39493303494907134,
+        0.01751374032244705,
+        -2.2017693599481256,
+        0.006101212155094348,
+        1.9130331077129756,
+        0.8007989715075496
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3910991567,
+      "imu_seed": 2367699455,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-002",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.08952242442292237,
+        -0.1138294521286277
+      ],
+      "panel_yaw_rad": 0.20356210575725903,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_down",
+        "turn_off",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.0037566910937760897,
+        -0.42047991477698077,
+        -0.0287500153402994,
+        -2.1971937079948867,
+        0.01801622636709518,
+        1.9268891566985153,
+        0.8097653746276341
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3318917807,
+      "imu_seed": 3355189567,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-003",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.011597414337039327,
+        -0.0005175206278183325
+      ],
+      "panel_yaw_rad": -0.12072737513969026,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "press",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.0002484834797521259,
+        0.17614742401508213,
+        0.06196440598560274,
+        -1.6426821937869638,
+        -0.05350358337792388,
+        2.024602670226071,
+        0.9417256388935517
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 3213559060,
+      "imu_seed": 1964601591,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-004",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.028434657720787137,
+        0.022732701132346628
+      ],
+      "panel_yaw_rad": 0.19793370799595184,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.075727859261672,
+        -0.052917916795895845,
+        -0.055986271893357135,
+        -1.9360044341300358,
+        0.039378388447009846,
+        2.0894820887933965,
+        0.43109378475592197
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 2517697412,
+      "imu_seed": 4182324148,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-005",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.014225462754563573,
+        0.10008967533146162
+      ],
+      "panel_yaw_rad": -0.26271297920006353,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.0013881614531762612,
+        -0.3706687456277055,
+        -0.03180476984148253,
+        -2.184435465724328,
+        -0.01628888350269032,
+        1.974918486339735,
+        0.8233035440432388
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1665284895,
+      "imu_seed": 407942847,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-006",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0676149531318525,
+        -0.02519283955097769
+      ],
+      "panel_yaw_rad": 0.050560137822669826,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_down",
+        "press",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.11063090638330228,
+        0.4998079588261451,
+        0.02355480270373518,
+        -1.144769380273092,
+        0.01903640909023373,
+        1.8522322835403149,
+        1.707742398838083
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 745619753,
+      "imu_seed": 1061250284,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-007",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.047381622442639076,
+        -0.0035511446134321584
+      ],
+      "panel_yaw_rad": -0.21555596836192178,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_down",
+        "press",
+        "turn_off"
+      ],
+      "arm_qpos_rad": [
+        0.007420108870472263,
+        -0.3823330973561572,
+        0.005428132888215629,
+        -2.17748875642584,
+        -0.016710434043426512,
+        1.90492060404261,
+        0.802053504497175
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2810118845,
+      "imu_seed": 362148398,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-008",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.04398271067499385,
+        0.08722128414462982
+      ],
+      "panel_yaw_rad": -0.0011625697115215106,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "press",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.019166379828327675,
+        -0.37312598633153976,
+        0.0417244549650854,
+        -2.2298522455514496,
+        0.03490688883241717,
+        1.9775975614448575,
+        0.7897444931210678
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1482319261,
+      "imu_seed": 1425165809,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-009",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.011725988136942124,
+        0.02687098119258352
+      ],
+      "panel_yaw_rad": -0.026433128211187373,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "toggle_up",
+        "turn_off",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.020425394802042834,
+        -0.37293123649168414,
+        -0.00562502668295304,
+        -2.2055609484286505,
+        -0.011402254160793624,
+        1.9599480336322586,
+        0.7822058902775968
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3916251534,
+      "imu_seed": 2764524338,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-010",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.007659134040795053,
+        -0.04053470617597876
+      ],
+      "panel_yaw_rad": -0.1636060455103285,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_up",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.03104688342083088,
+        -0.08487307580747994,
+        0.0017870180799308673,
+        -1.9918505440724055,
+        -0.03225213841589531,
+        2.114838402430807,
+        0.8673840781632555
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 3825320885,
+      "imu_seed": 3921815615,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-011",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.05213264909503611,
+        0.10063903094578408
+      ],
+      "panel_yaw_rad": 0.24092719266679813,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.10213916250923645,
+        0.16046646996797984,
+        0.03647994988774866,
+        -1.679598469683866,
+        0.0178562202256955,
+        2.0486860597900898,
+        0.5213372350457572
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 1356496324,
+      "imu_seed": 3277800179,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-012",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.00809938325511119,
+        -0.05234316602135611
+      ],
+      "panel_yaw_rad": -0.0600116391647223,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_down",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.002698481842361931,
+        -0.3538703903131111,
+        0.012485516258785589,
+        -2.1977125288196553,
+        -0.0021616957914458875,
+        1.9390700831025598,
+        0.8240979529884583
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 3437834965,
+      "imu_seed": 2590201994,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-013",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.013190518377069409,
+        -0.09155385214074918
+      ],
+      "panel_yaw_rad": -0.3185667549799471,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "press",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        0.07480689277745341,
+        -0.36733936394747835,
+        -0.006619051312063442,
+        -2.1863725296214644,
+        0.007871786522827167,
+        1.9524260452180748,
+        0.8216452380646632
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2749317110,
+      "imu_seed": 415693296,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-014",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.02518217170104911,
+        0.08618749555988897
+      ],
+      "panel_yaw_rad": -0.3337482206180049,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_up",
+        "press",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.016042503277411746,
+        -0.3757416357065015,
+        0.0066012174466557735,
+        -2.16888602623872,
+        -0.058547742664180245,
+        2.021313166048371,
+        0.7729489693578837
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2981340830,
+      "imu_seed": 2953500465,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-015",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.0182018216781092,
+        -0.08286855151513187
+      ],
+      "panel_yaw_rad": -0.13467965876705068,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.03418448357265195,
+        0.04579301824914309,
+        -0.057732365708310786,
+        -1.8287097598908748,
+        -0.007020531537530326,
+        2.0841293963633136,
+        0.7128348534824904
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 862051837,
+      "imu_seed": 2318989571,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-016",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.02352414596820988,
+        -0.11506583104258913
+      ],
+      "panel_yaw_rad": -0.11791761119113006,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_up",
+        "turn_off",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.06431611617609069,
+        0.1565655798008189,
+        -0.05187592851228747,
+        -1.6559668002366754,
+        0.008423958305592906,
+        2.0222143393735426,
+        0.8734347420536108
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 1892937566,
+      "imu_seed": 2770039986,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-017",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.03701444796309844,
+        -0.04108752637194389
+      ],
+      "panel_yaw_rad": 0.2278946007703388,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        0.00744035879981787,
+        0.06304436881708761,
+        -0.1430546232986379,
+        -1.8141290154707326,
+        0.09470222597888052,
+        2.0712789350301395,
+        0.43808446156126124
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 3023851448,
+      "imu_seed": 1628273909,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-018",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.027033287254074195,
+        0.060190712061387014
+      ],
+      "panel_yaw_rad": 0.19419237192388278,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "turn_on",
+        "toggle_up"
+      ],
+      "arm_qpos_rad": [
+        -0.08164426512272936,
+        0.28308174021343696,
+        0.12855167259813227,
+        -1.4811008956328406,
+        -0.0035271551209749602,
+        1.9693897654126034,
+        1.599589944908855
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 2558761983,
+      "imu_seed": 3510275680,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-019",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.001769884637912833,
+        0.11680068441520158
+      ],
+      "panel_yaw_rad": -0.12330437254664134,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.06158919576040084,
+        0.338560907473582,
+        0.23957460173907294,
+        -1.4099147333674986,
+        -0.17173894091244546,
+        1.929391771455469,
+        1.3124007439378356
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 2310166493,
+      "imu_seed": 719620606,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-020",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.024823261814622393,
+        0.04507536633364462
+      ],
+      "panel_yaw_rad": 0.15870765367014988,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.00305161959065565,
+        -0.3961978265164856,
+        0.00565145569868393,
+        -2.2184406785131223,
+        -0.02470002808809323,
+        1.9179253996679932,
+        0.787119567477236
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 504322967,
+      "imu_seed": 2141418682,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-021",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.03775849691716093,
+        -0.0950634510927744
+      ],
+      "panel_yaw_rad": 0.004720404937067879,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_on",
+        "press",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.017037269995251056,
+        -0.4036691273034807,
+        0.04894420435413791,
+        -2.1930703008325434,
+        -0.03377439230594715,
+        1.9487118781466275,
+        0.742388215660227
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 4475708,
+      "imu_seed": 1293958950,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-022",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.008536708326387088,
+        0.08217588365552916
+      ],
+      "panel_yaw_rad": -0.16428552241922995,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.0024245851691647533,
+        0.029066136037919656,
+        0.18639258300594447,
+        -1.8477712827587927,
+        -0.08710571222286169,
+        2.07244504285465,
+        1.1967095636930816
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 449516460,
+      "imu_seed": 2364489488,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-023",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.07615842544841127,
+        -0.0882344344622299
+      ],
+      "panel_yaw_rad": -0.14916608449778834,
+      "controls": {
+        "knob_on": true,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "turn_off",
+        "toggle_up",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.02842893483257046,
+        -0.34623428671359785,
+        -0.0041234599458136395,
+        -2.2026784055919912,
+        0.031230768810387097,
+        1.9129834793140228,
+        0.7420126730210626
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 757192275,
+      "imu_seed": 3328054426,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-024",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.07358770312900413,
+        -0.01729719045003547
+      ],
+      "panel_yaw_rad": -0.2641879206392016,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "turn_on",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        -0.09743854833564368,
+        0.36257466939554356,
+        0.026516524475861968,
+        -1.3667633141328357,
+        -0.05178125315898271,
+        1.936129077368993,
+        1.9583771205082054
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 962837,
+      "imu_seed": 536949098,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-025",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        -0.036924413711491785,
+        -0.0032662521451137794
+      ],
+      "panel_yaw_rad": 0.10669224680196404,
+      "controls": {
+        "knob_on": false,
+        "lever_up": true,
+        "button_on": true
+      },
+      "steps": [
+        "turn_on",
+        "toggle_down",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        -0.0052527423684550646,
+        -0.38051535905969575,
+        0.025187128674149892,
+        -2.208480589465636,
+        -0.011784663928835256,
+        1.9170388019857614,
+        0.7689487350373462
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 2991917007,
+      "imu_seed": 3438795323,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-026",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.07362588058463047,
+        -0.01882078541755998
+      ],
+      "panel_yaw_rad": -0.257755867816572,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "press",
+        "turn_off",
+        "toggle_down"
+      ],
+      "arm_qpos_rad": [
+        0.02267206856331994,
+        0.33194486167093895,
+        -0.16882775827093557,
+        -1.4205974146670477,
+        0.03094115133045463,
+        1.9564924214934667,
+        -0.23532764032805603
+      ],
+      "arm_start_label": "near_knob",
+      "gripper_open": true,
+      "excitation_seed": 2809399059,
+      "imu_seed": 2258483728,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-027",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.052861673516174074,
+        -0.005447567224477867
+      ],
+      "panel_yaw_rad": 0.21051858423038255,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": false
+      },
+      "steps": [
+        "toggle_up",
+        "turn_on",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.060138884842834556,
+        0.3594139136289367,
+        -0.04104933871781173,
+        -1.3719104670408644,
+        0.05723301813464106,
+        1.9368861565934932,
+        0.4559095774690847
+      ],
+      "arm_start_label": "near_button",
+      "gripper_open": false,
+      "excitation_seed": 541368682,
+      "imu_seed": 4169956804,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-028",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.08040427724755882,
+        0.0674628575486508
+      ],
+      "panel_yaw_rad": -0.10255184253927069,
+      "controls": {
+        "knob_on": true,
+        "lever_up": true,
+        "button_on": false
+      },
+      "steps": [
+        "turn_off",
+        "toggle_down",
+        "press"
+      ],
+      "arm_qpos_rad": [
+        0.00705183130901428,
+        -0.4216458728244526,
+        -0.04615193930992837,
+        -2.218740025104114,
+        -0.001361625829024825,
+        1.9969160534257517,
+        0.7785414587418826
+      ],
+      "arm_start_label": "home",
+      "gripper_open": true,
+      "excitation_seed": 1858374091,
+      "imu_seed": 1372762115,
+      "t0_s": 0.0,
+      "split": "eval"
+    },
+    {
+      "state_id": "panel-chain-3-029",
+      "task": {
+        "task_type": "panel_operation",
+        "version": 1
+      },
+      "panel_xy_m": [
+        0.008575055489081947,
+        -0.10718033672975014
+      ],
+      "panel_yaw_rad": 0.03475795381050384,
+      "controls": {
+        "knob_on": false,
+        "lever_up": false,
+        "button_on": true
+      },
+      "steps": [
+        "press",
+        "toggle_up",
+        "turn_on"
+      ],
+      "arm_qpos_rad": [
+        -0.06573097119744532,
+        0.030440124145842035,
+        -0.12745169841771878,
+        -1.846703578684288,
+        0.05855503939502107,
+        2.080807248818605,
+        0.6834916866181436
+      ],
+      "arm_start_label": "near_lever",
+      "gripper_open": false,
+      "excitation_seed": 2841300103,
+      "imu_seed": 1580067539,
+      "t0_s": 0.0,
+      "split": "eval"
+    }
+  ]
+}

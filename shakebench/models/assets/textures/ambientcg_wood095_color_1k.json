@@ -1,0 +1,10 @@
+{
+  "asset": "Wood095",
+  "source": "https://ambientcg.com/view?id=Wood095",
+  "download": "https://ambientcg.com/get?file=Wood095_1K-PNG.zip",
+  "archive_member": "Wood095_1K-PNG_Color.png",
+  "license": "CC0-1.0",
+  "license_url": "https://docs.ambientcg.com/license/",
+  "modifications": "None; original color map extracted from the source archive.",
+  "sha256": "db7abc2ff1e3ec39be84a9e199d1d4b1195e6cc2c202ba5e06ad4069929895ae"
+}

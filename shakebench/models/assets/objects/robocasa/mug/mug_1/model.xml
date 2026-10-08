@@ -1,0 +1,57 @@
+<mujoco model="mug_14">
+  <asset>
+    <mesh file="visual/model_normalized_0.obj" name="model_normalized_0_vis" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <texture type="2d" name="image0" file="visual/image0.png" />
+    <material name="canecaTex" texture="image0" specular="0.5" shininess="0.321677441" />
+    <mesh file="collision/collision_mesh_collision_0.obj" name="mug_collision_mesh_0" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_1.obj" name="mug_collision_mesh_1" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_2.obj" name="mug_collision_mesh_2" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_3.obj" name="mug_collision_mesh_3" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_4.obj" name="mug_collision_mesh_4" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_5.obj" name="mug_collision_mesh_5" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_6.obj" name="mug_collision_mesh_6" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_7.obj" name="mug_collision_mesh_7" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_8.obj" name="mug_collision_mesh_8" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_9.obj" name="mug_collision_mesh_9" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_10.obj" name="mug_collision_mesh_10" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_11.obj" name="mug_collision_mesh_11" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_12.obj" name="mug_collision_mesh_12" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_13.obj" name="mug_collision_mesh_13" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_14.obj" name="mug_collision_mesh_14" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+    <mesh file="collision/collision_mesh_collision_15.obj" name="mug_collision_mesh_15" scale="0.092000000000000012 0.092000000000000012 0.092000000000000012" refquat="-0.7071067811865477 0.0 0.0 0.7071067811865474" />
+  </asset>
+  <default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0" />
+    </default>
+    <default class="collision">
+      <geom group="0" rgba="0.5 0 0 0.5" density="1000.0" />
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_0_vis" conaffinity="0" contype="0" group="1" material="canecaTex" />
+        <geom class="region" name="reg_bbox" type="box" pos="0 0 1.3800000018271421e-09" size="0.03142542072 0.046000000000000006 0.036155599340000004" />
+        <geom mesh="mug_collision_mesh_0" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_1" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_2" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_3" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_4" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_5" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_6" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_7" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_8" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_9" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_10" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_11" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_12" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_13" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_14" type="mesh" class="collision" />
+        <geom mesh="mug_collision_mesh_15" type="mesh" class="collision" />
+        <geom rgba="0 0 0 0" size="0.0304 0.028000000000000004" pos="0 0.0144 0" type="cylinder" name="liquid" class="region" />
+        <geom rgba="0 0 0 0 " size="0.027600000000000003 0.0304" pos="0 0.0144 0.0040000000000000001" type="cylinder" name="reg_int" class="region" />
+      </body>
+    <site name="bottom_site" pos="0 0 -0.036155597798895482" size="0.005" rgba="0 0 0 0" /><site name="top_site" pos="0 0 0.036155601485265712" size="0.005" rgba="0 0 0 0" /><site name="horizontal_radius_site" pos="0.046000000159291593 0 0" size="0.005" rgba="0 0 0 0" /></body>
+  </worldbody>
+</mujoco>

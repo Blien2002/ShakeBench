@@ -1,0 +1,147 @@
+{
+  "design": "waist-shaped flat upper handle",
+  "units": "m",
+  "length": 0.0275115884208,
+  "max_width": 0.00870572698149346,
+  "waist_width": 0.0068,
+  "base": 0.0148,
+  "shoulder_top": 0.01495,
+  "parallel_face_top": 0.023875,
+  "exposed_parallel_height": 0.008925,
+  "top": 0.0244275,
+  "user_height_scale_above_shoulder": 0.85,
+  "plan_corner_radius": 0.001,
+  "crown_radius": 0.0005524999999999999,
+  "paint_width": 0.0022,
+  "paint_start_t": 0.00015,
+  "paint_end_t": 0.013081169038299999,
+  "paint_wall_bottom": 0.0213675,
+  "paint_surface_offset": 1.2e-05,
+  "upper_contact_pieces": [
+    {
+      "mesh": "panel_contact_grip_00",
+      "t_range_mm": [
+        -14.4424193825,
+        -12.0
+      ],
+      "vertices": 674
+    },
+    {
+      "mesh": "panel_contact_grip_01",
+      "t_range_mm": [
+        -12.0,
+        -9.0
+      ],
+      "vertices": 517
+    },
+    {
+      "mesh": "panel_contact_grip_02",
+      "t_range_mm": [
+        -9.0,
+        -6.0
+      ],
+      "vertices": 501
+    },
+    {
+      "mesh": "panel_contact_grip_03",
+      "t_range_mm": [
+        -6.0,
+        -3.0
+      ],
+      "vertices": 104
+    },
+    {
+      "mesh": "panel_contact_grip_04",
+      "t_range_mm": [
+        -3.0,
+        -1.4317547355
+      ],
+      "vertices": 108
+    },
+    {
+      "mesh": "panel_contact_grip_05",
+      "t_range_mm": [
+        -1.4317547355,
+        1.5
+      ],
+      "vertices": 106
+    },
+    {
+      "mesh": "panel_contact_grip_06",
+      "t_range_mm": [
+        1.5,
+        4.5
+      ],
+      "vertices": 105
+    },
+    {
+      "mesh": "panel_contact_grip_07",
+      "t_range_mm": [
+        4.5,
+        6.5
+      ],
+      "vertices": 280
+    },
+    {
+      "mesh": "panel_contact_grip_08",
+      "t_range_mm": [
+        6.5,
+        8.5
+      ],
+      "vertices": 475
+    },
+    {
+      "mesh": "panel_contact_grip_09",
+      "t_range_mm": [
+        8.5,
+        10.5
+      ],
+      "vertices": 361
+    },
+    {
+      "mesh": "panel_contact_grip_10",
+      "t_range_mm": [
+        10.5,
+        12.0
+      ],
+      "vertices": 109
+    },
+    {
+      "mesh": "panel_contact_grip_11",
+      "t_range_mm": [
+        12.0,
+        13.0691690383
+      ],
+      "vertices": 666
+    }
+  ],
+  "knob_inertia": {
+    "mass_kg": 0.045,
+    "com_m": [
+      -0.010582355730005865,
+      7.613955913324927e-05,
+      0.012856891190558902
+    ],
+    "inertia_kg_m2": [
+      [
+        2.3103864564669565e-06,
+        3.867039083390675e-09,
+        -9.741872806517954e-07
+      ],
+      [
+        3.86703908339066e-09,
+        3.5380384105801147e-06,
+        -3.813262619830933e-09
+      ],
+      [
+        -9.741872806517954e-07,
+        -3.813262619830852e-09,
+        2.888535358221419e-06
+      ]
+    ],
+    "visual_component_volume_cm3": 3.601695021487031,
+    "assumption": "Uniform volume-weighted visual components, normalized to existing control mass. Components slightly overlap; includes no material-density or measured-mechanism claim."
+  },
+  "grasp_validation": "Geometry and compilation only; parent owns physical handle-only validation.",
+  "reference": "Private Schneider official product photo XB5_633_CPMFS17192; no manufacturer CAD or branding."
+}

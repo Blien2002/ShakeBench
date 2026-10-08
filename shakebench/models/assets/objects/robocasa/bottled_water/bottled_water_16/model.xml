@@ -1,0 +1,48 @@
+<mujoco model="bottled_water_2">
+  <asset>
+    <mesh file="visual/model_normalized_0.obj" name="model_normalized_0_vis" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="visual/model_normalized_1.obj" name="model_normalized_1_vis" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="visual/model_normalized_2.obj" name="model_normalized_2_vis" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <texture type="2d" name="image3" file="visual/image3.png" />
+    <material name="Plastic_-_regular" specular="0.5" shininess="0.809999997" rgba="0.90 0.90 0.90 0.55" />
+    <material name="label_1" texture="image3" specular="0.5" shininess="0.25" />
+    <material name="label_indigo_plastic" specular="0.5" shininess="0.359999993" rgba="0.004 0 0.365 1" />
+    <mesh file="collision/collision_mesh_collision_0.obj" name="bottled_collision_mesh_0" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_1.obj" name="bottled_collision_mesh_1" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_2.obj" name="bottled_collision_mesh_2" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_3.obj" name="bottled_collision_mesh_3" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_4.obj" name="bottled_collision_mesh_4" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_5.obj" name="bottled_collision_mesh_5" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_6.obj" name="bottled_collision_mesh_6" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="collision/collision_mesh_collision_7.obj" name="bottled_collision_mesh_7" scale="0.25742242105244 0.25742242105244 0.25742242105244" refquat="1.0 0.0 0.0 0.0" />
+  </asset>
+  <default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0" />
+    </default>
+    <default class="collision">
+      <geom group="0" rgba="0.5 0 0 0.5" density="1000.0" />
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_0_vis" conaffinity="0" contype="0" group="1" material="label_1" />
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_1_vis" conaffinity="0" contype="0" group="1" material="label_indigo_plastic" />
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_2_vis" conaffinity="0" contype="0" group="1" material="Plastic_-_regular" />
+        <geom class="region" name="reg_bbox" type="box" pos="1.6388798436302943e-05 0.00015193071290514986 0.00023568438470665266" size="0.03200608128291934 0.033455961585012996 0.128" />
+        <geom mesh="bottled_collision_mesh_0" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_1" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_2" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_3" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_4" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_5" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_6" type="mesh" class="collision" />
+        <geom mesh="bottled_collision_mesh_7" type="mesh" class="collision" />
+      </body>
+      <site name="bottom_site" pos="0 0 -0.12776431561529336" size="0.005" rgba="0 0 0 0" />
+      <site name="top_site" pos="0 0 0.12823568438470664" size="0.005" rgba="0 0 0 0" />
+      <site name="horizontal_radius_site" pos="0.033455961585012996 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+  </worldbody>
+</mujoco>

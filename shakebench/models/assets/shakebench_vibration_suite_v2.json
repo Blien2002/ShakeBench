@@ -1,0 +1,31 @@
+{
+  "suite_id": "vibration_scenarios_v2",
+  "mode": "scenario_lines_v1",
+  "gamma": 1.0,
+  "gamma_definition": "scenario_level_v1",
+  "gamma_meaning": "amplitude multiplier",
+  "comparable_to_peak_gamma_grid": false,
+  "scenarios": [
+    {
+      "scenario": "S1",
+      "level": 1.0,
+      "params": {}
+    },
+    {
+      "scenario": "S2",
+      "level": 1.0,
+      "params": {}
+    },
+    {
+      "scenario": "S3",
+      "level": 1.0,
+      "params": {}
+    },
+    {
+      "scenario": "S4",
+      "level": 1.0,
+      "params": {}
+    }
+  ],
+  "scenario_catalog_version": "canonical_v2"
+}

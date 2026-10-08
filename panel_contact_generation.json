@@ -1,0 +1,481 @@
+{
+  "visual_revision": "original_controls",
+  "knob_pieces": [
+    {
+      "geom": "panel_knob_grip_00_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -14.4424193825,
+        -12.0
+      ],
+      "vertices": 674
+    },
+    {
+      "geom": "panel_knob_grip_01_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -12.0,
+        -9.0
+      ],
+      "vertices": 517
+    },
+    {
+      "geom": "panel_knob_grip_02_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -9.0,
+        -6.0
+      ],
+      "vertices": 501
+    },
+    {
+      "geom": "panel_knob_grip_03_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -6.0,
+        -3.0
+      ],
+      "vertices": 104
+    },
+    {
+      "geom": "panel_knob_grip_04_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -3.0,
+        -1.4317547355
+      ],
+      "vertices": 108
+    },
+    {
+      "geom": "panel_knob_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        -1.4317547355,
+        1.5
+      ],
+      "vertices": 106
+    },
+    {
+      "geom": "panel_knob_grip_06_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        1.5,
+        4.5
+      ],
+      "vertices": 105
+    },
+    {
+      "geom": "panel_knob_grip_07_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        4.5,
+        6.5
+      ],
+      "vertices": 280
+    },
+    {
+      "geom": "panel_knob_grip_08_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        6.5,
+        8.5
+      ],
+      "vertices": 475
+    },
+    {
+      "geom": "panel_knob_grip_09_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        8.5,
+        10.5
+      ],
+      "vertices": 361
+    },
+    {
+      "geom": "panel_knob_grip_10_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        10.5,
+        12.0
+      ],
+      "vertices": 109
+    },
+    {
+      "geom": "panel_knob_grip_11_collision",
+      "source": "panel_refined_grip",
+      "t_range_mm": [
+        12.0,
+        13.0691690383
+      ],
+      "vertices": 666
+    },
+    {
+      "geom": "panel_knob_root_00_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -14.4424193825,
+        -9.0
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 376
+    },
+    {
+      "geom": "panel_knob_root_01_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -14.4424193825,
+        -9.0
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 152
+    },
+    {
+      "geom": "panel_knob_root_02_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -14.4424193825,
+        -9.0
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 153
+    },
+    {
+      "geom": "panel_knob_root_03_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -14.4424193825,
+        -9.0
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 141
+    },
+    {
+      "geom": "panel_knob_root_04_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -9.0,
+        -4.0
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 60
+    },
+    {
+      "geom": "panel_knob_root_05_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -9.0,
+        -4.0
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 11
+    },
+    {
+      "geom": "panel_knob_root_06_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -9.0,
+        -4.0
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 9
+    },
+    {
+      "geom": "panel_knob_root_07_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -9.0,
+        -4.0
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 10
+    },
+    {
+      "geom": "panel_knob_root_08_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -4.0,
+        2.0
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 243
+    },
+    {
+      "geom": "panel_knob_root_09_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -4.0,
+        2.0
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 11
+    },
+    {
+      "geom": "panel_knob_root_10_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -4.0,
+        2.0
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 10
+    },
+    {
+      "geom": "panel_knob_root_11_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        -4.0,
+        2.0
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 11
+    },
+    {
+      "geom": "panel_knob_root_12_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        2.0,
+        6.5
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 46
+    },
+    {
+      "geom": "panel_knob_root_13_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        2.0,
+        6.5
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 11
+    },
+    {
+      "geom": "panel_knob_root_14_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        2.0,
+        6.5
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 11
+    },
+    {
+      "geom": "panel_knob_root_15_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        2.0,
+        6.5
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 9
+    },
+    {
+      "geom": "panel_knob_root_16_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        6.5,
+        10.0
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 369
+    },
+    {
+      "geom": "panel_knob_root_17_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        6.5,
+        10.0
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 92
+    },
+    {
+      "geom": "panel_knob_root_18_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        6.5,
+        10.0
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 92
+    },
+    {
+      "geom": "panel_knob_root_19_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        6.5,
+        10.0
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 98
+    },
+    {
+      "geom": "panel_knob_root_20_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        10.0,
+        13.0691690383
+      ],
+      "n_range_mm": [
+        12.5,
+        13.299999999999999
+      ],
+      "vertices": 89
+    },
+    {
+      "geom": "panel_knob_root_21_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        10.0,
+        13.0691690383
+      ],
+      "n_range_mm": [
+        13.299999999999999,
+        14.1
+      ],
+      "vertices": 38
+    },
+    {
+      "geom": "panel_knob_root_22_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        10.0,
+        13.0691690383
+      ],
+      "n_range_mm": [
+        14.1,
+        14.8
+      ],
+      "vertices": 39
+    },
+    {
+      "geom": "panel_knob_root_23_collision",
+      "source": "panel_refined_root",
+      "t_range_mm": [
+        10.0,
+        13.0691690383
+      ],
+      "n_range_mm": [
+        14.8,
+        14.95
+      ],
+      "vertices": 38
+    }
+  ],
+  "knob_inertia": {
+    "mass_kg": 0.045,
+    "com_m": [
+      -0.010582355730005865,
+      7.613955913324927e-05,
+      0.012856891190558902
+    ],
+    "inertia_kg_m2": [
+      [
+        2.3103864564669565e-06,
+        3.867039083390675e-09,
+        -9.741872806517954e-07
+      ],
+      [
+        3.86703908339066e-09,
+        3.5380384105801147e-06,
+        -3.813262619830933e-09
+      ],
+      [
+        -9.741872806517954e-07,
+        -3.813262619830852e-09,
+        2.888535358221419e-06
+      ]
+    ],
+    "visual_component_volume_cm3": 3.601695021487031,
+    "assumption": "Uniform volume-weighted visual components, normalized to existing control mass. Components slightly overlap; includes no material-density or measured-mechanism claim."
+  },
+  "lever_inertia": {
+    "mass_kg": 0.025,
+    "com_m": [
+      -0.006706862883848111,
+      -2.407793878786541e-16,
+      0.008853059007122775
+    ],
+    "inertia_kg_m2": [
+      [
+        5.637896527008666e-07,
+        -7.695662480846319e-21,
+        3.703607243310154e-07
+      ],
+      [
+        -7.701289136671949e-21,
+        8.443659590008855e-07,
+        -4.762959838604919e-21
+      ],
+      [
+        3.703607243310161e-07,
+        -4.76306559659988e-21,
+        3.554898028566169e-07
+      ]
+    ],
+    "visual_component_volume_cm3": 0.37295568316885713,
+    "assumption": "Uniform volume-weighted visual components, normalized to existing control mass. Components slightly overlap; includes no material-density or measured-mechanism claim."
+  },
+  "upper_handle_design": "waist-shaped flat upper handle",
+  "upper_handle_geometry_validation": "Geometry and compilation only; parent owns physical handle-only validation."
+}
