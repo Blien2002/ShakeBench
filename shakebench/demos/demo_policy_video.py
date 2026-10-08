@@ -29,7 +29,6 @@ import numpy as np
 
 from shakebench import models
 from shakebench.evaluation.evaluate import build_policy, load_policy_factory, parse_policy_args
-from shakebench.rollout.task_env import ShakeBenchTaskEnv, validated_actions
 from shakebench.scene.video import FFmpegVideoWriter
 from shakebench.tasks.states.assets import load_state_asset
 
@@ -55,6 +54,8 @@ def record_episode(task, policy, writer, *, action_horizon, hold_frames, preview
     and every chunk passes ``validated_actions``, so the demo accepts the same policies as the
     evaluator.
     """
+    from shakebench.rollout.task_env import validated_actions
+
     reset = getattr(policy, "reset", None)
     if callable(reset):
         reset()
@@ -131,6 +132,9 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+
+    from shakebench.rollout.task_env import ShakeBenchTaskEnv
+
     if args.action_horizon < 1 or args.fps < 1:
         raise ValueError("action-horizon and fps must be positive")
     states = {state["state_id"]: state for state in load_state_asset(args.states)["states"]}

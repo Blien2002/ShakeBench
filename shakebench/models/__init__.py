@@ -1,21 +1,26 @@
 """ShakeBench MJCF models and the package asset root.
 
-ShakeBench owns its arena, task objects, textures and JSON contracts.  A few
-resources stay upstream (robosuite materials and meshes that the tasks reuse);
-those are always addressed through robosuite_assets_root by an explicit call,
-never by searching several directories in turn.
+Package-owned paths are available without initializing robosuite or graphics.
+Upstream materials and meshes are resolved when their asset root is requested.
 """
 
 import os
 
-from robosuite import models as _robosuite_models
-from robosuite.utils.mjcf_utils import xml_path_completion as _xml_path_completion
-
 assets_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-robosuite_assets_root = _robosuite_models.assets_root
+
+
+def __getattr__(name):
+    if name != "robosuite_assets_root":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    from robosuite import models
+
+    root = models.assets_root
+    globals()[name] = root
+    return root
 
 
 def xml_path_completion(xml_path, root=None):
     """Return the absolute path of a ShakeBench package asset."""
+    from robosuite.utils.mjcf_utils import xml_path_completion as upstream_completion
 
-    return _xml_path_completion(xml_path, root=assets_root if root is None else root)
+    return upstream_completion(xml_path, root=assets_root if root is None else root)

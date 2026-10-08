@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = [
     # Upstream robosuite master after 1.5.2, unmodified. ShakeBench extends it in shakebench/environments/base.py;
-    # read docs/architecture.md before moving this pin.
+    # Compare all task rollouts before moving this pin.
     "robosuite @ git+https://github.com/ARISE-Initiative/robosuite.git@5ce6643f3092639d08f7b0f90ed1c6a84f50552c",
     # MuJoCo 3.10 changed mj_fullM, which robosuite's controllers call.
     "mujoco>=3.3.0,<3.10",
@@ -45,7 +45,3 @@ profile = "black"
 line_length = 120
 skip = ["__init__.py"]
 extend_skip = ["shakebench/models/assets"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-markers = ["slow: builds full task environments (about 20-100 s each)"]

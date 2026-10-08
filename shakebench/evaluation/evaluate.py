@@ -23,7 +23,7 @@ from pathlib import Path
 from shakebench import models
 from shakebench.physics.calibration import scenario_run_metadata
 from shakebench.physics.excitation import SWAY_V1, VIBRATION_MODES
-from shakebench.rollout.task_env import OBSERVATION_SOURCES, ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
+from shakebench.rollout import OBSERVATION_SOURCES
 from shakebench.tasks.registry import assert_split_disjoint, split_overlap
 from shakebench.tasks.states.assets import load_state_asset
 from shakebench.utils.artifacts import write_json
@@ -179,6 +179,9 @@ def summarize(episodes):
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+
+    from shakebench.rollout.task_env import ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
+
     if args.sway_v1:
         if args.mode_params or args.mode != "multisine_v1":
             raise ValueError("--sway-v1 cannot be combined with --mode or --mode-params")

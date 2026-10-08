@@ -16,6 +16,7 @@ import mujoco
 import numpy as np
 from robosuite.utils import transform_utils as T
 
+from shakebench.rollout import OBSERVATION_SOURCES
 from shakebench.rollout.outcomes import resolve_termination_cause, validate_outcome
 from shakebench.scene.cameras import CAMERAS, task_close_camera
 from shakebench.tasks.privilege import assert_policy_observation_is_clean
@@ -24,7 +25,6 @@ from shakebench.tasks.registry import describe_task, prepare_task_state, task_ty
 TASK = "Pick up the object from the phenolic table and place it in the target crate."
 ACTION_NAMES = ["delta_x", "delta_y", "delta_z", "delta_rx", "delta_ry", "delta_rz", "gripper"]
 STATE_NAMES = ["eef_x", "eef_y", "eef_z", "eef_rx", "eef_ry", "eef_rz", "left_finger_qpos", "right_finger_qpos"]
-OBSERVATION_SOURCES = ("cameras", "contract")
 
 
 def proprioception_metadata():

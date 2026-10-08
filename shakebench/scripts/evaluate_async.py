@@ -23,10 +23,7 @@ from shakebench.evaluation.evaluate import (
     summarize,
 )
 from shakebench.physics.calibration import scenario_run_metadata
-from shakebench.policies.async_policy import AsyncPolicy, PacedTask
-from shakebench.rollout.task_env import ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
 from shakebench.tasks.states.assets import load_state_asset
-from shakebench.tasks.states.train import assert_split_disjoint, split_overlap
 from shakebench.utils.artifacts import write_json
 
 
@@ -36,6 +33,11 @@ def main(argv=None):
     parser.add_argument("--time-scale", type=float, default=1.0)
     parser.add_argument("--startup-timeout-s", type=float, default=300.0)
     args = parser.parse_args(argv)
+
+    from shakebench.policies.async_policy import AsyncPolicy, PacedTask
+    from shakebench.rollout.task_env import ShakeBenchTaskEnv, invalid_episode_result, rollout_policy
+    from shakebench.tasks.states.train import assert_split_disjoint, split_overlap
+
     if args.sway_v1:
         from shakebench.physics.excitation import SWAY_V1
 

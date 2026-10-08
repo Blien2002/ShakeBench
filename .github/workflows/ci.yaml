@@ -11,9 +11,9 @@ jobs:
         with:
           python-version: "3.10"
       - run: pip install black==24.10.0 isort==5.13.2
-      - run: black --check shakebench tools tests
-      - run: isort --check-only shakebench tools tests
-  test:
+      - run: black --check shakebench tools
+      - run: isort --check-only shakebench tools
+  package-smoke:
     runs-on: ubuntu-22.04
     env:
       MUJOCO_GL: disable
@@ -22,5 +22,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - run: pip install -e ".[dev,gym]"
-      - run: pytest -q
+      - run: python -m pip install ".[gym]" build
+      - run: python tools/check_package.py cli
+      - run: python tools/check_package.py imports
+      - run: python -m build --wheel --outdir dist
+      - run: python tools/check_package.py wheel --wheel dist/shakebench-0.1.0-py3-none-any.whl

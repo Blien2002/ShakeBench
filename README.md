@@ -14,14 +14,14 @@ assets, camera and sensor observations, policy adapters, and synchronous and
 asynchronous evaluation runners. Physics uses [MuJoCo](https://mujoco.org/) and
 an unmodified, pinned [robosuite](https://github.com/ARISE-Initiative/robosuite).
 
-[Tasks](docs/tasks.md) · [Evaluation guide](docs/evaluation.md) ·
-[Architecture](docs/architecture.md) ·
 [Training demonstrations](https://huggingface.co/datasets/Blien2002/ShakeBench)
 
 ## Tasks and state assets
 
 Task modules live under `shakebench.environments`. Importing a module registers
-its task and state loader. `pick_place` is registered by default; pass
+its task and state loader. The public `shakebench.make` and environment exports
+register the default tasks when requested; plain package import defers simulator
+setup. The evaluator resolves `pick_place` by default; pass
 `--task-module` for the other tasks.
 
 | Task | Module | Available variations | Packaged states |
@@ -38,7 +38,7 @@ its task and state loader. `pick_place` is registered by default; pass
 Paths above are relative to `shakebench/models/assets/`. State counts, split
 labels and task versions are encoded in the files. Some bundled states are
 development or training states: a filename alone does not establish that a state
-is held out. See [task details](docs/tasks.md) before selecting an evaluation set.
+is held out. Select evaluation states using the encoded split and task version.
 
 ## Physics, vibration and success
 
@@ -58,6 +58,12 @@ is held out. See [task details](docs/tasks.md) before selecting an evaluation se
 - **Randomness:** each state fixes excitation/IMU seeds, layout and start time.
   Use the same states and horizon when comparing gamma values.
 
+Versioned contact rules use Push-T `push_t_contact_v2` with T–table sliding
+friction 0.50 (pusher 0.50, other official contacts 0.30). Water bottles use
+`water_physics_v2`: COM lowered 23.475 mm with a flat sole and unchanged mass.
+Plain stacking permits correctly ordered, staggered stable supports; released
+placement, contact, stability and order checks remain required.
+
 Each environment owns its success and task-rule checks. Ring placement requires
 the specified order and released, stable placement. Wine rack success requires
 the correct slot, alignment, support and release. Success is latched once
@@ -72,7 +78,7 @@ The JSON records are experimental evidence, not certified leaderboard scores.
 
 The opt-in `scenario_lines_v1` mode provides S1 rocking, S2 rough-road motion, S3 orbital motion (10 mm primary radius / 20 mm diameter at the deck origin), and S4 alternating press shocks. Here `gamma` is an amplitude multiplier (`scenario_level_v1`), so scenario gamma=1 is not equivalent to the existing peak-calibrated benchmark gamma=1. Defaults, gamma=0, scoring and IMU conventions are preserved.
 
-Run `python -m shakebench.scripts.evaluate_scenarios --policy my_policy:make_policy --state-ids shakebench-dev-v0-000 --output-dir out/scenarios` for the optional four-scenario workload. See [scenario definitions, units, parameters and replay](docs/vibration_scenarios.md).
+Run `python -m shakebench.scripts.evaluate_scenarios --policy my_policy:make_policy --state-ids shakebench-dev-v0-000 --output-dir out/scenarios` for the optional four-scenario workload. The suite JSON records the canonical S1–S4 definitions and replay parameters.
 
 ## Installation
 
@@ -100,7 +106,7 @@ vendored or patched robosuite.
 ```bash
 python -m pip install -e ".[gym]"       # Gymnasium and h5py
 python -m pip install -e ".[policies]"  # Local checkpoint adapter dependencies
-python -m pip install -e ".[dev,gym]"   # Tests and formatting tools
+python -m pip install -e ".[dev,gym]"   # Local development tooling
 ```
 
 Local checkpoint adapters also need the external model implementation that
@@ -334,19 +340,20 @@ dataset card for versions, format and provenance; pin a dataset revision rather
 than relying on mutable `main`. Train in your model framework: the repository
 provides the evaluation boundary, not a training/collection runner.
 
-## Development
+## Package checks
 
 ```bash
-python -m pip install -e ".[dev,gym]"
-MUJOCO_GL=disable pytest -q
-black --check shakebench tools tests
-isort --check-only shakebench tools tests
+python -m pip install build
+python tools/check_package.py cli
+MUJOCO_GL=disable python tools/check_package.py imports
+python -m build --wheel --outdir dist
+python tools/check_package.py wheel --wheel dist/shakebench-0.1.0-py3-none-any.whl
 ```
 
-`pytest -m "not slow"` skips tests that initialize every task, though shared
-runtime tests still build a simulation. See [AGENTS.md](AGENTS.md) and
-[architecture](docs/architecture.md) for dependency boundaries and new task
-registration.
+Public CI checks installation, module imports, help without simulator/graphics
+imports, and wheel contents. Full simulation regression tests and detailed
+validation documents are retained separately and are not distributed here.
+These package checks do not replace simulation regression evidence.
 
 ## Frequently asked questions
 
@@ -390,7 +397,7 @@ The current Panel controls use independently constructed analytic meshes, revisi
 mesh contacts for the lever, collar and shoulder. Moving masses are preserved;
 explicit control inertia follows the new analytic surfaces. These contacts differ
 from older scene revisions. The linked historical Panel demonstrations have not been
-updated to this appearance; see [asset provenance](docs/assets.md).
+updated to this appearance; packaged source notices identify the asset revision.
 
 The code license does not override third-party asset terms or the separate
 training dataset's terms.

@@ -18,14 +18,16 @@ experts (Oracles), teleoperation and training do not belong here.
 - `scripts/` and `demos/`: command-line entry points only. Nothing imports them; reused code belongs in the library.
 
 The simulation core (`environments`, `tasks`, `physics`, `sensors`, `scene`, `models`, `utils`) never imports `rollout`,
-`policies`, `evaluation` or `wrappers`. `tests/test_layout.py` enforces these rules.
+`policies`, `evaluation` or `wrappers`. Local regression checks enforce these rules; public package smoke checks do not replace them.
 
 robosuite is an unmodified, pinned dependency (see `pyproject.toml`). Never vendor or patch it; extend `ShakeBenchEnv`.
 
 ## Commands
 
 - `pip install -e ".[dev,gym]"`: editable install with test tooling.
-- `pytest`: full suite; `pytest -m "not slow"` skips tests that build every task environment.
+- `python tools/check_package.py cli`: help without simulator or graphics imports.
+- `MUJOCO_GL=disable python tools/check_package.py imports`: module and public-export smoke.
+- `python tools/check_package.py wheel --wheel PATH`: package/asset hash verification.
 - `pre-commit run --all-files`: Black and isort.
 
 ## Style
@@ -35,9 +37,10 @@ Python 3.10+, four-space indentation, 120-character lines, Black and isort (blac
 
 ## Tests and documentation
 
-Tests live in `tests/` and documentation in `docs/`; commit them together with the change they cover. Add the smallest
-regression test next to the affected area. Changes to physics, sensing, task rules, observations or the result format
-must update `docs/` and be called out in the pull request.
+Full regression tests and detailed validation documents are retained in the local validation tree. The public
+repository excludes `tests/`, `docs/`, and generated audit reports. Keep local validation evidence when changing
+physics, sensing, task rules, observations or results, and summarize material changes in README.md. Asset licenses,
+source notices, runtime JSON configuration and state banks remain in the package.
 
 ## Behavior-preserving changes
 

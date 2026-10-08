@@ -1,18 +1,30 @@
 """ShakeBench: the shaken-worktable manipulation benchmark built on robosuite.
 
-Importing this package registers the ShakeBench environments with the
-robosuite registry, so shakebench.make accepts them.  A plain import of
-robosuite does not, which keeps the upstream package free of any dependency
-on this one.
+The public environment and make exports register the default ShakeBench tasks
+when first requested. Package import alone leaves simulator and renderer setup
+until runtime, so command-line help also works without a graphics driver.
 
-Optional policy dependencies (torch, WebSocket clients) stay out of this import
-path; they load inside the adapter that needs them.
+Optional policy dependencies load inside the adapter that needs them.
 """
 
-from robosuite.environments.base import make
-
-from shakebench.environments.panel_operation import PanelOperation
-from shakebench.environments.vibration_pick_place import VibrationPickPlace
-from shakebench.models.arenas import ShakeBenchArena
-
 __all__ = ["PanelOperation", "ShakeBenchArena", "VibrationPickPlace", "make"]
+
+
+def __getattr__(name):
+    if name not in __all__:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from robosuite.environments.base import make
+
+    from shakebench.environments.panel_operation import PanelOperation
+    from shakebench.environments.vibration_pick_place import VibrationPickPlace
+    from shakebench.models.arenas import ShakeBenchArena
+
+    exports = {
+        "PanelOperation": PanelOperation,
+        "ShakeBenchArena": ShakeBenchArena,
+        "VibrationPickPlace": VibrationPickPlace,
+        "make": make,
+    }
+    globals().update(exports)
+    return exports[name]
